@@ -95,27 +95,6 @@ const hasOpenPort = (config) =>
   );
 
 const emptyComposeYaml = 'services:';
-const cloudConfigHeader = '#cloud-config';
-
-const ensureCloudConfigHeader = (userData = '') => {
-  const normalized = String(userData || '').replace(/\r\n/g, '\n');
-  if (!normalized.trim()) return '';
-  if (normalized.trimStart().startsWith(cloudConfigHeader)) return normalized;
-  return `${cloudConfigHeader}\n${normalized}`;
-};
-
-const needsCloudConfigHeader = (config) =>
-  (config.services || []).some(
-    (service) => service.kubeVirt && service.userData.trim() && !service.userData.trimStart().startsWith(cloudConfigHeader)
-  );
-
-const ensureCloudConfigGuideConfig = (config) => ({
-  ...config,
-  services: (config.services || []).map((service) => ({
-    ...service,
-    userData: service.kubeVirt ? ensureCloudConfigHeader(service.userData) : service.userData,
-  })),
-});
 
 const yamlQuote = (value) =>
   `"${String(value ?? '')
@@ -185,7 +164,8 @@ const buildGuidedComposeYaml = (config) => {
 
     if (kubeVirt && service.userData.trim()) {
       lines.push('    x-cloudinit:', '      user_data: |');
-      ensureCloudConfigHeader(service.userData)
+      String(service.userData || '')
+        .replace(/\r\n/g, '\n')
         .split('\n')
         .forEach((item) => lines.push(`        ${item}`));
     }
@@ -581,12 +561,6 @@ const validateGuidedCompose = (config, t = (key) => key) => {
         t('admin.challengeModal.composeGuide.validation.bootloaderInvalid', { label })
       );
     }
-    if (service.kubeVirt && service.userData.trim() && !service.userData.trimStart().startsWith(cloudConfigHeader)) {
-      addError(
-        `service.${serviceIndex}.userData`,
-        t('admin.challengeModal.composeGuide.validation.userDataCloudConfigRequired', { label })
-      );
-    }
     const servicePortTargets = new Set();
     (service.kubeVirt ? [] : service.ports || []).forEach((port, portIndex) => {
       if (!port.target.trim())
@@ -881,7 +855,6 @@ function AdminChallengeModal({
   const ct = (key, options) => t(`admin.challengeModal.composeGuide.${key}`, options);
 
   const [guideConfig, setGuideConfig] = useState(createGuideConfig);
-  const [cloudInitNotice, setCloudInitNotice] = useState(false);
   const guideGeneratedComposeRef = useRef('');
 
   const guideValidation = validateGuidedCompose(guideConfig, t);
@@ -892,11 +865,9 @@ function AdminChallengeModal({
   const policyTargets = getGuideServiceTargets(guideConfig);
 
   const syncGuideConfig = (nextConfig) => {
-    const shouldNotice = needsCloudConfigHeader(nextConfig);
-    const normalizedConfig = ensureCloudConfigGuideConfig(normalizeGuideConfigForMode(nextConfig));
+    const normalizedConfig = normalizeGuideConfigForMode(nextConfig);
     const dockerCompose = buildGuidedComposeYaml(normalizedConfig);
     guideGeneratedComposeRef.current = dockerCompose;
-    setCloudInitNotice(shouldNotice);
     setGuideConfig(normalizedConfig);
     onChange({ ...challenge, docker_compose: dockerCompose });
   };
@@ -904,14 +875,12 @@ function AdminChallengeModal({
   useEffect(() => {
     if (!isOpen || challenge.type !== 'pods') {
       guideGeneratedComposeRef.current = '';
-      setCloudInitNotice(false);
       setGuideConfig(createGuideConfig());
       return;
     }
     const dockerCompose = challenge.docker_compose || '';
     if (!dockerCompose) {
       guideGeneratedComposeRef.current = '';
-      setCloudInitNotice(false);
       setGuideConfig(createGuideConfig());
       return;
     }
@@ -930,18 +899,8 @@ function AdminChallengeModal({
       onChange({ ...challenge, docker_compose: finalValue });
       return;
     }
-    const shouldNotice = needsCloudConfigHeader(parsed.config);
-    const normalizedConfig = shouldNotice
-      ? ensureCloudConfigGuideConfig(normalizeGuideConfigForMode(parsed.config))
-      : normalizeGuideConfigForMode(parsed.config);
-    setCloudInitNotice(shouldNotice);
+    const normalizedConfig = normalizeGuideConfigForMode(parsed.config);
     setGuideConfig(normalizedConfig);
-    if (shouldNotice) {
-      const normalizedCompose = buildGuidedComposeYaml(normalizedConfig);
-      guideGeneratedComposeRef.current = normalizedCompose;
-      onChange({ ...challenge, docker_compose: normalizedCompose });
-      return;
-    }
     onChange({ ...challenge, docker_compose: finalValue });
   };
 
@@ -1997,11 +1956,6 @@ function AdminChallengeModal({
                             {rawValidation.list.map((error, index) => (
                               <div key={index}>{error}</div>
                             ))}
-                          </div>
-                        )}
-                        {cloudInitNotice && (
-                          <div className="mt-3 rounded-md border border-yellow-400/30 bg-yellow-400/10 p-3 text-xs font-mono text-yellow-100">
-                            {ct('validation.userDataCloudConfigAdded')}
                           </div>
                         )}
                       </div>
