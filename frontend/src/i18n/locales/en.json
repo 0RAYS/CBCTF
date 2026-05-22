@@ -1461,8 +1461,6 @@
           "memLimitRequired": "{{label}}: mem_limit is required when x-kubevirt is true",
           "memLimitFormat": "{{label}}: mem_limit should look like 500m",
           "bootloaderInvalid": "{{label}}: bootloader should be bios or efi",
-          "userDataCloudConfigRequired": "{{label}}: x-cloudinit.user_data first line must be #cloud-config",
-          "userDataCloudConfigAdded": "Automatically added #cloud-config to the first line of x-cloudinit.user_data",
           "portRequired": "Container challenges must expose at least one port",
           "portTargetRequired": "{{label}}: port {{index}} target is required",
           "portTargetNumber": "{{label}}: port {{index}} target must be numeric",

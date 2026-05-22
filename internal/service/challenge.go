@@ -108,15 +108,6 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 		if kubeVirt && service.MemLimit == 0 {
 			return invalidComposeYamlRetVal(fmt.Sprintf("%s mem_limit is required when x-kubevirt is true", label))
 		}
-		if kubeVirt {
-			if cloudInit, ok := service.Extensions[model.XCloudInitExtension].(model.XCloudInit); ok {
-				userData := strings.TrimSpace(cloudInit.UserData)
-				if userData != "" && !strings.HasPrefix(userData, "#cloud-config") {
-					return invalidComposeYamlRetVal(fmt.Sprintf("%s x-cloudinit user_data must start with #cloud-config", label))
-				}
-			}
-		}
-
 		if !kubeVirt {
 			nonKubeVirtServiceCount++
 			servicePortTargets := make(map[uint32]struct{})
