@@ -353,7 +353,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 			containerTemplate.KubeVirt = kubeVirt
 		}
 		if cloudInit, ok := app.Extensions[model.XCloudInitExtension].(model.XCloudInit); ok {
-			containerTemplate.UserData = cloudInit.UserData
+			containerTemplate.UserData = cloudInit.CloudConfig()
 		}
 		template.Pods = append(template.Pods, model.ChallengePodTemplate{
 			Key:          podKey,

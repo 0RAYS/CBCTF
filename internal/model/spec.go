@@ -4,6 +4,9 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"strings"
+
+	"go.yaml.in/yaml/v4"
 )
 
 type FlagBindingType string
@@ -30,7 +33,71 @@ type XBoot struct {
 }
 
 type XCloudInit struct {
-	UserData string `json:"user_data" yaml:"user_data"`
+	Users             []CloudInitUser      `yaml:"users" json:"users"`
+	Groups            []CloudInitGroup     `yaml:"groups" json:"groups"`
+	WriteFiles        []CloudInitWriteFile `yaml:"write_files" json:"write_files"`
+	SSHAuthorizedKeys []string             `yaml:"ssh_authorized_keys" json:"ssh_authorized_keys"`
+}
+
+type CloudInitConfig struct {
+	Users             []CloudInitUser      `yaml:"users" json:"users"`
+	Groups            []CloudInitGroup     `yaml:"groups" json:"groups"`
+	WriteFiles        []CloudInitWriteFile `yaml:"write_files" json:"write_files"`
+	SSHAuthorizedKeys []string             `yaml:"ssh_authorized_keys" json:"ssh_authorized_keys"`
+}
+
+type CloudInitUser struct {
+	Name              string   `yaml:"name" json:"name"`
+	Gecos             string   `yaml:"gecos" json:"gecos"`
+	Groups            []string `yaml:"groups" json:"groups"`
+	Sudo              []string `yaml:"sudo" json:"sudo"`
+	Shell             string   `yaml:"shell" json:"shell"`
+	HomeDir           string   `yaml:"homedir" json:"homedir"`
+	LockPasswd        bool     `yaml:"lock_passwd" json:"lock_passwd"`
+	Passwd            string   `yaml:"passwd" json:"passwd"`
+	PlainTextPasswd   string   `yaml:"plain_text_passwd" json:"plain_text_passwd"`
+	SSHAuthorizedKeys []string `yaml:"ssh_authorized_keys" json:"ssh_authorized_keys"`
+	NoCreateHome      bool     `yaml:"no_create_home" json:"no_create_home"`
+	System            bool     `yaml:"system" json:"system"`
+}
+
+type CloudInitGroup struct {
+	Name    string   `yaml:"name" json:"name"`
+	Members []string `yaml:"members" json:"members"`
+}
+
+func (x XCloudInit) CloudConfig() CloudInitConfig {
+	return CloudInitConfig{
+		Users:             x.Users,
+		Groups:            x.Groups,
+		WriteFiles:        x.WriteFiles,
+		SSHAuthorizedKeys: x.SSHAuthorizedKeys,
+	}
+}
+
+type CloudInitWriteFile struct {
+	Path        string `yaml:"path" json:"path"`
+	Content     string `yaml:"content" json:"content"`
+	Owner       string `yaml:"owner" json:"owner"`
+	Permissions string `yaml:"permissions" json:"permissions"`
+	Encoding    string `yaml:"encoding" json:"encoding"`
+	Append      bool   `yaml:"append" json:"append"`
+	Defer       bool   `yaml:"defer" json:"defer"`
+}
+
+func (c CloudInitConfig) Empty() bool {
+	return len(c.Users) == 0 && len(c.Groups) == 0 && len(c.WriteFiles) == 0 && len(c.SSHAuthorizedKeys) == 0
+}
+
+func (c CloudInitConfig) String() (string, error) {
+	if c.Empty() {
+		return "", nil
+	}
+	data, err := yaml.Marshal(c)
+	if err != nil {
+		return "", err
+	}
+	return "#cloud-config\n" + strings.TrimSpace(string(data)), nil
 }
 
 const (
@@ -57,19 +124,19 @@ func (f *FlagBinding) Scan(value any) error {
 }
 
 type ChallengeContainerTemplate struct {
-	Key         string     `json:"key"`
-	Name        string     `json:"name"`
-	Image       string     `json:"image"`
-	CPU         float32    `json:"cpu"`
-	Memory      int64      `json:"memory"`
-	WorkingDir  string     `json:"working_dir"`
-	Command     StringList `json:"command"`
-	Environment StringMap  `json:"environment"`
-	KubeVirt    bool       `json:"kubevirt"`
-	Bootloader  string     `json:"bootloader"`
-	SecureBoot  bool       `json:"secure_boot"`
-	UserData    string     `json:"user_data"`
-	Exposes     Exposes    `json:"exposes"`
+	Key         string          `json:"key"`
+	Name        string          `json:"name"`
+	Image       string          `json:"image"`
+	CPU         float32         `json:"cpu"`
+	Memory      int64           `json:"memory"`
+	WorkingDir  string          `json:"working_dir"`
+	Command     StringList      `json:"command"`
+	Environment StringMap       `json:"environment"`
+	KubeVirt    bool            `json:"kubevirt"`
+	Bootloader  string          `json:"bootloader"`
+	SecureBoot  bool            `json:"secure_boot"`
+	UserData    CloudInitConfig `json:"user_data"`
+	Exposes     Exposes         `json:"exposes"`
 }
 
 type ChallengePodTemplate struct {
@@ -109,7 +176,7 @@ type VictimContainerSpec struct {
 	KubeVirt    bool            `json:"kubevirt"`
 	Bootloader  string          `json:"bootloader"`
 	SecureBoot  bool            `json:"secure_boot"`
-	UserData    string          `json:"user_data"`
+	UserData    CloudInitConfig `json:"user_data"`
 	FileMounts  []FileMountSpec `json:"file_mounts"`
 	Exposes     Exposes         `json:"exposes"`
 }

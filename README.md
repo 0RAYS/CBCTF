@@ -188,8 +188,8 @@ services:
       bootloader: efi
       secure_boot: false
     x-cloudinit:
-      user_data: |
-        #cloud-config
+      users:
+        - name: root
     networks:
       vpc:
         ipv4_address: 192.168.1.10

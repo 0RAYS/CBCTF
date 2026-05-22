@@ -20,10 +20,39 @@ services:
       bootloader: efi
       secure_boot: false
     x-cloudinit:
-      user_data: |
-        #cloud-config
-        users:
-          - name: root
+      users:
+        - name: ctf
+          gecos: CTF Player
+          groups:
+            - sudo
+            - docker
+          sudo:
+            - ALL=(ALL) NOPASSWD:ALL
+          shell: /bin/bash
+          homedir: /home/ctf
+          lock_passwd: false
+          passwd: "$6$rounds=4096$saltstring$examplehash"
+          plain_text_passwd: changeme
+          ssh_authorized_keys:
+            - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleUserKey ctf@example
+          no_create_home: false
+          system: false
+      groups:
+        - name: docker
+          members:
+            - ctf
+      write_files:
+        - path: /etc/motd
+          content: |
+            Welcome to CBCTF web1.
+            This file was written by cloud-init.
+          owner: root:root
+          permissions: "0644"
+          encoding: text/plain
+          append: false
+          defer: false
+      ssh_authorized_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleRootKey root@example
     networks:
       network1:
         ipv4_address: 192.168.0.2
@@ -50,10 +79,37 @@ services:
       bootloader: efi
       secure_boot: false
     x-cloudinit:
-      user_data: |
-        #cloud-config
-        users:
-          - name: root
+      users:
+        - name: ctf
+          gecos: CTF Player
+          groups:
+            - sudo
+          sudo:
+            - ALL=(ALL) NOPASSWD:ALL
+          shell: /bin/bash
+          homedir: /home/ctf
+          lock_passwd: false
+          passwd: "$6$rounds=4096$saltstring$examplehash"
+          plain_text_passwd: changeme
+          ssh_authorized_keys:
+            - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleUserKey ctf@example
+          no_create_home: false
+          system: false
+      groups:
+        - name: sudo
+          members:
+            - ctf
+      write_files:
+        - path: /etc/motd
+          content: |
+            Welcome to CBCTF web2.
+          owner: root:root
+          permissions: "0644"
+          encoding: text/plain
+          append: false
+          defer: false
+      ssh_authorized_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleRootKey root@example
     networks:
       network2:
         ipv4_address: 192.168.1.3
@@ -80,10 +136,37 @@ services:
     x-boot:
       bootloader: bios
     x-cloudinit:
-      user_data: |
-        #cloud-config
-        users:
-          - name: root
+      users:
+        - name: ctf
+          gecos: CTF Player
+          groups:
+            - users
+          sudo:
+            - ALL=(ALL) NOPASSWD:ALL
+          shell: /bin/bash
+          homedir: /home/ctf
+          lock_passwd: false
+          passwd: "$6$rounds=4096$saltstring$examplehash"
+          plain_text_passwd: changeme
+          ssh_authorized_keys:
+            - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleUserKey ctf@example
+          no_create_home: false
+          system: false
+      groups:
+        - name: users
+          members:
+            - ctf
+      write_files:
+        - path: /etc/motd
+          content: |
+            Welcome to CBCTF web3.
+          owner: root:root
+          permissions: "0644"
+          encoding: text/plain
+          append: false
+          defer: false
+      ssh_authorized_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleRootKey root@example
     networks:
       network3:
         ipv4_address: 192.168.2.4

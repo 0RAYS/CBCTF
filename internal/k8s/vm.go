@@ -38,7 +38,7 @@ type CreateVMOptions struct {
 	SecureBoot  bool
 	CPUMillis   int64
 	MemoryBytes int64
-	UserData    string
+	UserData    model.CloudInitConfig
 	Networks    []Network
 }
 
@@ -47,6 +47,12 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 		vm  *v1.VirtualMachine
 		err error
 	)
+	userData, err := options.UserData.String()
+	if err != nil {
+		log.Logger.Warningf("Failed to render cloud-init user data: %s", err)
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
+	}
+
 	vm = &v1.VirtualMachine{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
@@ -168,7 +174,7 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 							Name: "cloud-init",
 							VolumeSource: v1.VolumeSource{
 								CloudInitNoCloud: &v1.CloudInitNoCloudSource{
-									UserData: options.UserData,
+									UserData: userData,
 									NetworkData: func() string {
 										ethernets := make([]string, 0)
 										for _, network := range options.Networks {
