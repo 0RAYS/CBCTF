@@ -150,6 +150,19 @@ const blockAllowsIp = (block, ip) => {
 const blocksAllowAnyIp = (blocks, ips) =>
   ips.some((ip) => blocks.some((block) => blockAllowsIp(block, ip)));
 
+const normalizePolicyRule = (rule = {}) => ({
+  cidr: rule.cidr || rule.CIDR || '',
+  except: Array.isArray(rule.except) ? rule.except : Array.isArray(rule.Except) ? rule.Except : [],
+});
+
+const normalizePolicyRules = (rules = []) => (Array.isArray(rules) ? rules.map(normalizePolicyRule) : []);
+
+const normalizeNetworkPolicy = (policy = {}) => ({
+  ...policy,
+  from: normalizePolicyRules(policy.from),
+  to: normalizePolicyRules(policy.to),
+});
+
 const buildNetworkTopology = (config, policies = []) => {
   const services = config.services || [];
   const nodes = services.map((service, index) => {
@@ -1702,10 +1715,10 @@ function AdminChallengeModal({
   // 添加 from/to 规则
   const addPolicyRule = (policyIndex, ruleType) => {
     const newNetworkPolicies = [...challenge.network_policies];
-    const policy = { ...newNetworkPolicies[policyIndex] };
+    const policy = normalizeNetworkPolicy(newNetworkPolicies[policyIndex]);
 
     policy[ruleType] = [
-      ...policy[ruleType],
+      ...(policy[ruleType] || []),
       {
         cidr: '',
         except: [''],
@@ -1719,9 +1732,9 @@ function AdminChallengeModal({
   // 移除 from/to 规则
   const removePolicyRule = (policyIndex, ruleType, ruleIndex) => {
     const newNetworkPolicies = [...challenge.network_policies];
-    const policy = { ...newNetworkPolicies[policyIndex] };
+    const policy = normalizeNetworkPolicy(newNetworkPolicies[policyIndex]);
 
-    policy[ruleType] = policy[ruleType].filter((_, i) => i !== ruleIndex);
+    policy[ruleType] = (policy[ruleType] || []).filter((_, i) => i !== ruleIndex);
 
     newNetworkPolicies[policyIndex] = policy;
     onChange({ ...challenge, network_policies: newNetworkPolicies });
@@ -1730,12 +1743,12 @@ function AdminChallengeModal({
   // 更新 cidr 值
   const updatePolicyCidr = (policyIndex, ruleType, ruleIndex, value) => {
     const newNetworkPolicies = [...challenge.network_policies];
-    const policy = { ...newNetworkPolicies[policyIndex] };
-    const rule = { ...policy[ruleType][ruleIndex] };
+    const policy = normalizeNetworkPolicy(newNetworkPolicies[policyIndex]);
+    const rule = normalizePolicyRule(policy[ruleType]?.[ruleIndex]);
 
     rule.cidr = value;
 
-    policy[ruleType] = [...policy[ruleType]];
+    policy[ruleType] = [...(policy[ruleType] || [])];
     policy[ruleType][ruleIndex] = rule;
 
     newNetworkPolicies[policyIndex] = policy;
@@ -1745,12 +1758,12 @@ function AdminChallengeModal({
   // 添加 except 规则
   const addPolicyExcept = (policyIndex, ruleType, ruleIndex) => {
     const newNetworkPolicies = [...challenge.network_policies];
-    const policy = { ...newNetworkPolicies[policyIndex] };
-    const rule = { ...policy[ruleType][ruleIndex] };
+    const policy = normalizeNetworkPolicy(newNetworkPolicies[policyIndex]);
+    const rule = normalizePolicyRule(policy[ruleType]?.[ruleIndex]);
 
-    rule.except = [...rule.except, ''];
+    rule.except = [...(rule.except || []), ''];
 
-    policy[ruleType] = [...policy[ruleType]];
+    policy[ruleType] = [...(policy[ruleType] || [])];
     policy[ruleType][ruleIndex] = rule;
 
     newNetworkPolicies[policyIndex] = policy;
@@ -1760,12 +1773,12 @@ function AdminChallengeModal({
   // 移除 except 规则
   const removePolicyExcept = (policyIndex, ruleType, ruleIndex, exceptIndex) => {
     const newNetworkPolicies = [...challenge.network_policies];
-    const policy = { ...newNetworkPolicies[policyIndex] };
-    const rule = { ...policy[ruleType][ruleIndex] };
+    const policy = normalizeNetworkPolicy(newNetworkPolicies[policyIndex]);
+    const rule = normalizePolicyRule(policy[ruleType]?.[ruleIndex]);
 
-    rule.except = rule.except.filter((_, i) => i !== exceptIndex);
+    rule.except = (rule.except || []).filter((_, i) => i !== exceptIndex);
 
-    policy[ruleType] = [...policy[ruleType]];
+    policy[ruleType] = [...(policy[ruleType] || [])];
     policy[ruleType][ruleIndex] = rule;
 
     newNetworkPolicies[policyIndex] = policy;
@@ -1775,13 +1788,13 @@ function AdminChallengeModal({
   // 更新 except 值
   const updatePolicyExcept = (policyIndex, ruleType, ruleIndex, exceptIndex, value) => {
     const newNetworkPolicies = [...challenge.network_policies];
-    const policy = { ...newNetworkPolicies[policyIndex] };
-    const rule = { ...policy[ruleType][ruleIndex] };
+    const policy = normalizeNetworkPolicy(newNetworkPolicies[policyIndex]);
+    const rule = normalizePolicyRule(policy[ruleType]?.[ruleIndex]);
 
-    rule.except = [...rule.except];
+    rule.except = [...(rule.except || [])];
     rule.except[exceptIndex] = value;
 
-    policy[ruleType] = [...policy[ruleType]];
+    policy[ruleType] = [...(policy[ruleType] || [])];
     policy[ruleType][ruleIndex] = rule;
 
     newNetworkPolicies[policyIndex] = policy;
@@ -3152,7 +3165,7 @@ function AdminChallengeModal({
 
                                       <input
                                         type="text"
-                                        value={fromRule.cidr}
+                                        value={normalizePolicyRule(fromRule).cidr}
                                         onChange={(e) =>
                                           updatePolicyCidr(policyIndex, 'from', fromIndex, e.target.value)
                                         }
@@ -3177,7 +3190,7 @@ function AdminChallengeModal({
                                           </Button>
                                         </div>
                                         <div className="space-y-1">
-                                          {(fromRule.except || []).map((exceptItem, exceptIndex) => (
+                                          {normalizePolicyRule(fromRule).except.map((exceptItem, exceptIndex) => (
                                             <div key={exceptIndex} className="flex gap-1 items-center">
                                               <input
                                                 type="text"
@@ -3250,7 +3263,7 @@ function AdminChallengeModal({
 
                                       <input
                                         type="text"
-                                        value={toRule.cidr}
+                                        value={normalizePolicyRule(toRule).cidr}
                                         onChange={(e) => updatePolicyCidr(policyIndex, 'to', toIndex, e.target.value)}
                                         className="w-full h-8 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
                                         placeholder="0.0.0.0/0"
@@ -3273,7 +3286,7 @@ function AdminChallengeModal({
                                           </Button>
                                         </div>
                                         <div className="space-y-1">
-                                          {(toRule.except || []).map((exceptItem, exceptIndex) => (
+                                          {normalizePolicyRule(toRule).except.map((exceptItem, exceptIndex) => (
                                             <div key={exceptIndex} className="flex gap-1 items-center">
                                               <input
                                                 type="text"
