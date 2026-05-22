@@ -142,6 +142,17 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 				containerSpec.Environment[flag.Binding.Target] = value
 			case model.FileFlagBindingType:
 				containerSpec.FileMounts = append(containerSpec.FileMounts, model.FileMountSpec{Path: flag.Binding.Target, Content: value})
+			case model.CloudInitFileFlagBindingType:
+				for i := range containerSpec.UserData.WriteFiles {
+					if containerSpec.UserData.WriteFiles[i].Path != flag.Binding.Target {
+						continue
+					}
+					containerSpec.UserData.WriteFiles[i].Content = strings.ReplaceAll(
+						containerSpec.UserData.WriteFiles[i].Content,
+						flag.Value,
+						value,
+					)
+				}
 			default:
 				return model.VictimContainerSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
 			}

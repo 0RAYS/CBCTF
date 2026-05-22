@@ -269,6 +269,20 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 		Pods: make([]model.ChallengePodTemplate, 0, len(config.Services)),
 	}
 	flagOptions := make([]db.CreateChallengeFlagOptions, 0)
+	extractFlagTemplates := func(content string) []string {
+		seen := make(map[string]struct{})
+		templates := make([]string, 0)
+		for _, re := range []*regexp.Regexp{model.StaticFlagTmpl, model.DynamicFlagTmpl, model.UUIDFlagTmpl} {
+			for _, value := range re.FindAllString(content, -1) {
+				if _, ok := seen[value]; ok {
+					continue
+				}
+				seen[value] = struct{}{}
+				templates = append(templates, value)
+			}
+		}
+		return templates
+	}
 	for _, app := range config.Services {
 		name := app.Name
 		if app.ContainerName != "" {
@@ -354,6 +368,19 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 		}
 		if cloudInit, ok := app.Extensions[model.XCloudInitExtension].(model.XCloudInit); ok {
 			containerTemplate.UserData = cloudInit.CloudConfig()
+			for _, writeFile := range cloudInit.WriteFiles {
+				for _, value := range extractFlagTemplates(writeFile.Content) {
+					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+						Value: value,
+						Binding: model.FlagBinding{
+							PodKey:       podKey,
+							ContainerKey: containerKey,
+							Type:         model.CloudInitFileFlagBindingType,
+							Target:       writeFile.Path,
+						},
+					})
+				}
+			}
 		}
 		template.Pods = append(template.Pods, model.ChallengePodTemplate{
 			Key:          podKey,
