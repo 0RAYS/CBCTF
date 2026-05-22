@@ -383,11 +383,17 @@ function ChallengesManagement() {
           }
           const vpcMode = hasVpcNetworks(challenge.docker_compose);
           apiChallenge.network_policies =
-            challenge.network_policies?.map((policy) => ({
-              ...(vpcMode ? { service: policy.service || '' } : {}),
-              from: policy.from || [],
-              to: policy.to || [],
-            })) || [];
+            challenge.network_policies?.map((policy) => {
+              const normalizeRule = (rule = {}) => ({
+                cidr: rule.cidr || rule.CIDR || '',
+                except: Array.isArray(rule.except) ? rule.except : Array.isArray(rule.Except) ? rule.Except : [],
+              });
+              return {
+                ...(vpcMode ? { service: policy.service || '' } : {}),
+                from: Array.isArray(policy.from) ? policy.from.map(normalizeRule) : [],
+                to: Array.isArray(policy.to) ? policy.to.map(normalizeRule) : [],
+              };
+            }) || [];
         }
 
         if (mode === 'add') {
