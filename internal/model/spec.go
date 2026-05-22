@@ -101,8 +101,9 @@ func (c CloudInitConfig) String() (string, error) {
 }
 
 const (
-	EnvFlagBindingType  FlagBindingType = "env"
-	FileFlagBindingType FlagBindingType = "file"
+	EnvFlagBindingType           FlagBindingType = "env"
+	FileFlagBindingType          FlagBindingType = "file"
+	CloudInitFileFlagBindingType FlagBindingType = "cloudinit_file"
 )
 
 type FlagBinding struct {
