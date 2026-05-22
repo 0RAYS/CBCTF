@@ -11,10 +11,10 @@ services:
     environment:
       APP_ENV: production
       FLAG_1: uuid{}
-      FLAG_2: dynamic{this_is_a_dynamic_flag}
+      FLAG_2: leet{this_is_a_leet_flag}
     x-volumes:
       - path: /flag
-        content: dynamic{this_is_a_file_flag}
+        content: leet{this_is_a_file_flag}
     x-kubevirt: true
     x-boot:
       bootloader: efi
@@ -73,7 +73,7 @@ services:
       FLAG_3: uuid{}
     x-volumes:
       - path: /flag
-        content: dynamic{this_is_a_file_flag}
+        content: leet{this_is_a_file_flag}
     x-kubevirt: true
     x-boot:
       bootloader: efi
@@ -131,7 +131,7 @@ services:
       FLAG_6: static{this_is_a_static_flag}
     x-volumes:
       - path: /flag
-        content: dynamic{this_is_a_file_flag}
+        content: leet{this_is_a_file_flag}
     x-kubevirt: false
     x-boot:
       bootloader: bios

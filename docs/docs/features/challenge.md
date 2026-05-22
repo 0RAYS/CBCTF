@@ -24,7 +24,7 @@ CBCTF 支持三种题目类型, 覆盖从传统静态题到复杂网络靶机的
 静态题为最简单的 CTF 传统题型, 题目附件和 flag 对所有队伍相同。
 
 - 上传静态附件（zip 格式）, 所有队伍共享下载
-- flag 使用 `static{}` 类型（所有队伍相同）, 也支持 `dynamic{}` 和 `uuid{}`（每队不同, 但无法通过附件向选手传达个人 flag）
+- flag 使用 `static{}` 类型（所有队伍相同）, 也支持 `leet{}` 和 `uuid{}`（每队不同, 但无法通过附件向选手传达个人 flag）
 - 不需要 Kubernetes
 
 ![static.png](img/static.png)
@@ -35,7 +35,7 @@ CBCTF 支持三种题目类型, 覆盖从传统静态题到复杂网络靶机的
 
 - 需要出题人编写生成器 Docker 镜像, 平台在 Kubernetes 中运行生成器容器
 - 附件按队伍独立生成, 每支队伍下载不同的 zip
-- flag 类型支持 `static{}`、`dynamic{}`、`uuid{}`
+- flag 类型支持 `static{}`、`leet{}`、`uuid{}`
 - 需要 Kubernetes 集群
 
 详见 [动态附件生成](./attachment.md)。

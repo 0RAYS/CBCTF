@@ -20,7 +20,7 @@ sidebar_position: 6
 |------|------|------|
 | `name` | string | 比赛名称 |
 | `description` | string | 比赛介绍（支持 Markdown） |
-| `prefix` | string | Flag 前缀, 替换 `static{}/dynamic{}/uuid{}` 的输出前缀, 如 `flag`、`CTF`、`CBCTF` |
+| `prefix` | string | Flag 前缀, 替换 `static{}/leet{}/uuid{}` 的输出前缀, 如 `flag`、`CTF`、`CBCTF` |
 | `size` | int | 最大队伍人数 |
 | `start` | datetime | 比赛开始时间 |
 | `duration` | int | 比赛持续时长（秒） |
@@ -38,7 +38,7 @@ sidebar_position: 6
 
 ```
 static{content}  →  {prefix}{content}
-dynamic{content} →  {prefix}{随机内容}
+leet{content}    →  {prefix}{随机内容}
 uuid{}           →  {prefix}{uuid}
 ```
 
