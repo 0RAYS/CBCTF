@@ -8,6 +8,7 @@ replace (
 )
 
 require (
+	github.com/BurntSushi/toml v1.6.0
 	github.com/compose-spec/compose-go/v2 v2.11.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/color v1.19.0

@@ -9,26 +9,13 @@ import (
 	"strconv"
 	"strings"
 
+	"go.yaml.in/yaml/v4"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "kubevirt.io/api/core/v1"
 )
-
-const NetworkDataTmpl = `
-version: 2
-ethernets:
-%s
-`
-
-const NetworkDataEthernetTmpl = `
-  %s:
-    match:
-      macaddress: "%s"
-    set-name: %s
-    dhcp4: true
-`
 
 type CreateVMOptions struct {
 	Name        string
@@ -42,6 +29,42 @@ type CreateVMOptions struct {
 	Networks    []Network
 }
 
+type networkDataConfig struct {
+	Version   int                            `yaml:"version"`
+	Ethernets map[string]networkDataEthernet `yaml:"ethernets"`
+}
+
+type networkDataEthernet struct {
+	Match   networkDataMatch `yaml:"match"`
+	SetName string           `yaml:"set-name"`
+	DHCP4   bool             `yaml:"dhcp4"`
+}
+
+type networkDataMatch struct {
+	MACAddress string `yaml:"macaddress"`
+}
+
+func buildNetworkData(networks []Network) (string, error) {
+	networkData := networkDataConfig{
+		Version:   2,
+		Ethernets: make(map[string]networkDataEthernet, len(networks)),
+	}
+	for _, network := range networks {
+		networkData.Ethernets[network.Interface] = networkDataEthernet{
+			Match: networkDataMatch{
+				MACAddress: network.MAC,
+			},
+			SetName: network.Interface,
+			DHCP4:   true,
+		}
+	}
+	data, err := yaml.Marshal(networkData)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(data)), nil
+}
+
 func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine, model.RetVal) {
 	var (
 		vm  *v1.VirtualMachine
@@ -50,6 +73,11 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 	userData, err := options.UserData.String()
 	if err != nil {
 		log.Logger.Warningf("Failed to render cloud-init user data: %s", err)
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
+	}
+	networkData, err := buildNetworkData(options.Networks)
+	if err != nil {
+		log.Logger.Warningf("Failed to render cloud-init network data: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
 	}
 
@@ -174,17 +202,8 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 							Name: "cloud-init",
 							VolumeSource: v1.VolumeSource{
 								CloudInitNoCloud: &v1.CloudInitNoCloudSource{
-									UserData: userData,
-									NetworkData: func() string {
-										ethernets := make([]string, 0)
-										for _, network := range options.Networks {
-											ethernets = append(
-												ethernets,
-												strings.Trim(fmt.Sprintf(NetworkDataEthernetTmpl, network.Interface, network.MAC, network.Interface), "\n"),
-											)
-										}
-										return strings.Trim(fmt.Sprintf(NetworkDataTmpl, strings.Join(ethernets, "\n")), "\n")
-									}(),
+									UserData:    userData,
+									NetworkData: networkData,
 								},
 							},
 						},
