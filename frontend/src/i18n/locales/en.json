@@ -1373,6 +1373,20 @@
         "noNetworkMerge": "Without custom networks, services share one Pod and use 127.0.0.1.",
         "containerNetwork": "With networks, services run as separate Pods by ipv4_address."
       },
+      "topology": {
+        "title": "Network Topology",
+        "subtitle": "Green means reachable; red means blocked by policy.",
+        "allow": "Allow",
+        "deny": "Deny",
+        "empty": "No container nodes yet. Add containers and network IPs first.",
+        "noIp": "No IP configured",
+        "crossNetwork": "Cross-network",
+        "reasons": {
+          "allowed": "Traffic is allowed",
+          "outboundBlocked": "Outbound policy does not allow the target IP",
+          "inboundBlocked": "Inbound policy does not allow the source IP"
+        }
+      },
       "composeGuide": {
         "modes": {
           "raw": "Edit Mode",

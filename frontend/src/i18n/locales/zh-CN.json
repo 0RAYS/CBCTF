@@ -1373,6 +1373,20 @@
         "noNetworkMerge": "无自定义网络时, services 共享一个 Pod 并使用 127.0.0.1 进行通信",
         "containerNetwork": "配置网络后, services 按 ipv4_address 分 Pod 运行"
       },
+      "topology": {
+        "title": "网络拓扑",
+        "subtitle": "绿色表示可通过, 红色表示被策略阻断",
+        "allow": "允许",
+        "deny": "阻断",
+        "empty": "暂无容器节点, 请先添加容器和网络 IP。",
+        "noIp": "未配置 IP",
+        "crossNetwork": "跨网络",
+        "reasons": {
+          "allowed": "允许通过",
+          "outboundBlocked": "出站未放行目标 IP",
+          "inboundBlocked": "入站未放行来源 IP"
+        }
+      },
       "composeGuide": {
         "modes": {
           "raw": "编辑模式",
