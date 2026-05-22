@@ -146,7 +146,12 @@ const appendYamlList = (lines, values, indent) => {
 };
 
 const yamlLineValues = (value) =>
-  (Array.isArray(value) ? value : String(value || '').replace(/\r\n/g, '\n').split('\n'))
+  (Array.isArray(value)
+    ? value
+    : String(value || '')
+        .replace(/\r\n/g, '\n')
+        .split('\n')
+  )
     .map((item) => item.trim())
     .filter(Boolean);
 
@@ -407,7 +412,12 @@ const appendCloudConfigLineValue = (target, field, value) => {
     target[field] = [...target[field], stripYamlValue(value)];
     return;
   }
-  target[field] = [...String(target[field] || '').split('\n').filter(Boolean), stripYamlValue(value)].join('\n');
+  target[field] = [
+    ...String(target[field] || '')
+      .split('\n')
+      .filter(Boolean),
+    stripYamlValue(value),
+  ].join('\n');
 };
 
 const userFieldMap = {
@@ -1312,7 +1322,10 @@ function AdminChallengeModal({
           ...userData,
           [field]: userData[field].map((item, currentIndex) =>
             currentIndex === itemIndex
-              ? { ...item, [listField]: item[listField].filter((_, currentValueIndex) => currentValueIndex !== valueIndex) }
+              ? {
+                  ...item,
+                  [listField]: item[listField].filter((_, currentValueIndex) => currentValueIndex !== valueIndex),
+                }
               : item
           ),
         },
@@ -1387,7 +1400,10 @@ function AdminChallengeModal({
     const services = guideConfig.services.map((service, index) => {
       if (index !== serviceIndex) return service;
       const userData = { ...createGuideCloudConfig(), ...service.userData };
-      return { ...service, userData: { ...userData, writeFiles: userData.writeFiles.filter((_, i) => i !== fileIndex) } };
+      return {
+        ...service,
+        userData: { ...userData, writeFiles: userData.writeFiles.filter((_, i) => i !== fileIndex) },
+      };
     });
     syncGuideConfig({ ...guideConfig, services });
   };
@@ -1561,6 +1577,13 @@ function AdminChallengeModal({
   const selectClass = 'select-custom select-custom-md';
   const textareaClass =
     'w-full h-20 bg-black/20 border border-neutral-300/30 rounded-md px-4 py-2 text-neutral-50 focus:outline-none focus:border-geek-400 resize-none';
+  const isEditMode = mode === 'edit';
+  const modalClass = isEditMode
+    ? 'w-[min(96vw,1800px)] h-[min(86vh,980px)] bg-neutral-900 border border-neutral-300 rounded-md overflow-hidden flex flex-col'
+    : 'w-full max-w-7xl bg-neutral-900 border border-neutral-300 rounded-md overflow-hidden';
+  const contentClass = isEditMode
+    ? 'flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-4 lg:p-5 [&_*]:min-w-0'
+    : 'p-6 max-h-[70vh] overflow-y-auto';
 
   const renderCloudConfigList = (service, serviceIndex, field, label, placeholder) => (
     <div className="space-y-2">
@@ -1642,16 +1665,18 @@ function AdminChallengeModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    >
       <motion.div
-        className="w-full max-w-7xl bg-neutral-900 border border-neutral-300 rounded-md overflow-hidden"
+        className={modalClass}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.2 }}
       >
         {/* 标题栏 */}
-        <div className="flex justify-between items-center p-4 border-b border-neutral-700">
+        <div className="flex shrink-0 justify-between items-center p-3 sm:p-4 border-b border-neutral-700 bg-neutral-950/50">
           <h2 className="text-xl font-mono text-neutral-50">
             {mode === 'add'
               ? t('admin.challengeModal.title.add')
@@ -1670,7 +1695,7 @@ function AdminChallengeModal({
         </div>
 
         {/* 表单内容 */}
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
+        <div className={contentClass}>
           {mode === 'delete' ? (
             <div className="text-center py-12">
               <div className="mb-8">
@@ -1683,13 +1708,13 @@ function AdminChallengeModal({
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className={isEditMode ? 'space-y-3' : 'space-y-4'}>
               {/* 基本信息 */}
-              <div className="mb-4">
+              <div className={isEditMode ? 'rounded-md border border-neutral-700/70 bg-black/10 p-3' : 'mb-4'}>
                 <h3 className="text-lg font-mono text-neutral-50 mb-3">{t('admin.challengeModal.sections.basic')}</h3>
 
                 <div className="space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3 lg:gap-4">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-mono text-neutral-400 mb-1">
                         {t('admin.challengeModal.labels.name')}
@@ -1756,7 +1781,7 @@ function AdminChallengeModal({
 
               {/* 如果是动态类型题目, 显示输入 generator */}
               {challenge.type === 'dynamic' && (
-                <div className="border-t border-neutral-700 pt-4">
+                <div className="border-t border-neutral-700 pt-3 lg:pt-4">
                   <h3 className="text-lg font-mono text-neutral-50 mb-3">
                     {t('admin.challengeModal.sections.generator')}
                   </h3>
@@ -1783,7 +1808,7 @@ function AdminChallengeModal({
 
               {/* flag 设置 - 非pods类型才显示 */}
               {challenge.type !== 'pods' && (
-                <div className="border-t border-neutral-700 pt-4">
+                <div className="border-t border-neutral-700 pt-3 lg:pt-4">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-lg font-mono text-neutral-50">{t('admin.challengeModal.sections.flags')}</h3>
                     <Button
@@ -1831,7 +1856,7 @@ function AdminChallengeModal({
 
               {/* pods类型的flag说明 */}
               {challenge.type === 'pods' && (
-                <div className="border-t border-neutral-700 pt-4">
+                <div className="border-t border-neutral-700 pt-3 lg:pt-4">
                   <h3 className="text-lg font-mono text-neutral-50 mb-3">
                     {t('admin.challengeModal.sections.podsNotice')}
                   </h3>
@@ -1854,7 +1879,7 @@ function AdminChallengeModal({
 
               {/* 容器设置 */}
               {challenge.type === 'pods' && (
-                <div className="border-t border-neutral-700 pt-4">
+                <div className="border-t border-neutral-700 pt-3 lg:pt-4">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-lg font-mono text-neutral-50">
                       {t('admin.challengeModal.sections.containers')}
@@ -1862,7 +1887,7 @@ function AdminChallengeModal({
                   </div>
 
                   <div className="space-y-6">
-                    <div className="border border-neutral-700 rounded-md p-4 space-y-4">
+                    <div className="border border-neutral-700 rounded-md p-3 lg:p-4 space-y-4 bg-black/10">
                       {/* YAML 配置 */}
                       <div>
                         <div className="flex flex-wrap justify-between items-center gap-3 mb-3">
@@ -2029,7 +2054,10 @@ function AdminChallengeModal({
                                       onAdd={() => addGuideCloudConfigObject(serviceIndex, 'users', createGuideUser())}
                                     />
                                     {(service.userData?.users || []).map((user, userIndex) => (
-                                      <div key={userIndex} className="space-y-2 rounded border border-neutral-700/60 p-3">
+                                      <div
+                                        key={userIndex}
+                                        className="space-y-2 rounded border border-neutral-700/60 p-3"
+                                      >
                                         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_32px] gap-2">
                                           <GuideField label={ct('fields.name')}>
                                             <input
@@ -2037,7 +2065,13 @@ function AdminChallengeModal({
                                               value={user.name}
                                               placeholder={ct('placeholders.name')}
                                               onChange={(e) =>
-                                                updateGuideCloudConfigObject(serviceIndex, 'users', userIndex, 'name', e.target.value)
+                                                updateGuideCloudConfigObject(
+                                                  serviceIndex,
+                                                  'users',
+                                                  userIndex,
+                                                  'name',
+                                                  e.target.value
+                                                )
                                               }
                                             />
                                           </GuideField>
@@ -2047,7 +2081,13 @@ function AdminChallengeModal({
                                               value={user.gecos}
                                               placeholder={ct('placeholders.gecos')}
                                               onChange={(e) =>
-                                                updateGuideCloudConfigObject(serviceIndex, 'users', userIndex, 'gecos', e.target.value)
+                                                updateGuideCloudConfigObject(
+                                                  serviceIndex,
+                                                  'users',
+                                                  userIndex,
+                                                  'gecos',
+                                                  e.target.value
+                                                )
                                               }
                                             />
                                           </GuideField>
@@ -2057,11 +2097,21 @@ function AdminChallengeModal({
                                               value={user.shell}
                                               placeholder={ct('placeholders.shell')}
                                               onChange={(e) =>
-                                                updateGuideCloudConfigObject(serviceIndex, 'users', userIndex, 'shell', e.target.value)
+                                                updateGuideCloudConfigObject(
+                                                  serviceIndex,
+                                                  'users',
+                                                  userIndex,
+                                                  'shell',
+                                                  e.target.value
+                                                )
                                               }
                                             />
                                           </GuideField>
-                                          <IconButton onClick={() => removeGuideCloudConfigObject(serviceIndex, 'users', userIndex)} />
+                                          <IconButton
+                                            onClick={() =>
+                                              removeGuideCloudConfigObject(serviceIndex, 'users', userIndex)
+                                            }
+                                          />
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                           <GuideField label={ct('fields.homeDir')}>
@@ -2070,7 +2120,13 @@ function AdminChallengeModal({
                                               value={user.homedir}
                                               placeholder={ct('placeholders.homeDir')}
                                               onChange={(e) =>
-                                                updateGuideCloudConfigObject(serviceIndex, 'users', userIndex, 'homedir', e.target.value)
+                                                updateGuideCloudConfigObject(
+                                                  serviceIndex,
+                                                  'users',
+                                                  userIndex,
+                                                  'homedir',
+                                                  e.target.value
+                                                )
                                               }
                                             />
                                           </GuideField>
@@ -2080,7 +2136,13 @@ function AdminChallengeModal({
                                               value={user.passwd}
                                               placeholder={ct('placeholders.passwd')}
                                               onChange={(e) =>
-                                                updateGuideCloudConfigObject(serviceIndex, 'users', userIndex, 'passwd', e.target.value)
+                                                updateGuideCloudConfigObject(
+                                                  serviceIndex,
+                                                  'users',
+                                                  userIndex,
+                                                  'passwd',
+                                                  e.target.value
+                                                )
                                               }
                                             />
                                           </GuideField>
@@ -2192,10 +2254,15 @@ function AdminChallengeModal({
                                     <GuideListHeader
                                       title={ct('sections.groups')}
                                       addLabel={ct('actions.add')}
-                                      onAdd={() => addGuideCloudConfigObject(serviceIndex, 'groups', createGuideGroup())}
+                                      onAdd={() =>
+                                        addGuideCloudConfigObject(serviceIndex, 'groups', createGuideGroup())
+                                      }
                                     />
                                     {(service.userData?.groups || []).map((group, groupIndex) => (
-                                      <div key={groupIndex} className="space-y-2 rounded border border-neutral-700/60 p-3">
+                                      <div
+                                        key={groupIndex}
+                                        className="space-y-2 rounded border border-neutral-700/60 p-3"
+                                      >
                                         <div className="grid grid-cols-[1fr_32px] gap-2">
                                           <GuideField label={ct('fields.name')}>
                                             <input
@@ -2213,7 +2280,11 @@ function AdminChallengeModal({
                                               }
                                             />
                                           </GuideField>
-                                          <IconButton onClick={() => removeGuideCloudConfigObject(serviceIndex, 'groups', groupIndex)} />
+                                          <IconButton
+                                            onClick={() =>
+                                              removeGuideCloudConfigObject(serviceIndex, 'groups', groupIndex)
+                                            }
+                                          />
                                         </div>
                                         {renderCloudConfigNestedList(
                                           serviceIndex,
@@ -2245,14 +2316,19 @@ function AdminChallengeModal({
                                       onAdd={() => addGuideWriteFile(serviceIndex)}
                                     />
                                     {(service.userData?.writeFiles || []).map((file, fileIndex) => (
-                                      <div key={fileIndex} className="space-y-2 rounded border border-neutral-700/60 p-3">
+                                      <div
+                                        key={fileIndex}
+                                        className="space-y-2 rounded border border-neutral-700/60 p-3"
+                                      >
                                         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_32px] gap-2">
                                           <GuideField label={ct('fields.path')}>
                                             <input
                                               className={inputBaseClass}
                                               value={file.path}
                                               placeholder={ct('placeholders.path')}
-                                              onChange={(e) => updateGuideWriteFile(serviceIndex, fileIndex, 'path', e.target.value)}
+                                              onChange={(e) =>
+                                                updateGuideWriteFile(serviceIndex, fileIndex, 'path', e.target.value)
+                                              }
                                             />
                                           </GuideField>
                                           <GuideField label={ct('fields.owner')}>
@@ -2260,7 +2336,9 @@ function AdminChallengeModal({
                                               className={inputBaseClass}
                                               value={file.owner}
                                               placeholder={ct('placeholders.owner')}
-                                              onChange={(e) => updateGuideWriteFile(serviceIndex, fileIndex, 'owner', e.target.value)}
+                                              onChange={(e) =>
+                                                updateGuideWriteFile(serviceIndex, fileIndex, 'owner', e.target.value)
+                                              }
                                             />
                                           </GuideField>
                                           <GuideField label={ct('fields.permissions')}>
@@ -2269,7 +2347,12 @@ function AdminChallengeModal({
                                               value={file.permissions}
                                               placeholder={ct('placeholders.permissions')}
                                               onChange={(e) =>
-                                                updateGuideWriteFile(serviceIndex, fileIndex, 'permissions', e.target.value)
+                                                updateGuideWriteFile(
+                                                  serviceIndex,
+                                                  fileIndex,
+                                                  'permissions',
+                                                  e.target.value
+                                                )
                                               }
                                             />
                                           </GuideField>
@@ -2282,7 +2365,12 @@ function AdminChallengeModal({
                                               value={file.encoding}
                                               placeholder={ct('placeholders.encoding')}
                                               onChange={(e) =>
-                                                updateGuideWriteFile(serviceIndex, fileIndex, 'encoding', e.target.value)
+                                                updateGuideWriteFile(
+                                                  serviceIndex,
+                                                  fileIndex,
+                                                  'encoding',
+                                                  e.target.value
+                                                )
                                               }
                                             />
                                           </GuideField>
@@ -2291,7 +2379,12 @@ function AdminChallengeModal({
                                               className={selectClass}
                                               value={file.append ? 'true' : 'false'}
                                               onChange={(e) =>
-                                                updateGuideWriteFile(serviceIndex, fileIndex, 'append', e.target.value === 'true')
+                                                updateGuideWriteFile(
+                                                  serviceIndex,
+                                                  fileIndex,
+                                                  'append',
+                                                  e.target.value === 'true'
+                                                )
                                               }
                                             >
                                               <option value="false">false</option>
@@ -2303,7 +2396,12 @@ function AdminChallengeModal({
                                               className={selectClass}
                                               value={file.defer ? 'true' : 'false'}
                                               onChange={(e) =>
-                                                updateGuideWriteFile(serviceIndex, fileIndex, 'defer', e.target.value === 'true')
+                                                updateGuideWriteFile(
+                                                  serviceIndex,
+                                                  fileIndex,
+                                                  'defer',
+                                                  e.target.value === 'true'
+                                                )
                                               }
                                             >
                                               <option value="false">false</option>
@@ -3005,7 +3103,7 @@ function AdminChallengeModal({
         </div>
 
         {/* 底部按钮 */}
-        <div className="flex justify-end gap-4 p-4 border-t border-neutral-700">
+        <div className="flex shrink-0 justify-end gap-3 sm:gap-4 p-3 sm:p-4 border-t border-neutral-700 bg-neutral-950/50">
           <Button variant="ghost" size="sm" onClick={onClose}>
             {t('common.cancel')}
           </Button>
