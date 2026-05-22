@@ -114,6 +114,103 @@ const getGuideServiceTargets = (config) =>
 
 const hasVpcNetworks = (config) => (config.networks || []).some((network) => network.name.trim());
 
+const ipToNumber = (ip) => {
+  const parts = String(ip || '')
+    .trim()
+    .split('.')
+    .map((part) => Number(part));
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return null;
+  return parts.reduce((value, part) => value * 256 + part, 0);
+};
+
+const cidrContainsIp = (cidr, ip) => {
+  const [baseIp, prefixText = '32'] = String(cidr || '').trim().split('/');
+  const base = ipToNumber(baseIp);
+  const target = ipToNumber(ip);
+  const prefix = Number(prefixText);
+  if (base === null || target === null || !Number.isInteger(prefix) || prefix < 0 || prefix > 32) return false;
+  if (prefix === 0) return true;
+  const mask = (0xffffffff << (32 - prefix)) >>> 0;
+  return (base & mask) === (target & mask);
+};
+
+const getPolicyBlocks = (blocks = []) =>
+  blocks
+    .map((block) => ({
+      cidr: String(block?.cidr || block?.CIDR || '').trim(),
+      except: block?.except || block?.Except || [],
+    }))
+    .filter((block) => block.cidr);
+
+const blockAllowsIp = (block, ip) => {
+  if (!cidrContainsIp(block.cidr, ip)) return false;
+  return !(block.except || []).some((exceptCidr) => cidrContainsIp(exceptCidr, ip));
+};
+
+const blocksAllowAnyIp = (blocks, ips) =>
+  ips.some((ip) => blocks.some((block) => blockAllowsIp(block, ip)));
+
+const buildNetworkTopology = (config, policies = []) => {
+  const services = config.services || [];
+  const nodes = services.map((service, index) => {
+    const name = service.containerName.trim() || service.name.trim() || `service${index + 1}`;
+    return {
+      id: name,
+      label: name,
+      image: service.image,
+      networks: (service.networks || [])
+        .filter((network) => network.name || network.ipv4Address)
+        .map((network) => ({
+          name: network.name || 'default',
+          ip: network.ipv4Address || '-',
+        })),
+    };
+  });
+
+  const positionedNodes = nodes.map((node, index) => {
+    if (nodes.length === 1) return { ...node, x: 50, y: 50 };
+    const angle = (Math.PI * 2 * index) / nodes.length - Math.PI / 2;
+    return {
+      ...node,
+      x: 50 + Math.cos(angle) * 34,
+      y: 50 + Math.sin(angle) * 34,
+    };
+  });
+
+  const policyByService = new Map(policies.map((policy) => [policy.service, policy]));
+  const getNodeIps = (node) => node.networks.map((network) => network.ip).filter((ip) => ipToNumber(ip) !== null);
+  const connections = [];
+
+  positionedNodes.forEach((source) => {
+    positionedNodes.forEach((target) => {
+      if (source.id === target.id) return;
+
+      const sourcePolicy = policyByService.get(source.id);
+      const targetPolicy = policyByService.get(target.id);
+      const targetIps = getNodeIps(target);
+      const sourceIps = getNodeIps(source);
+      const toBlocks = getPolicyBlocks(sourcePolicy?.to);
+      const fromBlocks = getPolicyBlocks(targetPolicy?.from);
+      const outboundAllowed = targetIps.length > 0 && blocksAllowAnyIp(toBlocks, targetIps);
+      const inboundAllowed = fromBlocks.length === 0 || blocksAllowAnyIp(fromBlocks, sourceIps);
+      const sharedNetworks = source.networks
+        .map((network) => network.name)
+        .filter((name) => target.networks.some((network) => network.name === name));
+
+      connections.push({
+        id: `${source.id}->${target.id}`,
+        source,
+        target,
+        allowed: outboundAllowed && inboundAllowed,
+        reasonKey: !outboundAllowed ? 'outboundBlocked' : !inboundAllowed ? 'inboundBlocked' : 'allowed',
+        networks: sharedNetworks.length ? sharedNetworks : [],
+      });
+    });
+  });
+
+  return { nodes: positionedNodes, connections };
+};
+
 const normalizeGuideConfigForMode = (config) => {
   if (hasVpcNetworks(config)) return config;
 
@@ -1109,6 +1206,125 @@ function GuideErrors({ errors }) {
   );
 }
 
+function NetworkTopologyPreview({ topology, t }) {
+  if (topology.nodes.length === 0) {
+    return (
+      <div className="rounded-md border border-neutral-700 bg-black/20 p-4 text-center font-mono text-sm text-neutral-500">
+        {t('admin.challengeModal.topology.empty')}
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-md border border-neutral-700 bg-black/20 p-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-mono text-neutral-100">{t('admin.challengeModal.topology.title')}</div>
+          <div className="text-xs font-mono text-neutral-500">{t('admin.challengeModal.topology.subtitle')}</div>
+        </div>
+        <div className="flex items-center gap-3 text-xs font-mono text-neutral-400">
+          <span className="inline-flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-geek-400" /> {t('admin.challengeModal.topology.allow')}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-red-400" /> {t('admin.challengeModal.topology.deny')}
+          </span>
+        </div>
+      </div>
+
+      <div className="relative h-[420px] overflow-hidden rounded-md border border-neutral-800 bg-black/20">
+        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <marker id="topology-arrow-allow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#22c55e" />
+            </marker>
+            <marker id="topology-arrow-deny" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#f87171" />
+            </marker>
+          </defs>
+          {topology.connections.map((connection, index) => {
+            const offset = (index % 2 === 0 ? 1 : -1) * 2.5;
+            const midX = (connection.source.x + connection.target.x) / 2 + offset;
+            const midY = (connection.source.y + connection.target.y) / 2 - offset;
+            return (
+              <path
+                key={connection.id}
+                d={`M ${connection.source.x} ${connection.source.y} Q ${midX} ${midY} ${connection.target.x} ${connection.target.y}`}
+                fill="none"
+                stroke={connection.allowed ? '#22c55e' : '#f87171'}
+                strokeWidth="0.35"
+                strokeDasharray={connection.allowed ? 'none' : '1.2 1.2'}
+                markerEnd={`url(#${connection.allowed ? 'topology-arrow-allow' : 'topology-arrow-deny'})`}
+                opacity={connection.allowed ? 0.75 : 0.55}
+              />
+            );
+          })}
+        </svg>
+
+        {topology.nodes.map((node) => (
+          <div
+            key={node.id}
+            className="absolute w-40 -translate-x-1/2 -translate-y-1/2 rounded-md border border-neutral-700 bg-neutral-950/95 p-2"
+            style={{ left: `${node.x}%`, top: `${node.y}%` }}
+          >
+            <div className="truncate text-sm font-mono text-neutral-50" title={node.label}>
+              {node.label}
+            </div>
+            {node.image ? (
+              <div className="mt-0.5 truncate text-[10px] font-mono text-neutral-500" title={node.image}>
+                {node.image}
+              </div>
+            ) : null}
+            <div className="mt-2 space-y-1">
+              {node.networks.length > 0 ? (
+                node.networks.map((network, index) => (
+                  <div key={`${network.name}-${index}`} className="rounded border border-neutral-700 bg-black/40 px-1.5 py-1">
+                    <div className="truncate text-[10px] font-mono text-neutral-500" title={network.name}>
+                      {network.name}
+                    </div>
+                    <div className="truncate text-xs font-mono text-geek-300" title={network.ip}>
+                      {network.ip}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs font-mono text-neutral-500">{t('admin.challengeModal.topology.noIp')}</div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 max-h-52 space-y-2 overflow-y-auto pr-1">
+        {topology.connections.map((connection) => (
+          <div
+            key={connection.id}
+            className={`rounded border px-2 py-1.5 font-mono text-xs ${
+              connection.allowed
+                ? 'border-geek-400/25 bg-geek-400/10 text-geek-200'
+                : 'border-red-400/25 bg-red-400/10 text-red-200'
+            }`}
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-neutral-200">{connection.source.label}</span>
+              <span>{connection.allowed ? '->' : '-/->'}</span>
+              <span className="text-neutral-200">{connection.target.label}</span>
+              <span className="text-neutral-500">
+                {connection.networks.length
+                  ? connection.networks.join(', ')
+                  : t('admin.challengeModal.topology.crossNetwork')}
+              </span>
+            </div>
+            <div className="mt-1 text-neutral-400">
+              {t(`admin.challengeModal.topology.reasons.${connection.reasonKey}`)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AdminChallengeModal({
   isOpen = false,
   mode = 'add',
@@ -1157,6 +1373,7 @@ function AdminChallengeModal({
   const rawValidation = validateRawCompose(challenge.docker_compose || emptyComposeYaml, t);
   const vpcMode = hasVpcNetworks(guideConfig);
   const policyTargets = getGuideServiceTargets(guideConfig);
+  const networkTopology = buildNetworkTopology(guideConfig, challenge.network_policies || []);
 
   const syncGuideConfig = (nextConfig) => {
     const normalizedConfig = normalizeGuideConfigForMode(nextConfig);
@@ -2861,9 +3078,10 @@ function AdminChallengeModal({
                           </Button>
                         </div>
 
-                        <div className="space-y-4">
-                          {(challenge.network_policies || []).map((policy, policyIndex) => (
-                            <div key={policyIndex} className="border border-neutral-700 rounded-md p-3 bg-black/20">
+                        <div className="grid grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.95fr)] gap-4 items-start">
+                          <div className="space-y-4">
+                            {(challenge.network_policies || []).map((policy, policyIndex) => (
+                              <div key={policyIndex} className="border border-neutral-700 rounded-md p-3 bg-black/20">
                               <div className="flex justify-between items-center mb-3">
                                 <h5 className="text-sm font-mono text-neutral-200">
                                   {t('admin.challengeModal.labels.policy', {
@@ -3090,8 +3308,12 @@ function AdminChallengeModal({
                                   ))}
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="2xl:sticky 2xl:top-0">
+                            <NetworkTopologyPreview topology={networkTopology} t={t} />
+                          </div>
                         </div>
                       </div>
                     </div>
