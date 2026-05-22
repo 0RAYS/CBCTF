@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">题目类型 | CBCTF Docs</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://cbctf.0rays.club/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://cbctf.0rays.club/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://cbctf.0rays.club/docs/features/challenge"><meta data-rh="true" property="og:locale" content="zh_Hans"><meta data-rh="true" name="docusaurus_locale" content="zh-Hans"><meta data-rh="true" name="docsearch:language" content="zh-Hans"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="题目类型 | CBCTF Docs"><meta data-rh="true" name="description" content="CBCTF 支持三种题目类型, 覆盖从传统静态题到复杂网络靶机的完整场景。"><meta data-rh="true" property="og:description" content="CBCTF 支持三种题目类型, 覆盖从传统静态题到复杂网络靶机的完整场景。"><link data-rh="true" rel="icon" href="/img/0RAYS.png"><link data-rh="true" rel="canonical" href="https://cbctf.0rays.club/docs/features/challenge"><link data-rh="true" rel="alternate" href="https://cbctf.0rays.club/docs/features/challenge" hreflang="zh-Hans"><link data-rh="true" rel="alternate" href="https://cbctf.0rays.club/docs/features/challenge" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"题目类型","item":"https://cbctf.0rays.club/docs/features/challenge"}]}</script><link rel="stylesheet" href="/assets/css/styles.cbb51270.css">
-<script src="/assets/js/runtime~main.c87d7940.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.500755ac.js" defer="defer"></script>
 <script src="/assets/js/main.828d2876.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -19,7 +19,7 @@
 <p>静态题为最简单的 CTF 传统题型, 题目附件和 flag 对所有队伍相同。</p>
 <ul>
 <li class="">上传静态附件（zip 格式）, 所有队伍共享下载</li>
-<li class="">flag 使用 <code>static{}</code> 类型（所有队伍相同）, 也支持 <code>dynamic{}</code> 和 <code>uuid{}</code>（每队不同, 但无法通过附件向选手传达个人 flag）</li>
+<li class="">flag 使用 <code>static{}</code> 类型（所有队伍相同）, 也支持 <code>leet{}</code> 和 <code>uuid{}</code>（每队不同, 但无法通过附件向选手传达个人 flag）</li>
 <li class="">不需要 Kubernetes</li>
 </ul>
 <p><img decoding="async" loading="lazy" alt="static.png" src="/assets/images/static-1e867344504698b1c7c04b02c3650ac0.png" width="1236" height="632" class="img_ouL4"></p>
@@ -28,7 +28,7 @@
 <ul>
 <li class="">需要出题人编写生成器 Docker 镜像, 平台在 Kubernetes 中运行生成器容器</li>
 <li class="">附件按队伍独立生成, 每支队伍下载不同的 zip</li>
-<li class="">flag 类型支持 <code>static{}</code>、<code>dynamic{}</code>、<code>uuid{}</code></li>
+<li class="">flag 类型支持 <code>static{}</code>、<code>leet{}</code>、<code>uuid{}</code></li>
 <li class="">需要 Kubernetes 集群</li>
 </ul>
 <p>详见 <a class="" href="/docs/features/attachment">动态附件生成</a>。</p>
