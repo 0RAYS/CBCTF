@@ -33,37 +33,37 @@ type XBoot struct {
 }
 
 type XCloudInit struct {
-	Users             []CloudInitUser      `yaml:"users" json:"users"`
-	Groups            []CloudInitGroup     `yaml:"groups" json:"groups"`
-	WriteFiles        []CloudInitWriteFile `yaml:"write_files" json:"write_files"`
-	SSHAuthorizedKeys []string             `yaml:"ssh_authorized_keys" json:"ssh_authorized_keys"`
+	Users             []CloudInitUser      `yaml:"users,omitempty" json:"users"`
+	Groups            []CloudInitGroup     `yaml:"groups,omitempty" json:"groups"`
+	WriteFiles        []CloudInitWriteFile `yaml:"write_files,omitempty" json:"write_files"`
+	SSHAuthorizedKeys []string             `yaml:"ssh_authorized_keys,omitempty" json:"ssh_authorized_keys"`
 }
 
 type CloudInitConfig struct {
-	Users             []CloudInitUser      `yaml:"users" json:"users"`
-	Groups            []CloudInitGroup     `yaml:"groups" json:"groups"`
-	WriteFiles        []CloudInitWriteFile `yaml:"write_files" json:"write_files"`
-	SSHAuthorizedKeys []string             `yaml:"ssh_authorized_keys" json:"ssh_authorized_keys"`
+	Users             []CloudInitUser      `yaml:"users,omitempty" json:"users"`
+	Groups            []CloudInitGroup     `yaml:"groups,omitempty" json:"groups"`
+	WriteFiles        []CloudInitWriteFile `yaml:"write_files,omitempty" json:"write_files"`
+	SSHAuthorizedKeys []string             `yaml:"ssh_authorized_keys,omitempty" json:"ssh_authorized_keys"`
 }
 
 type CloudInitUser struct {
 	Name              string   `yaml:"name" json:"name"`
 	Gecos             string   `yaml:"gecos" json:"gecos"`
-	Groups            []string `yaml:"groups" json:"groups"`
-	Sudo              []string `yaml:"sudo" json:"sudo"`
+	Groups            []string `yaml:"groups,omitempty" json:"groups"`
+	Sudo              []string `yaml:"sudo,omitempty" json:"sudo"`
 	Shell             string   `yaml:"shell" json:"shell"`
 	HomeDir           string   `yaml:"homedir" json:"homedir"`
 	LockPasswd        bool     `yaml:"lock_passwd" json:"lock_passwd"`
 	Passwd            string   `yaml:"passwd" json:"passwd"`
 	PlainTextPasswd   string   `yaml:"plain_text_passwd" json:"plain_text_passwd"`
-	SSHAuthorizedKeys []string `yaml:"ssh_authorized_keys" json:"ssh_authorized_keys"`
+	SSHAuthorizedKeys []string `yaml:"ssh_authorized_keys,omitempty" json:"ssh_authorized_keys"`
 	NoCreateHome      bool     `yaml:"no_create_home" json:"no_create_home"`
 	System            bool     `yaml:"system" json:"system"`
 }
 
 type CloudInitGroup struct {
 	Name    string   `yaml:"name" json:"name"`
-	Members []string `yaml:"members" json:"members"`
+	Members []string `yaml:"members,omitempty" json:"members"`
 }
 
 func (x XCloudInit) CloudConfig() CloudInitConfig {
