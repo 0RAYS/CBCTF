@@ -136,6 +136,8 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			value := flag.Value
 			if injected, ok := flagValues[flag.ID]; ok {
 				value = injected
+			} else if !victim.TeamID.Valid {
+				value = renderChallengeFlagValue(flag.Value)
 			}
 			switch flag.Binding.Type {
 			case model.EnvFlagBindingType:

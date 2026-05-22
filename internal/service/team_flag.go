@@ -67,6 +67,19 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 	return model.SuccessRetVal()
 }
 
+func renderChallengeFlagValue(value string) string {
+	if result := model.StaticFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
+		return result[0][1]
+	}
+	if result := model.DynamicFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
+		return utils.RandFlag(result[0][1])
+	}
+	if result := model.UUIDFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
+		return utils.UUID()
+	}
+	return value
+}
+
 // CreateTeamFlag model.ContestChallenge Preload model.ContestFlag
 func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) ([]model.TeamFlag, model.RetVal) {
 	teamFlagRepo := db.InitTeamFlagRepo(tx)
@@ -85,15 +98,7 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 			ChallengeFlagID: contestFlag.ChallengeFlagID,
 			Solved:          false,
 		}
-		if result := model.StaticFlagTmpl.FindAllStringSubmatch(contestFlag.Value, 1); len(result) > 0 {
-			options.Value = result[0][1]
-		} else if result = model.DynamicFlagTmpl.FindAllStringSubmatch(contestFlag.Value, 1); len(result) > 0 {
-			options.Value = utils.RandFlag(result[0][1])
-		} else if result = model.UUIDFlagTmpl.FindAllStringSubmatch(contestFlag.Value, 1); len(result) > 0 {
-			options.Value = utils.UUID()
-		} else {
-			options.Value = contestFlag.Value
-		}
+		options.Value = renderChallengeFlagValue(contestFlag.Value)
 		if prefix := contest.Prefix; prefix != "" {
 			options.Value = fmt.Sprintf("%s{%s}", contest.Prefix, options.Value)
 		}
