@@ -5,7 +5,7 @@ import "regexp"
 var (
 	StaticFlagTmpl  = regexp.MustCompile(`static\{(.*?)}`)
 	UUIDFlagTmpl    = regexp.MustCompile(`uuid\{(.*?)}`)
-	DynamicFlagTmpl = regexp.MustCompile(`dynamic\{(.*?)}`)
+	DynamicFlagTmpl = regexp.MustCompile(`leet\{(.*?)}`)
 )
 
 // ChallengeFlag 题库中挑战的 flag 定义

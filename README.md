@@ -136,7 +136,7 @@ CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
 | 类型        | 格式              | 说明             |
 |-----------|-----------------|----------------|
 | 静态 Flag   | `static{固定内容}`  | 每次生成的 Flag 均相等 |
-| 动态 Flag   | `dynamic{随机内容}` | 基于模板随机变化, 保持可读性 |
+| 动态 Flag   | `leet{随机内容}` | 基于模板随机变化, 保持可读性 |
 | UUID Flag | `uuid{}`        | 标准 UUID 格式     |
 
 动态容器支持将 Flag 注入至环境变量或作为文件挂载至指定路径。

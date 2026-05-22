@@ -1863,7 +1863,7 @@ function AdminChallengeModal({
 
   const podNoticeLines = [
     t('admin.challengeModal.podsNotice.flagFormat', {
-      format: '`static{}`, `dynamic{}`, `uuid{}`',
+      format: '`static{}`, `leet{}`, `uuid{}`',
     }),
     t('admin.challengeModal.podsNotice.flagPrefix'),
     t('admin.challengeModal.podsNotice.flagVolume'),
@@ -1880,7 +1880,7 @@ function AdminChallengeModal({
 
   const yamlNoticeLines = [
     t('admin.challengeModal.yamlNotice.flagFormat', {
-      format: '`static{}`, `dynamic{}`, `uuid{}`',
+      format: '`static{}`, `leet{}`, `uuid{}`',
     }),
     t('admin.challengeModal.yamlNotice.flagPrefix'),
     t('admin.challengeModal.yamlNotice.flagVolume'),
@@ -2053,7 +2053,7 @@ function AdminChallengeModal({
                   </div>
                   <div className="space-y-3">
                     <label className="block text-sm font-mono text-neutral-400 mb-1">
-                      {challenge.type === 'static' ? 'static{}' : 'dynamic{} / uuid{}'}
+                      {challenge.type === 'static' ? 'static{}' : 'leet{} / uuid{}'}
                     </label>
                     {challenge.flags.map((flag, index) => (
                       <div key={index} className="flex gap-2 items-center">
