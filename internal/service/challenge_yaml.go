@@ -80,11 +80,16 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 					SecureBoot: container.SecureBoot,
 				}
 			}
-			if container.UserData != "" {
+			if !container.UserData.Empty() {
 				if service.Extensions == nil {
 					service.Extensions = make(types.Extensions)
 				}
-				service.Extensions[model.XCloudInitExtension] = model.XCloudInit{UserData: container.UserData}
+				service.Extensions[model.XCloudInitExtension] = model.XCloudInit{
+					Users:             container.UserData.Users,
+					Groups:            container.UserData.Groups,
+					WriteFiles:        container.UserData.WriteFiles,
+					SSHAuthorizedKeys: container.UserData.SSHAuthorizedKeys,
+				}
 			}
 			if len(pod.Networks) > 0 {
 				service.Networks = make(map[string]*types.ServiceNetworkConfig)

@@ -6,6 +6,43 @@ import { useTranslation } from 'react-i18next';
 
 const Editor = lazy(() => import('../../../lib/monacoSetup').then(() => import('@monaco-editor/react')));
 
+const createGuideWriteFile = () => ({
+  path: '',
+  content: '',
+  owner: '',
+  permissions: '',
+  encoding: '',
+  append: false,
+  defer: false,
+});
+
+const createGuideUser = () => ({
+  name: '',
+  gecos: '',
+  groups: [],
+  sudo: [],
+  shell: '',
+  homedir: '',
+  lockPasswd: false,
+  passwd: '',
+  plainTextPasswd: '',
+  sshAuthorizedKeys: [],
+  noCreateHome: false,
+  system: false,
+});
+
+const createGuideGroup = () => ({
+  name: '',
+  members: [],
+});
+
+const createGuideCloudConfig = () => ({
+  users: [],
+  groups: [],
+  writeFiles: [],
+  sshAuthorizedKeys: [],
+});
+
 /**
  * 题目管理弹窗组件
  * @param {boolean} props.isOpen - 是否显示弹窗
@@ -31,7 +68,7 @@ const createGuideService = () => ({
   kubeVirt: false,
   bootloader: '',
   secureBoot: false,
-  userData: '',
+  userData: createGuideCloudConfig(),
   ports: [],
   environment: [],
   volumes: [],
@@ -108,6 +145,132 @@ const appendYamlList = (lines, values, indent) => {
     .forEach((value) => lines.push(`${indent}- ${yamlQuote(value)}`));
 };
 
+const yamlLineValues = (value) =>
+  (Array.isArray(value) ? value : String(value || '').replace(/\r\n/g, '\n').split('\n'))
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const appendYamlStringListField = (lines, key, value, indent) => {
+  const values = yamlLineValues(value);
+  if (values.length === 0) return;
+  lines.push(`${indent}${key}:`);
+  appendYamlList(lines, values, `${indent}  `);
+};
+
+const hasGuideUser = (user) =>
+  user.name.trim() ||
+  user.gecos.trim() ||
+  yamlLineValues(user.groups).length > 0 ||
+  yamlLineValues(user.sudo).length > 0 ||
+  user.shell.trim() ||
+  user.homedir.trim() ||
+  user.lockPasswd ||
+  user.passwd.trim() ||
+  user.plainTextPasswd.trim() ||
+  yamlLineValues(user.sshAuthorizedKeys).length > 0 ||
+  user.noCreateHome ||
+  user.system;
+
+const hasGuideGroup = (group) => group.name.trim() || yamlLineValues(group.members).length > 0;
+
+const isGuideCloudConfigEmpty = (cloudConfig = {}) =>
+  !(cloudConfig.users || []).some(hasGuideUser) &&
+  !(cloudConfig.groups || []).some(hasGuideGroup) &&
+  !(cloudConfig.writeFiles || []).some(
+    (file) =>
+      file.path.trim() ||
+      file.content.trim() ||
+      file.owner.trim() ||
+      file.permissions.trim() ||
+      file.encoding.trim() ||
+      file.append ||
+      file.defer
+  ) &&
+  yamlLineValues(cloudConfig.sshAuthorizedKeys).length === 0;
+
+const appendUserStringField = (lines, key, value) => {
+  if (String(value || '').trim()) lines.push(`          ${key}: ${yamlQuote(String(value).trim())}`);
+};
+
+const appendUserStringListField = (lines, key, value) => {
+  const values = yamlLineValues(value);
+  if (values.length === 0) return;
+  lines.push(`          ${key}:`);
+  appendYamlList(lines, values, '            ');
+};
+
+const appendUsers = (lines, users = []) => {
+  const values = users.filter(hasGuideUser);
+  if (values.length === 0) return;
+  lines.push('      users:');
+  values.forEach((user) => {
+    lines.push(`        - name: ${yamlQuote(user.name.trim())}`);
+    appendUserStringField(lines, 'gecos', user.gecos);
+    appendUserStringListField(lines, 'groups', user.groups);
+    appendUserStringListField(lines, 'sudo', user.sudo);
+    appendUserStringField(lines, 'shell', user.shell);
+    appendUserStringField(lines, 'homedir', user.homedir);
+    lines.push(`          lock_passwd: ${user.lockPasswd ? 'true' : 'false'}`);
+    appendUserStringField(lines, 'passwd', user.passwd);
+    appendUserStringField(lines, 'plain_text_passwd', user.plainTextPasswd);
+    appendUserStringListField(lines, 'ssh_authorized_keys', user.sshAuthorizedKeys);
+    lines.push(`          no_create_home: ${user.noCreateHome ? 'true' : 'false'}`);
+    lines.push(`          system: ${user.system ? 'true' : 'false'}`);
+  });
+};
+
+const appendGroups = (lines, groups = []) => {
+  const values = groups.filter(hasGuideGroup);
+  if (values.length === 0) return;
+  lines.push('      groups:');
+  values.forEach((group) => {
+    lines.push(`        - name: ${yamlQuote(group.name.trim())}`);
+    const members = yamlLineValues(group.members);
+    if (members.length > 0) {
+      lines.push('          members:');
+      appendYamlList(lines, members, '            ');
+    }
+  });
+};
+
+const appendGuideCloudConfig = (lines, cloudConfig) => {
+  if (isGuideCloudConfigEmpty(cloudConfig)) return;
+  lines.push('    x-cloudinit:');
+  appendUsers(lines, cloudConfig.users);
+  appendGroups(lines, cloudConfig.groups);
+
+  const writeFiles = (cloudConfig.writeFiles || []).filter(
+    (file) =>
+      file.path.trim() ||
+      file.content.trim() ||
+      file.owner.trim() ||
+      file.permissions.trim() ||
+      file.encoding.trim() ||
+      file.append ||
+      file.defer
+  );
+  if (writeFiles.length > 0) {
+    lines.push('      write_files:');
+    writeFiles.forEach((file) => {
+      lines.push(`        - path: ${yamlQuote(file.path.trim())}`);
+      if (file.content.trim()) {
+        lines.push('          content: |');
+        String(file.content || '')
+          .replace(/\r\n/g, '\n')
+          .split('\n')
+          .forEach((item) => lines.push(`            ${item}`));
+      }
+      if (file.owner.trim()) lines.push(`          owner: ${yamlQuote(file.owner.trim())}`);
+      if (file.permissions.trim()) lines.push(`          permissions: ${yamlQuote(file.permissions.trim())}`);
+      if (file.encoding.trim()) lines.push(`          encoding: ${yamlQuote(file.encoding.trim())}`);
+      if (file.append) lines.push('          append: true');
+      if (file.defer) lines.push('          defer: true');
+    });
+  }
+
+  appendYamlStringListField(lines, 'ssh_authorized_keys', cloudConfig.sshAuthorizedKeys, '      ');
+};
+
 const buildGuidedComposeYaml = (config) => {
   const lines = ['services:'];
   const networks = (config.networks || []).filter((network) => network.name.trim());
@@ -162,13 +325,7 @@ const buildGuidedComposeYaml = (config) => {
       lines.push(`      secure_boot: ${service.secureBoot ? 'true' : 'false'}`);
     }
 
-    if (kubeVirt && service.userData.trim()) {
-      lines.push('    x-cloudinit:', '      user_data: |');
-      String(service.userData || '')
-        .replace(/\r\n/g, '\n')
-        .split('\n')
-        .forEach((item) => lines.push(`        ${item}`));
-    }
+    if (kubeVirt) appendGuideCloudConfig(lines, service.userData || createGuideCloudConfig());
 
     if (!kubeVirt && service.workingDir.trim()) lines.push(`    working_dir: ${service.workingDir.trim()}`);
 
@@ -245,6 +402,32 @@ const parseKeyValueLine = (line) => {
   };
 };
 
+const appendCloudConfigLineValue = (target, field, value) => {
+  if (Array.isArray(target[field])) {
+    target[field] = [...target[field], stripYamlValue(value)];
+    return;
+  }
+  target[field] = [...String(target[field] || '').split('\n').filter(Boolean), stripYamlValue(value)].join('\n');
+};
+
+const userFieldMap = {
+  lock_passwd: 'lockPasswd',
+  plain_text_passwd: 'plainTextPasswd',
+  ssh_authorized_keys: 'sshAuthorizedKeys',
+  no_create_home: 'noCreateHome',
+};
+
+const setGuideUserField = (user, key, value) => {
+  const field = userFieldMap[key] || key;
+  if (['groups', 'sudo', 'sshAuthorizedKeys'].includes(field)) {
+    if (value) user[field] = [value];
+    return field;
+  }
+  if (['lockPasswd', 'noCreateHome', 'system'].includes(field)) user[field] = value === 'true';
+  else user[field] = value;
+  return field;
+};
+
 const parsePortString = (value) => {
   const [main, protocol = 'tcp'] = stripYamlValue(value).split('/');
   const parts = main.split(':');
@@ -267,6 +450,11 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
   let serviceNetwork = null;
   let currentPort = null;
   let currentVolume = null;
+  let currentUser = null;
+  let currentGroup = null;
+  let currentWriteFile = null;
+  let cloudConfigList = '';
+  let cloudConfigNestedList = '';
   let blockScalar = null;
 
   for (const line of lines) {
@@ -293,6 +481,11 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
       serviceNetwork = null;
       currentPort = null;
       currentVolume = null;
+      currentUser = null;
+      currentGroup = null;
+      currentWriteFile = null;
+      cloudConfigList = '';
+      cloudConfigNestedList = '';
       blockScalar = null;
       if (!['services', 'networks'].includes(section)) {
         errors.push(
@@ -315,7 +508,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
           kubeVirt: false,
           bootloader: '',
           secureBoot: false,
-          userData: '',
+          userData: createGuideCloudConfig(),
           ports: [],
           environment: [],
           volumes: [],
@@ -326,6 +519,11 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         serviceNetwork = null;
         currentPort = null;
         currentVolume = null;
+        currentUser = null;
+        currentGroup = null;
+        currentWriteFile = null;
+        cloudConfigList = '';
+        cloudConfigNestedList = '';
         blockScalar = null;
         continue;
       }
@@ -339,6 +537,11 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         serviceNetwork = null;
         currentPort = null;
         currentVolume = null;
+        currentUser = null;
+        currentGroup = null;
+        currentWriteFile = null;
+        cloudConfigList = '';
+        cloudConfigNestedList = '';
         blockScalar = null;
         if (
           ['ports', 'environment', 'x-volumes', 'x-boot', 'x-cloudinit', 'command', 'networks'].includes(pair.key) &&
@@ -391,10 +594,91 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
       }
       if (indent === 6 && serviceList === 'x-cloudinit') {
         const pair = parseKeyValueLine(text);
-        if (pair?.key === 'user_data') {
-          service.userData = pair.value === '|' ? '' : pair.value;
-          if (pair.value === '|') blockScalar = { target: service, field: 'userData', indent: 8, lines: [] };
+        if (!pair) continue;
+        currentUser = null;
+        currentGroup = null;
+        currentWriteFile = null;
+        cloudConfigNestedList = '';
+        if (['users', 'groups', 'ssh_authorized_keys', 'write_files'].includes(pair.key)) {
+          cloudConfigList = pair.key;
+          if (pair.key === 'ssh_authorized_keys' && pair.value) service.userData.sshAuthorizedKeys = [pair.value];
         }
+        continue;
+      }
+      if (indent === 8 && serviceList === 'x-cloudinit') {
+        if (cloudConfigList === 'ssh_authorized_keys' && text.startsWith('- ')) {
+          appendCloudConfigLineValue(service.userData, 'sshAuthorizedKeys', text.slice(2));
+          continue;
+        }
+        if (cloudConfigList === 'users' && text.startsWith('- ')) {
+          const pair = parseKeyValueLine(text.slice(2).trim());
+          currentUser = createGuideUser();
+          currentGroup = null;
+          currentWriteFile = null;
+          service.userData.users.push(currentUser);
+          if (pair?.key) setGuideUserField(currentUser, pair.key, pair.value);
+          cloudConfigNestedList = '';
+          continue;
+        }
+        if (cloudConfigList === 'groups' && text.startsWith('- ')) {
+          const pair = parseKeyValueLine(text.slice(2).trim());
+          currentGroup = createGuideGroup();
+          currentUser = null;
+          currentWriteFile = null;
+          service.userData.groups.push(currentGroup);
+          if (pair?.key === 'name') currentGroup.name = pair.value;
+          else if (pair?.key === 'members' && pair.value) currentGroup.members = [pair.value];
+          cloudConfigNestedList = '';
+          continue;
+        }
+        if (cloudConfigList === 'write_files' && text.startsWith('- ')) {
+          const pair = parseKeyValueLine(text.slice(2).trim());
+          currentWriteFile = createGuideWriteFile();
+          service.userData.writeFiles.push(currentWriteFile);
+          if (pair?.key === 'path') currentWriteFile.path = pair.value;
+          else if (pair?.key === 'content') currentWriteFile.content = pair.value;
+          continue;
+        }
+      }
+      if (indent === 10 && serviceList === 'x-cloudinit' && cloudConfigList === 'users' && currentUser) {
+        const pair = parseKeyValueLine(text);
+        if (pair?.key) {
+          cloudConfigNestedList = setGuideUserField(currentUser, pair.key, pair.value === '' ? '' : pair.value);
+          continue;
+        }
+      }
+      if (indent === 12 && serviceList === 'x-cloudinit' && cloudConfigList === 'users' && currentUser) {
+        if (['groups', 'sudo', 'sshAuthorizedKeys'].includes(cloudConfigNestedList) && text.startsWith('- ')) {
+          currentUser[cloudConfigNestedList] = [...currentUser[cloudConfigNestedList], stripYamlValue(text.slice(2))];
+          continue;
+        }
+      }
+      if (indent === 10 && serviceList === 'x-cloudinit' && cloudConfigList === 'groups' && currentGroup) {
+        const pair = parseKeyValueLine(text);
+        if (pair?.key === 'name') currentGroup.name = pair.value;
+        else if (pair?.key === 'members') {
+          cloudConfigNestedList = 'members';
+          if (pair.value) currentGroup.members = [pair.value];
+        }
+        continue;
+      }
+      if (indent === 12 && serviceList === 'x-cloudinit' && cloudConfigList === 'groups' && currentGroup) {
+        if (cloudConfigNestedList === 'members' && text.startsWith('- ')) {
+          currentGroup.members = [...currentGroup.members, stripYamlValue(text.slice(2))];
+          continue;
+        }
+      }
+      if (indent === 10 && serviceList === 'x-cloudinit' && cloudConfigList === 'write_files' && currentWriteFile) {
+        const pair = parseKeyValueLine(text);
+        if (pair?.key === 'path') currentWriteFile.path = pair.value;
+        else if (pair?.key === 'content') {
+          currentWriteFile.content = pair.value === '|' ? '' : pair.value;
+          if (pair.value === '|') blockScalar = { target: currentWriteFile, field: 'content', indent: 12, lines: [] };
+        } else if (pair?.key === 'owner') currentWriteFile.owner = pair.value;
+        else if (pair?.key === 'permissions') currentWriteFile.permissions = pair.value;
+        else if (pair?.key === 'encoding') currentWriteFile.encoding = pair.value;
+        else if (pair?.key === 'append') currentWriteFile.append = pair.value === 'true';
+        else if (pair?.key === 'defer') currentWriteFile.defer = pair.value === 'true';
         continue;
       }
       if (indent === 6 && serviceList === 'x-volumes' && text.startsWith('- ')) {
@@ -945,6 +1229,169 @@ function AdminChallengeModal({
     syncGuideConfig({ ...guideConfig, services });
   };
 
+  const updateGuideCloudConfigList = (serviceIndex, field, itemIndex, value) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return {
+        ...service,
+        userData: {
+          ...userData,
+          [field]: userData[field].map((item, currentIndex) => (currentIndex === itemIndex ? value : item)),
+        },
+      };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const updateGuideCloudConfigObject = (serviceIndex, field, itemIndex, itemField, value) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return {
+        ...service,
+        userData: {
+          ...userData,
+          [field]: userData[field].map((item, currentIndex) =>
+            currentIndex === itemIndex ? { ...item, [itemField]: value } : item
+          ),
+        },
+      };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const updateGuideCloudConfigNestedList = (serviceIndex, field, itemIndex, listField, valueIndex, value) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return {
+        ...service,
+        userData: {
+          ...userData,
+          [field]: userData[field].map((item, currentIndex) =>
+            currentIndex === itemIndex
+              ? {
+                  ...item,
+                  [listField]: item[listField].map((currentValue, currentValueIndex) =>
+                    currentValueIndex === valueIndex ? value : currentValue
+                  ),
+                }
+              : item
+          ),
+        },
+      };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const addGuideCloudConfigNestedListItem = (serviceIndex, field, itemIndex, listField) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return {
+        ...service,
+        userData: {
+          ...userData,
+          [field]: userData[field].map((item, currentIndex) =>
+            currentIndex === itemIndex ? { ...item, [listField]: [...item[listField], ''] } : item
+          ),
+        },
+      };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const removeGuideCloudConfigNestedListItem = (serviceIndex, field, itemIndex, listField, valueIndex) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return {
+        ...service,
+        userData: {
+          ...userData,
+          [field]: userData[field].map((item, currentIndex) =>
+            currentIndex === itemIndex
+              ? { ...item, [listField]: item[listField].filter((_, currentValueIndex) => currentValueIndex !== valueIndex) }
+              : item
+          ),
+        },
+      };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const addGuideCloudConfigObject = (serviceIndex, field, item) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return { ...service, userData: { ...userData, [field]: [...userData[field], item] } };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const removeGuideCloudConfigObject = (serviceIndex, field, itemIndex) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return { ...service, userData: { ...userData, [field]: userData[field].filter((_, i) => i !== itemIndex) } };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const addGuideCloudConfigListItem = (serviceIndex, field) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return { ...service, userData: { ...userData, [field]: [...userData[field], ''] } };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const removeGuideCloudConfigListItem = (serviceIndex, field, itemIndex) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return { ...service, userData: { ...userData, [field]: userData[field].filter((_, i) => i !== itemIndex) } };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const updateGuideWriteFile = (serviceIndex, fileIndex, field, value) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return {
+        ...service,
+        userData: {
+          ...userData,
+          writeFiles: userData.writeFiles.map((file, currentIndex) =>
+            currentIndex === fileIndex ? { ...file, [field]: value } : file
+          ),
+        },
+      };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const addGuideWriteFile = (serviceIndex) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return { ...service, userData: { ...userData, writeFiles: [...userData.writeFiles, createGuideWriteFile()] } };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
+  const removeGuideWriteFile = (serviceIndex, fileIndex) => {
+    const services = guideConfig.services.map((service, index) => {
+      if (index !== serviceIndex) return service;
+      const userData = { ...createGuideCloudConfig(), ...service.userData };
+      return { ...service, userData: { ...userData, writeFiles: userData.writeFiles.filter((_, i) => i !== fileIndex) } };
+    });
+    syncGuideConfig({ ...guideConfig, services });
+  };
+
   const addGuideServiceListItem = (serviceIndex, field, item) => {
     const services = guideConfig.services.map((service, index) =>
       index === serviceIndex ? { ...service, [field]: [...service[field], item] } : service
@@ -1114,6 +1561,52 @@ function AdminChallengeModal({
   const selectClass = 'select-custom select-custom-md';
   const textareaClass =
     'w-full h-20 bg-black/20 border border-neutral-300/30 rounded-md px-4 py-2 text-neutral-50 focus:outline-none focus:border-geek-400 resize-none';
+
+  const renderCloudConfigList = (service, serviceIndex, field, label, placeholder) => (
+    <div className="space-y-2">
+      <GuideListHeader
+        title={label}
+        addLabel={ct('actions.add')}
+        onAdd={() => addGuideCloudConfigListItem(serviceIndex, field)}
+      />
+      {(service.userData?.[field] || []).map((value, itemIndex) => (
+        <div key={itemIndex} className="grid grid-cols-[1fr_32px] gap-2">
+          <input
+            className={inputBaseClass}
+            value={value}
+            placeholder={placeholder}
+            onChange={(e) => updateGuideCloudConfigList(serviceIndex, field, itemIndex, e.target.value)}
+          />
+          <IconButton onClick={() => removeGuideCloudConfigListItem(serviceIndex, field, itemIndex)} />
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderCloudConfigNestedList = (serviceIndex, field, itemIndex, item, listField, label, placeholder) => (
+    <div className="space-y-2">
+      <GuideListHeader
+        title={label}
+        addLabel={ct('actions.add')}
+        onAdd={() => addGuideCloudConfigNestedListItem(serviceIndex, field, itemIndex, listField)}
+      />
+      {(item[listField] || []).map((value, valueIndex) => (
+        <div key={valueIndex} className="grid grid-cols-[1fr_32px] gap-2">
+          <input
+            className={inputBaseClass}
+            value={value}
+            placeholder={placeholder}
+            onChange={(e) =>
+              updateGuideCloudConfigNestedList(serviceIndex, field, itemIndex, listField, valueIndex, e.target.value)
+            }
+          />
+          <IconButton
+            onClick={() => removeGuideCloudConfigNestedListItem(serviceIndex, field, itemIndex, listField, valueIndex)}
+          />
+        </div>
+      ))}
+    </div>
+  );
 
   const podNoticeLines = [
     t('admin.challengeModal.podsNotice.flagFormat', {
@@ -1524,22 +2017,314 @@ function AdminChallengeModal({
                                           <option value="true">true</option>
                                         </select>
                                       </GuideField>
-                                      <div className="md:col-span-2">
-                                        <GuideField label={ct('fields.userData')}>
-                                          <textarea
-                                            className={textareaClass}
-                                            value={service.userData}
-                                            placeholder={ct('placeholders.userData')}
-                                            onChange={(e) =>
-                                              updateGuideService(serviceIndex, 'userData', e.target.value)
-                                            }
-                                          />
-                                          <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.userData`]} />
-                                        </GuideField>
-                                      </div>
                                     </>
                                   ) : null}
                                 </div>
+
+                                {service.kubeVirt ? (
+                                  <>
+                                    <GuideListHeader
+                                      title={ct('sections.users')}
+                                      addLabel={ct('actions.add')}
+                                      onAdd={() => addGuideCloudConfigObject(serviceIndex, 'users', createGuideUser())}
+                                    />
+                                    {(service.userData?.users || []).map((user, userIndex) => (
+                                      <div key={userIndex} className="space-y-2 rounded border border-neutral-700/60 p-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_32px] gap-2">
+                                          <GuideField label={ct('fields.name')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={user.name}
+                                              placeholder={ct('placeholders.name')}
+                                              onChange={(e) =>
+                                                updateGuideCloudConfigObject(serviceIndex, 'users', userIndex, 'name', e.target.value)
+                                              }
+                                            />
+                                          </GuideField>
+                                          <GuideField label={ct('fields.gecos')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={user.gecos}
+                                              placeholder={ct('placeholders.gecos')}
+                                              onChange={(e) =>
+                                                updateGuideCloudConfigObject(serviceIndex, 'users', userIndex, 'gecos', e.target.value)
+                                              }
+                                            />
+                                          </GuideField>
+                                          <GuideField label={ct('fields.shell')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={user.shell}
+                                              placeholder={ct('placeholders.shell')}
+                                              onChange={(e) =>
+                                                updateGuideCloudConfigObject(serviceIndex, 'users', userIndex, 'shell', e.target.value)
+                                              }
+                                            />
+                                          </GuideField>
+                                          <IconButton onClick={() => removeGuideCloudConfigObject(serviceIndex, 'users', userIndex)} />
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                          <GuideField label={ct('fields.homeDir')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={user.homedir}
+                                              placeholder={ct('placeholders.homeDir')}
+                                              onChange={(e) =>
+                                                updateGuideCloudConfigObject(serviceIndex, 'users', userIndex, 'homedir', e.target.value)
+                                              }
+                                            />
+                                          </GuideField>
+                                          <GuideField label={ct('fields.passwd')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={user.passwd}
+                                              placeholder={ct('placeholders.passwd')}
+                                              onChange={(e) =>
+                                                updateGuideCloudConfigObject(serviceIndex, 'users', userIndex, 'passwd', e.target.value)
+                                              }
+                                            />
+                                          </GuideField>
+                                          <GuideField label={ct('fields.plainTextPasswd')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={user.plainTextPasswd}
+                                              placeholder={ct('placeholders.plainTextPasswd')}
+                                              onChange={(e) =>
+                                                updateGuideCloudConfigObject(
+                                                  serviceIndex,
+                                                  'users',
+                                                  userIndex,
+                                                  'plainTextPasswd',
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+                                          </GuideField>
+                                          <div className="grid grid-cols-3 gap-2">
+                                            <GuideField label={ct('fields.lockPasswd')}>
+                                              <select
+                                                className={selectClass}
+                                                value={user.lockPasswd ? 'true' : 'false'}
+                                                onChange={(e) =>
+                                                  updateGuideCloudConfigObject(
+                                                    serviceIndex,
+                                                    'users',
+                                                    userIndex,
+                                                    'lockPasswd',
+                                                    e.target.value === 'true'
+                                                  )
+                                                }
+                                              >
+                                                <option value="false">false</option>
+                                                <option value="true">true</option>
+                                              </select>
+                                            </GuideField>
+                                            <GuideField label={ct('fields.noCreateHome')}>
+                                              <select
+                                                className={selectClass}
+                                                value={user.noCreateHome ? 'true' : 'false'}
+                                                onChange={(e) =>
+                                                  updateGuideCloudConfigObject(
+                                                    serviceIndex,
+                                                    'users',
+                                                    userIndex,
+                                                    'noCreateHome',
+                                                    e.target.value === 'true'
+                                                  )
+                                                }
+                                              >
+                                                <option value="false">false</option>
+                                                <option value="true">true</option>
+                                              </select>
+                                            </GuideField>
+                                            <GuideField label={ct('fields.system')}>
+                                              <select
+                                                className={selectClass}
+                                                value={user.system ? 'true' : 'false'}
+                                                onChange={(e) =>
+                                                  updateGuideCloudConfigObject(
+                                                    serviceIndex,
+                                                    'users',
+                                                    userIndex,
+                                                    'system',
+                                                    e.target.value === 'true'
+                                                  )
+                                                }
+                                              >
+                                                <option value="false">false</option>
+                                                <option value="true">true</option>
+                                              </select>
+                                            </GuideField>
+                                          </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                          {renderCloudConfigNestedList(
+                                            serviceIndex,
+                                            'users',
+                                            userIndex,
+                                            user,
+                                            'groups',
+                                            ct('fields.groups'),
+                                            ct('placeholders.groups')
+                                          )}
+                                          {renderCloudConfigNestedList(
+                                            serviceIndex,
+                                            'users',
+                                            userIndex,
+                                            user,
+                                            'sudo',
+                                            ct('fields.sudo'),
+                                            ct('placeholders.sudo')
+                                          )}
+                                          {renderCloudConfigNestedList(
+                                            serviceIndex,
+                                            'users',
+                                            userIndex,
+                                            user,
+                                            'sshAuthorizedKeys',
+                                            ct('fields.sshAuthorizedKeys'),
+                                            ct('placeholders.sshAuthorizedKeys')
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+
+                                    <GuideListHeader
+                                      title={ct('sections.groups')}
+                                      addLabel={ct('actions.add')}
+                                      onAdd={() => addGuideCloudConfigObject(serviceIndex, 'groups', createGuideGroup())}
+                                    />
+                                    {(service.userData?.groups || []).map((group, groupIndex) => (
+                                      <div key={groupIndex} className="space-y-2 rounded border border-neutral-700/60 p-3">
+                                        <div className="grid grid-cols-[1fr_32px] gap-2">
+                                          <GuideField label={ct('fields.name')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={group.name}
+                                              placeholder={ct('placeholders.name')}
+                                              onChange={(e) =>
+                                                updateGuideCloudConfigObject(
+                                                  serviceIndex,
+                                                  'groups',
+                                                  groupIndex,
+                                                  'name',
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+                                          </GuideField>
+                                          <IconButton onClick={() => removeGuideCloudConfigObject(serviceIndex, 'groups', groupIndex)} />
+                                        </div>
+                                        {renderCloudConfigNestedList(
+                                          serviceIndex,
+                                          'groups',
+                                          groupIndex,
+                                          group,
+                                          'members',
+                                          ct('fields.members'),
+                                          ct('placeholders.members')
+                                        )}
+                                      </div>
+                                    ))}
+
+                                    {renderCloudConfigList(
+                                      service,
+                                      serviceIndex,
+                                      'sshAuthorizedKeys',
+                                      ct('fields.sshAuthorizedKeys'),
+                                      ct('placeholders.sshAuthorizedKeys')
+                                    )}
+                                  </>
+                                ) : null}
+
+                                {service.kubeVirt ? (
+                                  <>
+                                    <GuideListHeader
+                                      title={ct('sections.writeFiles')}
+                                      addLabel={ct('actions.add')}
+                                      onAdd={() => addGuideWriteFile(serviceIndex)}
+                                    />
+                                    {(service.userData?.writeFiles || []).map((file, fileIndex) => (
+                                      <div key={fileIndex} className="space-y-2 rounded border border-neutral-700/60 p-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_32px] gap-2">
+                                          <GuideField label={ct('fields.path')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={file.path}
+                                              placeholder={ct('placeholders.path')}
+                                              onChange={(e) => updateGuideWriteFile(serviceIndex, fileIndex, 'path', e.target.value)}
+                                            />
+                                          </GuideField>
+                                          <GuideField label={ct('fields.owner')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={file.owner}
+                                              placeholder={ct('placeholders.owner')}
+                                              onChange={(e) => updateGuideWriteFile(serviceIndex, fileIndex, 'owner', e.target.value)}
+                                            />
+                                          </GuideField>
+                                          <GuideField label={ct('fields.permissions')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={file.permissions}
+                                              placeholder={ct('placeholders.permissions')}
+                                              onChange={(e) =>
+                                                updateGuideWriteFile(serviceIndex, fileIndex, 'permissions', e.target.value)
+                                              }
+                                            />
+                                          </GuideField>
+                                          <IconButton onClick={() => removeGuideWriteFile(serviceIndex, fileIndex)} />
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-[1fr_120px_120px] gap-2">
+                                          <GuideField label={ct('fields.encoding')}>
+                                            <input
+                                              className={inputBaseClass}
+                                              value={file.encoding}
+                                              placeholder={ct('placeholders.encoding')}
+                                              onChange={(e) =>
+                                                updateGuideWriteFile(serviceIndex, fileIndex, 'encoding', e.target.value)
+                                              }
+                                            />
+                                          </GuideField>
+                                          <GuideField label={ct('fields.append')}>
+                                            <select
+                                              className={selectClass}
+                                              value={file.append ? 'true' : 'false'}
+                                              onChange={(e) =>
+                                                updateGuideWriteFile(serviceIndex, fileIndex, 'append', e.target.value === 'true')
+                                              }
+                                            >
+                                              <option value="false">false</option>
+                                              <option value="true">true</option>
+                                            </select>
+                                          </GuideField>
+                                          <GuideField label={ct('fields.defer')}>
+                                            <select
+                                              className={selectClass}
+                                              value={file.defer ? 'true' : 'false'}
+                                              onChange={(e) =>
+                                                updateGuideWriteFile(serviceIndex, fileIndex, 'defer', e.target.value === 'true')
+                                              }
+                                            >
+                                              <option value="false">false</option>
+                                              <option value="true">true</option>
+                                            </select>
+                                          </GuideField>
+                                        </div>
+                                        <GuideField label={ct('fields.content')}>
+                                          <textarea
+                                            className={textareaClass}
+                                            value={file.content}
+                                            placeholder={ct('placeholders.content')}
+                                            onChange={(e) =>
+                                              updateGuideWriteFile(serviceIndex, fileIndex, 'content', e.target.value)
+                                            }
+                                          />
+                                        </GuideField>
+                                      </div>
+                                    ))}
+                                  </>
+                                ) : null}
 
                                 {!service.kubeVirt ? (
                                   <>
