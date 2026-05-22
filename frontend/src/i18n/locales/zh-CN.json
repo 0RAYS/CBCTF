@@ -559,6 +559,10 @@
         }
       },
       "imagesPull": {
+        "control": {
+          "title": "比赛镜像拉取",
+          "subtitle": "对比各节点的比赛所需镜像，预拉取缺失镜像"
+        },
         "labels": {
           "pullPolicy": "拉取策略",
           "pullPolicyHint": "Always 强制拉取; IfNotPresent 仅拉取缺失镜像; Never 不创建任务",
@@ -571,19 +575,31 @@
         "summary": {
           "nodes": "{{count}} 个节点",
           "nodesLabel": "可调度节点",
+          "unionLabel": "比赛镜像",
           "totalLabel": "全部镜像",
           "total": "共 {{count}} 个镜像"
         },
         "selection": {
+          "title": "缺失的比赛镜像",
+          "subtitle": "选择本比赛需要拉取的节点/镜像组合",
           "selectedTargets": "已选择 {{count}} 个组合",
           "nodeImages": "{{count}} 个镜像"
         },
+        "intersection": {
+          "title": "比赛镜像覆盖情况",
+          "subtitle": "下方镜像为本比赛所需，且至少在一个节点上缺失",
+          "empty": "所有比赛镜像均已存在"
+        },
         "manual": {
+          "title": "手动比赛拉取",
+          "subtitle": "手动输入镜像名称并选择比赛目标节点",
           "placeholder": "registry.example.com/team/image:tag\nbusybox:latest",
           "count": "已输入 {{count}} 个镜像"
         },
         "node": {
-          "empty": "该节点暂无镜像数据"
+          "empty": "该节点暂无镜像数据",
+          "missingTitle": "缺失的比赛镜像",
+          "noMissing": "无缺失的比赛镜像"
         },
         "actions": {
           "selectAllNodes": "全选节点",
@@ -604,6 +620,8 @@
           "missing": "缺失",
           "selectedMissing": "已排队"
         },
+        "statusTitle": "节点镜像清单",
+        "statusSubtitle": "查看每个节点已存在的镜像和缺失的比赛镜像",
         "toast": {
           "fetchFailed": "加载节点镜像失败",
           "nodeRequired": "请先选择至少一个节点",
@@ -2240,6 +2258,34 @@
         "updateFailed": "更新品牌设置失败",
         "logoUpdated": "首页 Logo 已更新",
         "logoUpdateFailed": "首页 Logo 更新失败"
+      }
+    },
+    "imagesPull": {
+      "control": {
+        "title": "全局镜像拉取",
+        "subtitle": "对比各节点镜像状态，预拉取缺失的全局题目镜像"
+      },
+      "summary": {
+        "unionLabel": "所需镜像"
+      },
+      "selection": {
+        "title": "缺失的全局镜像",
+        "subtitle": "选择需要拉取的节点/镜像组合"
+      },
+      "intersection": {
+        "title": "所需镜像覆盖情况",
+        "subtitle": "下方镜像至少在一个节点上缺失",
+        "empty": "所有所需镜像均已存在"
+      },
+      "manual": {
+        "title": "手动全局拉取",
+        "subtitle": "手动输入镜像名称并选择目标节点"
+      },
+      "statusTitle": "节点镜像清单",
+      "statusSubtitle": "查看每个节点已存在的镜像和缺失的全局镜像",
+      "node": {
+        "missingTitle": "缺失的所需镜像",
+        "noMissing": "无缺失的所需镜像"
       }
     }
   },

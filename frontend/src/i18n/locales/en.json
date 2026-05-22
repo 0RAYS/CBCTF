@@ -559,6 +559,10 @@
         }
       },
       "imagesPull": {
+        "control": {
+          "title": "Contest Image Pull",
+          "subtitle": "Compare contest-required images across nodes and pre-pull missing images."
+        },
         "labels": {
           "pullPolicy": "Pull Policy",
           "pullPolicyHint": "Always pulls; IfNotPresent pulls missing images; Never skips jobs.",
@@ -571,19 +575,31 @@
         "summary": {
           "nodes": "{{count}} nodes",
           "nodesLabel": "Schedulable Nodes",
+          "unionLabel": "Contest Images",
           "totalLabel": "All Images",
           "total": "{{count}} images total"
         },
         "selection": {
+          "title": "Missing Contest Images",
+          "subtitle": "Select missing node/image pairs that should be pulled for this contest.",
           "selectedTargets": "{{count}} pairs selected",
           "nodeImages": "{{count}} images"
         },
+        "intersection": {
+          "title": "Contest Image Coverage",
+          "subtitle": "Images below are required by this contest and missing on at least one node.",
+          "empty": "All contest images are present"
+        },
         "manual": {
+          "title": "Manual Contest Pull",
+          "subtitle": "Enter image names manually and choose contest target nodes.",
           "placeholder": "registry.example.com/team/image:tag\nbusybox:latest",
           "count": "{{count}} images entered"
         },
         "node": {
-          "empty": "This node has no image data"
+          "empty": "This node has no image data",
+          "missingTitle": "Missing contest images",
+          "noMissing": "No contest images missing"
         },
         "actions": {
           "selectAllNodes": "Select All Nodes",
@@ -604,6 +620,8 @@
           "missing": "Missing",
           "selectedMissing": "Queued"
         },
+        "statusTitle": "Node Image Inventory",
+        "statusSubtitle": "Review currently available images and missing contest images per node.",
         "toast": {
           "fetchFailed": "Failed to load node images",
           "nodeRequired": "Select at least one node first",
@@ -2240,6 +2258,34 @@
         "updateFailed": "Failed to update branding settings",
         "logoUpdated": "Home logo updated",
         "logoUpdateFailed": "Failed to update home logo"
+      }
+    },
+    "imagesPull": {
+      "control": {
+        "title": "Global Image Pull",
+        "subtitle": "Compare images across nodes and pre-pull missing global challenge images."
+      },
+      "summary": {
+        "unionLabel": "Required Images"
+      },
+      "selection": {
+        "title": "Missing Global Images",
+        "subtitle": "Select missing node/image pairs that should be pulled."
+      },
+      "intersection": {
+        "title": "Required Image Coverage",
+        "subtitle": "Images below are missing on at least one node.",
+        "empty": "All required images are present"
+      },
+      "manual": {
+        "title": "Manual Global Pull",
+        "subtitle": "Enter image names manually and choose target nodes."
+      },
+      "statusTitle": "Node Image Inventory",
+      "statusSubtitle": "Review currently available images and missing global images per node.",
+      "node": {
+        "missingTitle": "Missing required images",
+        "noMissing": "No required images missing"
       }
     }
   },
