@@ -90,20 +90,29 @@ function AdminContestChallengeModal({
 
   // 禁用输入框样式
   const disabledInputClass = `${inputBaseClass} opacity-70 cursor-not-allowed`;
+  const isEditMode = mode === 'edit';
+  const modalClass = isEditMode
+    ? 'w-[min(96vw,1500px)] h-[min(84vh,860px)] bg-neutral-900 border border-neutral-300 rounded-md overflow-hidden flex flex-col'
+    : 'w-full max-w-4xl bg-neutral-900 border border-neutral-300 rounded-md overflow-hidden';
+  const contentClass = isEditMode
+    ? 'flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-4 lg:p-5 [&_*]:min-w-0'
+    : 'p-6 max-h-[70vh] overflow-y-auto';
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    >
       <motion.div
-        className="w-full max-w-4xl bg-neutral-900 border border-neutral-300 rounded-md overflow-hidden"
+        className={modalClass}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.2 }}
       >
         {/* 标题栏 */}
-        <div className="flex justify-between items-center p-4 border-b border-neutral-700">
+        <div className="flex shrink-0 justify-between items-center p-3 sm:p-4 border-b border-neutral-700 bg-neutral-950/50">
           <h2 className="text-xl font-mono text-neutral-50">
             {mode === 'add'
               ? t('admin.contests.challengeModal.titleAdd')
@@ -121,10 +130,16 @@ function AdminContestChallengeModal({
         </div>
 
         {/* 表单内容 */}
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
-          <div className="space-y-4">
+        <div className={contentClass}>
+          <div
+            className={
+              isEditMode
+                ? 'grid grid-cols-1 xl:grid-cols-[minmax(320px,0.75fr)_minmax(0,1.25fr)] gap-3 lg:gap-4'
+                : 'space-y-4'
+            }
+          >
             {/* 基本信息 */}
-            <div className="mb-4">
+            <div className={isEditMode ? 'rounded-md border border-neutral-700/70 bg-black/10 p-3 space-y-3' : 'mb-4'}>
               <h3 className="text-lg font-mono text-neutral-50 mb-3">
                 {t('admin.contests.challengeModal.sections.basic')}
               </h3>
@@ -155,8 +170,8 @@ function AdminContestChallengeModal({
                   />
                 </div>
 
-                <div className="flex gap-6">
-                  <div className="w-1/3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
+                  <div>
                     <label className="block text-sm font-mono text-neutral-400 mb-1">
                       {t('admin.contests.challengeModal.labels.attempts')}
                     </label>
@@ -169,7 +184,7 @@ function AdminContestChallengeModal({
                     />
                   </div>
 
-                  <div className="w-1/3 flex items-center pt-6">
+                  <div className="flex items-center pt-0 sm:pt-6">
                     <input
                       type="checkbox"
                       id="hidden-checkbox"
@@ -186,7 +201,13 @@ function AdminContestChallengeModal({
             </div>
 
             {/* Flag设置 */}
-            <div className="border-t border-neutral-700 pt-4">
+            <div
+              className={
+                isEditMode
+                  ? 'rounded-md border border-neutral-700/70 bg-black/10 p-3'
+                  : 'border-t border-neutral-700 pt-4'
+              }
+            >
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-mono text-neutral-50">
                   {t('admin.contests.challengeModal.sections.flags')}
@@ -194,7 +215,7 @@ function AdminContestChallengeModal({
               </div>
 
               {editingFlags.map((flag, index) => (
-                <div key={index} className="mb-6 p-4 border border-neutral-700 rounded-md bg-black/20">
+                <div key={index} className="mb-4 p-3 lg:p-4 border border-neutral-700 rounded-md bg-black/20">
                   <div className="flex justify-between mb-2">
                     <h4 className="text-md font-mono text-geek-400">Flag #{index + 1}</h4>
                     <div className="flex gap-1">
@@ -213,7 +234,7 @@ function AdminContestChallengeModal({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-3">
                     <div>
                       <label className="block text-sm font-mono text-neutral-400 mb-1">
                         {t('admin.contests.challengeModal.labels.flagValueHint')}
@@ -332,7 +353,13 @@ function AdminContestChallengeModal({
             </div>
 
             {/* 标签设置 */}
-            <div className="border-t border-neutral-700 pt-4">
+            <div
+              className={
+                isEditMode
+                  ? 'rounded-md border border-neutral-700/70 bg-black/10 p-3'
+                  : 'border-t border-neutral-700 pt-4'
+              }
+            >
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-mono text-neutral-50">
                   {t('admin.contests.challengeModal.sections.tags')}
@@ -368,7 +395,13 @@ function AdminContestChallengeModal({
             </div>
 
             {/* 提示设置 */}
-            <div className="border-t border-neutral-700 pt-4">
+            <div
+              className={
+                isEditMode
+                  ? 'rounded-md border border-neutral-700/70 bg-black/10 p-3'
+                  : 'border-t border-neutral-700 pt-4'
+              }
+            >
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-mono text-neutral-50">
                   {t('admin.contests.challengeModal.sections.hints')}
@@ -406,7 +439,7 @@ function AdminContestChallengeModal({
         </div>
 
         {/* 底部按钮 */}
-        <div className="flex justify-end gap-4 p-4 border-t border-neutral-700">
+        <div className="flex shrink-0 justify-end gap-3 sm:gap-4 p-3 sm:p-4 border-t border-neutral-700 bg-neutral-950/50">
           <Button variant="ghost" onClick={onClose}>
             {t('common.cancel')}
           </Button>
