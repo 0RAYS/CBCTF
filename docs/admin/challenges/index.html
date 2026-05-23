@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">题目管理 | CBCTF Docs</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://cbctf.0rays.club/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://cbctf.0rays.club/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://cbctf.0rays.club/docs/admin/challenges"><meta data-rh="true" property="og:locale" content="zh_Hans"><meta data-rh="true" name="docusaurus_locale" content="zh-Hans"><meta data-rh="true" name="docsearch:language" content="zh-Hans"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="题目管理 | CBCTF Docs"><meta data-rh="true" name="description" content="题库与比赛题目"><meta data-rh="true" property="og:description" content="题库与比赛题目"><link data-rh="true" rel="icon" href="/img/0RAYS.png"><link data-rh="true" rel="canonical" href="https://cbctf.0rays.club/docs/admin/challenges"><link data-rh="true" rel="alternate" href="https://cbctf.0rays.club/docs/admin/challenges" hreflang="zh-Hans"><link data-rh="true" rel="alternate" href="https://cbctf.0rays.club/docs/admin/challenges" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"管理员指南","item":"https://cbctf.0rays.club/docs/category/管理员指南"},{"@type":"ListItem","position":2,"name":"题目管理","item":"https://cbctf.0rays.club/docs/admin/challenges"}]}</script><link rel="stylesheet" href="/assets/css/styles.cbb51270.css">
-<script src="/assets/js/runtime~main.500755ac.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.31dc6927.js" defer="defer"></script>
 <script src="/assets/js/main.828d2876.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -33,11 +33,12 @@
 <p>需要 <code>admin:challenge:test</code> 权限。管理员可在题目加入比赛前, 通过测试模式验证容器靶机配置:</p>
 <ol>
 <li class="">访问题目详情, 点击「测试」</li>
-<li class="">平台以管理员身份启动靶机容器（不绑定任何队伍）</li>
-<li class="">验证端口连通性、flag 注入是否正确</li>
+<li class="">平台以管理员身份启动靶机容器或 KubeVirt VM（不绑定任何队伍）</li>
+<li class="">验证端口连通性、Flag 注入、cloud-init 写入和访问地址是否正确</li>
 <li class="">测试完成后停止靶机</li>
 </ol>
 <p>测试模式下不产生实际的 flag 和队伍记录。</p>
+<p>如果题目使用 <code>x-kubevirt: true</code>，测试前应确认集群已安装 KubeVirt，题目使用 VPC 网络并配置了每张网卡的 <code>ipv4_address</code> 和 <code>mac_address</code>。VM 模式的普通环境变量和 <code>x-volumes</code> 不会注入到虚拟机，建议通过 <code>x-cloudinit.write_files</code> 验证文件和 Flag 写入。</p>
 <h2 class="anchor anchorTargetStickyNavbar_EVTr" id="加入比赛">加入比赛<a href="#加入比赛" class="hash-link" aria-label="加入比赛的直接链接" title="加入比赛的直接链接" translate="no">​</a></h2>
 <p>通过 <code>POST /admin/contests/:contestID/challenges</code>（<code>admin:contest_challenge:create</code>）将题目加入比赛。</p>
 <p>加入时可覆盖以下字段（仅对本场比赛生效）:</p>
