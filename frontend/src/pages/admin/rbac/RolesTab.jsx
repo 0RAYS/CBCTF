@@ -11,7 +11,7 @@ import {
   revokePermissionFromRole,
 } from '../../../api/admin/rbac';
 import AdminRoles from '../../../components/features/Admin/AdminRoles';
-import { FormField, Input, Modal, Textarea } from '../../../components/common';
+import { FormField, Input, Modal, Pagination, Textarea } from '../../../components/common';
 import CRUDModalFooter from '../../../components/common/CRUDModalFooter';
 import ModalButton from '../../../components/common/ModalButton';
 import { useCRUDModal } from '../../../hooks/index.js';
@@ -27,8 +27,23 @@ function RolesTab() {
   // Permission management modal state
   const [permModalOpen, setPermModalOpen] = useState(false);
   const [selectedRoleForPerms, setSelectedRoleForPerms] = useState(null);
-  const [allPermissions, setAllPermissions] = useState([]);
+  const [permissions, setPermissions] = useState([]);
+  const [permissionTotalCount, setPermissionTotalCount] = useState(0);
+  const [permissionPage, setPermissionPage] = useState(1);
+  const permissionPageSize = 50;
   const [rolePermissions, setRolePermissions] = useState([]);
+
+  async function fetchPermissionPage(page = permissionPage) {
+    const response = await getPermissionList({
+      limit: permissionPageSize,
+      offset: (page - 1) * permissionPageSize,
+    });
+
+    if (response.code === 200) {
+      setPermissions(response.data.permissions || []);
+      setPermissionTotalCount(response.data.count || 0);
+    }
+  }
 
   function fetchRoles() {
     getRoleList({
@@ -86,25 +101,24 @@ function RolesTab() {
     fetchRoles();
   }, [currentPage]);
 
-  // Fetch all permissions once on mount
   useEffect(() => {
-    getPermissionList({ limit: 50, offset: 0 })
-      .then((response) => {
-        if (response.code === 200) {
-          setAllPermissions(response.data.permissions || []);
-        }
-      })
-      .catch((error) => {
-        toast.danger({ description: error.message || t('admin.rbac.roles.toast.fetchPermFailed') });
-      });
-  }, []);
+    if (!permModalOpen) return;
+
+    fetchPermissionPage().catch((error) => {
+      toast.danger({ description: error.message || t('admin.rbac.roles.toast.fetchPermFailed') });
+    });
+  }, [permissionPage, permModalOpen]);
 
   const handleManagePermissions = async (role) => {
     setSelectedRoleForPerms(role);
+    setPermissionPage(1);
+    setPermissions([]);
+    setPermissionTotalCount(0);
     try {
-      const response = await getRolePermissions(role.id);
-      if (response.code === 200) {
-        setRolePermissions(response.data.permissions || []);
+      const rolePermissionsResponse = await getRolePermissions(role.id);
+
+      if (rolePermissionsResponse.code === 200) {
+        setRolePermissions(rolePermissionsResponse.data.permissions || []);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.rbac.roles.toast.fetchPermFailed') });
@@ -141,7 +155,7 @@ function RolesTab() {
   };
 
   // Group permissions by resource
-  const permissionsByResource = allPermissions.reduce((acc, perm) => {
+  const permissionsByResource = permissions.reduce((acc, perm) => {
     if (!acc[perm.resource]) acc[perm.resource] = [];
     acc[perm.resource].push(perm);
     return acc;
@@ -261,6 +275,16 @@ function RolesTab() {
               </div>
             </div>
           ))}
+          {permissionTotalCount > permissionPageSize && (
+            <Pagination
+              total={Math.ceil(permissionTotalCount / permissionPageSize)}
+              current={permissionPage}
+              onChange={setPermissionPage}
+              showTotal
+              totalItems={permissionTotalCount}
+              simple
+            />
+          )}
         </div>
       </Modal>
     </>

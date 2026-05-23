@@ -387,7 +387,7 @@ var Permissions = []Permission{
 	{Name: PermSelfRead, Resource: "self", Operation: "read", Description: "查看自身信息"},
 	{Name: PermSelfUpdate, Resource: "self", Operation: "update", Description: "更新自身信息"},
 	{Name: PermSelfDelete, Resource: "self", Operation: "delete", Description: "删除自身账号"},
-	{Name: PermSelfActivate, Resource: "self", Operation: "activate", Description: "激活自身账号"},
+	{Name: PermSelfActivate, Resource: "self", Operation: "activate", Description: "请求激活账号"},
 
 	{Name: PermUserContestRead, Resource: "user:contest", Operation: "read", Description: "查看比赛详情"},
 	{Name: PermUserContestRank, Resource: "user:contest", Operation: "rank", Description: "查看比赛排名"},
