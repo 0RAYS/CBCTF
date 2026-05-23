@@ -111,7 +111,7 @@
     "rbac": "RBAC",
     "oauth": "OAuth",
     "smtp": "SMTP",
-    "cronjobs": "CronJobs",
+    "cronjobs": "定时任务",
     "webhook": "Webhook",
     "files": "文件",
     "tasks": "任务队列",
