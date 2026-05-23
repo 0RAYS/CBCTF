@@ -12,17 +12,17 @@ sidebar_position: 5
 |---|---|
 | Kubernetes | 动态靶机由 Kubernetes 调度 |
 | 命名空间 | `k8s.namespace` 必须存在，Helm 部署时通常为 Release namespace |
-| RBAC | 应用需要创建/删除 Pod、Service、NetworkPolicy、Job、Multus 和 Kube-OVN 相关资源的权限 |
+| RBAC | 应用需要创建/删除 Pod、Service、NetworkPolicy、Job、Multus、Kube-OVN 和 KubeVirt `VirtualMachine` 相关资源的权限 |
 | 镜像拉取 | 集群节点必须能拉取题目镜像、流量捕获镜像和 FRP 镜像 |
 | 存储 | 题目附件、流量文件、动态附件依赖 `/app/data` 数据卷 |
-| 可选网络组件 | VPC 模式需要 Kube-OVN 和 Multus CNI |
+| 可选网络组件 | VPC 模式需要 Kube-OVN 和 Multus CNI，VM 模式额外需要 KubeVirt |
 
 ## 管理员配置流程
 
 1. 在题目管理中创建容器题。
 2. 配置题目基础信息、分类、描述和 Flag。
 3. 配置容器模板，包括镜像、命令、环境变量、资源、暴露端口和 Flag 注入方式。
-4. 如题目需要多容器或隔离网络，配置 Pod 或 VPC 网络。
+4. 如题目需要多容器、隔离网络或虚拟机靶机，配置 Pod、VPC 或 KubeVirt VM 模式。
 5. 保存后可使用题目测试启动，确认镜像、端口、Flag 和访问地址正常。
 6. 将题目加入比赛，并按需在比赛管理中预热镜像或靶机。
 
@@ -74,6 +74,86 @@ kubectl label node worker-1 node.cbctf.io/external-network=ens192
 
 如果外部网络配置错误、节点标签缺失或 Kube-OVN/Multus 未安装，VPC 靶机会启动失败或无法访问外部网络。
 
+## KubeVirt VM 模式
+
+KubeVirt VM 模式用于把某个 `docker-compose.yaml` service 按 KubeVirt `VirtualMachine` 创建，而不是创建普通 Kubernetes Pod。平台使用 service 的 `image` 作为 KubeVirt `containerDisk` 镜像，并通过 Multus/Kube-OVN 将 VM 接入题目 VPC 网络。
+
+使用 VM 模式前需要：
+
+- 集群已安装 KubeVirt，且 KubeVirt CRD 和控制器正常工作。
+- 题目必须使用 VPC 网络模式，并已安装 Kube-OVN 和 Multus CNI。
+- 应用 ServiceAccount 具备 `kubevirt.io` 资源 `virtualmachines` 的 `create`、`get`、`deletecollection` 权限。
+- VM 镜像需要是 KubeVirt 可用的 `containerDisk` 镜像，镜像内系统需要支持 cloud-init 和 virtio 网卡。
+- 集群节点支持虚拟化能力；如使用嵌套虚拟化，需要提前在宿主机和集群节点上启用。
+
+在 compose 中为 service 设置 `x-kubevirt: true` 即可启用 VM 模式。代码会额外校验以下字段：
+
+| 字段 | 要求 |
+|---|---|
+| `networks` | 必须选择自定义 VPC 网络，不能只使用默认网络 |
+| `networks.*.ipv4_address` | 必填，且必须在对应网络 `subnet` 范围内 |
+| `networks.*.mac_address` | VM 模式必填，格式必须是合法 MAC 地址 |
+| `mem_limit` | VM 模式必填，会映射到 VM 内存限制 |
+| `cpus` | 可选，会换算为 CPU milli limit |
+| `x-boot.bootloader` | 可选，只支持 `bios` 或 `efi` |
+| `x-boot.secure_boot` | 可选，仅 `bootloader: efi` 时有意义 |
+| `x-cloudinit` | 可选，会渲染为 `CloudInitNoCloud` user data |
+
+最小示例：
+
+```yaml
+services:
+  vm1:
+    image: registry.example.com/challenges/vm-web:latest
+    cpus: 0.5
+    mem_limit: 512m
+    ports:
+      - target: 80
+        published: web
+        protocol: tcp
+    x-kubevirt: true
+    x-boot:
+      bootloader: efi
+      secure_boot: false
+    x-cloudinit:
+      users:
+        - name: ctf
+          groups:
+            - sudo
+          sudo:
+            - ALL=(ALL) NOPASSWD:ALL
+          shell: /bin/bash
+          homedir: /home/ctf
+          lock_passwd: false
+          plain_text_passwd: changeme
+      write_files:
+        - path: /etc/motd
+          content: |
+            Welcome to CBCTF VM.
+    networks:
+      network1:
+        ipv4_address: 192.168.0.2
+        mac_address: "00:00:00:00:01:01"
+
+networks:
+  network1:
+    external: true
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+          gateway: 192.168.0.1
+```
+
+完整 VPC/VM 示例可参考仓库中的 `example/pods/vpc/docker-compose.yaml`。
+
+VM 模式注意事项：
+
+- `command`、`working_dir`、普通环境变量和 `x-volumes` 不会被注入到 KubeVirt VM。需要初始化系统用户、写入文件或写入 Flag 时，应使用 `x-cloudinit.write_files`。
+- `x-cloudinit.write_files[*].content` 中出现的 `static{}`、`leet{}` 或 `uuid{}` 会被识别为 cloud-init 文件 Flag，并在启动队伍靶机时替换为队伍实际 Flag。
+- `ports` 不会写入 VM spec 的容器端口，但会用于平台生成 Kube-OVN DNAT 或 FRP 暴露规则。需要对选手开放服务时仍应配置 `ports`。
+- VM 必须接入至少一个 VPC 网络。平台会把第一个网络设置为默认 Multus 网络，并为每张网卡生成 cloud-init network data。
+- 当某个 service 设置为 `x-kubevirt: true` 时，该 service 在 VPC 模式下会以单独的 VM 运行，不会和普通容器共享同一个 Pod 网络命名空间。
+
 ## 端口暴露
 
 平台会根据题目配置的暴露端口生成访问端点。
@@ -117,17 +197,19 @@ kubectl label node worker-1 node.cbctf.io/external-network=ens192
 | 命名空间不存在 | 创建 `k8s.namespace` 对应命名空间，Helm 部署通常自动使用 Release namespace |
 | 镜像拉取失败 | 检查镜像名、tag、架构、网络、私有仓库凭据和 `imagePullSecrets` |
 | Pod Pending | 检查节点资源、调度约束、PVC、镜像拉取和资源限制 |
+| VM 创建失败 | 检查 KubeVirt 是否安装、`virtualmachines` RBAC、节点虚拟化能力和 containerDisk 镜像 |
 | 页面没有访问地址 | 检查题目暴露端口、Service、FRP 配置和应用日志 |
 | 访问地址不可达 | 检查 Ingress/Service/NodePort/FRP、网络策略、防火墙和 `cbctf.host` |
-| VPC 模式失败 | 检查 Kube-OVN、Multus、外部网络配置和节点标签 |
+| VPC/VM 模式失败 | 检查 Kube-OVN、Multus、KubeVirt、外部网络配置、静态 IP 和 MAC 地址 |
 | 动态附件失败 | 检查共享 PVC、生成器镜像、生成器文件和 Job 日志 |
 | 无法停止靶机 | 检查 Kubernetes 删除权限、任务队列和残留资源标签 |
 
 ## 运维建议
 
 - 为题目容器设置合理 CPU 和内存，避免单个队伍耗尽集群资源。
+- 为 VM 题设置更保守的 CPU 和内存限制，并在比赛前压测节点可承载的 VM 数量。
 - 将比赛靶机运行在独立命名空间，并限制访问生产内网。
 - 私有镜像使用专用拉取凭据，不要把凭据写入公开仓库。
-- 比赛前预热镜像和关键靶机，确认所有端口可访问。
+- 比赛前预热镜像和关键靶机，确认普通 Pod、VPC 网络、KubeVirt VM 和所有端口可访问。
 - 比赛期间监控 Pod Pending、ImagePullBackOff、OOMKilled 和任务队列积压。
 - 比赛结束后清理靶机、检查 PVC 容量并备份必要文件。

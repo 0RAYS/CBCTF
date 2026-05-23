@@ -19,7 +19,19 @@ sidebar_position: 1
 
 ![vswitch.png](img/vswitch.png)
 
-> 不支持 macvlan 的云服务商通常无法使用 VPC 网络模式, 只能运行 Pod 网络模式的容器题。
+> 不支持 macvlan 的云服务商通常无法使用 VPC 网络模式, 只能运行 Pod 网络模式的容器题。KubeVirt VM 模式依赖 VPC 网络，因此也会受到相同限制。
+
+### KubeVirt 节点要求
+
+VM 靶机依赖 KubeVirt。集群节点需要支持硬件虚拟化或可用的嵌套虚拟化能力，并且 KubeVirt 控制组件、CRD 和 virt-launcher Pod 能正常运行。
+
+检查节点虚拟化能力：
+
+```bash
+egrep -c '(vmx|svm)' /proc/cpuinfo
+```
+
+返回值大于 `0` 通常表示节点 CPU 暴露了虚拟化能力。若运行在云厂商或虚拟化平台中，还需要确认该环境允许嵌套虚拟化。
 
 ### 外部网络网卡标签
 
@@ -90,6 +102,20 @@ wget https://raw.githubusercontent.com/kubeovn/kube-ovn/refs/tags/v1.16.0/dist/i
 bash install.sh
 ```
 
+## 安装 KubeVirt
+
+[KubeVirt](https://kubevirt.io/) 为 VM 靶机提供 `VirtualMachine` 资源和运行时能力。建议按 KubeVirt 官方文档安装稳定版本，并确认 `kubevirt` 命名空间中的组件 Ready。
+
+检查示例：
+
+```bash
+kubectl get kubevirt -A
+kubectl get pods -n kubevirt
+kubectl api-resources | grep virtualmachines
+```
+
+CBCTF 只会创建和删除 `VirtualMachine` 资源，不会自动安装 KubeVirt。VM 题目镜像需要由出题人制作成 KubeVirt 可启动的 `containerDisk` 镜像。
+
 ## 配置 StorageClass
 
 动态附件依赖支持 `ReadWriteMany` 的 PVC。K3S 默认 `local-path` 不支持 RWX, 需改用 NFS 等共享存储方案。
@@ -109,7 +135,7 @@ Helm 安装后, 应用启动时会检查或创建以下资源:
 - 外部网络 Subnet: `{namespace}-external-network-{interface}`
 - 外部网络 NAD: `kube-system/{namespace}-external-network-{interface}`
 
-其中 PVC 缺失会导致动态附件不可用。外部网络资源由后端按 `external_networks.interfaces` 创建; 若配置为空、创建失败或没有匹配节点标签, VPC 模式不可用。
+其中 PVC 缺失会导致动态附件不可用。外部网络资源由后端按 `external_networks.interfaces` 创建; 若配置为空、创建失败或没有匹配节点标签, VPC 模式不可用。KubeVirt 资源不会在启动时创建，只有启动包含 `x-kubevirt: true` 的 VM 靶机时才会创建对应 `VirtualMachine`。
 
 ## 跨云厂商节点
 
