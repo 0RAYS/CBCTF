@@ -47,10 +47,10 @@ CBCTF 支持三种题目类型, 覆盖从传统静态题到复杂网络靶机的
 容器题为每支队伍部署独立的靶机容器, 由出题人编写 `docker-compose.yaml` 配置。
 
 - 每队拥有独立的容器实例, 互不干扰
-- 支持 Pod 网络模式（简单多容器）和 VPC 网络模式（复杂网络拓扑）
+- 支持 Pod 网络模式（简单多容器）、VPC 网络模式（复杂网络拓扑）和 KubeVirt VM 模式
 - `docker-compose.yaml` 支持 service 级扩展字段 `x-kubevirt: true`, 用于标记该 service 按 KubeVirt VM 配置处理；可配合 `x-boot` 和 `x-cloudinit` 传递启动与 cloud-init 字段配置
 - flag 通过环境变量或文件 volume 注入容器
-- 需要 Kubernetes 集群（VPC 模式还需要 KubeOVN + Multus）
+- 需要 Kubernetes 集群（VPC 模式还需要 Kube-OVN + Multus，VM 模式还需要 KubeVirt）
 
 详见 [容器靶机](./container.md)。
 
