@@ -72,7 +72,7 @@ func renderChallengeFlagValue(value string) string {
 		return result[0][1]
 	}
 	if result := model.DynamicFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
-		return utils.RandFlag(result[0][1])
+		return utils.Leet(result[0][1])
 	}
 	if result := model.UUIDFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
 		return utils.UUID()

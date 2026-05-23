@@ -148,7 +148,7 @@ python3 generator.py $1 $2
 
 ### 🚩 Flag 支持
 
-- **变异支持**: flag 可能被变异为随机字符组合（参考 `/internal/utils/flag.go` 中 `RandFlag` 函数）
+- **变异支持**: flag 可能被变异为随机字符组合（参考 `/internal/utils/flag.go` 中 `Leet` 函数）
 - **长度支持**: 请确保附件能正确处理 **不定长 flag**
 
 ### 🏷️ 版本号规范

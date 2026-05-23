@@ -78,7 +78,7 @@ var leetTable = map[byte][]byte{
 	'!': {'!', '1', 'l'},
 }
 
-func RandFlag(s string) string {
+func Leet(s string) string {
 	var b strings.Builder
 	b.Grow(len(s))
 	randBytes := make([]byte, len(s))
