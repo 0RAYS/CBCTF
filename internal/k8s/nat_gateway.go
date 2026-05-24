@@ -76,7 +76,11 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 			},
 			// kube-ovn 作为副 CNI 时, 通过注解注入 lanIp 到 eth0
 			// https://github.com/kubeovn/kube-ovn/issues/6744
-			Annotations: map[string]string{"v1.multus-cni.io/default-network": fmt.Sprintf("%s/%s", globalNamespace, options.NetAttachDef)},
+			Annotations: map[string]string{
+				"v1.multus-cni.io/default-network": fmt.Sprintf("%s/%s", globalNamespace, options.NetAttachDef),
+				fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", options.NetAttachDef, globalNamespace): options.Subnet,
+				fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", options.NetAttachDef, globalNamespace):     options.LanIP,
+			},
 		},
 	}
 	gateway, err = ovnClient.KubeovnV1().VpcNatGateways().Create(ctx, gateway, metav1.CreateOptions{})
