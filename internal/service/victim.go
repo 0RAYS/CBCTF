@@ -278,17 +278,10 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 					}
 				}
 				if len(snats) > 0 || len(dnats) > 0 {
-					lanIP, err := utils.GetLastIP(subnet.CIDRBlock)
-					if err != nil {
-						return model.VictimSpec{}, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "IP", "Error": err.Error()}}
-					}
-					if !slices.Contains(subnet.ExcludeIps, lanIP) {
-						subnet.ExcludeIps = append(subnet.ExcludeIps, lanIP)
-					}
 					if subnet.NatGateway == nil {
 						subnet.NatGateway = &model.NatGateway{
 							Name:  fmt.Sprintf("nat-%s", utils.RandHexStr(20)),
-							LanIP: lanIP,
+							LanIP: subnet.Gateway,
 							EIP: &model.EIP{
 								Name: fmt.Sprintf("eip-%s", utils.RandHexStr(20)),
 							},
