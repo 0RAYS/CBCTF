@@ -56,7 +56,7 @@ CBCTF 是一个面向 CTF 比赛的管理与参赛平台。平台提供管理端
 | Helm 部署 | Kubernetes、Helm、可用 StorageClass |
 | 文件和动态附件 | 可写的 `/app/data` 数据卷，动态附件建议使用 RWX 存储 |
 | 动态靶机 | Kubernetes 命名空间、RBAC、可拉取题目镜像 |
-| VPC 靶机 | Kube-OVN、Multus CNI、外部网络节点标签 |
+| VPC 靶机 | Kube-OVN、Multus CNI |
 | 本地构建 | Go 1.26、Node.js 24、pnpm、CGO、libpcap 开发库 |
 
 如果只使用静态题，平台仍需要 PostgreSQL 和 Redis，但不一定需要 Kubernetes 靶机能力。当前 Helm Chart 默认会在 Kubernetes 中部署应用、PostgreSQL、Redis 和所需 RBAC。

@@ -8,10 +8,8 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
 	"context"
-	"crypto/rand"
 	"errors"
 	"fmt"
-	"math/big"
 	"os"
 	"path/filepath"
 	"slices"
@@ -20,7 +18,6 @@ import (
 	"sync"
 	"time"
 
-	kubeovnv1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -95,7 +92,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Gateway:      network.Definition.Gateway,
 					Subnet:       subnetMap[network.Definition.Name].Name,
 					NetAttachDef: netAttachDefMap[network.Definition.Name].Name,
-					External:     network.Definition.External,
 				})
 			}
 
@@ -246,13 +242,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				return errors.New(err.(string))
 			}
 
-			// 非 VPC 模式创建 NodePort 类型的 Service
-			if victim.Spec.NetworkPlan.Name == "" && len(pod.Spec.ServicePorts) > 0 {
+			if len(pod.Spec.ServicePorts) > 0 {
 				service, ret := CreateService(ctx, CreateServiceOptions{
 					Name:     fmt.Sprintf("svc-%s", utils.RandHexStr(20)),
 					Ports:    pod.Spec.ServicePorts,
 					Labels:   labels,
-					Selector: labels,
+					Selector: podLabels,
 				})
 				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 					return errors.New(err.(string))
@@ -305,11 +300,7 @@ func createVictimNetworkResources(
 	subnetMap := make(map[string]*model.Subnet)
 	netAttachDefMap := make(map[string]*model.NetAttachDef)
 	endpoints := make(model.Endpoints, 0)
-	endpointsMutex := &sync.Mutex{}
 	wg := utils.NewGroup(ctx)
-	if victim.Spec.NetworkPlan.Name != "" && len(externalNetworks) == 0 {
-		return nil, nil, nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "ExternalNetwork"}}
-	}
 
 	createNetworkPolicy := func(labels map[string]string, policies model.NetworkPolicies) error {
 		name := fmt.Sprintf("np-%s", utils.RandHexStr(20))
@@ -362,20 +353,6 @@ func createVictimNetworkResources(
 		_, ret := CreateVPC(ctx, CreateVPCOptions{
 			Name:   victim.Spec.NetworkPlan.Name,
 			Labels: labels,
-			PolicyRoutes: func() []*kubeovnv1.PolicyRoute {
-				policyRoutes := make([]*kubeovnv1.PolicyRoute, 0)
-				for _, subnet := range victim.Spec.NetworkPlan.Subnets {
-					if subnet != nil && subnet.NatGateway != nil {
-						policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
-							Action:    kubeovnv1.PolicyRouteActionReroute,
-							Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
-							NextHopIP: subnet.NatGateway.LanIP,
-							Priority:  1,
-						})
-					}
-				}
-				return policyRoutes
-			}(),
 		})
 		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 			return errors.New(err.(string))
@@ -387,10 +364,6 @@ func createVictimNetworkResources(
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 		if subnet == nil {
 			continue
-		}
-		externalNetwork, err := selectExternalNetwork()
-		if err != nil {
-			return nil, nil, nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "ExternalNetwork", "Error": err.Error()}}
 		}
 		subnetMap[subnet.DefName] = subnet
 		netAttachDefMap[subnet.DefName] = subnet.NetAttachDef
@@ -423,90 +396,6 @@ func createVictimNetworkResources(
 			log.Logger.Debugf("Created victim subnet: victim_id=%d subnet=%s", victim.ID, subnet.Name)
 			return nil
 		})
-
-		if subnet.NatGateway == nil {
-			continue
-		}
-
-		wg.Go(func() error {
-			_, ret := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
-				Name:           subnet.NatGateway.Name,
-				Labels:         labels,
-				VPC:            victim.Spec.NetworkPlan.Name,
-				Subnet:         subnet.Name,
-				NetAttachDef:   subnet.NetAttachDef.Name,
-				LanIP:          subnet.NatGateway.LanIP,
-				ExternalSubnet: externalNetwork.SubnetName,
-				Interface:      externalNetwork.Interface,
-			})
-			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-				return errors.New(err.(string))
-			}
-			log.Logger.Debugf("Created victim nat gateway: victim_id=%d nat_gateway=%s", victim.ID, subnet.NatGateway.Name)
-			return nil
-		})
-
-		wg.Go(func() error {
-			e, ret := CreateEIP(ctx, CreateEIPOptions{
-				Name:           subnet.NatGateway.EIP.Name,
-				Labels:         labels,
-				NatGw:          subnet.NatGateway.Name,
-				ExternalSubnet: externalNetwork.SubnetName,
-			})
-			if !ret.OK {
-				if err, ok := ret.Attr["Error"].(string); ok {
-					return errors.New(err)
-				}
-				return fmt.Errorf("create EIP %s failed: %s", subnet.NatGateway.EIP.Name, ret.Msg)
-			}
-			log.Logger.Debugf("Created victim eip: victim_id=%d eip=%s", victim.ID, subnet.NatGateway.EIP.Name)
-
-			for _, dnat := range subnet.NatGateway.EIP.DNats {
-				_, ret = CreateDNat(ctx, CreateDNatOptions{
-					Name:         dnat.Name,
-					Labels:       labels,
-					EIP:          subnet.NatGateway.EIP.Name,
-					ExternalPort: strconv.Itoa(int(dnat.ExternalPort)),
-					InternalPort: strconv.Itoa(int(dnat.InternalPort)),
-					InternalIP:   dnat.InternalIP,
-					Protocol:     dnat.Protocol,
-				})
-				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-					return errors.New(err.(string))
-				}
-				log.Logger.Debugf(
-					"Created victim dnat: victim_id=%d dnat=%s external_port=%d internal_ip=%s internal_port=%d protocol=%s",
-					victim.ID, dnat.Name, dnat.ExternalPort, dnat.InternalIP, dnat.InternalPort, dnat.Protocol,
-				)
-				endpointsMutex.Lock()
-				endpoint := model.Endpoint{
-					Name:     dnat.DisplayName,
-					IP:       e.Spec.V4ip,
-					Port:     dnat.ExternalPort,
-					Protocol: dnat.Protocol,
-				}
-				if !slices.ContainsFunc(victim.Endpoints, func(e model.Endpoint) bool {
-					return e.IP == endpoint.IP && e.Port == endpoint.Port && strings.EqualFold(e.Protocol, endpoint.Protocol)
-				}) {
-					victim.Endpoints = append(victim.Endpoints, endpoint)
-				}
-				endpointsMutex.Unlock()
-			}
-
-			for _, snat := range subnet.NatGateway.EIP.SNats {
-				_, ret = CreateSNat(ctx, CreateSNatOptions{
-					Name:         snat.Name,
-					Labels:       labels,
-					EIP:          subnet.NatGateway.EIP.Name,
-					InternalCIDR: subnet.CIDRBlock,
-				})
-				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-					return errors.New(err.(string))
-				}
-				log.Logger.Debugf("Created victim snat: victim_id=%d snat=%s cidr=%s", victim.ID, snat.Name, subnet.CIDRBlock)
-			}
-			return nil
-		})
 	}
 
 	if err := wg.Wait(); err != nil {
@@ -514,17 +403,6 @@ func createVictimNetworkResources(
 	}
 
 	return subnetMap, netAttachDefMap, endpoints, model.SuccessRetVal()
-}
-
-func selectExternalNetwork() (ExternalNetwork, error) {
-	if len(externalNetworks) == 1 {
-		return externalNetworks[0], nil
-	}
-	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(externalNetworks))))
-	if err != nil {
-		return ExternalNetwork{}, err
-	}
-	return externalNetworks[n.Int64()], nil
 }
 
 func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
@@ -543,12 +421,8 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		}
 	}
 	firstErr = model.SuccessRetVal()
-	tryDelete(DeleteDNatCollection(ctx, labels))
-	tryDelete(DeleteSNatCollection(ctx, labels))
-	tryDelete(DeleteEIPCollection(ctx, labels))
 	tryDelete(DeleteSubnetCollection(ctx, labels))
 	tryDelete(DeleteNetAttachDefCollection(ctx, globalNamespace, labels))
-	tryDelete(DeleteVPCNatGatewayCollection(ctx, labels))
 	tryDelete(DeleteVPCCollection(ctx, labels))
 	tryDelete(DeleteConfigMapCollection(ctx, labels))
 	tryDelete(DeleteNetworkPolicyCollection(ctx, labels))

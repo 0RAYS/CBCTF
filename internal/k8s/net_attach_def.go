@@ -13,13 +13,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const ExternalNetworkConfigTmpl = `{
-	"cniVersion": "0.3.0",
-	"type": "macvlan",
-	"master": %q,
-	"mode": "bridge"
-}`
-
 const OVNNetworkConfigTmpl = `{
 	"cniVersion": "0.3.0",
 	"type": "kube-ovn",
@@ -28,10 +21,8 @@ const OVNNetworkConfigTmpl = `{
 }`
 
 type CreateNetAttachDefOptions struct {
-	Name              string
-	Labels            map[string]string
-	IsExternalNetwork bool
-	Interface         string
+	Name   string
+	Labels map[string]string
 }
 
 func CreateNetAttachDef(ctx context.Context, options CreateNetAttachDefOptions) (*netattv1.NetworkAttachmentDefinition, model.RetVal) {
@@ -39,29 +30,20 @@ func CreateNetAttachDef(ctx context.Context, options CreateNetAttachDefOptions) 
 		netAttachDef *netattv1.NetworkAttachmentDefinition
 		err          error
 	)
-	namespace := "kube-system"
-	if !options.IsExternalNetwork {
-		namespace = globalNamespace
-	}
 	netAttachDef = &netattv1.NetworkAttachmentDefinition{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
-			Namespace: namespace,
+			Namespace: globalNamespace,
 			Labels:    options.Labels,
 		},
 		Spec: netattv1.NetworkAttachmentDefinitionSpec{
-			Config: func() string {
-				if options.IsExternalNetwork {
-					return fmt.Sprintf(ExternalNetworkConfigTmpl, options.Interface)
-				}
-				return fmt.Sprintf(OVNNetworkConfigTmpl, options.Name, globalNamespace)
-			}(),
+			Config: fmt.Sprintf(OVNNetworkConfigTmpl, options.Name, globalNamespace),
 		},
 	}
-	netAttachDef, err = netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace).Create(ctx, netAttachDef, metav1.CreateOptions{})
+	netAttachDef, err = netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(globalNamespace).Create(ctx, netAttachDef, metav1.CreateOptions{})
 	if err != nil {
 		if apierror.IsAlreadyExists(err) {
-			return GetNetAttachDef(ctx, options.Name, namespace)
+			return GetNetAttachDef(ctx, options.Name, globalNamespace)
 		}
 		log.Logger.Warningf("Failed to create NetworkAttachmentDefinition: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "NetworkAttachmentDefinition", "Error": err.Error()}}

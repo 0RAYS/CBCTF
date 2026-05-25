@@ -41,8 +41,6 @@ export function buildPayload(config) {
     k8s_frp_frps: config.k8s.frp.frps,
     k8s_frp_nginx: config.k8s.frp.nginx,
     k8s_frp_on: config.k8s.frp.on,
-    k8s_external_networks_enabled: config.k8s.external_networks?.enabled,
-    k8s_external_networks_interfaces: config.k8s.external_networks?.interfaces || [],
     k8s_namespace: config.k8s.namespace,
     k8s_capture: config.k8s.capture,
     path: config.path,

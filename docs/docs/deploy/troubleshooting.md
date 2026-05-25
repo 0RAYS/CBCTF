@@ -12,7 +12,7 @@ sidebar_position: 7
 2. 检查 PostgreSQL 和 Redis Pod 是否 Ready。
 3. 检查 Secret 中的数据库、Redis、JWT 配置是否正确。
 4. 检查应用 ServiceAccount 是否绑定了 Chart 创建的 ClusterRole。
-5. 如果启用 VPC 外部网络，检查 Kube-OVN、Multus 和节点标签。
+5. 如果使用 VPC 网络，检查 Kube-OVN 和 Multus。
 6. 如果使用 VM 靶机，检查 KubeVirt 组件、CRD 和节点虚拟化能力。
 
 ## 数据库连接失败
