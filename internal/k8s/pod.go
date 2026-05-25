@@ -21,7 +21,6 @@ type Network struct {
 	Gateway      string
 	Subnet       string
 	NetAttachDef string
-	External     bool
 }
 
 type CreatePodOptions struct {

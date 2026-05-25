@@ -111,6 +111,9 @@ func addFrpcProxy(config *frpcConfig, protocol string, localIP string, localPort
 }
 
 func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
+	if len(config.Env.K8S.Frp.Frps) == 0 {
+		return victim, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Frps"}}
+	}
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frp.Frps))))
 	frps := config.Env.K8S.Frp.Frps[idxBig.Int64()]
 	log.Logger.Debugf("Creating frpc resources: victim_id=%d frps=%s endpoints=%d", victim.ID, frps.Host, len(victim.Endpoints))

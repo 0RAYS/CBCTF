@@ -106,7 +106,6 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 	}
 	for name, network := range networks {
 		cfg.Networks[name] = types.NetworkConfig{
-			External: types.External(network.External),
 			Ipam: types.IPAMConfig{
 				Config: []*types.IPAMPool{
 					{

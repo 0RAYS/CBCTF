@@ -9,10 +9,9 @@ import (
 )
 
 type NetworkDefinition struct {
-	Name     string `json:"name"`
-	CIDR     string `json:"cidr"`
-	Gateway  string `json:"gateway"`
-	External bool   `json:"external"`
+	Name    string `json:"name"`
+	CIDR    string `json:"cidr"`
+	Gateway string `json:"gateway"`
 }
 
 type NetworkAttachment struct {

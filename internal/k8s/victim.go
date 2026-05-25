@@ -92,7 +92,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Gateway:      network.Definition.Gateway,
 					Subnet:       subnetMap[network.Definition.Name].Name,
 					NetAttachDef: netAttachDefMap[network.Definition.Name].Name,
-					External:     network.Definition.External,
 				})
 			}
 
