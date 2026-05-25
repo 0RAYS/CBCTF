@@ -278,9 +278,10 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			}
 			containers := []corev1.Container{
 				{
-					Name:  "frpc",
-					Image: config.Env.K8S.Frp.FrpcImage,
-					Args:  []string{"-c", "/etc/frp/frpc.toml"},
+					Name:            "frpc",
+					Image:           config.Env.K8S.Frp.FrpcImage,
+					ImagePullPolicy: corev1.PullIfNotPresent,
+					Args:            []string{"-c", "/etc/frp/frpc.toml"},
 					VolumeMounts: []corev1.VolumeMount{
 						{
 							Name:      fcmVolume.Name,
@@ -290,8 +291,9 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 					},
 				},
 				{
-					Name:  "nginx",
-					Image: config.Env.K8S.Frp.NginxImage,
+					Name:            "nginx",
+					Image:           config.Env.K8S.Frp.NginxImage,
+					ImagePullPolicy: corev1.PullIfNotPresent,
 					VolumeMounts: []corev1.VolumeMount{
 						{
 							Name:      ncmVolume.Name,
@@ -302,9 +304,10 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				},
 			}
 			capture := corev1.Container{
-				Name:    "capture",
-				Image:   config.Env.K8S.CaptureImage,
-				Command: []string{"/bin/sh", "-c"},
+				Name:            "capture",
+				Image:           config.Env.K8S.CaptureImage,
+				ImagePullPolicy: corev1.PullIfNotPresent,
+				Command:         []string{"/bin/sh", "-c"},
 				VolumeMounts: []corev1.VolumeMount{
 					{
 						Name:      nfsVolumeName,

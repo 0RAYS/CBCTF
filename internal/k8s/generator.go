@@ -45,8 +45,9 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 		Labels: labels,
 		Containers: []corev1.Container{
 			{
-				Name:  "generator",
-				Image: challenge.GeneratorImage,
+				Name:            "generator",
+				Image:           challenge.GeneratorImage,
+				ImagePullPolicy: corev1.PullIfNotPresent,
 				VolumeMounts: []corev1.VolumeMount{
 					{
 						Name:      nfsVolumeName,
