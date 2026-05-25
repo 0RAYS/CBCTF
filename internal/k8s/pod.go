@@ -53,18 +53,9 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 				for key, value := range options.Annotations {
 					annotations[key] = value
 				}
-				for i, network := range options.Networks {
-					if i == 0 {
-						annotations["ovn.kubernetes.io/logical_switch"] = network.Subnet
-						annotations["ovn.kubernetes.io/ip_address"] = network.IPv4
-						if network.MAC != "" {
-							annotations["ovn.kubernetes.io/mac_address"] = network.MAC
-						}
-						annotations["v1.multus-cni.io/default-network"] = fmt.Sprintf("%s/%s", globalNamespace, network.NetAttachDef)
-					} else {
-						annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
-						annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-					}
+				for _, network := range options.Networks {
+					annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
+					annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
 					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", network.NetAttachDef, globalNamespace)] = network.Subnet
 					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", network.NetAttachDef, globalNamespace)] = network.IPv4
 					if network.MAC != "" {
