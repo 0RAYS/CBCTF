@@ -1,0 +1,52 @@
+name: Build Test Image
+
+on:
+  push:
+    branches: [test]
+    paths:
+      - 'cmd/**'
+      - 'frontend/**'
+      - 'internal/**'
+      - '*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'Dockerfile'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set build variables
+        id: vars
+        run: |
+          echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ steps.vars.outputs.repo }}:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
