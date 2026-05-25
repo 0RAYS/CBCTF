@@ -163,6 +163,11 @@ func EnrichPcap(ctx context.Context, pcapPath, jsonlPath, outputPath string) err
 }
 
 func extractTrafficConnection(packet gopacket.Packet, processLookup trafficProcessLookup) (Connection, bool) {
+	// 不读取 IPv6 协议
+	if packet.Layer(layers.LayerTypeIPv6) != nil {
+		return Connection{}, false
+	}
+
 	connection := Connection{Size: packet.Metadata().CaptureLength, Time: packet.Metadata().Timestamp}
 	src, dst, srcPort, dstPort, baseLayerIndex, ok := extractTrafficEndpoints(packet)
 	if !ok {
