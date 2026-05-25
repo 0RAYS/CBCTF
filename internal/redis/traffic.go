@@ -15,7 +15,6 @@ import (
 
 const (
 	trafficsKey = "traffics:%d"
-	trafficKey  = "traffic:%d:%d"
 )
 
 func UpdateTraffics(victim model.Victim) model.RetVal {
@@ -36,10 +35,10 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 	for i, conn := range connections {
 		pipe.ZAdd(ctx, key, redis.Z{
 			Score:  float64(conn.Time.UnixNano()),
-			Member: fmt.Sprintf(trafficKey, victim.ID, i),
+			Member: fmt.Sprintf(trafficsKey+":%d", victim.ID, i),
 		})
 		data, _ := msgpack.Marshal(&conn)
-		pipe.Set(ctx, fmt.Sprintf(trafficKey, victim.ID, i), data, 30*time.Minute)
+		pipe.Set(ctx, fmt.Sprintf(trafficsKey+":%d", victim.ID, i), data, 30*time.Minute)
 	}
 	pipe.Expire(ctx, key, 30*time.Minute)
 	if _, err = pipe.Exec(ctx); err != nil {
