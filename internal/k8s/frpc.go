@@ -128,83 +128,38 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	podFrpcConfigMap := make(map[string]string)
 	podNginxConfigMap := make(map[string]string)
 	podVPCGWMap := make(map[string]string)
-	if len(victim.Spec.NetworkPlan.Subnets) == 0 {
-		podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6))
-		// 添加一个独立tag, 防止受 NetworkPolicy 影响
-		frpcConfig := newFrpcConfig(frps.Host, frps.Port, frps.Token)
-		nginxConfig := nginxConfig{}
-		for _, endpoint := range victim.Endpoints {
-			exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
-			if !ret.OK {
-				return victim, ret
-			}
-			// 对于 TCP 协议, 启用 proxy_protocol
-			if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
-				addFrpcProxy(&frpcConfig, protocol, "127.0.0.1", endpoint.Port, exposedPort, true)
-				name := utils.RandHexStr(10)
-				nginxConfig.Streams = append(nginxConfig.Streams, nginxStream{Name: name, TargetIP: endpoint.IP, TargetPort: endpoint.Port, ListenPort: endpoint.Port})
-			} else {
-				addFrpcProxy(&frpcConfig, protocol, endpoint.IP, endpoint.Port, exposedPort, false)
-			}
-			newEndpoints = append(newEndpoints, model.Endpoint{
-				Name:     endpoint.Name,
-				IP:       frps.Host,
-				Port:     exposedPort,
-				Protocol: endpoint.Protocol,
-			})
-			log.Logger.Debugf("Reserved frpc endpoint: victim_id=%d %s:%d -> %s:%d protocol=%s", victim.ID, frps.Host, exposedPort, endpoint.IP, endpoint.Port, endpoint.Protocol)
+	podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6))
+	// 添加一个独立tag, 防止受 NetworkPolicy 影响
+	frpcConfig := newFrpcConfig(frps.Host, frps.Port, frps.Token)
+	nginxConfig := nginxConfig{}
+	for _, endpoint := range victim.Endpoints {
+		exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
+		if !ret.OK {
+			return victim, ret
 		}
-		frpcConfigData, err := frpcConfig.String()
-		if err != nil {
-			return victim, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
+		// 对于 TCP 协议, 启用 proxy_protocol
+		if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
+			addFrpcProxy(&frpcConfig, protocol, "127.0.0.1", endpoint.Port, exposedPort, true)
+			name := utils.RandHexStr(10)
+			nginxConfig.Streams = append(nginxConfig.Streams, nginxStream{Name: name, TargetIP: endpoint.IP, TargetPort: endpoint.Port, ListenPort: endpoint.Port})
+		} else {
+			addFrpcProxy(&frpcConfig, protocol, endpoint.IP, endpoint.Port, exposedPort, false)
 		}
-		podFrpcConfigMap[podName] = frpcConfigData
-		podNginxConfigMap[podName] = nginxConfig.String()
-		frpcPodNameL = append(frpcPodNameL, podName)
-	} else {
-		for _, subnet := range victim.Spec.NetworkPlan.Subnets {
-			if subnet.NatGateway == nil {
-				continue
-			}
-			needFrpc := false
-			podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6))
-			frpcConfig := newFrpcConfig(frps.Host, frps.Port, frps.Token)
-			nginxConfig := nginxConfig{}
-			for _, dnat := range subnet.NatGateway.EIP.DNats {
-				exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
-				if !ret.OK {
-					return victim, ret
-				}
-				// 对于 TCP 协议, 启用 proxy_protocol
-				if protocol := strings.ToLower(dnat.Protocol); protocol == "tcp" {
-					addFrpcProxy(&frpcConfig, protocol, "127.0.0.1", dnat.ExternalPort, exposedPort, true)
-					name := utils.RandHexStr(10)
-					nginxConfig.Streams = append(nginxConfig.Streams, nginxStream{Name: name, TargetIP: subnet.NatGateway.EIP.IP, TargetPort: dnat.ExternalPort, ListenPort: dnat.ExternalPort})
-				} else {
-					addFrpcProxy(&frpcConfig, strings.ToLower(dnat.Protocol), subnet.NatGateway.EIP.IP, dnat.ExternalPort, exposedPort, false)
-				}
-				newEndpoints = append(newEndpoints, model.Endpoint{
-					Name:     dnat.DisplayName,
-					IP:       frps.Host,
-					Port:     exposedPort,
-					Protocol: dnat.Protocol,
-				})
-				log.Logger.Debugf("Reserved frpc endpoint: victim_id=%d %s:%d -> %s:%d protocol=%s", victim.ID, frps.Host, exposedPort, subnet.NatGateway.EIP.IP, dnat.ExternalPort, dnat.Protocol)
-				needFrpc = true
-			}
-			if !needFrpc {
-				continue
-			}
-			frpcConfigData, err := frpcConfig.String()
-			if err != nil {
-				return victim, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
-			}
-			podFrpcConfigMap[podName] = frpcConfigData
-			podNginxConfigMap[podName] = nginxConfig.String()
-			podVPCGWMap[podName] = subnet.NatGateway.Name
-			frpcPodNameL = append(frpcPodNameL, podName)
-		}
+		newEndpoints = append(newEndpoints, model.Endpoint{
+			Name:     endpoint.Name,
+			IP:       frps.Host,
+			Port:     exposedPort,
+			Protocol: endpoint.Protocol,
+		})
+		log.Logger.Debugf("Reserved frpc endpoint: victim_id=%d %s:%d -> %s:%d protocol=%s", victim.ID, frps.Host, exposedPort, endpoint.IP, endpoint.Port, endpoint.Protocol)
 	}
+	frpcConfigData, err := frpcConfig.String()
+	if err != nil {
+		return victim, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
+	}
+	podFrpcConfigMap[podName] = frpcConfigData
+	podNginxConfigMap[podName] = nginxConfig.String()
+	frpcPodNameL = append(frpcPodNameL, podName)
 	victim.ExposedEndpoints = newEndpoints
 	victim.Pods = append(victim.Pods, func(victimID uint, podNames []string) []model.Pod {
 		frpcPods := make([]model.Pod, 0, len(podNames))

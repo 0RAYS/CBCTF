@@ -86,34 +86,7 @@ type Subnet struct {
 	CIDRBlock    string        `json:"cidr_block"`
 	Gateway      string        `json:"gateway"`
 	ExcludeIps   []string      `json:"exclude_ips"`
-	NatGateway   *NatGateway   `json:"nat_gateway"`
 	NetAttachDef *NetAttachDef `json:"net_attach_def"`
-}
-
-type NatGateway struct {
-	Name  string `json:"name"`
-	LanIP string `json:"lan_ip"`
-	EIP   *EIP   `json:"eip"`
-}
-
-type EIP struct {
-	Name  string  `json:"name"`
-	IP    string  `json:"ip"`
-	DNats []*DNat `json:"dnats"`
-	SNats []*SNat `json:"snats"`
-}
-
-type DNat struct {
-	Name         string `json:"name"`
-	DisplayName  string `json:"display_name"`
-	ExternalPort int32  `json:"external_port"`
-	InternalIP   string `json:"internal_ip"`
-	InternalPort int32  `json:"internal_port"`
-	Protocol     string `json:"protocol"`
-}
-
-type SNat struct {
-	Name string `json:"name"`
 }
 
 type NetAttachDef struct {
@@ -135,17 +108,6 @@ func (v VPC) Value() (driver.Value, error) {
 			}
 			return false
 		})
-		if s.NatGateway != nil {
-			if lanIP, err := netip.ParseAddr(s.NatGateway.LanIP); err != nil || !cidr.Contains(lanIP) {
-				return true
-			}
-			s.NatGateway.EIP.DNats = slices.DeleteFunc(s.NatGateway.EIP.DNats, func(d *DNat) bool {
-				if i, err := netip.ParseAddr(d.InternalIP); err != nil || !cidr.Contains(i) {
-					return true
-				}
-				return false
-			})
-		}
 		return false
 	})
 	return json.Marshal(v)

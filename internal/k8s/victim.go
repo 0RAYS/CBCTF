@@ -8,10 +8,8 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
 	"context"
-	"crypto/rand"
 	"errors"
 	"fmt"
-	"math/big"
 	"os"
 	"path/filepath"
 	"slices"
@@ -362,16 +360,7 @@ func createVictimNetworkResources(
 			Labels: labels,
 			PolicyRoutes: func() []*kubeovnv1.PolicyRoute {
 				policyRoutes := make([]*kubeovnv1.PolicyRoute, 0)
-				for _, subnet := range victim.Spec.NetworkPlan.Subnets {
-					if subnet != nil && subnet.NatGateway != nil {
-						policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
-							Action:    kubeovnv1.PolicyRouteActionReroute,
-							Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
-							NextHopIP: subnet.NatGateway.LanIP,
-							Priority:  1,
-						})
-					}
-				}
+				// TODO
 				return policyRoutes
 			}(),
 		})
@@ -424,17 +413,6 @@ func createVictimNetworkResources(
 	}
 
 	return subnetMap, netAttachDefMap, endpoints, model.SuccessRetVal()
-}
-
-func selectExternalNetwork() (ExternalNetwork, error) {
-	if len(externalNetworks) == 1 {
-		return externalNetworks[0], nil
-	}
-	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(externalNetworks))))
-	if err != nil {
-		return ExternalNetwork{}, err
-	}
-	return externalNetworks[n.Int64()], nil
 }
 
 func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
