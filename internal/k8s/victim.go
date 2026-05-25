@@ -120,9 +120,10 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				return nil
 			}
 			capture := corev1.Container{
-				Name:    "capture",
-				Image:   config.Env.K8S.CaptureImage,
-				Command: []string{"/bin/sh", "-c"},
+				Name:            "capture",
+				Image:           config.Env.K8S.CaptureImage,
+				ImagePullPolicy: corev1.PullIfNotPresent,
+				Command:         []string{"/bin/sh", "-c"},
 				VolumeMounts: []corev1.VolumeMount{
 					{
 						Name:      nfsVolumeName,
@@ -213,11 +214,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				}
 
 				tmp := corev1.Container{
-					Name:         container.Name,
-					Image:        container.Image,
-					Env:          envs,
-					Ports:        ports,
-					VolumeMounts: volumeMounts,
+					Name:            container.Name,
+					Image:           container.Image,
+					ImagePullPolicy: corev1.PullIfNotPresent,
+					Env:             envs,
+					Ports:           ports,
+					VolumeMounts:    volumeMounts,
 					Resources: corev1.ResourceRequirements{
 						Limits: limit,
 					},
