@@ -305,7 +305,6 @@ func createVictimNetworkResources(
 	subnetMap := make(map[string]*model.Subnet)
 	netAttachDefMap := make(map[string]*model.NetAttachDef)
 	endpoints := make(model.Endpoints, 0)
-	endpointsMutex := &sync.Mutex{}
 	wg := utils.NewGroup(ctx)
 	if victim.Spec.NetworkPlan.Name != "" && len(externalNetworks) == 0 {
 		return nil, nil, nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "ExternalNetwork"}}
@@ -388,10 +387,6 @@ func createVictimNetworkResources(
 		if subnet == nil {
 			continue
 		}
-		externalNetwork, err := selectExternalNetwork()
-		if err != nil {
-			return nil, nil, nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "ExternalNetwork", "Error": err.Error()}}
-		}
 		subnetMap[subnet.DefName] = subnet
 		netAttachDefMap[subnet.DefName] = subnet.NetAttachDef
 
@@ -421,90 +416,6 @@ func createVictimNetworkResources(
 				return errors.New(err.(string))
 			}
 			log.Logger.Debugf("Created victim subnet: victim_id=%d subnet=%s", victim.ID, subnet.Name)
-			return nil
-		})
-
-		if subnet.NatGateway == nil {
-			continue
-		}
-
-		wg.Go(func() error {
-			_, ret := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
-				Name:           subnet.NatGateway.Name,
-				Labels:         labels,
-				VPC:            victim.Spec.NetworkPlan.Name,
-				Subnet:         subnet.Name,
-				NetAttachDef:   subnet.NetAttachDef.Name,
-				LanIP:          subnet.NatGateway.LanIP,
-				ExternalSubnet: externalNetwork.SubnetName,
-				Interface:      externalNetwork.Interface,
-			})
-			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-				return errors.New(err.(string))
-			}
-			log.Logger.Debugf("Created victim nat gateway: victim_id=%d nat_gateway=%s", victim.ID, subnet.NatGateway.Name)
-			return nil
-		})
-
-		wg.Go(func() error {
-			e, ret := CreateEIP(ctx, CreateEIPOptions{
-				Name:           subnet.NatGateway.EIP.Name,
-				Labels:         labels,
-				NatGw:          subnet.NatGateway.Name,
-				ExternalSubnet: externalNetwork.SubnetName,
-			})
-			if !ret.OK {
-				if err, ok := ret.Attr["Error"].(string); ok {
-					return errors.New(err)
-				}
-				return fmt.Errorf("create EIP %s failed: %s", subnet.NatGateway.EIP.Name, ret.Msg)
-			}
-			log.Logger.Debugf("Created victim eip: victim_id=%d eip=%s", victim.ID, subnet.NatGateway.EIP.Name)
-
-			for _, dnat := range subnet.NatGateway.EIP.DNats {
-				_, ret = CreateDNat(ctx, CreateDNatOptions{
-					Name:         dnat.Name,
-					Labels:       labels,
-					EIP:          subnet.NatGateway.EIP.Name,
-					ExternalPort: strconv.Itoa(int(dnat.ExternalPort)),
-					InternalPort: strconv.Itoa(int(dnat.InternalPort)),
-					InternalIP:   dnat.InternalIP,
-					Protocol:     dnat.Protocol,
-				})
-				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-					return errors.New(err.(string))
-				}
-				log.Logger.Debugf(
-					"Created victim dnat: victim_id=%d dnat=%s external_port=%d internal_ip=%s internal_port=%d protocol=%s",
-					victim.ID, dnat.Name, dnat.ExternalPort, dnat.InternalIP, dnat.InternalPort, dnat.Protocol,
-				)
-				endpointsMutex.Lock()
-				endpoint := model.Endpoint{
-					Name:     dnat.DisplayName,
-					IP:       e.Spec.V4ip,
-					Port:     dnat.ExternalPort,
-					Protocol: dnat.Protocol,
-				}
-				if !slices.ContainsFunc(victim.Endpoints, func(e model.Endpoint) bool {
-					return e.IP == endpoint.IP && e.Port == endpoint.Port && strings.EqualFold(e.Protocol, endpoint.Protocol)
-				}) {
-					victim.Endpoints = append(victim.Endpoints, endpoint)
-				}
-				endpointsMutex.Unlock()
-			}
-
-			for _, snat := range subnet.NatGateway.EIP.SNats {
-				_, ret = CreateSNat(ctx, CreateSNatOptions{
-					Name:         snat.Name,
-					Labels:       labels,
-					EIP:          subnet.NatGateway.EIP.Name,
-					InternalCIDR: subnet.CIDRBlock,
-				})
-				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-					return errors.New(err.(string))
-				}
-				log.Logger.Debugf("Created victim snat: victim_id=%d snat=%s cidr=%s", victim.ID, snat.Name, subnet.CIDRBlock)
-			}
 			return nil
 		})
 	}
@@ -543,12 +454,8 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		}
 	}
 	firstErr = model.SuccessRetVal()
-	tryDelete(DeleteDNatCollection(ctx, labels))
-	tryDelete(DeleteSNatCollection(ctx, labels))
-	tryDelete(DeleteEIPCollection(ctx, labels))
 	tryDelete(DeleteSubnetCollection(ctx, labels))
 	tryDelete(DeleteNetAttachDefCollection(ctx, globalNamespace, labels))
-	tryDelete(DeleteVPCNatGatewayCollection(ctx, labels))
 	tryDelete(DeleteVPCCollection(ctx, labels))
 	tryDelete(DeleteConfigMapCollection(ctx, labels))
 	tryDelete(DeleteNetworkPolicyCollection(ctx, labels))
