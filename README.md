@@ -196,7 +196,10 @@ services:
         mac_address: "00:00:00:00:01:01"
 networks:
   vpc:
-    external: true
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+          gateway: 192.168.1.1
 ```
 
 详细示例: [VPC 配置示例](example/pods/vpc/docker-compose.yaml)

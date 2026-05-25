@@ -35,12 +35,12 @@ CBCTF 采用两层题目管理:
 
 1. 访问题目详情, 点击「测试」
 2. 平台以管理员身份启动靶机容器或 KubeVirt VM（不绑定任何队伍）
-3. 验证端口连通性、Flag 注入、cloud-init 写入和访问地址是否正确
+3. 普通 Pod 题验证端口连通性和访问地址；VM 题验证 VM 启动、网络接入、Flag 注入和 cloud-init 写入
 4. 测试完成后停止靶机
 
 测试模式下不产生实际的 flag 和队伍记录。
 
-如果题目使用 `x-kubevirt: true`，测试前应确认集群已安装 KubeVirt，题目使用 VPC 网络并配置了每张网卡的 `ipv4_address` 和 `mac_address`。VM 模式的普通环境变量和 `x-volumes` 不会注入到虚拟机，建议通过 `x-cloudinit.write_files` 验证文件和 Flag 写入。
+如果题目使用 `x-kubevirt: true`，测试前应确认集群已安装 KubeVirt，题目使用 VPC 网络并配置了每张网卡的 `ipv4_address` 和 `mac_address`。VM 模式的 `ports` 不会生成平台访问地址；普通环境变量和 `x-volumes` 也不会注入到虚拟机，建议通过 `x-cloudinit.write_files` 验证文件和 Flag 写入。
 
 ## 加入比赛
 

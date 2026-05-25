@@ -77,7 +77,6 @@ const createGuideService = () => ({
 
 const createGuideNetwork = () => ({
   name: '',
-  external: false,
   subnet: '',
   gateway: '',
 });
@@ -467,7 +466,6 @@ const buildGuidedComposeYaml = (config) => {
     lines.push('', 'networks:');
     networks.forEach((network) => {
       lines.push(`  ${network.name.trim()}:`);
-      if (network.external) lines.push('    external: true');
       lines.push(
         '    ipam:',
         '      config:',
@@ -863,15 +861,12 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
       errors.push(t('admin.challengeModal.composeGuide.validation.unparseableLine', { line: line.index }));
     } else if (section === 'networks') {
       if (indent === 2 && text.endsWith(':')) {
-        network = { name: text.slice(0, -1), external: false, subnet: '', gateway: '' };
+        network = { name: text.slice(0, -1), subnet: '', gateway: '' };
         networks.push(network);
       } else if (network && indent === 4) {
         const pair = parseKeyValueLine(text);
-        if (pair?.key === 'external') {
-          if (!['true', 'false'].includes(pair.value))
-            errors.push(t('admin.challengeModal.composeGuide.validation.networkExternalInvalid', { line: line.index }));
-          network.external = pair.value === 'true';
-        }
+        if (pair?.key === 'external' && !['true', 'false'].includes(pair.value))
+          errors.push(t('admin.challengeModal.composeGuide.validation.networkExternalInvalid', { line: line.index }));
       } else if (network && indent >= 8) {
         const pair = parseKeyValueLine(text);
         const key = pair?.key.replace(/^-\s*/, '');
@@ -2987,7 +2982,7 @@ function AdminChallengeModal({
                               </Button>
                             </div>
                             {guideConfig.networks.map((network, networkIndex) => (
-                              <div key={networkIndex} className="grid grid-cols-[2fr_3fr_2fr_112px_32px] gap-2">
+                              <div key={networkIndex} className="grid grid-cols-[2fr_3fr_2fr_32px] gap-2">
                                 <GuideField label={ct('fields.nameRequired')}>
                                   <input
                                     className={inputBaseClass}
@@ -3017,18 +3012,6 @@ function AdminChallengeModal({
                                     onChange={(e) => updateGuideNetwork(networkIndex, 'gateway', e.target.value)}
                                   />
                                   <GuideErrors errors={guideFieldErrors[`network.${networkIndex}.gateway`]} />
-                                </GuideField>
-                                <GuideField label={ct('fields.external')}>
-                                  <select
-                                    className={selectClass}
-                                    value={network.external ? 'true' : 'false'}
-                                    onChange={(e) =>
-                                      updateGuideNetwork(networkIndex, 'external', e.target.value === 'true')
-                                    }
-                                  >
-                                    <option value="true">true</option>
-                                    <option value="false">false</option>
-                                  </select>
                                 </GuideField>
                                 <IconButton onClick={() => removeGuideNetwork(networkIndex)} />
                               </div>
