@@ -99,10 +99,6 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 							annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", network.NetAttachDef, globalNamespace)] = network.Subnet
 							annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", network.NetAttachDef, globalNamespace)] = network.IPv4
 							annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/mac_address", network.NetAttachDef, globalNamespace)] = network.MAC
-							// 需要出网时, 设定网关
-							if network.External {
-								annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", network.NetAttachDef, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Gateway)
-							}
 						}
 						return annotations
 					}(),

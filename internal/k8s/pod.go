@@ -61,9 +61,6 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 					if network.MAC != "" {
 						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/mac_address", network.NetAttachDef, globalNamespace)] = network.MAC
 					}
-					if network.External {
-						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", network.NetAttachDef, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Gateway)
-					}
 				}
 				if len(annotations) == 0 {
 					return nil
