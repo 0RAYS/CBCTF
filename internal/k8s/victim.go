@@ -248,7 +248,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Name:     fmt.Sprintf("svc-%s", utils.RandHexStr(20)),
 					Ports:    pod.Spec.ServicePorts,
 					Labels:   labels,
-					Selector: labels,
+					Selector: podLabels,
 				})
 				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 					return errors.New(err.(string))
