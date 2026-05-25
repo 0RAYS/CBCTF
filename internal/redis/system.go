@@ -11,7 +11,7 @@ import (
 	"github.com/shirou/gopsutil/mem"
 )
 
-const systemMetricsKey = "system_metrics"
+const systemMetricsKey = "system:metrics"
 
 type SystemMetrics struct {
 	Timestamp string  `json:"timestamp"`
