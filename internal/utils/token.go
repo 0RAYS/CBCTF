@@ -21,7 +21,7 @@ func GenerateToken(id uint, name, magic, secret string) (tokenString string, err
 		Name:   name,
 		X:      HashMagic(magic),
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(6 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 		}}
