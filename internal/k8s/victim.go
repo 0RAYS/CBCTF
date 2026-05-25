@@ -246,8 +246,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				return errors.New(err.(string))
 			}
 
-			// 非 VPC 模式创建 NodePort 类型的 Service
-			if victim.Spec.NetworkPlan.Name == "" && len(pod.Spec.ServicePorts) > 0 {
+			if len(pod.Spec.ServicePorts) > 0 {
 				service, ret := CreateService(ctx, CreateServiceOptions{
 					Name:     fmt.Sprintf("svc-%s", utils.RandHexStr(20)),
 					Ports:    pod.Spec.ServicePorts,
