@@ -145,15 +145,6 @@ cbctf:
       frpc: "snowdreamtech/frpc:latest"
       nginx: "nginx:latest"
       frps: []
-    external_networks:
-      enabled: true
-      # The backend creates these external Kube-OVN Subnets and Multus NetworkAttachmentDefinitions at startup.
-      # Each entry creates <namespace>-external-network-<name> and schedules NAT gateway pods to nodes labeled
-      # node.cbctf.io/external-network=<interface>.
-      interfaces:
-        - interface: ens192
-          cidr: "192.168.0.0/24"
-          gateway: "192.168.0.1"
 
   cheat:
     ip:

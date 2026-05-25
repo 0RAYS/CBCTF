@@ -23,29 +23,20 @@ const (
 )
 
 var (
-	kubeClient       *kubernetes.Clientset
-	netattClient     *netattclient.Clientset
-	ovnClient        *ovnclient.Clientset
-	virtClient       *virtclient.Clientset
-	kubeConfig       *rest.Config
-	globalNamespace  string
-	externalNetworks []ExternalNetwork
-	nfsVolumeName    string
+	kubeClient      *kubernetes.Clientset
+	netattClient    *netattclient.Clientset
+	ovnClient       *ovnclient.Clientset
+	virtClient      *virtclient.Clientset
+	kubeConfig      *rest.Config
+	globalNamespace string
+	nfsVolumeName   string
 )
-
-type ExternalNetwork struct {
-	SubnetName string
-	Interface  string
-	CIDR       string
-	Gateway    string
-}
 
 func Init() {
 	globalNamespace = config.Env.K8S.Namespace
 	nfsVolumeName = fmt.Sprintf("%s-shared-volume", globalNamespace)
 	initClients()
 	checkPermissions()
-	initExternalNetworks()
 	checkResources()
 }
 

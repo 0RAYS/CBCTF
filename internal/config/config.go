@@ -15,12 +15,6 @@ import (
 	"go.yaml.in/yaml/v4"
 )
 
-type Interface struct {
-	Interface string `mapstructure:"interface" json:"interface" binding:"required,min=1"`
-	CIDR      string `mapstructure:"cidr" json:"cidr" binding:"required,cidr"`
-	Gateway   string `mapstructure:"gateway" json:"gateway" binding:"required,ip"`
-}
-
 type FrpsConfig struct {
 	Host    string `json:"host" binding:"required,hostname|ip"`
 	Port    int32  `json:"port" binding:"required,gte=0,lte=65535"`
@@ -93,14 +87,10 @@ type Config struct {
 		Pwd  string `mapstructure:"pwd" json:"pwd"`
 	} `mapstructure:"redis" json:"redis"`
 	K8S struct {
-		Config           string `mapstructure:"config" json:"config"`
-		Namespace        string `mapstructure:"namespace" json:"namespace"`
-		CaptureImage     string `mapstructure:"capture" json:"capture"`
-		ExternalNetworks struct {
-			Enabled    bool        `mapstructure:"enabled" json:"enabled"`
-			Interfaces []Interface `mapstructure:"interfaces" json:"interfaces"`
-		} `mapstructure:"external_networks" json:"external_networks"`
-		Frp struct {
+		Config       string `mapstructure:"config" json:"config"`
+		Namespace    string `mapstructure:"namespace" json:"namespace"`
+		CaptureImage string `mapstructure:"capture" json:"capture"`
+		Frp          struct {
 			On         bool         `mapstructure:"on" json:"on"`
 			FrpcImage  string       `mapstructure:"frpc" json:"frpc"`
 			NginxImage string       `mapstructure:"nginx" json:"nginx"`

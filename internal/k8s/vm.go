@@ -93,23 +93,12 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: func() map[string]string {
 						annotations := make(map[string]string)
-						for i, network := range options.Networks {
-							if i == 0 {
-								annotations["ovn.kubernetes.io/logical_switch"] = network.Subnet
-								annotations["ovn.kubernetes.io/ip_address"] = network.IPv4
-								annotations["ovn.kubernetes.io/mac_address"] = network.MAC
-								annotations["v1.multus-cni.io/default-network"] = fmt.Sprintf("%s/%s", globalNamespace, network.NetAttachDef)
-							} else {
-								annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
-								annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-							}
+						for _, network := range options.Networks {
+							annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
+							annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
 							annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", network.NetAttachDef, globalNamespace)] = network.Subnet
 							annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", network.NetAttachDef, globalNamespace)] = network.IPv4
 							annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/mac_address", network.NetAttachDef, globalNamespace)] = network.MAC
-							// 需要出网时, 设定网关
-							if network.External {
-								annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", network.NetAttachDef, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Gateway)
-							}
 						}
 						return annotations
 					}(),

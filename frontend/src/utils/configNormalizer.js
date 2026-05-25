@@ -119,16 +119,6 @@ export function normalizeConfig(source) {
       config: fallback(source?.k8s_config, fallback(source?.k8s?.config, '')),
       namespace: fallback(source?.k8s_namespace, fallback(source?.k8s?.namespace, '')),
       capture: fallback(source?.k8s_capture, fallback(source?.k8s?.capture, '')),
-      external_networks: {
-        enabled: fallback(
-          source?.k8s_external_networks_enabled,
-          fallback(source?.k8s_external_networks?.enabled, fallback(source?.k8s?.external_networks?.enabled, false))
-        ),
-        interfaces: fallback(
-          source?.k8s_external_networks_interfaces,
-          fallback(source?.k8s_external_networks?.interfaces, fallback(source?.k8s?.external_networks?.interfaces, []))
-        ),
-      },
       frp: {
         frpc: fallback(source?.k8s_frp_frpc, fallback(source?.k8s?.frp?.frpc, '')),
         nginx: fallback(source?.k8s_frp_nginx, fallback(source?.k8s?.frp?.nginx, '')),
