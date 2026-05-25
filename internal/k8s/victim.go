@@ -18,7 +18,6 @@ import (
 	"sync"
 	"time"
 
-	kubeovnv1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -303,9 +302,6 @@ func createVictimNetworkResources(
 	netAttachDefMap := make(map[string]*model.NetAttachDef)
 	endpoints := make(model.Endpoints, 0)
 	wg := utils.NewGroup(ctx)
-	if victim.Spec.NetworkPlan.Name != "" && len(externalNetworks) == 0 {
-		return nil, nil, nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "ExternalNetwork"}}
-	}
 
 	createNetworkPolicy := func(labels map[string]string, policies model.NetworkPolicies) error {
 		name := fmt.Sprintf("np-%s", utils.RandHexStr(20))
@@ -358,11 +354,6 @@ func createVictimNetworkResources(
 		_, ret := CreateVPC(ctx, CreateVPCOptions{
 			Name:   victim.Spec.NetworkPlan.Name,
 			Labels: labels,
-			PolicyRoutes: func() []*kubeovnv1.PolicyRoute {
-				policyRoutes := make([]*kubeovnv1.PolicyRoute, 0)
-				// TODO
-				return policyRoutes
-			}(),
 		})
 		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 			return errors.New(err.(string))

@@ -33,19 +33,6 @@ egrep -c '(vmx|svm)' /proc/cpuinfo
 
 返回值大于 `0` 通常表示节点 CPU 暴露了虚拟化能力。若运行在云厂商或虚拟化平台中，还需要确认该环境允许嵌套虚拟化。
 
-### 外部网络网卡标签
-
-CBCTF 支持为不同节点配置不同的外部网卡。Helm values 中的 `cbctf.k8s.external_networks.interfaces` 定义每个外部网络使用的宿主机网卡名、CIDR 和网关。后端启动时会为每一项创建对应的 Kube-OVN Subnet 与 Multus NAD。
-
-需要为可承载该外部网络的节点添加固定标签, 标签值必须等于配置中的 `interface`: 
-
-```bash
-kubectl label node <node-with-eth0> node.cbctf.io/external-network=eth0
-kubectl label node <node-with-ens192> node.cbctf.io/external-network=ens192
-```
-
-`VpcNatGateway` 会根据所选外部网络自动添加节点亲和性, 仅调度到匹配 `node.cbctf.io/external-network=<interface>` 的节点。
-
 ## 安装 NFS 客户端
 
 动态附件与题目文件共享依赖 RWX 存储。所有节点需要安装 NFS 客户端: 
@@ -132,17 +119,5 @@ Helm 安装后, 应用启动时会检查或创建以下资源:
 
 - 命名空间: `{namespace}`
 - 共享存储 PVC: `{namespace}-shared-volume`
-- 外部网络 Subnet: `{namespace}-external-network-{interface}`
-- 外部网络 NAD: `kube-system/{namespace}-external-network-{interface}`
 
-其中 PVC 缺失会导致动态附件不可用。外部网络资源由后端按 `external_networks.interfaces` 创建; 若配置为空、创建失败或没有匹配节点标签, VPC 模式不可用。KubeVirt 资源不会在启动时创建，只有启动包含 `x-kubevirt: true` 的 VM 靶机时才会创建对应 `VirtualMachine`。
-
-## 跨云厂商节点
-
-若部分节点不支持 VPC 网络, 可为其添加节点标签, 阻止 `CreateVPCNatGateway` 生成的 Pod 调度到这些节点: 
-
-```bash
-kubectl label node <node-name> node.cbctf.io/vpc-unsupported=true
-```
-
-该标签表示节点不支持 VPC。`CreateVPCNatGateway` 会通过节点亲和性排除这些节点, 不会影响其他服务 Pod 的调度。
+其中 PVC 缺失会导致动态附件不可用。KubeVirt 资源不会在启动时创建，只有启动包含 `x-kubevirt: true` 的 VM 靶机时才会创建对应 `VirtualMachine`。

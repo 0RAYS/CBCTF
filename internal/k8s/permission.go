@@ -49,8 +49,7 @@ func buildPermissionChecks() []permissionCheck {
 		{Group: "discovery.k8s.io", Resource: "endpointslices", Verb: "deletecollection", Namespace: ns},
 		// Multus: NetworkAttachmentDefinitions
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "create", Namespace: ns},
-		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "create", Namespace: "kube-system"},
-		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "get", Namespace: "kube-system"},
+		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "get", Namespace: ns},
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "deletecollection", Namespace: ns},
 		// KubeVirt: VirtualMachines
 		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "create", Namespace: ns},
@@ -65,19 +64,6 @@ func buildPermissionChecks() []permissionCheck {
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "deletecollection"},
 		// KubeOVN: IPs (集群级别)
 		{Group: "kubeovn.io", Resource: "ips", Verb: "deletecollection"},
-		// KubeOVN: IptablesEIPs (集群级别)
-		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "create"},
-		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "get"},
-		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "deletecollection"},
-		// KubeOVN: IptablesDnatRules (集群级别)
-		{Group: "kubeovn.io", Resource: "iptables-dnat-rules", Verb: "create"},
-		{Group: "kubeovn.io", Resource: "iptables-dnat-rules", Verb: "deletecollection"},
-		// KubeOVN: IptablesSnatRules (集群级别)
-		{Group: "kubeovn.io", Resource: "iptables-snat-rules", Verb: "create"},
-		{Group: "kubeovn.io", Resource: "iptables-snat-rules", Verb: "deletecollection"},
-		// KubeOVN: VpcNatGateways (集群级别)
-		{Group: "kubeovn.io", Resource: "vpc-nat-gateways", Verb: "create"},
-		{Group: "kubeovn.io", Resource: "vpc-nat-gateways", Verb: "deletecollection"},
 	}
 }
 
