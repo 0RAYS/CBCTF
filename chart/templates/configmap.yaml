@@ -85,9 +85,6 @@ data:
       config: /admin/admin.yaml
       namespace: {{ .Release.Namespace | quote }}
       capture: {{ .Values.cbctf.k8s.capture | quote }}
-      external_networks:
-        enabled: {{ .Values.cbctf.k8s.external_networks.enabled }}
-        interfaces: {{ toYaml .Values.cbctf.k8s.external_networks.interfaces | nindent 10 }}
       frp:
         on: {{ .Values.cbctf.k8s.frp.on }}
         frpc: {{ .Values.cbctf.k8s.frp.frpc | quote }}

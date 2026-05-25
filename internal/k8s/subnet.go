@@ -14,14 +14,13 @@ import (
 )
 
 type CreateSubnetOptions struct {
-	Name              string
-	Labels            map[string]string
-	VPC               string
-	CIDR              string
-	Gateway           string
-	ExcludeIPs        []string
-	IsExternalNetwork bool
-	NetAttachDef      string
+	Name         string
+	Labels       map[string]string
+	VPC          string
+	CIDR         string
+	Gateway      string
+	ExcludeIPs   []string
+	NetAttachDef string
 }
 
 func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.Subnet, model.RetVal) {
@@ -40,12 +39,7 @@ func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.
 			CIDRBlock:  options.CIDR,
 			Gateway:    options.Gateway,
 			ExcludeIps: options.ExcludeIPs,
-			Provider: func() string {
-				if options.IsExternalNetwork {
-					return fmt.Sprintf("%s.kube-system", options.Name)
-				}
-				return fmt.Sprintf("%s.%s.ovn", options.NetAttachDef, globalNamespace)
-			}(),
+			Provider:   fmt.Sprintf("%s.%s.ovn", options.NetAttachDef, globalNamespace),
 		},
 	}
 	subnet, err = ovnClient.KubeovnV1().Subnets().Create(ctx, subnet, metav1.CreateOptions{})

@@ -67,12 +67,6 @@ k8s:
   namespace: cbctf
   # Docker image
   capture: ghcr.io/domcyrus/rustnet:latest
-  external_networks:
-    enabled: true
-    interfaces:
-      - interface: ens192
-        cidr: 192.168.0.0/24
-        gateway: 192.168.0.1
   frp:
     on: false
     # Docker image

@@ -25,13 +25,12 @@ type Network struct {
 }
 
 type CreatePodOptions struct {
-	Name          string
-	Labels        map[string]string
-	Annotations   map[string]string
-	AntiNatGWName string
-	Networks      []Network
-	Containers    []corev1.Container
-	Volumes       []corev1.Volume
+	Name        string
+	Labels      map[string]string
+	Annotations map[string]string
+	Networks    []Network
+	Containers  []corev1.Container
+	Volumes     []corev1.Volume
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, model.RetVal) {
@@ -69,32 +68,8 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 			}(),
 		},
 		Spec: corev1.PodSpec{
-			EnableServiceLinks:           new(false),
-			AutomountServiceAccountToken: new(false),
-			Affinity: func() *corev1.Affinity {
-				if options.AntiNatGWName == "" {
-					return nil
-				}
-				return &corev1.Affinity{
-					PodAntiAffinity: &corev1.PodAntiAffinity{
-						RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
-							{
-								LabelSelector: &metav1.LabelSelector{
-									MatchExpressions: []metav1.LabelSelectorRequirement{
-										{
-											Key:      "app",
-											Operator: metav1.LabelSelectorOpIn,
-											Values:   []string{fmt.Sprintf("vpc-nat-gw-%s", options.AntiNatGWName)},
-										},
-									},
-								},
-								Namespaces:  []string{globalNamespace, "kube-system"},
-								TopologyKey: "kubernetes.io/hostname",
-							},
-						},
-					},
-				}
-			}(),
+			EnableServiceLinks:            new(false),
+			AutomountServiceAccountToken:  new(false),
 			Containers:                    options.Containers,
 			Volumes:                       options.Volumes,
 			TerminationGracePeriodSeconds: new(int64(3)),

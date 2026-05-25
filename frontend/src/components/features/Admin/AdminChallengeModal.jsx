@@ -124,7 +124,9 @@ const ipToNumber = (ip) => {
 };
 
 const cidrContainsIp = (cidr, ip) => {
-  const [baseIp, prefixText = '32'] = String(cidr || '').trim().split('/');
+  const [baseIp, prefixText = '32'] = String(cidr || '')
+    .trim()
+    .split('/');
   const base = ipToNumber(baseIp);
   const target = ipToNumber(ip);
   const prefix = Number(prefixText);
@@ -147,8 +149,7 @@ const blockAllowsIp = (block, ip) => {
   return !(block.except || []).some((exceptCidr) => cidrContainsIp(exceptCidr, ip));
 };
 
-const blocksAllowAnyIp = (blocks, ips) =>
-  ips.some((ip) => blocks.some((block) => blockAllowsIp(block, ip)));
+const blocksAllowAnyIp = (blocks, ips) => ips.some((ip) => blocks.some((block) => blockAllowsIp(block, ip)));
 
 const normalizePolicyRule = (rule = {}) => ({
   cidr: rule.cidr || rule.CIDR || '',
@@ -1248,10 +1249,26 @@ function NetworkTopologyPreview({ topology, t }) {
       <div className="relative h-[420px] overflow-hidden rounded-md border border-neutral-800 bg-black/20">
         <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
-            <marker id="topology-arrow-allow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse">
+            <marker
+              id="topology-arrow-allow"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="3"
+              markerHeight="3"
+              orient="auto-start-reverse"
+            >
               <path d="M 0 0 L 10 5 L 0 10 z" fill="#22c55e" />
             </marker>
-            <marker id="topology-arrow-deny" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="3" markerHeight="3" orient="auto-start-reverse">
+            <marker
+              id="topology-arrow-deny"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="3"
+              markerHeight="3"
+              orient="auto-start-reverse"
+            >
               <path d="M 0 0 L 10 5 L 0 10 z" fill="#f87171" />
             </marker>
           </defs>
@@ -1291,7 +1308,10 @@ function NetworkTopologyPreview({ topology, t }) {
             <div className="mt-2 space-y-1">
               {node.networks.length > 0 ? (
                 node.networks.map((network, index) => (
-                  <div key={`${network.name}-${index}`} className="rounded border border-neutral-700 bg-black/40 px-1.5 py-1">
+                  <div
+                    key={`${network.name}-${index}`}
+                    className="rounded border border-neutral-700 bg-black/40 px-1.5 py-1"
+                  >
                     <div className="truncate text-[10px] font-mono text-neutral-500" title={network.name}>
                       {network.name}
                     </div>
@@ -1895,9 +1915,7 @@ function AdminChallengeModal({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <motion.div
         className={modalClass}
         initial={{ opacity: 0, y: 20 }}
@@ -3095,232 +3113,232 @@ function AdminChallengeModal({
                           <div className="space-y-4">
                             {(challenge.network_policies || []).map((policy, policyIndex) => (
                               <div key={policyIndex} className="border border-neutral-700 rounded-md p-3 bg-black/20">
-                              <div className="flex justify-between items-center mb-3">
-                                <h5 className="text-sm font-mono text-neutral-200">
-                                  {t('admin.challengeModal.labels.policy', {
-                                    index: policyIndex + 1,
-                                  })}
-                                </h5>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="!bg-transparent !text-red-400 hover:!text-red-300"
-                                  onClick={() => removeNetworkPolicy(policyIndex)}
-                                >
-                                  <IconTrash size={16} />
-                                </Button>
-                              </div>
-
-                              {vpcMode && (
-                                <GuideField label={t('admin.challengeModal.labels.policyTarget')}>
-                                  <select
-                                    value={policy.service || ''}
-                                    onChange={(e) => updatePolicyTarget(policyIndex, e.target.value)}
-                                    className={`${selectClass} mb-3`}
+                                <div className="flex justify-between items-center mb-3">
+                                  <h5 className="text-sm font-mono text-neutral-200">
+                                    {t('admin.challengeModal.labels.policy', {
+                                      index: policyIndex + 1,
+                                    })}
+                                  </h5>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="!bg-transparent !text-red-400 hover:!text-red-300"
+                                    onClick={() => removeNetworkPolicy(policyIndex)}
                                   >
-                                    <option value="">{t('admin.challengeModal.placeholders.policyTarget')}</option>
-                                    {policyTargets.map((target) => (
-                                      <option key={target.service} value={target.service}>
-                                        {target.label}
-                                      </option>
+                                    <IconTrash size={16} />
+                                  </Button>
+                                </div>
+
+                                {vpcMode && (
+                                  <GuideField label={t('admin.challengeModal.labels.policyTarget')}>
+                                    <select
+                                      value={policy.service || ''}
+                                      onChange={(e) => updatePolicyTarget(policyIndex, e.target.value)}
+                                      className={`${selectClass} mb-3`}
+                                    >
+                                      <option value="">{t('admin.challengeModal.placeholders.policyTarget')}</option>
+                                      {policyTargets.map((target) => (
+                                        <option key={target.service} value={target.service}>
+                                          {target.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </GuideField>
+                                )}
+
+                                {/* From 策略 */}
+                                <div className="mb-3">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <label className="text-xs font-mono text-neutral-400">
+                                      {t('admin.challengeModal.labels.allowInbound')}
+                                    </label>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      align="icon-left"
+                                      icon={<IconPlus size={12} />}
+                                      className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
+                                      onClick={() => addPolicyRule(policyIndex, 'from')}
+                                    >
+                                      {t('admin.challengeModal.actions.addRule')}
+                                    </Button>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    {(policy.from || []).map((fromRule, fromIndex) => (
+                                      <div key={fromIndex} className="border border-neutral-700/50 p-2 rounded">
+                                        <div className="flex justify-between items-center mb-2">
+                                          <label className="text-xs font-mono text-neutral-400">CIDR</label>
+                                          {policy.from.length > 1 && (
+                                            <Button
+                                              variant="ghost"
+                                              size="icon"
+                                              className="!bg-transparent !text-red-400 hover:!text-red-300"
+                                              onClick={() => removePolicyRule(policyIndex, 'from', fromIndex)}
+                                            >
+                                              <IconTrash size={12} />
+                                            </Button>
+                                          )}
+                                        </div>
+
+                                        <input
+                                          type="text"
+                                          value={normalizePolicyRule(fromRule).cidr}
+                                          onChange={(e) =>
+                                            updatePolicyCidr(policyIndex, 'from', fromIndex, e.target.value)
+                                          }
+                                          className="w-full h-8 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
+                                          placeholder="192.168.1.0/24"
+                                        />
+
+                                        <div className="mt-2">
+                                          <div className="flex justify-between items-center mb-1">
+                                            <label className="text-xs font-mono text-neutral-400">
+                                              {t('admin.challengeModal.labels.excludeList')}
+                                            </label>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              align="icon-left"
+                                              icon={<IconPlus size={10} />}
+                                              className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
+                                              onClick={() => addPolicyExcept(policyIndex, 'from', fromIndex)}
+                                            >
+                                              {t('admin.challengeModal.actions.addExclude')}
+                                            </Button>
+                                          </div>
+                                          <div className="space-y-1">
+                                            {normalizePolicyRule(fromRule).except.map((exceptItem, exceptIndex) => (
+                                              <div key={exceptIndex} className="flex gap-1 items-center">
+                                                <input
+                                                  type="text"
+                                                  value={exceptItem}
+                                                  onChange={(e) =>
+                                                    updatePolicyExcept(
+                                                      policyIndex,
+                                                      'from',
+                                                      fromIndex,
+                                                      exceptIndex,
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                  className="flex-1 h-6 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
+                                                  placeholder="192.168.1.1"
+                                                />
+                                                <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="!bg-transparent !text-red-400 hover:!text-red-300 !w-6 !h-6"
+                                                  onClick={() =>
+                                                    removePolicyExcept(policyIndex, 'from', fromIndex, exceptIndex)
+                                                  }
+                                                >
+                                                  <IconTrash size={10} />
+                                                </Button>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </div>
                                     ))}
-                                  </select>
-                                </GuideField>
-                              )}
-
-                              {/* From 策略 */}
-                              <div className="mb-3">
-                                <div className="flex justify-between items-center mb-2">
-                                  <label className="text-xs font-mono text-neutral-400">
-                                    {t('admin.challengeModal.labels.allowInbound')}
-                                  </label>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    align="icon-left"
-                                    icon={<IconPlus size={12} />}
-                                    className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
-                                    onClick={() => addPolicyRule(policyIndex, 'from')}
-                                  >
-                                    {t('admin.challengeModal.actions.addRule')}
-                                  </Button>
+                                  </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                  {(policy.from || []).map((fromRule, fromIndex) => (
-                                    <div key={fromIndex} className="border border-neutral-700/50 p-2 rounded">
-                                      <div className="flex justify-between items-center mb-2">
-                                        <label className="text-xs font-mono text-neutral-400">CIDR</label>
-                                        {policy.from.length > 1 && (
-                                          <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="!bg-transparent !text-red-400 hover:!text-red-300"
-                                            onClick={() => removePolicyRule(policyIndex, 'from', fromIndex)}
-                                          >
-                                            <IconTrash size={12} />
-                                          </Button>
-                                        )}
-                                      </div>
+                                {/* To 策略 */}
+                                <div>
+                                  <div className="flex justify-between items-center mb-2">
+                                    <label className="text-xs font-mono text-neutral-400">
+                                      {t('admin.challengeModal.labels.allowOutbound')}
+                                    </label>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      align="icon-left"
+                                      icon={<IconPlus size={12} />}
+                                      className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
+                                      onClick={() => addPolicyRule(policyIndex, 'to')}
+                                    >
+                                      {t('admin.challengeModal.actions.addRule')}
+                                    </Button>
+                                  </div>
 
-                                      <input
-                                        type="text"
-                                        value={normalizePolicyRule(fromRule).cidr}
-                                        onChange={(e) =>
-                                          updatePolicyCidr(policyIndex, 'from', fromIndex, e.target.value)
-                                        }
-                                        className="w-full h-8 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
-                                        placeholder="192.168.1.0/24"
-                                      />
-
-                                      <div className="mt-2">
-                                        <div className="flex justify-between items-center mb-1">
-                                          <label className="text-xs font-mono text-neutral-400">
-                                            {t('admin.challengeModal.labels.excludeList')}
-                                          </label>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            align="icon-left"
-                                            icon={<IconPlus size={10} />}
-                                            className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
-                                            onClick={() => addPolicyExcept(policyIndex, 'from', fromIndex)}
-                                          >
-                                            {t('admin.challengeModal.actions.addExclude')}
-                                          </Button>
+                                  <div className="space-y-2">
+                                    {(policy.to || []).map((toRule, toIndex) => (
+                                      <div key={toIndex} className="border border-neutral-700/50 p-2 rounded">
+                                        <div className="flex justify-between items-center mb-2">
+                                          <label className="text-xs font-mono text-neutral-400">CIDR</label>
+                                          {policy.to.length > 1 && (
+                                            <Button
+                                              variant="ghost"
+                                              size="icon"
+                                              className="!bg-transparent !text-red-400 hover:!text-red-300"
+                                              onClick={() => removePolicyRule(policyIndex, 'to', toIndex)}
+                                            >
+                                              <IconTrash size={12} />
+                                            </Button>
+                                          )}
                                         </div>
-                                        <div className="space-y-1">
-                                          {normalizePolicyRule(fromRule).except.map((exceptItem, exceptIndex) => (
-                                            <div key={exceptIndex} className="flex gap-1 items-center">
-                                              <input
-                                                type="text"
-                                                value={exceptItem}
-                                                onChange={(e) =>
-                                                  updatePolicyExcept(
-                                                    policyIndex,
-                                                    'from',
-                                                    fromIndex,
-                                                    exceptIndex,
-                                                    e.target.value
-                                                  )
-                                                }
-                                                className="flex-1 h-6 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
-                                                placeholder="192.168.1.1"
-                                              />
-                                              <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="!bg-transparent !text-red-400 hover:!text-red-300 !w-6 !h-6"
-                                                onClick={() =>
-                                                  removePolicyExcept(policyIndex, 'from', fromIndex, exceptIndex)
-                                                }
-                                              >
-                                                <IconTrash size={10} />
-                                              </Button>
-                                            </div>
-                                          ))}
+
+                                        <input
+                                          type="text"
+                                          value={normalizePolicyRule(toRule).cidr}
+                                          onChange={(e) => updatePolicyCidr(policyIndex, 'to', toIndex, e.target.value)}
+                                          className="w-full h-8 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
+                                          placeholder="0.0.0.0/0"
+                                        />
+
+                                        <div className="mt-2">
+                                          <div className="flex justify-between items-center mb-1">
+                                            <label className="text-xs font-mono text-neutral-400">
+                                              {t('admin.challengeModal.labels.excludeList')}
+                                            </label>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              align="icon-left"
+                                              icon={<IconPlus size={10} />}
+                                              className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
+                                              onClick={() => addPolicyExcept(policyIndex, 'to', toIndex)}
+                                            >
+                                              {t('admin.challengeModal.actions.addExclude')}
+                                            </Button>
+                                          </div>
+                                          <div className="space-y-1">
+                                            {normalizePolicyRule(toRule).except.map((exceptItem, exceptIndex) => (
+                                              <div key={exceptIndex} className="flex gap-1 items-center">
+                                                <input
+                                                  type="text"
+                                                  value={exceptItem}
+                                                  onChange={(e) =>
+                                                    updatePolicyExcept(
+                                                      policyIndex,
+                                                      'to',
+                                                      toIndex,
+                                                      exceptIndex,
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                  className="flex-1 h-6 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
+                                                  placeholder="10.0.0.0/8"
+                                                />
+                                                <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="!bg-transparent !text-red-400 hover:!text-red-300 !w-6 !h-6"
+                                                  onClick={() =>
+                                                    removePolicyExcept(policyIndex, 'to', toIndex, exceptIndex)
+                                                  }
+                                                >
+                                                  <IconTrash size={10} />
+                                                </Button>
+                                              </div>
+                                            ))}
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  ))}
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
-
-                              {/* To 策略 */}
-                              <div>
-                                <div className="flex justify-between items-center mb-2">
-                                  <label className="text-xs font-mono text-neutral-400">
-                                    {t('admin.challengeModal.labels.allowOutbound')}
-                                  </label>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    align="icon-left"
-                                    icon={<IconPlus size={12} />}
-                                    className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
-                                    onClick={() => addPolicyRule(policyIndex, 'to')}
-                                  >
-                                    {t('admin.challengeModal.actions.addRule')}
-                                  </Button>
-                                </div>
-
-                                <div className="space-y-2">
-                                  {(policy.to || []).map((toRule, toIndex) => (
-                                    <div key={toIndex} className="border border-neutral-700/50 p-2 rounded">
-                                      <div className="flex justify-between items-center mb-2">
-                                        <label className="text-xs font-mono text-neutral-400">CIDR</label>
-                                        {policy.to.length > 1 && (
-                                          <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="!bg-transparent !text-red-400 hover:!text-red-300"
-                                            onClick={() => removePolicyRule(policyIndex, 'to', toIndex)}
-                                          >
-                                            <IconTrash size={12} />
-                                          </Button>
-                                        )}
-                                      </div>
-
-                                      <input
-                                        type="text"
-                                        value={normalizePolicyRule(toRule).cidr}
-                                        onChange={(e) => updatePolicyCidr(policyIndex, 'to', toIndex, e.target.value)}
-                                        className="w-full h-8 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
-                                        placeholder="0.0.0.0/0"
-                                      />
-
-                                      <div className="mt-2">
-                                        <div className="flex justify-between items-center mb-1">
-                                          <label className="text-xs font-mono text-neutral-400">
-                                            {t('admin.challengeModal.labels.excludeList')}
-                                          </label>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            align="icon-left"
-                                            icon={<IconPlus size={10} />}
-                                            className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
-                                            onClick={() => addPolicyExcept(policyIndex, 'to', toIndex)}
-                                          >
-                                            {t('admin.challengeModal.actions.addExclude')}
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-1">
-                                          {normalizePolicyRule(toRule).except.map((exceptItem, exceptIndex) => (
-                                            <div key={exceptIndex} className="flex gap-1 items-center">
-                                              <input
-                                                type="text"
-                                                value={exceptItem}
-                                                onChange={(e) =>
-                                                  updatePolicyExcept(
-                                                    policyIndex,
-                                                    'to',
-                                                    toIndex,
-                                                    exceptIndex,
-                                                    e.target.value
-                                                  )
-                                                }
-                                                className="flex-1 h-6 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
-                                                placeholder="10.0.0.0/8"
-                                              />
-                                              <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="!bg-transparent !text-red-400 hover:!text-red-300 !w-6 !h-6"
-                                                onClick={() =>
-                                                  removePolicyExcept(policyIndex, 'to', toIndex, exceptIndex)
-                                                }
-                                              >
-                                                <IconTrash size={10} />
-                                              </Button>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
                               </div>
                             ))}
                           </div>

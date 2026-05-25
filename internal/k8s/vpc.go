@@ -14,10 +14,8 @@ import (
 )
 
 type CreateVPCOptions struct {
-	Name         string
-	Labels       map[string]string
-	StaticRoutes []*kubeovnv1.StaticRoute
-	PolicyRoutes []*kubeovnv1.PolicyRoute
+	Name   string
+	Labels map[string]string
 }
 
 func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, model.RetVal) {
@@ -31,10 +29,7 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, m
 			Namespace: globalNamespace,
 			Labels:    options.Labels,
 		},
-		Spec: kubeovnv1.VpcSpec{
-			StaticRoutes: options.StaticRoutes,
-			PolicyRoutes: options.PolicyRoutes,
-		},
+		Spec: kubeovnv1.VpcSpec{},
 	}
 	vpc, err = ovnClient.KubeovnV1().Vpcs().Create(ctx, vpc, metav1.CreateOptions{})
 	if err != nil {
