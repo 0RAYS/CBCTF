@@ -71,30 +71,6 @@ function AdminContestChallengesPage() {
   // 分页配置
   const pageSize = 10;
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    if (id) {
-      fetchChallengesWithFilters(1);
-    }
-  }, [id]); // 只在id变化时获取数据
-
-  // 当过滤器变化时应用过滤
-  useEffect(() => {
-    if (id) {
-      filterChallenges();
-    }
-  }, [filterType, filterCategory, nameQuery]);
-
-  // 当当前页变化时, 重新获取数据
-  useEffect(() => {
-    if (id && currentPage > 0) {
-      fetchChallengesWithFilters(currentPage);
-    }
-  }, [currentPage, id]);
-
   // 获取分类列表
   const fetchCategories = async () => {
     try {
@@ -110,13 +86,6 @@ function AdminContestChallengesPage() {
       // 出现异常时仍然设置默认分类
       setCategories(DEFAULT_CHALLENGE_CATEGORIES);
     }
-  };
-
-  // 过滤挑战列表
-  const filterChallenges = () => {
-    // 重置到第一页并重新获取数据
-    setCurrentPage(1);
-    fetchChallengesWithFilters(1);
   };
 
   // 获取带过滤器的挑战数据
@@ -149,6 +118,37 @@ function AdminContestChallengesPage() {
       toast.danger({ description: error.message || t('admin.contests.challenges.toast.fetchListFailed') });
     }
   };
+
+  // 过滤挑战列表
+  const filterChallenges = () => {
+    // 重置到第一页并重新获取数据
+    setCurrentPage(1);
+    fetchChallengesWithFilters(1);
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    if (id) {
+      fetchChallengesWithFilters(1);
+    }
+  }, [id]); // 只在id变化时获取数据
+
+  // 当过滤器变化时应用过滤
+  useEffect(() => {
+    if (id) {
+      filterChallenges();
+    }
+  }, [filterType, filterCategory, nameQuery]);
+
+  // 当当前页变化时, 重新获取数据
+  useEffect(() => {
+    if (id && currentPage > 0) {
+      fetchChallengesWithFilters(currentPage);
+    }
+  }, [currentPage, id]);
 
   // 获取可用题目列表（使用API分页）
   const fetchAvailableChallenges = async (

@@ -9,10 +9,6 @@ function OAuthLogin() {
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
 
-  useEffect(() => {
-    fetchOAuthProviders();
-  }, []);
-
   const fetchOAuthProviders = async () => {
     try {
       setLoading(true);
@@ -27,8 +23,13 @@ function OAuthLogin() {
     }
   };
 
+  useEffect(() => {
+    fetchOAuthProviders();
+  }, []);
+
   const handleOAuthLogin = (providerName, loginUrl) => {
     // 跳转到OAuth登录页面
+    // eslint-disable-next-line react-hooks/immutability
     window.location.href = loginUrl;
   };
 

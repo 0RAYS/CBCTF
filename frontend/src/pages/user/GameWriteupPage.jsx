@@ -15,9 +15,16 @@ function GameWriteupPage() {
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
 
-  useEffect(() => {
-    checkContestAndFetch();
-  }, [contestId]);
+  const fetchWriteups = async () => {
+    try {
+      const response = await getWriteups(contestId);
+      if (response.code === 200 && response.data.writeups) {
+        setWriteups(response.data.writeups);
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('game.challenges.toast.fetchWriteupsFailed') });
+    }
+  };
 
   const checkContestAndFetch = async () => {
     try {
@@ -37,16 +44,9 @@ function GameWriteupPage() {
     }
   };
 
-  const fetchWriteups = async () => {
-    try {
-      const response = await getWriteups(contestId);
-      if (response.code === 200 && response.data.writeups) {
-        setWriteups(response.data.writeups);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('game.challenges.toast.fetchWriteupsFailed') });
-    }
-  };
+  useEffect(() => {
+    checkContestAndFetch();
+  }, [contestId]);
 
   const handleUploadWriteup = async (file) => {
     try {

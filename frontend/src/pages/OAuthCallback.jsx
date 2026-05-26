@@ -15,10 +15,6 @@ function OAuthCallback() {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState('processing'); // 'processing' | 'success' | 'error'
 
-  useEffect(() => {
-    handleOAuthCallback();
-  }, []);
-
   const handleOAuthCallback = async () => {
     try {
       setStatus('processing');
@@ -60,6 +56,10 @@ function OAuthCallback() {
       }, 2000);
     }
   };
+
+  useEffect(() => {
+    handleOAuthCallback();
+  }, []);
 
   const renderContent = () => {
     switch (status) {
