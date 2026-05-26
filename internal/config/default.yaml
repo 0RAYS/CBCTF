@@ -70,7 +70,7 @@ k8s:
   frp:
     on: false
     # Docker image
-    frpc: snowdreamtech/frpc:latest
+    frpc: ghcr.io/fatedier/frpc:v0.69.0
     nginx: nginx:latest
     frps:
       - host: example.com

@@ -142,7 +142,7 @@ cbctf:
     capture: "ghcr.io/domcyrus/rustnet:latest"
     frp:
       "on": false
-      frpc: "snowdreamtech/frpc:latest"
+      frpc: "ghcr.io/fatedier/frpc:v0.69.0"
       nginx: "nginx:latest"
       frps: []
 
