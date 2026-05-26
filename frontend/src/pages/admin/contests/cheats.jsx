@@ -46,10 +46,6 @@ function AdminContestCheats() {
   const { openUserDetail, renderUserDetailDialog } = useUserDetailDialog();
   const { openTeamDetail, renderTeamDetailDialog } = useTeamDetailDialog(parseInt(id));
 
-  useEffect(() => {
-    fetchCheats();
-  }, [id, currentPage, filterType, filterReasonType]);
-
   const fetchCheats = async () => {
     try {
       const params = {
@@ -75,6 +71,10 @@ function AdminContestCheats() {
       toast.danger({ description: error.message || t('admin.contests.cheats.toast.fetchFailed') });
     }
   };
+
+  useEffect(() => {
+    fetchCheats();
+  }, [id, currentPage, filterType, filterReasonType]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);

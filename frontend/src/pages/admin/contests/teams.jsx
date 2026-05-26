@@ -88,6 +88,18 @@ function AdminContestTeams() {
     };
   }, [debouncedName, debouncedDesc]);
 
+  const fetchTeams = async () => {
+    try {
+      const response = await getContestTeams(parseInt(id), { limit: pageSize, offset: (currentPage - 1) * pageSize });
+      if (response.code === 200) {
+        setTeams(response.data.teams);
+        setTotalCount(response.data.count);
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.teams.toast.fetchFailed') });
+    }
+  };
+
   // 头像上传
   const fileInputRef = useRef(null);
   const [pictureUploadTeam, setPictureUploadTeam] = useState(null);
@@ -118,18 +130,6 @@ function AdminContestTeams() {
       fetchTeams();
     }
   }, [id, currentPage, isSearchMode]);
-
-  const fetchTeams = async () => {
-    try {
-      const response = await getContestTeams(parseInt(id), { limit: pageSize, offset: (currentPage - 1) * pageSize });
-      if (response.code === 200) {
-        setTeams(response.data.teams);
-        setTotalCount(response.data.count);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.teams.toast.fetchFailed') });
-    }
-  };
 
   const fetchTeamMembers = async (team) => {
     try {

@@ -111,19 +111,6 @@ function AdminImagesPullPage({ scope = 'contest', fetchImages, pullImages, refre
     [nodes, targetImages]
   );
 
-  useEffect(() => {
-    fetchPullImages();
-  }, [refreshKey]);
-
-  useEffect(() => {
-    setSelectedNodes((prev) => prev.filter((node) => nodes.some((item) => item.node === node)));
-  }, [nodes]);
-
-  useEffect(() => {
-    const availableSet = new Set(availableTargetKeys);
-    setSelectedTargetKeys((prev) => prev.filter((key) => availableSet.has(key)));
-  }, [availableTargetKeys]);
-
   const fetchPullImages = async () => {
     setLoading(true);
     try {
@@ -139,6 +126,19 @@ function AdminImagesPullPage({ scope = 'contest', fetchImages, pullImages, refre
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPullImages();
+  }, [refreshKey]);
+
+  useEffect(() => {
+    setSelectedNodes((prev) => prev.filter((node) => nodes.some((item) => item.node === node)));
+  }, [nodes]);
+
+  useEffect(() => {
+    const availableSet = new Set(availableTargetKeys);
+    setSelectedTargetKeys((prev) => prev.filter((key) => availableSet.has(key)));
+  }, [availableTargetKeys]);
 
   const handleNodeToggle = (nodeName) => {
     setSelectedNodes((prev) =>

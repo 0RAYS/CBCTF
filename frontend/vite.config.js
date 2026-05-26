@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,9 +12,13 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-monaco': ['@monaco-editor/react', 'monaco-editor'],
-          'vendor-echarts': ['echarts', 'echarts-for-react'],
+        manualChunks: (id) => {
+          if (id.includes('@monaco-editor') || id.includes('monaco-editor')) {
+            return 'vendor-monaco';
+          }
+          if (id.includes('echarts')) {
+            return 'vendor-echarts';
+          }
         },
       },
     },

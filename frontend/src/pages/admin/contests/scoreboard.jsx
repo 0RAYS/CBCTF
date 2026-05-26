@@ -67,38 +67,6 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
     }
   };
 
-  // 获取时间线数据
-  const fetchTimelineData = async () => {
-    setTimelineLoading(true);
-    try {
-      const response = await getContestTimeline(id);
-      if (response.code === 200) {
-        setTimelineData(response.data || []);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTimelineFailed') });
-    } finally {
-      setTimelineLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (viewMode === 'ranking') {
-      fetchRankings();
-    } else if (viewMode === 'table') {
-      fetchScoreboardTable();
-    } else if (viewMode === 'timeline' && timelineData.length === 0) {
-      fetchTimelineData();
-    }
-  }, [id, viewMode, currentPage, tableCurrentPage]);
-
-  // 同步外部视图模式
-  useEffect(() => {
-    if (externalViewMode && externalViewMode !== viewMode) {
-      setViewMode(externalViewMode);
-    }
-  }, [externalViewMode]);
-
   const teamTransform = (page, teamData, index) => {
     // 格式化日期
     const formatDate = (dateString) => {
@@ -141,6 +109,21 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
     return rankData.teams.map((v, index) => {
       return teamTransform(page, v, index);
     });
+  };
+
+  // 获取时间线数据
+  const fetchTimelineData = async () => {
+    setTimelineLoading(true);
+    try {
+      const response = await getContestTimeline(id);
+      if (response.code === 200) {
+        setTimelineData(response.data || []);
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTimelineFailed') });
+    } finally {
+      setTimelineLoading(false);
+    }
   };
 
   const fetchRankings = async (noLoading = false) => {
@@ -211,6 +194,23 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
       toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchScoreboardFailed') });
     }
   };
+
+  useEffect(() => {
+    if (viewMode === 'ranking') {
+      fetchRankings();
+    } else if (viewMode === 'table') {
+      fetchScoreboardTable();
+    } else if (viewMode === 'timeline' && timelineData.length === 0) {
+      fetchTimelineData();
+    }
+  }, [id, viewMode, currentPage, tableCurrentPage]);
+
+  // 同步外部视图模式
+  useEffect(() => {
+    if (externalViewMode && externalViewMode !== viewMode) {
+      setViewMode(externalViewMode);
+    }
+  }, [externalViewMode]);
 
   const handleExportScoreboard = async () => {
     try {
