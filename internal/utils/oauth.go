@@ -59,17 +59,20 @@ func GetClaimRawValue[T any](resp map[string]any, key string) (T, bool) {
 	return zero, false
 }
 
-func GetClaimStringValue(resp map[string]any, field string) (string, bool) {
-	keys := GetClaimKeys(field)
+func GetClaimStringValue(resp map[string]any, claim string, strict bool) (string, bool) {
+	keys := GetClaimKeys(claim)
 	for _, key := range keys {
 		out, ok := GetClaimRawValue[any](resp, key)
 		if !ok {
-			return "", false
+			if strict {
+				return "", false
+			}
+			out = ""
 		}
-		field = strings.Replace(field, fmt.Sprintf("{%s}", key), fmt.Sprintf("%v", out), 1)
+		claim = strings.Replace(claim, fmt.Sprintf("{%s}", key), fmt.Sprintf("%v", out), 1)
 	}
-	if field == EmptyValue {
+	if claim == EmptyValue {
 		return "", false
 	}
-	return field, true
+	return claim, true
 }
