@@ -22,7 +22,7 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 		data["branding"] = resp.GetBrandingResp(branding)
 	}
 	repo := db.InitContestRepo(tx)
-	contests, count, ret := repo.List(-1, -1)
+	contests, count, ret := repo.List(-1, -1, db.GetOptions{Sort: []string{"start ASC"}})
 	if ret.OK {
 		contestIDs := make([]uint, 0, len(contests))
 		for _, contest := range contests {
