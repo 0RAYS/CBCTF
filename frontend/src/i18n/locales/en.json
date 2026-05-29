@@ -2427,6 +2427,17 @@
       "goToLogin": "Go to login",
       "invalidToken": "This password reset link is invalid or has expired. Please request a new one.",
       "requestNew": "Request new link"
+    },
+    "verifyEmail": {
+      "title": "VERIFY EMAIL",
+      "question": "Is <strong>{{name}}</strong> your account?",
+      "description": "Click the button below to verify your email address and activate your account.",
+      "submit": "ACTIVATE ACCOUNT",
+      "submitting": "ACTIVATING...",
+      "successMessage": "Your email has been verified successfully. You can now participate in contests.",
+      "goToSettings": "Go to settings",
+      "invalidToken": "This verification link is invalid or has expired. Please request a new one from your account settings.",
+      "requestNew": "Go to settings"
     }
   },
   "oauth": {

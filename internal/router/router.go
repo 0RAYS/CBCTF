@@ -61,7 +61,7 @@ func Init() *gin.Engine {
 			oauth.GET("/callback", OauthCallback)
 		}
 
-		router.GET("/verify", VerifyEmail)
+		router.POST("/verify", middleware.RateLimit("verify", 5, time.Minute), VerifyEmail)
 		router.GET("/assets", DefaultAssets)
 		router.GET("/pictures/:fileID", middleware.SetFile(model.PictureFileType), DownloadFile(model.SkipEventType))
 

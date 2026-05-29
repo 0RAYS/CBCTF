@@ -25,6 +25,18 @@ export const register = (data) => {
   });
 };
 
+// 验证邮箱（由前端携带 token+id 发起 POST）
+export const verifyEmail = (data) => {
+  return request({
+    url: '/verify',
+    method: 'POST',
+    data: {
+      token: data.token,
+      id: data.id,
+    },
+  });
+};
+
 // 发送密码重置邮件
 export const forgotPassword = (data) => {
   return request({

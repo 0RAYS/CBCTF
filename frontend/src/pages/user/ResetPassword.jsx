@@ -62,9 +62,7 @@ function ResetPassword() {
         <div className="relative flex justify-center mb-8">
           <div className="absolute -top-[3px] -right-[3px] w-[10px] h-[10px] border-t border-r border-neutral-300" />
           <div className="absolute -bottom-[3px] -left-[3px] w-[10px] h-[10px] border-b border-l border-neutral-300" />
-          <h1 className="text-neutral-50 text-2xl font-mono tracking-wider">
-            {t('auth.resetPassword.title')}
-          </h1>
+          <h1 className="text-neutral-50 text-2xl font-mono tracking-wider">{t('auth.resetPassword.title')}</h1>
         </div>
 
         <AnimatePresence mode="wait">
@@ -77,9 +75,7 @@ function ResetPassword() {
               exit={{ opacity: 0 }}
               className="space-y-4 text-center"
             >
-              <p className="text-red-400 text-sm font-mono leading-relaxed">
-                {t('auth.resetPassword.invalidToken')}
-              </p>
+              <p className="text-red-400 text-sm font-mono leading-relaxed">{t('auth.resetPassword.invalidToken')}</p>
               <Link to="/login">
                 <Button variant="outline" fullWidth>
                   {t('auth.resetPassword.requestNew')}
@@ -97,9 +93,7 @@ function ResetPassword() {
               exit={{ opacity: 0 }}
               className="space-y-4 text-center"
             >
-              <p className="text-neutral-300 text-sm leading-relaxed">
-                {t('auth.resetPassword.successMessage')}
-              </p>
+              <p className="text-neutral-300 text-sm leading-relaxed">{t('auth.resetPassword.successMessage')}</p>
               <Button variant="primary" fullWidth onClick={() => navigate('/login')}>
                 {t('auth.resetPassword.goToLogin')}
               </Button>
@@ -116,9 +110,7 @@ function ResetPassword() {
               onSubmit={handleSubmit}
               className="space-y-4"
             >
-              <p className="text-neutral-400 text-sm leading-relaxed">
-                {t('auth.resetPassword.description')}
-              </p>
+              <p className="text-neutral-400 text-sm leading-relaxed">{t('auth.resetPassword.description')}</p>
               <Input
                 autoFocus
                 type="password"
@@ -158,4 +150,3 @@ function ResetPassword() {
 }
 
 export default ResetPassword;
-
