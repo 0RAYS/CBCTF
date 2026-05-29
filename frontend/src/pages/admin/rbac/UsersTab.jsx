@@ -4,7 +4,6 @@ import { getUserList, updateUser, deleteUser, createUser, updateUserPicture } fr
 import AdminUsers from '../../../components/features/Admin/AdminUsers';
 import { FormField, FormSwitch, Input, Modal, Textarea } from '../../../components/common';
 import CRUDModalFooter from '../../../components/common/CRUDModalFooter';
-import ModalFooter from '../../../components/common/ModalFooter';
 import { useDebounce } from '../../../hooks';
 import { useCRUDModal } from '../../../hooks/index.js';
 import { useTranslation } from 'react-i18next';
@@ -19,11 +18,6 @@ function UsersTab() {
 
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [detailUser, setDetailUser] = useState(null);
-
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [passwordTarget, setPasswordTarget] = useState(null);
-  const [passwordForm, setPasswordForm] = useState({ newPassword: '', confirmPassword: '' });
-  const [passwordLoading, setPasswordLoading] = useState(false);
 
   function fetchUsers() {
     getUserList({
@@ -75,7 +69,13 @@ function UsersTab() {
       hidden: user.hidden,
       verified: user.verified,
       banned: user.banned,
+      password: '',
     }),
+    beforeUpdate: (form) => {
+      const data = { ...form };
+      if (!data.password) delete data.password;
+      return data;
+    },
     messages: {
       createSuccess: t('admin.users.toast.createSuccess'),
       createFailed: t('admin.users.toast.createFailed'),
@@ -158,37 +158,6 @@ function UsersTab() {
     }
   };
 
-  const handleOpenPasswordModal = (user) => {
-    setPasswordTarget(user);
-    setPasswordForm({ newPassword: '', confirmPassword: '' });
-    setShowPasswordModal(true);
-  };
-
-  const handleClosePasswordModal = () => {
-    setShowPasswordModal(false);
-    setPasswordTarget(null);
-    setPasswordForm({ newPassword: '', confirmPassword: '' });
-  };
-
-  const handleChangePassword = async () => {
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.danger({ description: t('admin.users.form.passwordMismatch') });
-      return;
-    }
-    setPasswordLoading(true);
-    try {
-      const response = await updateUser(passwordTarget.id, { password: passwordForm.newPassword });
-      if (response.code === 200) {
-        toast.success({ description: t('admin.users.toast.passwordChanged') });
-        handleClosePasswordModal();
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.users.toast.passwordChangeFailed') });
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
-
   const renderModalContent = () => {
     if (mode === 'delete') {
       return (
@@ -226,18 +195,21 @@ function UsersTab() {
           />
         </FormField>
 
-        {mode === 'create' && (
-          <FormField label={t('admin.users.form.password')}>
-            <Input
-              type="password"
-              value={editForm.password}
-              onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-              placeholder={t('admin.users.form.passwordPlaceholder')}
-              fullWidth
-              required
-            />
-          </FormField>
-        )}
+        <FormField label={t('admin.users.form.password')}>
+          <Input
+            type="password"
+            value={editForm.password}
+            onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+            placeholder={
+              mode === 'edit'
+                ? t('admin.users.form.passwordEditPlaceholder')
+                : t('admin.users.form.passwordPlaceholder')
+            }
+            fullWidth
+            required={mode === 'create'}
+          />
+          {mode === 'edit' && <p className="mt-1 text-xs text-neutral-500">{t('admin.users.form.passwordEditHint')}</p>}
+        </FormField>
 
         <FormField label={t('admin.users.form.description')}>
           <Textarea
@@ -303,7 +275,6 @@ function UsersTab() {
         onEditUser={openEdit}
         onDeleteUser={openDelete}
         onPictureUpload={handlePictureUpload}
-        onChangePassword={handleOpenPasswordModal}
         nameQuery={nameQuery}
         emailQuery={emailQuery}
         descQuery={descQuery}
@@ -332,45 +303,6 @@ function UsersTab() {
         footer={renderModalFooter()}
       >
         {renderModalContent()}
-      </Modal>
-
-      <Modal
-        isOpen={showPasswordModal}
-        onClose={handleClosePasswordModal}
-        title={t('admin.users.modal.changePasswordTitle')}
-        size="sm"
-        footer={
-          <ModalFooter
-            onCancel={handleClosePasswordModal}
-            onSubmit={handleChangePassword}
-            cancelLabel={t('common.cancel')}
-            submitLabel={t('common.save')}
-            submitDisabled={passwordLoading}
-          />
-        }
-      >
-        <div className="space-y-4">
-          <FormField label={t('admin.users.form.newPassword')}>
-            <Input
-              type="password"
-              value={passwordForm.newPassword}
-              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-              placeholder={t('admin.users.form.newPasswordPlaceholder')}
-              fullWidth
-              required
-            />
-          </FormField>
-          <FormField label={t('admin.users.form.confirmPassword')}>
-            <Input
-              type="password"
-              value={passwordForm.confirmPassword}
-              onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-              placeholder={t('admin.users.form.confirmPasswordPlaceholder')}
-              fullWidth
-              required
-            />
-          </FormField>
-        </div>
       </Modal>
 
       <input

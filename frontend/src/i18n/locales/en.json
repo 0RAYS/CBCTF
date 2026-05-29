@@ -1588,15 +1588,12 @@
         "deleteSuccess": "User deleted",
         "deleteFailed": "Failed to delete user",
         "pictureUpdated": "Avatar updated",
-        "pictureUpdateFailed": "Failed to update avatar",
-        "passwordChanged": "Password changed",
-        "passwordChangeFailed": "Failed to change password"
+        "pictureUpdateFailed": "Failed to update avatar"
       },
       "modal": {
         "createTitle": "Create User",
         "editTitle": "Edit User",
         "deleteTitle": "Delete User",
-        "changePasswordTitle": "Change Password",
         "deletePrompt": "Are you sure you want to delete user",
         "deleteWarning": "$t(common.modal.deleteWarning)"
       },
@@ -1608,12 +1605,9 @@
         "usernamePlaceholder": "Enter username",
         "emailPlaceholder": "Enter email",
         "passwordPlaceholder": "Enter password",
-        "descriptionPlaceholder": "Enter user description",
-        "newPassword": "New Password",
-        "newPasswordPlaceholder": "Enter new password",
-        "confirmPassword": "Confirm Password",
-        "confirmPasswordPlaceholder": "Confirm new password",
-        "passwordMismatch": "Passwords do not match"
+        "passwordEditPlaceholder": "Leave blank to keep current password",
+        "passwordEditHint": "Leave blank to keep the current password unchanged.",
+        "descriptionPlaceholder": "Enter user description"
       },
       "detail": {
         "title": "User Detail",

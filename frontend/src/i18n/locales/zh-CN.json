@@ -1588,15 +1588,12 @@
         "deleteSuccess": "删除用户成功",
         "deleteFailed": "删除用户失败",
         "pictureUpdated": "更新头像成功",
-        "pictureUpdateFailed": "更新头像失败",
-        "passwordChanged": "修改密码成功",
-        "passwordChangeFailed": "修改密码失败"
+        "pictureUpdateFailed": "更新头像失败"
       },
       "modal": {
         "createTitle": "创建用户",
         "editTitle": "编辑用户",
         "deleteTitle": "删除用户",
-        "changePasswordTitle": "修改密码",
         "deletePrompt": "确定要删除用户",
         "deleteWarning": "$t(common.modal.deleteWarning)"
       },
@@ -1608,12 +1605,9 @@
         "usernamePlaceholder": "请输入用户名",
         "emailPlaceholder": "请输入邮箱",
         "passwordPlaceholder": "请输入密码",
-        "descriptionPlaceholder": "请输入用户简介",
-        "newPassword": "新密码",
-        "newPasswordPlaceholder": "请输入新密码",
-        "confirmPassword": "确认密码",
-        "confirmPasswordPlaceholder": "请再次输入新密码",
-        "passwordMismatch": "两次输入的密码不一致"
+        "passwordEditPlaceholder": "留空则不修改密码",
+        "passwordEditHint": "留空则保持当前密码不变。",
+        "descriptionPlaceholder": "请输入用户简介"
       },
       "detail": {
         "title": "用户详情",
