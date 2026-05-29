@@ -1854,7 +1854,9 @@
         "updateSuccess": "SMTP config updated",
         "updateFailed": "Failed to update SMTP config",
         "deleteSuccess": "SMTP config deleted",
-        "deleteFailed": "Failed to delete SMTP config"
+        "deleteFailed": "Failed to delete SMTP config",
+        "testSuccess": "Test email sent successfully",
+        "testFailed": "Failed to send test email"
       },
       "email": {
         "detailTitle": "Email Details",
@@ -1889,7 +1891,12 @@
       "actions": {
         "close": "Close",
         "add": "Add SMTP Config",
-        "viewHistory": "View history"
+        "viewHistory": "View history",
+        "sendTest": "Send Test Email",
+        "sending": "Sending...",
+        "testModalTitle": "Send Test Email",
+        "testEmailLabel": "Recipient Email Address",
+        "testEmailPlaceholder": "Enter the email address to receive the test"
       }
     },
     "cronjobs": {

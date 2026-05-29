@@ -1854,7 +1854,9 @@
         "updateSuccess": "更新 SMTP 配置成功",
         "updateFailed": "更新 SMTP 配置失败",
         "deleteSuccess": "删除 SMTP 配置成功",
-        "deleteFailed": "删除 SMTP 配置失败"
+        "deleteFailed": "删除 SMTP 配置失败",
+        "testSuccess": "测试邮件发送成功",
+        "testFailed": "测试邮件发送失败"
       },
       "email": {
         "detailTitle": "邮件详情",
@@ -1889,7 +1891,12 @@
       "actions": {
         "close": "关闭",
         "add": "添加 SMTP 配置",
-        "viewHistory": "查看历史"
+        "viewHistory": "查看历史",
+        "sendTest": "发送测试邮件",
+        "sending": "发送中...",
+        "testModalTitle": "发送测试邮件",
+        "testEmailLabel": "目标邮箱地址",
+        "testEmailPlaceholder": "输入要接收测试邮件的邮箱地址"
       }
     },
     "cronjobs": {

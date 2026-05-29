@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { List, StatusTag } from '../../common';
-import { IconPlus, IconEdit, IconTrash, IconHistory } from '@tabler/icons-react';
+import { IconPlus, IconEdit, IconTrash, IconHistory, IconSend } from '@tabler/icons-react';
 import { Button, Pagination } from '../../../components/common';
 import { useTranslation } from 'react-i18next';
 
@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
  * @param {function} props.onEditSmtp - 编辑SMTP配置回调
  * @param {function} props.onDeleteSmtp - 删除SMTP配置回调
  * @param {function} props.onSmtpClick - SMTP配置点击回调
+ * @param {function} props.onTestSmtp - 发送测试邮件回调
  */
 function AdminSmtp({
   smtpConfigs = [],
@@ -30,6 +31,7 @@ function AdminSmtp({
   onDeleteSmtp,
   onSmtpClick,
   onViewHistory,
+  onTestSmtp,
 }) {
   const { t, i18n } = useTranslation();
   // 列定义
@@ -121,8 +123,21 @@ function AdminSmtp({
                 onEditSmtp?.(smtp);
               }}
               className="p-1"
+              title={t('admin.smtp.modal.editTitle')}
             >
               <IconEdit size={18} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTestSmtp?.(smtp);
+              }}
+              className="p-1 text-blue-400 hover:text-blue-300"
+              title={t('admin.smtp.actions.sendTest')}
+            >
+              <IconSend size={18} />
             </Button>
             <Button
               variant="ghost"

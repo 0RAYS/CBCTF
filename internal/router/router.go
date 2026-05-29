@@ -259,6 +259,7 @@ func Init() *gin.Engine {
 		{
 			adminSmtp.PUT("", UpdateSmtp)
 			adminSmtp.DELETE("", DeleteSmtp)
+			adminSmtp.POST("/test", TestSmtp)
 
 			adminSmtp.GET("/email", GetEmails)
 		}

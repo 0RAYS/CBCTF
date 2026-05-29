@@ -50,3 +50,11 @@ func DeleteSmtp(tx *gorm.DB, smtp model.Smtp) model.RetVal {
 	email.DelSenders(smtp)
 	return model.SuccessRetVal()
 }
+
+func TestSmtp(smtp model.Smtp, form dto.TestSmtpForm) model.RetVal {
+	if err := email.SendTestEmailViaSMTP(smtp, form.To); err != nil {
+		return model.RetVal{Msg: err.Error()}
+	}
+	return model.SuccessRetVal()
+}
+
