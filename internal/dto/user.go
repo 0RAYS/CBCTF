@@ -90,3 +90,22 @@ func (f *UpdateUserForm) Validate(_ *gin.Context) model.RetVal {
 type DeleteSelfForm struct {
 	Password string `form:"password" json:"password" binding:"required"`
 }
+
+// ForgotPasswordForm for initiating password reset via email
+type ForgotPasswordForm struct {
+	Email string `form:"email" json:"email" binding:"required,email"`
+}
+
+// ResetPasswordForm for completing password reset with token
+type ResetPasswordForm struct {
+	Token    string `form:"token" json:"token" binding:"required"`
+	ID       string `form:"id" json:"id" binding:"required"`
+	Password string `form:"password" json:"password" binding:"required"`
+}
+
+func (f *ResetPasswordForm) Validate(_ *gin.Context) model.RetVal {
+	if utils.CheckPassword(f.Password) < 2 {
+		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
+	}
+	return model.SuccessRetVal()
+}

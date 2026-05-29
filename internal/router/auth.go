@@ -131,3 +131,32 @@ func Logout(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
+
+// ForgotPassword 接收邮箱地址，发送密码重置链接
+func ForgotPassword(ctx *gin.Context) {
+	var form dto.ForgotPasswordForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	// 无论邮箱是否存在均返回成功，防止用户枚举
+	service.SendPasswordResetEmail(db.DB, form)
+	resp.JSON(ctx, model.SuccessRetVal())
+}
+
+// ResetPassword 验证重置 token 并设置新密码，同时将邮箱置为已验证
+func ResetPassword(ctx *gin.Context) {
+	var form dto.ResetPasswordForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ret := service.ResetUserPassword(db.DB, form)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	log.Logger.Infof("Password reset via email token id=%s", form.ID)
+	prometheus.RecordUserLogin(oauth.LocalProvider)
+	resp.JSON(ctx, model.SuccessRetVal())
+}

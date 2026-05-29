@@ -123,6 +123,8 @@ model:
     notAllowedRegister: "Not allowed register"
     getError: "Get User error: {{.Error}}"
     deleteError: "Delete User error: {{.Error}}"
+    invalidResetToken: "Invalid or expired password reset token"
+    resetPasswordEmailSent: "Password reset email sent"
   userContest:
     createError: "Create UserContest error: {{.Error}}"
     deleteError: "Delete UserContest error: {{.Error}}"

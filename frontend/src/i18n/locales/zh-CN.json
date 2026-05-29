@@ -2391,7 +2391,9 @@
       "username": "用户名",
       "email": "邮箱",
       "password": "密码",
-      "confirmPassword": "确认密码"
+      "confirmPassword": "确认密码",
+      "newPassword": "新密码",
+      "confirmNewPassword": "确认新密码"
     },
     "validation": {
       "usernameMin": "用户名至少 3 个字符",
@@ -2403,6 +2405,28 @@
     "oauth": {
       "or": "或者使用以下方式登录",
       "useProvider": "使用 {{provider}} 登录"
+    },
+    "forgotPassword": {
+      "link": "忘记密码？",
+      "title": "找回密码",
+      "description": "请输入您的注册邮箱，我们将向您发送密码重置链接。",
+      "emailLabel": "邮箱地址",
+      "submit": "发送重置链接",
+      "sending": "发送中...",
+      "successTitle": "邮件已发送",
+      "successMessage": "如果该邮箱已注册，密码重置链接已发送至您的邮箱，请查收。",
+      "backToLogin": "返回登录"
+    },
+    "resetPassword": {
+      "title": "重置密码",
+      "description": "请输入您的新密码。",
+      "submit": "重置密码",
+      "submitting": "重置中...",
+      "successTitle": "密码已重置",
+      "successMessage": "您的密码已成功重置，邮箱验证状态已更新为已验证，现在可以登录了。",
+      "goToLogin": "前往登录",
+      "invalidToken": "此密码重置链接无效或已过期，请重新申请。",
+      "requestNew": "重新申请"
     }
   },
   "oauth": {

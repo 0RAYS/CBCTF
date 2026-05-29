@@ -147,16 +147,18 @@ type Traffic struct {
 }
 
 type User struct {
-	WeakPassword       string
-	SamePassword       string
-	PasswordWrong      string
-	NamePasswordWrong  string
-	UnverifiedEmail    string
-	AlreadyVerified    string
-	InContest          string
-	NotAllowedRegister string
-	GetError           string
-	DeleteError        string
+	WeakPassword           string
+	SamePassword           string
+	PasswordWrong          string
+	NamePasswordWrong      string
+	UnverifiedEmail        string
+	AlreadyVerified        string
+	InContest              string
+	NotAllowedRegister     string
+	GetError               string
+	DeleteError            string
+	InvalidResetToken      string
+	ResetPasswordEmailSent string
 }
 
 type UserContest struct {
@@ -371,16 +373,18 @@ var Model = struct {
 		GetError: "model.traffic.getError",
 	},
 	User: User{
-		WeakPassword:       "model.user.weakPassword",
-		SamePassword:       "model.user.samePassword",
-		PasswordWrong:      "model.user.passwordWrong",
-		NamePasswordWrong:  "model.user.namePasswordWrong",
-		UnverifiedEmail:    "model.user.unverifiedEmail",
-		AlreadyVerified:    "model.user.alreadyVerified",
-		InContest:          "model.user.inContest",
-		NotAllowedRegister: "model.user.notAllowedRegister",
-		GetError:           "model.user.getError",
-		DeleteError:        "model.user.deleteError",
+		WeakPassword:           "model.user.weakPassword",
+		SamePassword:           "model.user.samePassword",
+		PasswordWrong:          "model.user.passwordWrong",
+		NamePasswordWrong:      "model.user.namePasswordWrong",
+		UnverifiedEmail:        "model.user.unverifiedEmail",
+		AlreadyVerified:        "model.user.alreadyVerified",
+		InContest:              "model.user.inContest",
+		NotAllowedRegister:     "model.user.notAllowedRegister",
+		GetError:               "model.user.getError",
+		DeleteError:            "model.user.deleteError",
+		InvalidResetToken:      "model.user.invalidResetToken",
+		ResetPasswordEmailSent: "model.user.resetPasswordEmailSent",
 	},
 	UserContest: UserContest{
 		CreateError: "model.userContest.createError",

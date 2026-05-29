@@ -47,6 +47,9 @@ func Init() *gin.Engine {
 		router.POST("/login", middleware.RateLimit("login", 10, time.Minute), Login)
 		router.DELETE("/logout", Logout)
 
+		router.POST("/password/forgot", middleware.RateLimit("forgot-password", 1, time.Minute), ForgotPassword)
+		router.POST("/password/reset", middleware.RateLimit("reset-password", 1, time.Minute), ResetPassword)
+
 		router.GET("/config", PublicSystemConfig)
 
 		RegisterOauthRouter()
