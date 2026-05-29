@@ -6,6 +6,8 @@
   "common": {
     "loading": "加载中...",
     "language": "语言",
+    "switchTo": "切换至",
+    "currentLanguage": "当前语言",
     "processing": "处理中...",
     "date": "日期",
     "duration": "时长",
