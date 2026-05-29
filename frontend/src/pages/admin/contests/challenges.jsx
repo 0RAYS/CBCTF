@@ -388,6 +388,11 @@ function AdminContestChallengesPage() {
     );
     if (response.code === 200) {
       toast.success({ description: t('admin.contests.challenges.toast.updateFlagSuccess') });
+      // 重新拉取最新 flags，确保弹窗内状态与服务端一致
+      const flagsRes = await getChallengeFlags(parseInt(id), editingChallenge.id);
+      if (flagsRes.code === 200) {
+        setAdminContestChallengeFlags(flagsRes.data);
+      }
     }
   };
 

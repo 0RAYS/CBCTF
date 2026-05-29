@@ -1,6 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { updatePassword, updateUserInfo, deleteAccount, uploadPicture, activateEmail } from '../../api/user';
-import { fetchUserInfo } from '../../store/user';
+import { fetchUserInfo, logoutUser } from '../../store/user';
 import { toast } from '../../utils/toast';
 import UserSettings from '../../components/features/UserSettings';
 import Loading from '../../components/common/Loading';
@@ -9,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 function Settings() {
   const { user, loading } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   // 处理更新基本信息
@@ -30,7 +32,11 @@ function Settings() {
       if (user.has_no_pwd) {
         payload.old = 'never_login_pwd';
       }
-      await updatePassword(payload);
+      const response = await updatePassword(payload);
+      if (response.code === 200) {
+        toast.success({ title: t('toast.user.passwordUpdated') });
+        await dispatch(fetchUserInfo());
+      }
     } catch (error) {
       toast.danger({ title: t('toast.user.passwordUpdateFailed'), description: error.message });
     }
@@ -48,8 +54,11 @@ function Settings() {
   // 处理账户删除
   const handleDeleteAccount = async (password) => {
     try {
-      await deleteAccount({ password });
-      // 这里可以添加登出和跳转逻辑
+      const response = await deleteAccount({ password });
+      if (response.code === 200) {
+        await dispatch(logoutUser());
+        navigate('/login');
+      }
     } catch (error) {
       toast.danger({ title: t('toast.common.deleteFailed'), description: error.message });
     }

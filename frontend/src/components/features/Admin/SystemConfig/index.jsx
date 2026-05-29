@@ -8,8 +8,9 @@ import { SystemConfigForm } from './SystemConfigForm';
 /**
  * SystemConfig - Main container component for system configuration
  * @param {Object} config - Initial config from parent
+ * @param {Function} onConfigUpdated - Callback to re-fetch config from server after a successful update
  */
-function SystemConfig({ config }) {
+function SystemConfig({ config, onConfigUpdated }) {
   const { t } = useTranslation();
   const {
     config: editableConfig,
@@ -35,7 +36,10 @@ function SystemConfig({ config }) {
 
   const handleConfirmUpdate = async () => {
     setIsUpdateConfirmOpen(false);
-    await handleUpdateConfig(editableConfig);
+    const result = await handleUpdateConfig(editableConfig);
+    if (result.success) {
+      await onConfigUpdated?.();
+    }
   };
 
   const handleConfirmRestart = async () => {

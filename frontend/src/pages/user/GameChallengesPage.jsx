@@ -347,6 +347,7 @@ function GameChallengesPage() {
       const res = await resetChallenge(contestId, challengeId);
       if (res.code === 200) {
         toast.success({ title: t('game.challenges.toast.resetSuccess') });
+        await refreshChallengeStatus();
         return true;
       }
     } catch (error) {
@@ -508,6 +509,8 @@ function GameChallengesPage() {
       }
     } catch (error) {
       toast.danger({ description: error.message || t('game.challenges.toast.uploadFailed') });
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -63,6 +63,7 @@ function AdminContestDetail() {
       const response = await updateContestPicture(id, file);
       if (response.code === 200) {
         toast.success({ description: t('admin.contests.editor.toast.coverUpdated') });
+        await fetchContestInfo();
         return response.data.picture;
       }
     } catch (error) {
