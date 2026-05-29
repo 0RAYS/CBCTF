@@ -75,8 +75,46 @@ func Redial(old *Sender) error {
 	return nil
 }
 
-func SendEmail(to, subject, content string) error {
-	log.Logger.Debugf("Sending verify email to %s", to)
+// SendEmailWithSender sends an HTML email using a specific Sender (used for testing).
+func SendEmailWithSender(sender *Sender, to, subject, htmlContent string) error {
+	m := gomail.NewMessage()
+	m.SetHeader("From", sender.Smtp.Address)
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", htmlContent)
+	options := db.CreateEmailOptions{
+		SmtpID:  sender.Smtp.ID,
+		From:    sender.Smtp.Address,
+		To:      to,
+		Subject: subject,
+		Content: htmlContent,
+		Success: true,
+	}
+	err := gomail.Send(*sender.Auth, m)
+	if err != nil {
+		options.Success = false
+	}
+	db.InitEmailRepo(db.DB).Create(options)
+	return err
+}
+
+// SendTestEmailViaSMTP dials the given SMTP config directly (bypassing the pool)
+// and sends a fixed test HTML email to `to`. It does NOT require the config to be On.
+func SendTestEmailViaSMTP(smtp model.Smtp, to string) error {
+	html := buildTestHTML(smtp.Address)
+	dialer := gomail.NewDialer(smtp.Host, smtp.Port, smtp.Address, smtp.Pwd)
+	auth, err := dialer.Dial()
+	if err != nil {
+		return fmt.Errorf("failed to connect to SMTP server %s:%d: %w", smtp.Host, smtp.Port, err)
+	}
+	defer func() { _ = auth.Close() }()
+	sender := &Sender{Auth: &auth, Smtp: smtp, CreatedAt: time.Now()}
+	return SendEmailWithSender(sender, to, "SMTP Test Email", html)
+}
+
+// SendEmail sends an HTML email via a randomly selected Sender from the pool.
+func SendEmail(to, subject, htmlContent string) error {
+	log.Logger.Debugf("Sending email to %s", to)
 	if len(Senders) == 0 {
 		return fmt.Errorf("no email sender configured")
 	}
@@ -102,23 +140,5 @@ func SendEmail(to, subject, content string) error {
 			return fmt.Errorf("failed too many times to connect smtp servers")
 		}
 	}
-	m := gomail.NewMessage()
-	m.SetHeader("From", sender.Smtp.Address)
-	m.SetHeader("To", to)
-	m.SetHeader("Subject", subject)
-	m.SetBody("text/plain", content)
-	options := db.CreateEmailOptions{
-		SmtpID:  sender.Smtp.ID,
-		From:    sender.Smtp.Address,
-		To:      to,
-		Subject: subject,
-		Content: content,
-		Success: true,
-	}
-	err := gomail.Send(*sender.Auth, m)
-	if err != nil {
-		options.Success = false
-	}
-	db.InitEmailRepo(db.DB).Create(options)
-	return err
+	return SendEmailWithSender(sender, to, subject, htmlContent)
 }

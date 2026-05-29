@@ -69,3 +69,17 @@ func DeleteSmtp(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
+
+func TestSmtp(ctx *gin.Context) {
+	var form dto.TestSmtpForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	if ret := service.TestSmtp(middleware.GetSmtp(ctx), form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	resp.JSON(ctx, model.SuccessRetVal())
+}
+

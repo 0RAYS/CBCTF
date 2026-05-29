@@ -34,3 +34,12 @@ export const deleteSmtp = (smtpId) => {
     method: 'DELETE',
   });
 };
+
+// 发送测试邮件
+export const testSmtp = (smtpId, data) => {
+  return request({
+    url: `/admin/smtp/${smtpId}/test`,
+    method: 'POST',
+    data,
+  });
+};

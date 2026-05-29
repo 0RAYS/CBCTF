@@ -14,3 +14,7 @@ type UpdateSmtpForm struct {
 	Pwd     *string `form:"pwd" json:"pwd"`
 	On      *bool   `form:"on" json:"on"`
 }
+
+type TestSmtpForm struct {
+	To string `form:"to" json:"to" binding:"required,email"`
+}

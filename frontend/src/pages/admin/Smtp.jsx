@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from '../../utils/toast';
-import { getSmtpList, createSmtp, updateSmtp, deleteSmtp } from '../../api/admin/smtp';
+import { getSmtpList, createSmtp, updateSmtp, deleteSmtp, testSmtp } from '../../api/admin/smtp';
 import { getEmailHistory, getAllEmailHistory } from '../../api/admin/email';
 import AdminSmtp from '../../components/features/Admin/AdminSmtp';
 import AdminEmailHistory from '../../components/features/Admin/AdminEmailHistory';
@@ -31,6 +31,13 @@ function SmtpManagement() {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [activeTab, setActiveTab] = useState('smtp'); // 'smtp' | 'history'
+
+  // 测试邮件状态
+  const [isTestModalOpen, setIsTestModalOpen] = useState(false);
+  const [testSmtpTarget, setTestSmtpTarget] = useState(null);
+  const [testEmailTo, setTestEmailTo] = useState('');
+  const [isSendingTest, setIsSendingTest] = useState(false);
+
   const { t, i18n } = useTranslation();
 
   const fetchSmtpConfigs = async () => {
@@ -133,6 +140,12 @@ function SmtpManagement() {
     setEmailCurrentPage(1);
   };
 
+  const handleTestClick = (smtp) => {
+    setTestSmtpTarget(smtp);
+    setTestEmailTo('');
+    setIsTestModalOpen(true);
+  };
+
   const handleCreateSmtp = async () => {
     try {
       const response = await createSmtp(editForm);
@@ -177,6 +190,25 @@ function SmtpManagement() {
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.smtp.toast.deleteFailed') });
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    if (!testEmailTo) return;
+    setIsSendingTest(true);
+    try {
+      const response = await testSmtp(testSmtpTarget.id, { to: testEmailTo });
+      if (response.code === 200) {
+        toast.success({ description: t('admin.smtp.toast.testSuccess') });
+        setIsTestModalOpen(false);
+        fetchSmtpConfigs();
+      } else {
+        toast.danger({ description: response.msg || t('admin.smtp.toast.testFailed') });
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.smtp.toast.testFailed') });
+    } finally {
+      setIsSendingTest(false);
     }
   };
 
@@ -380,6 +412,7 @@ function SmtpManagement() {
           onDeleteSmtp={handleDeleteClick}
           onSmtpClick={handleSmtpClick}
           onViewHistory={handleViewHistory}
+          onTestSmtp={handleTestClick}
         />
       )}
 
@@ -424,6 +457,55 @@ function SmtpManagement() {
         footer={<ModalButton onClick={() => setIsEmailModalOpen(false)}>{t('admin.smtp.actions.close')}</ModalButton>}
       >
         {renderEmailModalContent()}
+      </Modal>
+
+      {/* 测试邮件模态框 */}
+      <Modal
+        isOpen={isTestModalOpen}
+        onClose={() => setIsTestModalOpen(false)}
+        title={t('admin.smtp.actions.testModalTitle')}
+        size="sm"
+        footer={
+          <>
+            <ModalButton onClick={() => setIsTestModalOpen(false)} disabled={isSendingTest}>
+              {t('common.cancel')}
+            </ModalButton>
+            <ModalButton variant="primary" onClick={handleSendTestEmail} disabled={isSendingTest || !testEmailTo}>
+              {isSendingTest ? t('admin.smtp.actions.sending') : t('admin.smtp.actions.sendTest')}
+            </ModalButton>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          {testSmtpTarget && (
+            <div className="bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-3">
+              <p className="text-xs text-neutral-400 mb-1">{t('admin.smtp.columns.address')}</p>
+              <p className="text-sm text-neutral-100 font-mono">{testSmtpTarget.address}</p>
+              <p className="text-xs text-neutral-400 mt-2 mb-1">{t('admin.smtp.columns.host')}</p>
+              <p className="text-sm text-neutral-100 font-mono">
+                {testSmtpTarget.host}:{testSmtpTarget.port}
+              </p>
+            </div>
+          )}
+          <div>
+            <label className="block text-neutral-300 text-sm font-medium mb-2">
+              {t('admin.smtp.actions.testEmailLabel')}
+            </label>
+            <Input
+              type="email"
+              value={testEmailTo}
+              onChange={(e) => setTestEmailTo(e.target.value)}
+              placeholder={t('admin.smtp.actions.testEmailPlaceholder')}
+              fullWidth
+              disabled={isSendingTest}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && testEmailTo && !isSendingTest) {
+                  handleSendTestEmail();
+                }
+              }}
+            />
+          </div>
+        </div>
       </Modal>
     </>
   );
