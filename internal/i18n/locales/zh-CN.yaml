@@ -123,6 +123,8 @@ model:
     notAllowedRegister: "不允许注册"
     getError: "获取 User 失败: {{.Error}}"
     deleteError: "删除 User 失败: {{.Error}}"
+    invalidResetToken: "密码重置链接无效或已过期"
+    resetPasswordEmailSent: "密码重置邮件已发送"
   userContest:
     createError: "创建 UserContest 失败: {{.Error}}"
     deleteError: "删除 UserContest 失败: {{.Error}}"

@@ -11,6 +11,7 @@ const Settings = lazy(() => import('../pages/user/Settings'));
 const GamesPage = lazy(() => import('../pages/user/GamesPage'));
 const TechStackPage = lazy(() => import('../pages/TechStackPage'));
 const ContactPage = lazy(() => import('../pages/ContactPage'));
+const ResetPassword = lazy(() => import('../pages/user/ResetPassword'));
 
 export function MainRoutes() {
   return (
@@ -22,6 +23,7 @@ export function MainRoutes() {
       <Route path="oauth/callback" element={withSuspense(OAuthCallback)} />
       <Route path="support" element={withSuspense(TechStackPage)} />
       <Route path="contact" element={withSuspense(ContactPage)} />
+      <Route path="reset-password" element={withSuspense(ResetPassword)} />
     </Route>
   );
 }

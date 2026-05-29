@@ -2391,7 +2391,9 @@
       "username": "Username",
       "email": "Email",
       "password": "Password",
-      "confirmPassword": "Confirm Password"
+      "confirmPassword": "Confirm Password",
+      "newPassword": "New Password",
+      "confirmNewPassword": "Confirm New Password"
     },
     "validation": {
       "usernameMin": "Username must be at least 3 characters",
@@ -2403,6 +2405,28 @@
     "oauth": {
       "or": "Or sign in with",
       "useProvider": "Sign in with {{provider}}"
+    },
+    "forgotPassword": {
+      "link": "Forgot password?",
+      "title": "FORGOT PASSWORD",
+      "description": "Enter your email address and we'll send you a link to reset your password.",
+      "emailLabel": "Email Address",
+      "submit": "SEND RESET LINK",
+      "sending": "SENDING...",
+      "successTitle": "Email Sent",
+      "successMessage": "If an account with that email exists, a password reset link has been sent. Please check your inbox.",
+      "backToLogin": "Back to login"
+    },
+    "resetPassword": {
+      "title": "RESET PASSWORD",
+      "description": "Enter your new password below.",
+      "submit": "RESET PASSWORD",
+      "submitting": "RESETTING...",
+      "successTitle": "Password Reset",
+      "successMessage": "Your password has been reset and your email has been verified. You can now log in.",
+      "goToLogin": "Go to login",
+      "invalidToken": "This password reset link is invalid or has expired. Please request a new one.",
+      "requestNew": "Request new link"
     }
   },
   "oauth": {
