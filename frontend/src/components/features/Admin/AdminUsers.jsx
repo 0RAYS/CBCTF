@@ -1,5 +1,5 @@
 import { List, StatusTag, Avatar } from '../../common';
-import { IconPlus, IconEdit, IconTrash, IconSearch, IconKey } from '@tabler/icons-react';
+import { IconPlus, IconEdit, IconTrash, IconSearch } from '@tabler/icons-react';
 import { Button, Input, Pagination, Spinner } from '../../../components/common';
 import { useTranslation } from 'react-i18next';
 import AdminUserDetailDialog from './AdminUserDetailDialog';
@@ -31,7 +31,6 @@ function AdminUsers({
   onEditUser,
   onDeleteUser,
   onPictureUpload,
-  onChangePassword,
   nameQuery = '',
   emailQuery = '',
   descQuery = '',
@@ -102,18 +101,6 @@ function AdminUsers({
       case 'actions':
         return (
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-blue-400"
-              title={t('admin.users.modal.changePasswordTitle')}
-              onClick={(e) => {
-                e.stopPropagation();
-                onChangePassword?.(user);
-              }}
-            >
-              <IconKey size={18} />
-            </Button>
             <Button
               variant="ghost"
               size="icon"
