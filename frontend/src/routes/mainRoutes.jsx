@@ -12,6 +12,7 @@ const GamesPage = lazy(() => import('../pages/user/GamesPage'));
 const TechStackPage = lazy(() => import('../pages/TechStackPage'));
 const ContactPage = lazy(() => import('../pages/ContactPage'));
 const ResetPassword = lazy(() => import('../pages/user/ResetPassword'));
+const VerifyEmail = lazy(() => import('../pages/user/VerifyEmail'));
 
 export function MainRoutes() {
   return (
@@ -24,6 +25,7 @@ export function MainRoutes() {
       <Route path="support" element={withSuspense(TechStackPage)} />
       <Route path="contact" element={withSuspense(ContactPage)} />
       <Route path="reset-password" element={withSuspense(ResetPassword)} />
+      <Route path="verify" element={withSuspense(VerifyEmail)} />
     </Route>
   );
 }

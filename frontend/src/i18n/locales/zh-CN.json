@@ -2427,6 +2427,17 @@
       "goToLogin": "前往登录",
       "invalidToken": "此密码重置链接无效或已过期，请重新申请。",
       "requestNew": "重新申请"
+    },
+    "verifyEmail": {
+      "title": "验证邮箱",
+      "question": "<strong>{{name}}</strong> 是您的账号吗？",
+      "description": "点击下方按钮验证您的邮箱并激活账号。",
+      "submit": "激活账号",
+      "submitting": "激活中...",
+      "successMessage": "邮箱验证成功！您现在可以参加比赛了。",
+      "goToSettings": "前往设置",
+      "invalidToken": "此验证链接无效或已过期，请在账号设置中重新发送验证邮件。",
+      "requestNew": "前往设置"
     }
   },
   "oauth": {

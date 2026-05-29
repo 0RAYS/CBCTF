@@ -1,7 +1,6 @@
 package router
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -9,7 +8,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -44,7 +42,7 @@ func VerifyEmail(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.Redirect(http.StatusTemporaryRedirect, config.Env.Host)
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func ActivateEmail(ctx *gin.Context) {
