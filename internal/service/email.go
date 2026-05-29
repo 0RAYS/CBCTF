@@ -80,11 +80,9 @@ func ResetUserPassword(tx *gorm.DB, form dto.ResetPasswordForm) model.RetVal {
 	if ret := redis.DelPasswordResetToken(claims.UserID); !ret.OK {
 		return ret
 	}
-	hashedPwd := utils.HashPassword(form.Password)
-	verified := true
 	return db.InitUserRepo(tx).Update(claims.UserID, db.UpdateUserOptions{
-		Password: &hashedPwd,
-		Verified: &verified,
+		Password: new(utils.HashPassword(form.Password)),
+		Verified: new(true),
 	})
 }
 
