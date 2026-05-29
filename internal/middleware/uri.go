@@ -622,6 +622,7 @@ func SetWebhook(ctx *gin.Context) {
 		return
 	}
 	ctx.Set("Webhook", webhook)
+	ctx.Next()
 }
 
 func GetWebhook(ctx *gin.Context) model.Webhook {

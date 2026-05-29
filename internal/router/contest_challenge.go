@@ -49,6 +49,14 @@ func GetAllContestChallenges(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"challenges": data, "count": count}))
 }
 
+func GetAdminContestChallenge(ctx *gin.Context) {
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetAdminContestChallengeResp(middleware.GetContestChallenge(ctx))))
+}
+
+func ReadContestFlag(ctx *gin.Context) {
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestFlagResp(middleware.GetContestFlag(ctx))))
+}
+
 func GetContestChallengeCategories(ctx *gin.Context) {
 	var form dto.GetCategoriesForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {

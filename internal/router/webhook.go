@@ -29,6 +29,10 @@ func GetWebhooks(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "webhooks": data}))
 }
 
+func ReadWebhook(ctx *gin.Context) {
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetWebhookResp(middleware.GetWebhook(ctx))))
+}
+
 func CreateWebhook(ctx *gin.Context) {
 	var form dto.CreateWebhookForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {

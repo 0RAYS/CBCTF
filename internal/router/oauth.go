@@ -203,6 +203,10 @@ func GetOauthProviders(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"providers": data, "count": count}))
 }
 
+func GetOauthProvider(ctx *gin.Context) {
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetOauthResp(middleware.GetOauth(ctx))))
+}
+
 func CreateOauthProvider(ctx *gin.Context) {
 	var form dto.CreateOauthProviderForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {

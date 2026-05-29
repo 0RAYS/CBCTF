@@ -247,6 +247,7 @@ func Init() *gin.Engine {
 		admin.POST("/oauth", CreateOauthProvider)
 		adminOauth := admin.Group("/oauth/:oauthID", middleware.SetOauth)
 		{
+			adminOauth.GET("", GetOauthProvider)
 			adminOauth.PUT("", UpdateOauthProvider)
 			adminOauth.POST("/picture", UploadPicture("oauth"))
 			adminOauth.DELETE("", DeleteOauthProvider)
@@ -257,6 +258,7 @@ func Init() *gin.Engine {
 		admin.POST("/smtp", CreateSmtp)
 		adminSmtp := admin.Group("/smtp/:smtpID", middleware.SetSmtp)
 		{
+			adminSmtp.GET("", ReadSmtp)
 			adminSmtp.PUT("", UpdateSmtp)
 			adminSmtp.DELETE("", DeleteSmtp)
 			adminSmtp.POST("/test", TestSmtp)
@@ -277,6 +279,7 @@ func Init() *gin.Engine {
 		admin.POST("/webhook", CreateWebhook)
 		adminWebhook := admin.Group("/webhook/:webhookID", middleware.SetWebhook)
 		{
+			adminWebhook.GET("", ReadWebhook)
 			adminWebhook.PUT("", UpdateWebhook)
 			adminWebhook.DELETE("", DeleteWebhook)
 
@@ -401,6 +404,7 @@ func Init() *gin.Engine {
 			adminContest.POST("/challenges", AddContestChallenge)
 			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetContestChallenge)
 			{
+				adminContestChallenge.GET("", GetAdminContestChallenge)
 				adminContestChallenge.PUT("", UpdateContestChallenge)
 				adminContestChallenge.DELETE("", DeleteContestChallenge)
 
@@ -408,6 +412,7 @@ func Init() *gin.Engine {
 				adminContestChallenge.GET("/flags", GetContestFlags)
 				adminContestFlag := adminContestChallenge.Group("/flags/:flagID", middleware.SetContestFlag)
 				{
+					adminContestFlag.GET("", ReadContestFlag)
 					adminContestFlag.PUT("", UpdateContestFlag)
 					adminContestFlag.GET("/solvers", GetContestFlagSolvers)
 				}
