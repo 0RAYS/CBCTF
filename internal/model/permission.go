@@ -74,6 +74,7 @@ const (
 	PermAdminSMTPUpdate = "admin:smtp:update"
 	PermAdminSMTPDelete = "admin:smtp:delete"
 	PermAdminSMTPList   = "admin:smtp:list"
+	PermAdminSMTPTest   = "admin:smtp:test"
 
 	PermAdminCronJobUpdate = "admin:cronjob:update"
 	PermAdminCronJobList   = "admin:cronjob:list"
@@ -251,12 +252,13 @@ var RoutePermissions = map[string]string{
 	"DELETE /admin/oauth/:oauthID":       PermAdminOauthDelete,
 
 	// /admin/email + /admin/smtp
-	"GET /admin/email":              PermAdminSMTPList,
-	"GET /admin/smtp":               PermAdminSMTPList,
-	"POST /admin/smtp":              PermAdminSMTPCreate,
-	"PUT /admin/smtp/:smtpID":       PermAdminSMTPUpdate,
-	"DELETE /admin/smtp/:smtpID":    PermAdminSMTPDelete,
-	"GET /admin/smtp/:smtpID/email": PermAdminSMTPList,
+	"GET /admin/email":                PermAdminSMTPList,
+	"GET /admin/smtp":                 PermAdminSMTPList,
+	"POST /admin/smtp":                PermAdminSMTPCreate,
+	"PUT /admin/smtp/:smtpID":         PermAdminSMTPUpdate,
+	"DELETE /admin/smtp/:smtpID":      PermAdminSMTPDelete,
+	"GET /admin/smtp/:smtpID/email":   PermAdminSMTPList,
+	"POST /admin/smtp/:smtpID/test":   PermAdminSMTPTest,
 
 	// /admin/cronjobs
 	"GET /admin/cronjobs":            PermAdminCronJobList,
@@ -457,6 +459,7 @@ var Permissions = []Permission{
 	{Name: PermAdminSMTPUpdate, Resource: "admin:smtp", Operation: "update", Description: "更新 SMTP 配置"},
 	{Name: PermAdminSMTPDelete, Resource: "admin:smtp", Operation: "delete", Description: "删除 SMTP 配置"},
 	{Name: PermAdminSMTPList, Resource: "admin:smtp", Operation: "list", Description: "查看 SMTP 配置列表"},
+	{Name: PermAdminSMTPTest, Resource: "admin:smtp", Operation: "test", Description: "发送 SMTP 测试邮件"},
 
 	{Name: PermAdminCronJobUpdate, Resource: "admin:cronjob", Operation: "update", Description: "更新 Cron 任务"},
 	{Name: PermAdminCronJobList, Resource: "admin:cronjob", Operation: "list", Description: "查看 Cron 任务列表"},
