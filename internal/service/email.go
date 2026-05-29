@@ -89,7 +89,7 @@ func ResetUserPassword(tx *gorm.DB, form dto.ResetPasswordForm) model.RetVal {
 }
 
 func ListEmails(tx *gorm.DB, smtp model.Smtp, form dto.ListModelsForm) ([]model.Email, int64, model.RetVal) {
-	options := db.GetOptions{}
+	options := db.GetOptions{Sort: []string{"created_at DESC"}}
 	if smtp.ID > 0 {
 		options.Conditions = map[string]any{"smtp_id": smtp.ID}
 	}
