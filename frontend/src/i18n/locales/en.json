@@ -6,6 +6,8 @@
   "common": {
     "loading": "Loading...",
     "language": "Language",
+    "switchTo": "Switch to",
+    "currentLanguage": "Current language",
     "processing": "Processing...",
     "date": "Date",
     "duration": "Duration",
