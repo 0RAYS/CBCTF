@@ -172,7 +172,10 @@ func GetUserView(tx *gorm.DB, user model.User, includeCounts bool) view.UserView
 }
 
 func ListUsers(tx *gorm.DB, form dto.ListUsersForm) ([]view.UserView, int64, model.RetVal) {
-	options := db.GetOptions{Search: make(map[string]string)}
+	options := db.GetOptions{
+		Search: make(map[string]string),
+		Sort:   []string{"id DESC"},
+	}
 	if form.Name != "" {
 		options.Search["name"] = form.Name
 	}

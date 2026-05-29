@@ -11,6 +11,7 @@ import (
 func ListWebhookHistories(tx *gorm.DB, webhook model.Webhook, form dto.ListModelsForm) ([]model.WebhookHistory, int64, model.RetVal) {
 	options := db.GetOptions{
 		Preloads: map[string]db.GetOptions{"Webhook": {}, "Event": {}},
+		Sort:     []string{"id DESC"},
 	}
 	if webhook.ID > 0 {
 		options.Conditions = map[string]any{"webhook_id": webhook.ID}

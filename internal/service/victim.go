@@ -434,6 +434,7 @@ func ListVictimHistories(tx *gorm.DB, team model.Team, form dto.ListModelsForm) 
 		Conditions: map[string]any{"team_id": team.ID},
 		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
 		Deleted:    true,
+		Sort:       []string{"id DESC"},
 	})
 }
 
