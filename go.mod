@@ -26,7 +26,7 @@ require (
 	github.com/oschwald/geoip2-golang/v2 v2.2.0
 	github.com/pires/go-proxyproto v0.12.0
 	github.com/prometheus/client_golang v1.23.2
-	github.com/redis/go-redis/v9 v9.19.0
+	github.com/redis/go-redis/v9 v9.20.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/sirupsen/logrus v1.9.4
