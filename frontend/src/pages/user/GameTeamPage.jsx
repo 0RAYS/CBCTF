@@ -41,6 +41,7 @@ function GameTeamPage() {
         email: leader.email,
       },
       members: otherMembers.map((member) => ({
+        id: member.id,
         name: member.name,
         picture: member.picture,
         email: member.email,
@@ -115,18 +116,20 @@ function GameTeamPage() {
   const handleKickMember = async (memberName) => {
     try {
       const member = team.members.find((m) => m.name === memberName);
-      if (!member) return;
+      if (!member || !member.id) return;
 
       const res = await kickTeamMember(contestId, member.id);
       if (res.code === 200) {
-        setTeam((prev) => ({
-          ...prev,
-          members: prev.members.filter((m) => m.name !== memberName),
-        }));
         toast.success({
           title: t('game.team.toast.memberRemoved'),
           description: t('game.team.toast.memberRemovedDescription', { name: memberName }),
         });
+        // 重新拉取队伍数据以确保状态与服务端一致
+        const [teamInfoRes, membersRes] = await Promise.all([getTeamInfo(contestId), getTeamMembers(contestId)]);
+        if (teamInfoRes.code === 200 && membersRes.code === 200) {
+          const transformedData = await transformTeamData(teamInfoRes.data, membersRes.data);
+          setTeam(transformedData);
+        }
       }
     } catch (error) {
       toast.danger({ description: error.message || t('game.team.toast.removeFailed') });

@@ -27,7 +27,7 @@ function SystemSettings() {
     return <div className="p-4 text-red-500">{t('admin.system.noData')}</div>;
   }
 
-  return <SystemConfig config={config} />;
+  return <SystemConfig config={config} onConfigUpdated={fetchConfig} />;
 }
 
 export default SystemSettings;
