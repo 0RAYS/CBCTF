@@ -29,6 +29,10 @@ func GetSmtps(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"smtps": data, "count": count}))
 }
 
+func ReadSmtp(ctx *gin.Context) {
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetSmtpResp(middleware.GetSmtp(ctx))))
+}
+
 func CreateSmtp(ctx *gin.Context) {
 	var form dto.CreateSmtpForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
