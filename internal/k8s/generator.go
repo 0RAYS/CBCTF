@@ -83,7 +83,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 	}
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
-		if _, _, err = Exec(ctx, generator.Name, pod.Spec.Containers[0].Name, command, nil); err != nil {
+		if _, _, err = Exec(ctx, generator.Name, "generator", command, nil); err != nil {
 			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 		}
 	}
