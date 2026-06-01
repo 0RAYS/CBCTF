@@ -686,7 +686,8 @@
           "deletePrompt": "Delete team {{name}}? This action cannot be undone.",
           "kickPrompt": "Remove a member from team {{name}}:",
           "selectMemberLabel": "Select member to remove",
-          "selectMemberPlaceholder": "Select a member"
+          "selectMemberPlaceholder": "Select a member",
+          "kickAction": "Remove"
         },
         "toast": {
           "fetchFailed": "Failed to load teams",

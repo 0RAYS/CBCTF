@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
 import AdminTeams from '../../../components/features/Admin/Contests/AdminTeams';
 import {
@@ -16,7 +16,6 @@ import { useTeamDetailDialog } from '../../../hooks/useTeamDetailDialog.jsx';
 
 function AdminContestTeams() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [teams, setTeams] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,6 +31,7 @@ function AdminContestTeams() {
     captain_id: '',
   });
   const [selectedUserId, setSelectedUserId] = useState('');
+  const [kickUserId, setKickUserId] = useState('');
   const [teamMembers, setTeamMembers] = useState([]);
   const pageSize = 20;
   const { t } = useTranslation();
@@ -155,6 +155,7 @@ function AdminContestTeams() {
   const handleEditTeam = (team) => {
     setSelectedTeam(team);
     setSelectedUserId('');
+    setKickUserId('');
     setEditForm({
       name: team.name,
       description: team.description || '',
@@ -174,16 +175,22 @@ function AdminContestTeams() {
     setShowModal(true);
   };
 
-  const handleKickMember = (team) => {
-    setSelectedTeam(team);
-    setSelectedUserId('');
-    setModalMode('kick');
-    fetchTeamMembers(team);
-    setShowModal(true);
-  };
-
-  const handleViewDetails = (team) => {
-    navigate(`/admin/contests/${id}/teams/${team.id}/details`);
+  const handleKickSubmit = async () => {
+    if (!kickUserId) {
+      toast.warning({ description: t('admin.contests.teams.toast.selectMember') });
+      return;
+    }
+    try {
+      const response = await kickTeamMember(parseInt(id), selectedTeam.id, parseInt(kickUserId));
+      if (response.code === 200) {
+        toast.success({ description: t('admin.contests.teams.toast.kickSuccess') });
+        setKickUserId('');
+        fetchTeamMembers(selectedTeam);
+        fetchTeams();
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.teams.toast.actionFailed') });
+    }
   };
 
   const handleModalClose = () => {
@@ -209,15 +216,6 @@ function AdminContestTeams() {
         const response = await deleteTeam(parseInt(id), selectedTeam.id);
         if (response.code === 200) {
           toast.success({ description: t('admin.contests.teams.toast.deleteSuccess') });
-        }
-      } else if (modalMode === 'kick') {
-        if (!selectedUserId) {
-          toast.warning({ description: t('admin.contests.teams.toast.selectMember') });
-          return;
-        }
-        const response = await kickTeamMember(parseInt(id), selectedTeam.id, parseInt(selectedUserId));
-        if (response.code === 200) {
-          toast.success({ description: t('admin.contests.teams.toast.kickSuccess') });
         }
       }
       setShowModal(false);
@@ -246,18 +244,19 @@ function AdminContestTeams() {
         teamMembers={teamMembers}
         editForm={editForm}
         selectedUserId={selectedUserId}
+        kickUserId={kickUserId}
         showModal={showModal}
         modalMode={modalMode}
         selectedTeam={selectedTeam}
         onPageChange={setCurrentPage}
         onEditTeam={handleEditTeam}
         onDeleteTeam={handleDeleteTeam}
-        onKickMember={handleKickMember}
-        onViewDetails={handleViewDetails}
         onModalClose={handleModalClose}
         onModalSubmit={handleModalSubmit}
         onFormChange={handleFormChange}
         onUserSelect={handleUserSelect}
+        onKickUserSelect={setKickUserId}
+        onKickSubmit={handleKickSubmit}
         nameQuery={nameQuery}
         descQuery={descQuery}
         searchResults={searchResults}

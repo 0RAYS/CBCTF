@@ -9,7 +9,6 @@ const AdminContestChallenges = lazy(() => import('../pages/admin/contests/challe
 const AdminContestScoreboard = lazy(() => import('../pages/admin/contests/scoreboard'));
 const AdminContestTeams = lazy(() => import('../pages/admin/contests/teams'));
 const AdminContestSettings = lazy(() => import('../pages/admin/contests/settings'));
-const TeamDetails = lazy(() => import('../pages/admin/contests/team-details'));
 const AdminContestNotices = lazy(() => import('../pages/admin/contests/notice'));
 const AdminContestImagesPull = lazy(() => import('../pages/admin/contests/images-pull.jsx'));
 const ContestContainers = lazy(() => import('../pages/admin/contests/containers'));
@@ -20,7 +19,6 @@ const ADMIN_CONTEST_ROUTES = [
   { path: 'challenges', Component: AdminContestChallenges, apiRoute: 'GET /admin/contests/:contestID/challenges' },
   { path: 'scoreboard', Component: AdminContestScoreboard, apiRoute: 'GET /admin/contests/:contestID/scoreboard' },
   { path: 'teams', Component: AdminContestTeams, apiRoute: 'GET /admin/contests/:contestID/teams' },
-  { path: 'teams/:teamId/details', Component: TeamDetails, apiRoute: 'GET /admin/contests/:contestID/teams' },
   { path: 'notices', Component: AdminContestNotices, apiRoute: 'GET /admin/contests/:contestID/notices' },
   { path: 'images', Component: AdminContestImagesPull, apiRoute: 'GET /admin/contests/:contestID/images' },
   { path: 'victims', Component: ContestContainers, apiRoute: 'GET /admin/contests/:contestID/victims' },

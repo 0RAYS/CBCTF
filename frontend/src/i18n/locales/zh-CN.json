@@ -686,7 +686,8 @@
           "deletePrompt": "确定删除团队 {{name}} 吗？此操作不可恢复",
           "kickPrompt": "从团队 {{name}} 中移出成员: ",
           "selectMemberLabel": "选择要移出的成员",
-          "selectMemberPlaceholder": "请选择成员"
+          "selectMemberPlaceholder": "请选择成员",
+          "kickAction": "移除"
         },
         "toast": {
           "fetchFailed": "获取团队列表失败",

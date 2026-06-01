@@ -730,7 +730,10 @@ function ContestContainers() {
                   {challenges.length > 0 ? (
                     <div className="grid grid-cols-3 gap-0.5 p-1">
                       {challenges.map((challenge) => (
-                        <div key={challenge.id} className="flex items-center p-1 hover:bg-black/30 rounded transition-colors min-w-0">
+                        <div
+                          key={challenge.id}
+                          className="flex items-center p-1 hover:bg-black/30 rounded transition-colors min-w-0"
+                        >
                           <input
                             type="checkbox"
                             id={`challenge-${challenge.id}`}
