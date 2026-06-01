@@ -1804,7 +1804,18 @@
       "loadMore": "下拉加载更多",
       "noMore": "没有更多了",
       "toast": {
-        "fetchFailed": "获取日志失败"
+        "fetchFailed": "获取日志失败",
+        "ipFetchFailed": "获取 IP 信息失败"
+      },
+      "ipDetail": {
+        "title": "IP 反查",
+        "ip": "IP 地址",
+        "iso": "国家代码",
+        "country": "国家",
+        "subdivision": "省/州",
+        "city": "城市",
+        "timezone": "时区",
+        "coordinates": "坐标"
       }
     },
     "smtp": {
