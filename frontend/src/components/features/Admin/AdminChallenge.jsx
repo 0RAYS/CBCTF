@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { IconEdit, IconTrash, IconPlus, IconUpload, IconDownload, IconSearch, IconFlask } from '@tabler/icons-react';
+import { IconEdit, IconTrash, IconPlus, IconUpload, IconSearch, IconFlask } from '@tabler/icons-react';
 import { Button, Pagination, Input, Spinner, Chip } from '../../../components/common';
 import { List } from '../../common';
 import { useTranslation } from 'react-i18next';
@@ -120,30 +120,30 @@ function AdminChallenge({
         return <div className="whitespace-normal">{renderFlags(challenge.flags)}</div>;
       case 'file':
         return challenge.file ? (
-          <Chip variant="tag" label={challenge.file} title={challenge.file} className="whitespace-normal" />
+          <button
+            className="flex items-center gap-1.5 max-w-full text-left group"
+            title={challenge.file}
+            onClick={() => onDownloadAttachment(challenge)}
+          >
+            <Chip
+              variant="tag"
+              label={challenge.file}
+              className="whitespace-normal group-hover:opacity-80 transition-opacity cursor-pointer"
+            />
+          </button>
         ) : (
-          <span className="text-neutral-500 font-mono text-sm">{t('common.none')}</span>
+          <button
+            className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-300 font-mono text-sm transition-colors"
+            title={t('admin.challenge.actions.upload')}
+            onClick={() => onUploadAttachment(challenge)}
+          >
+            <IconUpload size={14} />
+            <span>{t('common.none')}</span>
+          </button>
         );
       case 'actions':
         return (
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-neutral-400 hover:!text-neutral-300"
-              onClick={() => onUploadAttachment(challenge)}
-            >
-              <IconUpload size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-neutral-400 hover:!text-neutral-300"
-              disabled={!challenge.file}
-              onClick={() => onDownloadAttachment(challenge)}
-            >
-              <IconDownload size={18} />
-            </Button>
             <Button
               variant="ghost"
               size="icon"
