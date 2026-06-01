@@ -7,19 +7,20 @@
  * @param {number} props.pageSize - 每页显示数量
  * @param {Array} props.teamMembers - 当前选中团队的成员列表
  * @param {Object} props.editForm - 编辑表单数据
- * @param {string} props.selectedUserId - 选中的用户ID
+ * @param {string} props.selectedUserId - 选中的用户ID（编辑弹窗中队长选择）
+ * @param {string} props.kickUserId - 踢出操作选中的用户ID
  * @param {boolean} props.showModal - 是否显示模态框
  * @param {string} props.modalMode - 模态框模式
  * @param {Object} props.selectedTeam - 选中的团队
  * @param {Function} props.onPageChange - 页码改变回调
  * @param {Function} props.onEditTeam - 编辑团队回调
  * @param {Function} props.onDeleteTeam - 删除团队回调
- * @param {Function} props.onKickMember - 踢出成员回调
- * @param {Function} props.onViewDetails - 查看详情回调
  * @param {Function} props.onModalClose - 关闭模态框回调
  * @param {Function} props.onModalSubmit - 模态框提交回调
  * @param {Function} props.onFormChange - 表单改变回调
- * @param {Function} props.onUserSelect - 用户选择回调
+ * @param {Function} props.onUserSelect - 用户选择回调（队长）
+ * @param {Function} props.onKickUserSelect - 踢出用户选择回调
+ * @param {Function} props.onKickSubmit - 踢出成员提交回调
  * @param {string} props.searchQuery - 搜索查询
  * @param {Array} props.searchResults - 搜索结果
  * @param {boolean} props.searchLoading - 搜索加载状态
@@ -30,7 +31,7 @@
  * @param {boolean} props.isSearchMode - 是否处于搜索模式
  */
 
-import { IconEdit, IconTrash, IconUserMinus, IconContainer, IconSearch } from '@tabler/icons-react';
+import { IconEdit, IconTrash, IconSearch, IconUserMinus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import {
   Avatar,
@@ -58,18 +59,19 @@ function AdminTeams({
   teamMembers = [],
   editForm = {},
   selectedUserId = '',
+  kickUserId = '',
   showModal = false,
   modalMode = 'edit',
   selectedTeam = null,
   onPageChange,
   onEditTeam,
   onDeleteTeam,
-  onKickMember,
-  onViewDetails,
   onModalClose,
   onModalSubmit,
   onFormChange,
   onUserSelect,
+  onKickUserSelect,
+  onKickSubmit,
   nameQuery = '',
   descQuery = '',
   searchResults = [],
@@ -166,22 +168,6 @@ function AdminTeams({
             <Button
               variant="ghost"
               size="icon"
-              className="!text-yellow-400 hover:!text-yellow-300"
-              onClick={() => onKickMember(team)}
-            >
-              <IconUserMinus size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!text-neutral-400 hover:!text-neutral-300"
-              onClick={() => onViewDetails(team)}
-            >
-              <IconContainer size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
               className="!text-red-400 hover:!text-red-300"
               onClick={() => onDeleteTeam(team)}
             >
@@ -208,34 +194,7 @@ function AdminTeams({
       );
     }
 
-    if (modalMode === 'kick') {
-      return (
-        <div className="space-y-4">
-          <p className="text-neutral-300">
-            {t('admin.contests.teams.modal.kickPrompt', { name: selectedTeam?.name || '' })}
-          </p>
-          {teamMembers.length === 0 ? (
-            <EmptyState title={t('admin.contests.teams.empty.noMembers')} />
-          ) : (
-            <FormField
-              label={t('admin.contests.teams.modal.selectMemberLabel')}
-              className="[&_label]:font-mono [&_label]:mb-2"
-            >
-              <Select
-                value={selectedUserId}
-                onChange={(e) => onUserSelect(e.target.value)}
-                options={teamMembers.map((member) => ({
-                  value: member.id,
-                  label: member.name,
-                }))}
-                placeholder={t('admin.contests.teams.modal.selectMemberPlaceholder')}
-              />
-            </FormField>
-          )}
-        </div>
-      );
-    }
-
+    // edit 模式：合并编辑表单 + 移除成员区块
     return (
       <div className="space-y-4">
         <FormField label={t('admin.contests.teams.form.name')} className="[&_label]:font-mono [&_label]:mb-2">
@@ -285,6 +244,45 @@ function AdminTeams({
             label={t('admin.contests.teams.labels.hidden')}
             className="font-mono text-sm text-neutral-400"
           />
+        </div>
+
+        {/* 移除成员区块 */}
+        <div className="border-t border-neutral-700 pt-4">
+          <p className="text-sm font-mono text-neutral-400 mb-3">
+            {t('admin.contests.teams.modal.kickPrompt', { name: selectedTeam?.name || '' })}
+          </p>
+          {teamMembers.length === 0 ? (
+            <EmptyState title={t('admin.contests.teams.empty.noMembers')} />
+          ) : (
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <FormField
+                  label={t('admin.contests.teams.modal.selectMemberLabel')}
+                  className="[&_label]:font-mono [&_label]:mb-2 !mb-0"
+                >
+                  <Select
+                    value={kickUserId}
+                    onChange={(e) => onKickUserSelect(e.target.value)}
+                    options={teamMembers.map((member) => ({
+                      value: member.id,
+                      label: member.name,
+                    }))}
+                    placeholder={t('admin.contests.teams.modal.selectMemberPlaceholder')}
+                  />
+                </FormField>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="!text-yellow-400 hover:!text-yellow-300 shrink-0 mb-0.5"
+                onClick={onKickSubmit}
+                disabled={!kickUserId}
+              >
+                <IconUserMinus size={16} className="mr-1" />
+                {t('admin.contests.teams.modal.kickAction')}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -363,13 +361,11 @@ function AdminTeams({
         isOpen={showModal}
         onClose={onModalClose}
         title={
-          modalMode === 'edit'
-            ? t('admin.contests.teams.modal.title.edit')
-            : modalMode === 'delete'
-              ? t('admin.contests.teams.modal.title.delete')
-              : t('admin.contests.teams.modal.title.kick')
+          modalMode === 'delete'
+            ? t('admin.contests.teams.modal.title.delete')
+            : t('admin.contests.teams.modal.title.edit')
         }
-        size={modalMode === 'edit' ? 'lg' : 'sm'}
+        size={modalMode === 'delete' ? 'sm' : 'lg'}
         footer={renderModalFooter()}
       >
         {renderModalContent()}
