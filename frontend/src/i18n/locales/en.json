@@ -1804,7 +1804,18 @@
       "loadMore": "Load more",
       "noMore": "No more logs",
       "toast": {
-        "fetchFailed": "Failed to fetch logs"
+        "fetchFailed": "Failed to fetch logs",
+        "ipFetchFailed": "Failed to fetch IP info"
+      },
+      "ipDetail": {
+        "title": "IP Lookup",
+        "ip": "IP Address",
+        "iso": "Country Code",
+        "country": "Country",
+        "subdivision": "Region",
+        "city": "City",
+        "timezone": "Timezone",
+        "coordinates": "Coordinates"
       }
     },
     "smtp": {
