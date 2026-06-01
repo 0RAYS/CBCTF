@@ -94,7 +94,7 @@ function ContestContainers() {
   const [randomTeamPercentage, setRandomTeamPercentage] = useState(50); // 随机选择队伍的百分比
   const [victimDurationInput, setVictimDurationInput] = useState('7200');
 
-  const challengePageSize = 20;
+  const challengePageSize = 30;
   const [challengePage, setChallengePage] = useState(1);
   const [challengeTotal, setChallengeTotal] = useState(0);
   const [detailChallengePage, setDetailChallengePage] = useState(1);
@@ -728,24 +728,26 @@ function ContestContainers() {
                     </div>
                   </div>
                   {challenges.length > 0 ? (
-                    challenges.map((challenge) => (
-                      <div key={challenge.id} className="flex items-center p-1 hover:bg-black/30 transition-colors">
-                        <input
-                          type="checkbox"
-                          id={`challenge-${challenge.id}`}
-                          checked={selectedChallenges.includes(challenge.id)}
-                          onChange={(e) => updateChallengeSelection(challenge.id, e.target.checked)}
-                          className="w-3 h-3 rounded border-neutral-300/30 text-geek-400
-                              focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
-                        />
-                        <label
-                          htmlFor={`challenge-${challenge.id}`}
-                          className="ml-2 text-xs font-mono text-neutral-300 cursor-pointer flex-1 truncate"
-                        >
-                          {challenge.name}
-                        </label>
-                      </div>
-                    ))
+                    <div className="grid grid-cols-3 gap-0.5 p-1">
+                      {challenges.map((challenge) => (
+                        <div key={challenge.id} className="flex items-center p-1 hover:bg-black/30 rounded transition-colors min-w-0">
+                          <input
+                            type="checkbox"
+                            id={`challenge-${challenge.id}`}
+                            checked={selectedChallenges.includes(challenge.id)}
+                            onChange={(e) => updateChallengeSelection(challenge.id, e.target.checked)}
+                            className="w-3 h-3 shrink-0 rounded border-neutral-300/30 text-geek-400
+                                focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
+                          />
+                          <label
+                            htmlFor={`challenge-${challenge.id}`}
+                            className="ml-1.5 text-xs font-mono text-neutral-300 cursor-pointer truncate min-w-0"
+                          >
+                            {challenge.name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   ) : (
                     <div className="p-3 text-xs font-mono text-neutral-500">
                       {t('admin.contests.containers.quickActions.noChallenges')}
