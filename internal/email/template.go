@@ -28,7 +28,7 @@ func buildHTML(title, greeting, buttonText, buttonURL, footerNote string) string
           <!-- Header -->
           <tr>
             <td style="padding:32px 40px 28px;border-bottom:1px solid #2a2a2a;">
-              <p style="margin:0 0 12px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#4d4d4d;font-weight:500;">CTF Platform</p>
+              <p style="margin:0 0 12px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#4d4d4d;font-weight:500;">CBCTF</p>
               <h1 style="margin:0;font-size:22px;font-weight:600;color:#f9f9f9;line-height:1.3;">%s</h1>
             </td>
           </tr>
@@ -112,7 +112,7 @@ func buildTestHTML(from string) string {
           <!-- Header -->
           <tr>
             <td style="padding:32px 40px 28px;border-bottom:1px solid #2a2a2a;">
-              <p style="margin:0 0 12px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#4d4d4d;font-weight:500;">CTF Platform</p>
+              <p style="margin:0 0 12px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#4d4d4d;font-weight:500;">CBCTF</p>
               <h1 style="margin:0;font-size:22px;font-weight:600;color:#f9f9f9;line-height:1.3;">SMTP Configuration Test</h1>
             </td>
           </tr>
@@ -153,7 +153,7 @@ func buildTestHTML(from string) string {
           <tr>
             <td style="border-top:1px solid #1a1a1a;padding:20px 40px;">
               <p style="margin:0;font-size:11px;color:#4d4d4d;text-align:center;letter-spacing:0.2px;">
-                This is an automated test message from the CTF Platform admin panel.
+                This is an automated test message from the CBCTF admin panel.
               </p>
             </td>
           </tr>

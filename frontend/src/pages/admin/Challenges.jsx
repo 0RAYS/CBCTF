@@ -42,6 +42,7 @@ function ChallengesManagement() {
   });
   const [initDockerCompose, setInitDockerCompose] = useState([]);
   const fileInputRef = useRef(null);
+  const uploadTargetRef = useRef(null);
   const pageSize = 20;
   const { t } = useTranslation();
 
@@ -226,8 +227,9 @@ function ChallengesManagement() {
   };
 
   const handleUploadAttachment = (challenge) => {
-    fileInputRef.current?.click();
+    uploadTargetRef.current = challenge;
     setSelectedChallenge(challenge);
+    fileInputRef.current?.click();
   };
 
   const handleDownloadAttachment = async (challenge) => {
@@ -253,12 +255,16 @@ function ChallengesManagement() {
     event.target.value = '';
     if (!file) return;
 
+    const target = uploadTargetRef.current;
+    if (!target) return;
+
     try {
-      const response = await uploadChallengeFile(selectedChallenge.id, file);
+      const response = await uploadChallengeFile(target.id, file);
       if (response.code === 200) {
         toast.success({
           description: t('admin.challenge.toast.uploadSuccess'),
         });
+        await fetchChallenges();
       }
     } catch (error) {
       toast.danger({
