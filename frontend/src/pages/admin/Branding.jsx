@@ -134,9 +134,6 @@ function BrandingSettings() {
               <p className="text-sm text-neutral-400 mt-2">{t('admin.branding.identityHint')}</p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => fileInputRef.current?.click()} loading={uploading}>
-                {t('admin.branding.actions.uploadLogo')}
-              </Button>
               <Button variant="primary" onClick={handleSave} loading={saving}>
                 {t('common.save')}
               </Button>
@@ -146,12 +143,28 @@ function BrandingSettings() {
           <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-6">
             <div className="border border-neutral-300/20 rounded-md bg-black/20 p-4">
               <div className="text-sm text-neutral-400 mb-3">{t('admin.branding.labels.homeLogo')}</div>
-              <div className="aspect-square rounded-md border border-neutral-300/20 bg-neutral-950 flex items-center justify-center overflow-hidden">
+              <div
+                className="aspect-square rounded-md border border-neutral-300/20 bg-neutral-950 flex items-center justify-center overflow-hidden relative group cursor-pointer"
+                onClick={() => !uploading && fileInputRef.current?.click()}
+                title={t('admin.branding.actions.uploadLogo')}
+              >
                 <img
                   src={branding.home_logo}
                   alt={branding.home_logo_alt?.zh_cn || 'logo'}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain transition-opacity duration-200 group-hover:opacity-40"
                 />
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  {uploading ? (
+                    <div className="w-5 h-5 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                      </svg>
+                      <span className="text-xs text-neutral-300">{t('admin.branding.actions.uploadLogo')}</span>
+                    </>
+                  )}
+                </div>
               </div>
               <div className="text-xs text-neutral-500 mt-3 break-all">{branding.home_logo}</div>
             </div>
