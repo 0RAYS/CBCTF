@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/utils"
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/hibiken/asynq"
@@ -49,15 +50,16 @@ func HandleLoadTrafficTask(ctx context.Context, t *asynq.Task) error {
 	return nil
 }
 
-// LoadTraffic 简单记录涉及到的 IP 地址
+// LoadTraffic enrich pcap、打包归档，并提取流量涉及的所有 IP 写入 traffics 表。
 func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.RetVal {
 	trafficRepo := db.InitTrafficRepo(root)
-	optionsL := make(map[string]db.CreateTrafficOptions)
+
 	count, _ := trafficRepo.Count(db.CountOptions{Conditions: map[string]any{"victim_id": victim.ID}})
 	if count > 0 {
-		log.Logger.Debugf("Traffic already loaded: victim_id=%d records=%d", victim.ID, count)
+		log.Logger.Debugf("Traffic already loaded: victim_id=%d", victim.ID)
 		return model.SuccessRetVal()
 	}
+
 	if err := ctx.Err(); err != nil {
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
@@ -105,54 +107,49 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	start := time.Now()
-	connections, err := utils.ReadPcapDirWithContext(ctx, victim.TrafficBasePath())
+	result, err := utils.ReadPcapDirWithContext(ctx, victim.TrafficBasePath())
 	if err != nil {
 		log.Logger.Warningf("Failed to read victim pcaps: victim_id=%d path=%s error=%s", victim.ID, victim.TrafficBasePath(), err)
 		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	if err := ctx.Err(); err != nil {
+	if err = ctx.Err(); err != nil {
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	log.Logger.Debugf("Read victim pcaps: victim_id=%d packets=%d duration=%s", victim.ID, len(connections), time.Since(start))
-	for _, conn := range connections {
-		connID := fmt.Sprintf("%s-%s-%s-%s", conn.SrcIP, conn.DstIP, conn.Type, conn.Subtype)
-		if options, ok := optionsL[connID]; ok {
-			options.Count += 1
-			options.Size += conn.Size
-			optionsL[connID] = options
-		} else {
-			optionsL[connID] = db.CreateTrafficOptions{
-				VictimID: victim.ID,
-				SrcIP:    conn.SrcIP,
-				DstIP:    conn.DstIP,
-				Type:     conn.Type,
-				Subtype:  conn.Subtype,
-				Size:     conn.Size,
-				Count:    1,
-			}
+
+	// 收集所有涉及的 IP：普通 pod src/dst + frpc proxy protocol 真实 IP
+	ipSet := make(map[string]struct{})
+	for _, conn := range result.Connections {
+		if conn.SrcIP != "" {
+			ipSet[conn.SrcIP] = struct{}{}
+		}
+		if conn.DstIP != "" {
+			ipSet[conn.DstIP] = struct{}{}
 		}
 	}
+	for _, ip := range result.FrpcIPs {
+		ipSet[ip] = struct{}{}
+	}
+
+	ips := make([]string, 0, len(ipSet))
+	for ip := range ipSet {
+		ips = append(ips, ip)
+	}
+	slices.Sort(ips)
+
+	log.Logger.Debugf("Collected IPs from pcaps: victim_id=%d connections=%d frpc_ips=%d unique_ips=%d duration=%s",
+		victim.ID, len(result.Connections), len(result.FrpcIPs), len(ips), time.Since(start))
+
 	ret := db.WithTransactionDB(root, func(tx *db.Tx) model.RetVal {
 		if hasArchive {
 			if _, ret := db.InitFileRepo(tx).Create(fileOptions); !ret.OK {
 				return model.RetVal{Msg: fmt.Sprintf("create traffic archive record failed: %s", ret.Msg)}
 			}
 		}
-		trafficRepo := db.InitTrafficRepo(tx)
-		for _, options := range optionsL {
-			if err := ctx.Err(); err != nil {
-				return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
-			}
-			_, ret := trafficRepo.Create(options)
-			if !ret.OK {
-				return ret
-			}
-		}
-		return model.SuccessRetVal()
+		return db.InitTrafficRepo(tx).UpsertIPs(victim.ID, ips)
 	})
 	if !ret.OK {
 		return ret
 	}
-	log.Logger.Infof("Traffic loaded: victim_id=%d packets=%d records=%d", victim.ID, len(connections), len(optionsL))
+	log.Logger.Infof("Traffic loaded: victim_id=%d unique_ips=%d", victim.ID, len(ips))
 	return model.SuccessRetVal()
 }

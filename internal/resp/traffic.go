@@ -40,7 +40,6 @@ type TrafficProcessResp struct {
 
 type TrafficCenterResp struct {
 	Label   string   `json:"label"`
-	IPs     []string `json:"ips"`
 	Exposed []string `json:"exposed"`
 }
 
@@ -114,4 +113,5 @@ type TrafficTopologyResp struct {
 	Timeline        []TrafficTimelineBucketResp `json:"timeline"`
 	TopTalkers      []TrafficRankingResp        `json:"top_talkers"`
 	TopEdges        []TrafficRankingResp        `json:"top_edges"`
+	IPs             []string                    `json:"ips"`
 }
