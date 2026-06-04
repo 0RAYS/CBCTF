@@ -679,7 +679,7 @@ function resolveEdgeLabels(lines, positions, selectedEdgeId) {
 function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetchTraffic: customFetchTraffic }) {
   const { t, i18n } = useTranslation();
   const canvasRef = useRef(null);
-  const ipRowRef = useRef(null);
+  const accessIPRowRef = useRef(null);
   const dragRef = useRef({ active: false, moved: false, x: 0, y: 0, panX: 0, panY: 0 });
   const requestSequenceRef = useRef(0);
   const universeFetchedForRef = useRef(null);
@@ -688,7 +688,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   const [shift, setShift] = useState(0);
   const [slice, setSlice] = useState(DEFAULT_SLICE_MS);
   const [sliceInput, setSliceInput] = useState(String(DEFAULT_SLICE_MS));
-  const [ipRowWidth, setIpRowWidth] = useState(0);
+  const [accessIPRowWidth, setAccessIPRowWidth] = useState(0);
   const [protocolFilter, setProtocolFilter] = useState(new Set());
   const [demoMode, setDemoMode] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -872,9 +872,12 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
     [nodes, selectedNodeId]
   );
 
-  const centerIPs = topology?.center?.ips || [];
-  const { visibleItems: visibleIPs, hiddenItems: hiddenIPs } = resolveVisibleInlineItems(centerIPs, ipRowWidth);
-  const hiddenIpCount = hiddenIPs.length;
+  const accessIPs = topology?.ips || [];
+  const { visibleItems: visibleAccessIPs, hiddenItems: hiddenAccessIPs } = resolveVisibleInlineItems(
+    accessIPs,
+    accessIPRowWidth
+  );
+  const hiddenAccessIPCount = hiddenAccessIPs.length;
   const visibleExposed = (topology?.center?.exposed || []).slice(0, 1);
   const topTalkers = topology?.top_talkers || [];
   const topEdges = topology?.top_edges || [];
@@ -888,12 +891,12 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   }, [slice]);
 
   useEffect(() => {
-    const element = ipRowRef.current;
+    const element = accessIPRowRef.current;
     if (!element || !isOpen) return undefined;
 
     const updateWidth = () => {
       const nextWidth = Math.round(element.getBoundingClientRect().width);
-      setIpRowWidth((current) => (current === nextWidth ? current : nextWidth));
+      setAccessIPRowWidth((current) => (current === nextWidth ? current : nextWidth));
     };
 
     updateWidth();
@@ -1098,30 +1101,32 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     })}
                   </div>
                 </div>
-                <div ref={ipRowRef} className="min-w-0">
-                  <div className="flex flex-nowrap items-center gap-2 overflow-hidden">
-                    {visibleIPs.map((ip) => (
-                      <Chip
-                        key={ip}
-                        label={ip}
-                        title={ip}
-                        variant="tag"
-                        size="sm"
-                        className="shrink-0"
-                        colorClass="border-geek-400/30 bg-geek-400/10 text-geek-400"
-                      />
-                    ))}
-                    {hiddenIpCount > 0 ? (
-                      <Chip
-                        label={`+${hiddenIpCount}`}
-                        title={hiddenIPs.join('\n')}
-                        variant="tag"
-                        size="sm"
-                        className="shrink-0 cursor-help"
-                        colorClass="border-neutral-500/30 bg-neutral-500/10 text-neutral-300"
-                      />
-                    ) : null}
-                  </div>
+                <div ref={accessIPRowRef} className="min-w-0">
+                  {accessIPs.length > 0 ? (
+                    <div className="flex flex-nowrap items-center gap-2 overflow-hidden">
+                      {visibleAccessIPs.map((ip) => (
+                        <Chip
+                          key={ip}
+                          label={ip}
+                          title={ip}
+                          variant="tag"
+                          size="sm"
+                          className="shrink-0"
+                          colorClass="border-neutral-400/30 bg-neutral-400/10 text-neutral-300"
+                        />
+                      ))}
+                      {hiddenAccessIPCount > 0 ? (
+                        <Chip
+                          label={`+${hiddenAccessIPCount}`}
+                          title={hiddenAccessIPs.join('\n')}
+                          variant="tag"
+                          size="sm"
+                          className="shrink-0 cursor-help"
+                          colorClass="border-neutral-500/30 bg-neutral-500/10 text-neutral-400"
+                        />
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {visibleExposed.map((item) => (

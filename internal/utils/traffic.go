@@ -558,44 +558,119 @@ func EnrichPcapDirWithContext(ctx context.Context, path string) []error {
 	return errors
 }
 
-func ReadPcapDir(path string) ([]Connection, error) {
+// frpcPcapName 是 frpc pod capture sidecar 写入的固定文件名。
+const frpcPcapName = "frpc.pcap"
+
+// PcapDirResult 读取靶机流量目录的结果：
+//   - Connections：普通 pod 流量，用于拓扑展示。
+//   - FrpcIPs：frpc pod 经 Proxy Protocol 传递的真实客户端 IP。
+type PcapDirResult struct {
+	Connections []Connection
+	FrpcIPs     []string
+}
+
+func ReadPcapDir(path string) (PcapDirResult, error) {
 	return ReadPcapDirWithContext(context.Background(), path)
 }
 
-func ReadPcapDirWithContext(ctx context.Context, path string) ([]Connection, error) {
+func ReadPcapDirWithContext(ctx context.Context, path string) (PcapDirResult, error) {
 	d, err := os.Stat(path)
 	if err != nil {
-		return nil, err
+		return PcapDirResult{}, err
 	}
 	if !d.IsDir() {
-		return nil, fmt.Errorf("%s is a file", path)
+		return PcapDirResult{}, fmt.Errorf("%s is a file", path)
 	}
-	connections := make([]Connection, 0)
 	dir, err := os.ReadDir(path)
 	if err != nil {
-		return nil, err
+		return PcapDirResult{}, err
 	}
+
+	connections := make([]Connection, 0)
+	frpcIPSet := make(map[string]struct{})
+
 	for _, file := range dir {
 		if err = ctx.Err(); err != nil {
-			return nil, err
+			return PcapDirResult{}, err
 		}
 		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
 			continue
 		}
-		packetConnections, readErr := ReadPcapFile(ctx, filepath.Join(path, file.Name()))
+		fullPath := filepath.Join(path, file.Name())
+		if file.Name() == frpcPcapName {
+			// frpc 流量：只提取 Proxy Protocol 中的真实客户端 IP，其余包跳过。
+			ips, readErr := extractFrpcProxyIPs(ctx, fullPath)
+			if readErr != nil {
+				continue
+			}
+			for _, ip := range ips {
+				frpcIPSet[ip] = struct{}{}
+			}
+		} else {
+			// 普通 pod 流量：完整分析，进入拓扑展示。
+			packetConnections, readErr := ReadPcapFile(ctx, fullPath)
+			if readErr != nil {
+				continue
+			}
+			connections = append(connections, packetConnections...)
+		}
+	}
+
+	if len(connections) > 0 {
+		slices.SortStableFunc(connections, func(c1 Connection, c2 Connection) int { return c1.Time.Compare(c2.Time) })
+		firstPacket := connections[0]
+		for i, connection := range connections {
+			connections[i].TimeShift = connection.Time.Sub(firstPacket.Time)
+		}
+	}
+
+	frpcIPs := make([]string, 0, len(frpcIPSet))
+	for ip := range frpcIPSet {
+		frpcIPs = append(frpcIPs, ip)
+	}
+	slices.Sort(frpcIPs)
+
+	return PcapDirResult{
+		Connections: connections,
+		FrpcIPs:     frpcIPs,
+	}, nil
+}
+
+// extractFrpcProxyIPs 从 frpc.pcap 中提取所有 Proxy Protocol header 里的真实客户端 srcIP。
+func extractFrpcProxyIPs(ctx context.Context, path string) ([]string, error) {
+	handle, err := pcap.OpenOffline(path)
+	if err != nil {
+		return nil, err
+	}
+	defer handle.Close()
+
+	traffic := gopacket.NewPacketSource(handle, handle.LinkType())
+	seen := make(map[string]struct{})
+	for packet := range traffic.Packets() {
+		if err = ctx.Err(); err != nil {
+			return nil, err
+		}
+		if packet.Layer(layers.LayerTypeIPv6) != nil {
+			continue
+		}
+		transport := packet.TransportLayer()
+		if transport == nil {
+			continue
+		}
+		header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload())))
 		if readErr != nil {
 			continue
 		}
-		connections = append(connections, packetConnections...)
+		srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
+		if srcErr != nil || srcIP == "" {
+			continue
+		}
+		seen[srcIP] = struct{}{}
 	}
-	if len(connections) < 1 {
-		return nil, nil
+
+	ips := make([]string, 0, len(seen))
+	for ip := range seen {
+		ips = append(ips, ip)
 	}
-	slices.SortStableFunc(connections, func(c1 Connection, c2 Connection) int { return c1.Time.Compare(c2.Time) })
-	firstPacket := connections[0]
-	firstPacket.TimeShift = 0
-	for i, connection := range connections {
-		connections[i].TimeShift = connection.Time.Sub(firstPacket.Time)
-	}
-	return connections, nil
+	return ips, nil
 }

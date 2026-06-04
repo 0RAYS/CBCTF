@@ -17,22 +17,23 @@ const (
 	trafficsKey = "traffics:%d"
 )
 
+// UpdateTraffics 重建靶机 pod 连接的 Redis 缓存（用于拓扑展示）。
 func UpdateTraffics(victim model.Victim) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())
+	result, err := utils.ReadPcapDir(victim.TrafficBasePath())
 	if err != nil {
 		log.Logger.Warningf("Failed to read victim pcaps for cache: victim_id=%d path=%s error=%s", victim.ID, victim.TrafficBasePath(), err)
 		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	log.Logger.Debugf("Caching victim traffic: victim_id=%d packets=%d", victim.ID, len(connections))
+	log.Logger.Debugf("Caching victim traffic: victim_id=%d packets=%d", victim.ID, len(result.Connections))
 
 	key := fmt.Sprintf(trafficsKey, victim.ID)
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 
-	for i, conn := range connections {
+	for i, conn := range result.Connections {
 		pipe.ZAdd(ctx, key, redis.Z{
 			Score:  float64(conn.Time.UnixNano()),
 			Member: fmt.Sprintf(trafficsKey+":%d", victim.ID, i),
@@ -45,7 +46,7 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 		log.Logger.Warningf("Failed to cache victim traffic: victim_id=%d error=%s", victim.ID, err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": trafficsKey, "Error": err.Error()}}
 	}
-	log.Logger.Debugf("Cached victim traffic: victim_id=%d packets=%d", victim.ID, len(connections))
+	log.Logger.Debugf("Cached victim traffic: victim_id=%d packets=%d", victim.ID, len(result.Connections))
 	return model.SuccessRetVal()
 }
 

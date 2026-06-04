@@ -1,6 +1,7 @@
 package service
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -80,8 +81,17 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 	if !ret.OK {
 		return resp.TrafficTopologyResp{}, ret
 	}
+
+	// 从 DB 读取该靶机所有已知 IP（不受时间窗口限制）
+	ips, ret := db.InitTrafficRepo(db.DB).GetVictimIPs(victim.ID)
+	if !ret.OK {
+		return resp.TrafficTopologyResp{}, ret
+	}
+
 	if len(connections) == 0 {
-		return emptyTrafficTopology(victim, form), model.SuccessRetVal()
+		empty := emptyTrafficTopology(victim, form)
+		empty.IPs = ips
+		return empty, model.SuccessRetVal()
 	}
 
 	totalDuration := calcTrafficTotalDuration(connections)
@@ -322,15 +332,15 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 		AvailableSlices: availableTrafficSlices(totalDuration),
 		Center: resp.TrafficCenterResp{
 			Label:   buildTrafficCenterLabel(victim),
-			IPs:     sortedTrafficIPs(internalIPs),
 			Exposed: victim.RemoteAddr(),
 		},
-		Summary:    summary,
-		Nodes:      nodeList,
-		Edges:      edgeList,
-		Timeline:   timeline,
-		TopTalkers: buildTrafficRankingResp(topTalkers, 6),
-		TopEdges:   buildTrafficRankingResp(topEdges, 6),
+		Summary:     summary,
+		Nodes:       nodeList,
+		Edges:       edgeList,
+		Timeline:    timeline,
+		TopTalkers:  buildTrafficRankingResp(topTalkers, 6),
+		TopEdges:    buildTrafficRankingResp(topEdges, 6),
+		IPs:         ips,
 	}, model.SuccessRetVal()
 }
 
@@ -372,7 +382,6 @@ func emptyTrafficTopology(victim model.Victim, form dto.GetTrafficForm) resp.Tra
 		AvailableSlices: []int64{1000, 5000, 15000, 30000, 60000},
 		Center: resp.TrafficCenterResp{
 			Label:   buildTrafficCenterLabel(victim),
-			IPs:     sortedTrafficIPs(collectVictimIPs(victim, nil)),
 			Exposed: victim.RemoteAddr(),
 		},
 		Summary:    resp.TrafficSummaryResp{},
@@ -872,15 +881,6 @@ func buildTrafficCenterLabel(victim model.Victim) string {
 		return "Victim #" + strconv.FormatUint(uint64(victim.ID), 10)
 	}
 	return "Instance #" + strconv.FormatUint(uint64(victim.ID), 10)
-}
-
-func sortedTrafficIPs(items map[string]bool) []string {
-	ips := make([]string, 0, len(items))
-	for ip := range items {
-		ips = append(ips, ip)
-	}
-	sort.Strings(ips)
-	return ips
 }
 
 func buildTrafficRankingResp(items []trafficRankingAggregate, limit int) []resp.TrafficRankingResp {

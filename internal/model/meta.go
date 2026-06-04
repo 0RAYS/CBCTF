@@ -189,8 +189,6 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Name:         "Traffic",
 		Table:        "traffics",
 		UniqueFields: []string{"id"},
-		QueryFields:  []string{"id", "src_ip", "dst_ip", "type", "subtype"},
-		SearchFields: []string{"src_ip", "dst_ip", "type", "subtype"},
 	},
 	reflect.TypeFor[User](): {
 		Name:         "User",
