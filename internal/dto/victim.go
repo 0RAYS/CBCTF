@@ -36,7 +36,7 @@ type StartVictimsForm struct {
 
 type GetVictimPodLogsForm struct {
 	PodName   string `form:"pod_name" json:"pod_name" binding:"required"`
-	Container string `form:"container" json:"container"`
+	Container string `form:"container" json:"container" binding:"required"`
 	Lines     int64  `form:"lines" json:"lines" binding:"omitempty,gt=0"`
 }
 

@@ -205,11 +205,12 @@ function ContestGenerators() {
     }
   };
 
-  const fetchLogs = async () => {
-    if (!logGenerator) return;
+  const fetchLogs = async (gen, lines) => {
+    const target = gen ?? logGenerator;
+    if (!target) return;
     setLogLoading(true);
     try {
-      const res = await getContestGeneratorLogs(contestId, logGenerator.id, logLines);
+      const res = await getContestGeneratorLogs(contestId, target.id, lines ?? logLines);
       setLogContent(res.data?.logs ?? '');
     } catch {
       toast.error(t('admin.contests.generators.toast.logFailed'));
@@ -217,6 +218,17 @@ function ContestGenerators() {
       setLogLoading(false);
     }
   };
+
+  const logLinesRef = useRef(logLines);
+  useEffect(() => {
+    logLinesRef.current = logLines;
+  }, [logLines]);
+
+  useEffect(() => {
+    if (!logModalOpen || !logGenerator) return;
+    const timer = setTimeout(() => fetchLogs(logGenerator, logLinesRef.current), 500);
+    return () => clearTimeout(timer);
+  }, [logLines]);
 
   const totalSuccesses = generators.reduce((sum, g) => sum + (g.success ?? 0), 0);
   const totalFailures = generators.reduce((sum, g) => sum + (g.failure ?? 0), 0);
@@ -465,10 +477,12 @@ function ContestGenerators() {
         isOpen={logModalOpen}
         onClose={() => setLogModalOpen(false)}
         title={t('admin.contests.generators.logs.title', { name: logGenerator?.name ?? '' })}
-        size="lg"
+        size="2xl"
+        className="!max-w-[80vw]"
+        bodyClassName="p-4 flex flex-col gap-3 max-h-[80vh] overflow-y-auto"
       >
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
+        <div className="flex items-end gap-3">
+          <div className="flex flex-col gap-1 w-24">
             <label className="text-xs text-neutral-400 font-mono shrink-0">
               {t('admin.contests.generators.logs.lines')}
             </label>
@@ -478,31 +492,25 @@ function ContestGenerators() {
               step={100}
               value={logLines}
               onChange={(e) => setLogLines(Math.max(1, parseInt(e.target.value, 10) || 1000))}
-              className="w-24 bg-neutral-800 border border-neutral-700 rounded px-2 py-1 text-sm text-neutral-200 text-center focus:outline-none focus:border-geek-400"
+              className="bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-200 text-center focus:outline-none focus:border-geek-400"
             />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={fetchLogs}
-              leftIcon={<IconRefresh size={13} />}
-              disabled={logLoading}
-            >
-              {t('common.refresh')}
-            </Button>
           </div>
-          <div className="relative min-h-[300px] max-h-[60vh] overflow-auto rounded bg-neutral-950 border border-neutral-700 p-3">
-            {logLoading ? (
-              <div className="flex justify-center items-center h-full py-12 text-neutral-400 text-sm">
-                {t('common.loading')}
-              </div>
-            ) : logContent ? (
-              <pre className="text-xs text-neutral-300 font-mono whitespace-pre-wrap break-all">{logContent}</pre>
-            ) : (
-              <p className="text-neutral-500 text-xs font-mono py-4 text-center">
-                {t('admin.contests.generators.logs.empty')}
-              </p>
-            )}
-          </div>
+          {logLoading && <span className="text-xs text-neutral-500 font-mono pb-1">{t('common.loading')}</span>}
+        </div>
+        <div className="flex-1 overflow-auto rounded bg-neutral-950 border border-neutral-700 p-3 min-h-[400px]">
+          {logLoading ? (
+            <div className="flex justify-center items-center h-full py-12 text-neutral-400 text-sm">
+              {t('common.loading')}
+            </div>
+          ) : logContent ? (
+            <pre className="text-xs text-neutral-300 font-mono whitespace-pre-wrap break-all leading-5">
+              {logContent}
+            </pre>
+          ) : (
+            <p className="text-neutral-500 text-xs font-mono py-4 text-center">
+              {t('admin.contests.generators.logs.empty')}
+            </p>
+          )}
         </div>
       </Modal>
     </div>

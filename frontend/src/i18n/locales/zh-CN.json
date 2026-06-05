@@ -937,10 +937,9 @@
           "title": "靶机日志 — #{{id}}",
           "podName": "Pod 名称",
           "containerName": "容器名称",
-          "containerDefault": "默认（不指定）",
           "lines": "行数",
           "fetch": "获取日志",
-          "empty": "暂无日志内容，请选择 Pod 后点击获取",
+          "empty": "暂无日志内容，请点击获取",
           "noPods": "该靶机暂无运行中的 Pod",
           "fetchPodsFailed": "获取 Pod 列表失败",
           "fetchLogsFailed": "获取日志失败"
@@ -1207,10 +1206,9 @@
         "title": "靶机日志 — #{{id}}",
         "podName": "Pod 名称",
         "containerName": "容器名称",
-        "containerDefault": "默认（不指定）",
         "lines": "行数",
         "fetch": "获取日志",
-        "empty": "暂无日志内容，请选择 Pod 后点击获取",
+        "empty": "暂无日志内容，请点击获取",
         "noPods": "该靶机暂无运行中的 Pod",
         "fetchPodsFailed": "获取 Pod 列表失败",
         "fetchLogsFailed": "获取日志失败"

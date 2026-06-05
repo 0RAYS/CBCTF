@@ -358,7 +358,7 @@ export const getContestVictimPods = (contestId, victimId) => {
 };
 
 // 获取比赛靶机 Pod 日志
-export const getContestVictimPodLogs = (contestId, victimId, podName, container = '', lines = 1000) => {
+export const getContestVictimPodLogs = (contestId, victimId, podName, container, lines = 1000) => {
   return request({
     url: `/admin/contests/${contestId}/victims/${victimId}/pods/logs`,
     method: 'GET',

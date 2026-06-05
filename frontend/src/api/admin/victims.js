@@ -13,7 +13,7 @@ export const downloadVictimTraffic = (victimId) =>
 
 export const getVictimPods = (victimId) => request({ url: `/admin/victims/${victimId}/pods`, method: 'GET' });
 
-export const getVictimPodLogs = (victimId, podName, container = '', lines = 1000) =>
+export const getVictimPodLogs = (victimId, podName, container, lines = 1000) =>
   request({
     url: `/admin/victims/${victimId}/pods/logs`,
     method: 'GET',
