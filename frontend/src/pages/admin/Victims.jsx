@@ -14,7 +14,7 @@ import { getChallengeList } from '../../api/admin/challenge';
 import { Modal } from '../../components/common';
 import TrafficGraphModal from '../../components/features/Admin/Contests/TrafficGraphModal';
 import ModalButton from '../../components/common/ModalButton';
-import { Button, Pagination, Card, EmptyState, StatCard } from '../../components/common';
+import { Button, Pagination, Card, EmptyState, StatCard, AnsiLog } from '../../components/common';
 import { motion } from 'motion/react';
 import {
   IconPlayerPlay,
@@ -798,8 +798,8 @@ function AdminVictims() {
         onClose={() => setLogModalOpen(false)}
         title={t('admin.victims.logs.title', { id: logVictim?.id ?? '' })}
         size="2xl"
-        className="!max-w-[80vw]"
-        bodyClassName="p-4 flex flex-col gap-3 max-h-[80vh] overflow-y-auto"
+        className="!max-w-[95vw]"
+        bodyClassName="p-4 flex flex-col gap-3 max-h-[90vh] overflow-y-auto"
       >
         {logPodsLoading ? (
           <div className="flex justify-center py-12 text-neutral-400 text-sm">{t('common.loading')}</div>
@@ -852,19 +852,13 @@ function AdminVictims() {
               </div>
               {logLoading && <span className="text-xs text-neutral-500 font-mono pb-1">{t('common.loading')}</span>}
             </div>
-            <div className="flex-1 overflow-auto rounded bg-neutral-950 border border-neutral-700 p-3 min-h-[400px]">
-              {logLoading ? (
-                <div className="flex justify-center items-center h-full py-12 text-neutral-400 text-sm">
-                  {t('common.loading')}
-                </div>
-              ) : logContent ? (
-                <pre className="text-xs text-neutral-300 font-mono whitespace-pre-wrap break-all leading-5">
-                  {logContent}
-                </pre>
-              ) : (
-                <p className="text-neutral-500 text-xs font-mono py-4 text-center">{t('admin.victims.logs.empty')}</p>
-              )}
-            </div>
+            <AnsiLog
+              content={logContent}
+              loading={logLoading}
+              empty={t('admin.victims.logs.empty')}
+              className="flex-1"
+              scrollToBottom
+            />
           </>
         )}
       </Modal>

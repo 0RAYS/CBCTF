@@ -2,11 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from '../../utils/toast';
 import { getSystemLogs } from '../../api/admin/system';
 import { getIpInfo } from '../../api/admin/contest';
-import { ansiToHtml } from '../../utils/ansi';
-import { Button } from '../../components/common';
+import { Button, AnsiLog } from '../../components/common';
 import { IconRefresh } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import DOMPurify from 'dompurify';
 import Modal from '../../components/common/Modal';
 import Card from '../../components/common/Card';
 
@@ -39,11 +37,9 @@ function isPublicIp(ip) {
 }
 
 // 在已转义的 HTML 字符串中，将公网 IP 替换为可点击的 span（data-ip 属性）
-// 只替换出现在文本节点中的 IP（避免破坏属性值中的内容）
 function injectClickableIps(html) {
-  // 仅替换 HTML 标签之外的文本中的 IP
   return html.replace(/(<[^>]+>)|([^<]+)/g, (match, tag, text) => {
-    if (tag) return tag; // HTML 标签原样保留
+    if (tag) return tag;
     if (!text) return match;
     return text.replace(IPV4_RE, (ip) => {
       if (!isPublicIp(ip)) return ip;
@@ -66,7 +62,6 @@ function AdminLogs() {
 
   // IP 反查弹窗状态
   const [ipModal, setIpModal] = useState({ open: false, ip: null, data: null, loading: false });
-
   const fetchLogs = useCallback(
     async (nextPage) => {
       if (loadingRef.current) return;
@@ -134,19 +129,8 @@ function AdminLogs() {
     return () => io.disconnect();
   }, [fetchLogs]);
 
-  const rendered = useMemo(() => {
-    const raw = logs
-      .map((line) => {
-        const html = ansiToHtml(line).replace(/\n$/, '');
-        const withIps = injectClickableIps(html);
-        return `<div class="whitespace-pre-wrap break-words leading-6 font-mono text-sm">${withIps}</div>`;
-      })
-      .join('');
-    return DOMPurify.sanitize(raw, {
-      ALLOWED_TAGS: ['div', 'span'],
-      ALLOWED_ATTR: ['class', 'style', 'data-ip'],
-    });
-  }, [logs]);
+  // postProcess: 在每行 ANSI→HTML 后注入可点击 IP
+  const postProcess = useMemo(() => injectClickableIps, []);
 
   // 事件委托：捕获日志区域内所有 data-ip 点击
   const handleLogClick = useCallback(
@@ -197,18 +181,19 @@ function AdminLogs() {
         </Button>
       </div>
 
-      <div
+      <AnsiLog
         ref={containerRef}
-        className="border border-neutral-300/20 rounded-md bg-black/30 p-3 overflow-auto max-h-[70vh]"
+        content={logs}
+        postProcess={postProcess}
+        allowedAttr={['data-ip']}
         onClick={handleLogClick}
-      >
-        <div className="max-w-full">
-          <div dangerouslySetInnerHTML={{ __html: rendered }} />
-        </div>
-        <div ref={sentinelRef} className="h-8 flex items-center justify-center text-neutral-500 text-xs">
-          {hasMore ? t('admin.logs.loadMore') : t('admin.logs.noMore')}
-        </div>
-      </div>
+        className="max-h-[70vh]"
+        sentinel={
+          <div ref={sentinelRef} className="h-8 flex items-center justify-center text-neutral-500 text-xs">
+            {hasMore ? t('admin.logs.loadMore') : t('admin.logs.noMore')}
+          </div>
+        }
+      />
 
       {/* IP 反查弹窗 */}
       <Modal isOpen={ipModal.open} onClose={handleIpModalClose} title={t('admin.logs.ipDetail.title')} size="sm">

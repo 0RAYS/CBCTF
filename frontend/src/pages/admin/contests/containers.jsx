@@ -14,7 +14,7 @@ import {
 } from '../../../api/admin/contest';
 import { getUserList } from '../../../api/admin/user';
 import TrafficGraphModal from '../../../components/features/Admin/Contests/TrafficGraphModal';
-import { Button, Modal } from '../../../components/common';
+import { Button, Modal, AnsiLog } from '../../../components/common';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -987,8 +987,8 @@ function ContestContainers() {
           onClose={() => setLogModalOpen(false)}
           title={t('admin.contests.containers.logs.title', { id: logVictim?.id ?? '' })}
           size="2xl"
-          className="!max-w-[80vw]"
-          bodyClassName="p-4 flex flex-col gap-3 max-h-[80vh] overflow-y-auto"
+          className="!max-w-[95vw]"
+          bodyClassName="p-4 flex flex-col gap-3 max-h-[90vh] overflow-y-auto"
         >
           {logPodsLoading ? (
             <div className="flex justify-center py-12 text-neutral-400 text-sm">{t('common.loading')}</div>
@@ -1044,21 +1044,13 @@ function ContestContainers() {
                 </div>
                 {logLoading && <span className="text-xs text-neutral-500 font-mono pb-1">{t('common.loading')}</span>}
               </div>
-              <div className="flex-1 overflow-auto rounded bg-neutral-950 border border-neutral-700 p-3 min-h-[400px]">
-                {logLoading ? (
-                  <div className="flex justify-center items-center h-full py-12 text-neutral-400 text-sm">
-                    {t('common.loading')}
-                  </div>
-                ) : logContent ? (
-                  <pre className="text-xs text-neutral-300 font-mono whitespace-pre-wrap break-all leading-5">
-                    {logContent}
-                  </pre>
-                ) : (
-                  <p className="text-neutral-500 text-xs font-mono py-4 text-center">
-                    {t('admin.contests.containers.logs.empty')}
-                  </p>
-                )}
-              </div>
+              <AnsiLog
+                content={logContent}
+                loading={logLoading}
+                empty={t('admin.contests.containers.logs.empty')}
+                className="flex-1"
+                scrollToBottom
+              />
             </>
           )}
         </Modal>

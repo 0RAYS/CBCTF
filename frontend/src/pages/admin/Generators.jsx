@@ -3,7 +3,7 @@ import { toast } from '../../utils/toast';
 import { getGenerators, startGenerators, stopGenerators, getGeneratorLogs } from '../../api/admin/generators';
 import { getChallengeList } from '../../api/admin/challenge';
 import { Modal } from '../../components/common';
-import { Button, Pagination, Card, EmptyState, StatCard } from '../../components/common';
+import { Button, Pagination, Card, EmptyState, StatCard, AnsiLog } from '../../components/common';
 import { motion } from 'motion/react';
 import {
   IconPlayerPlay,
@@ -454,8 +454,8 @@ function AdminGenerators() {
         onClose={() => setLogModalOpen(false)}
         title={t('admin.generators.logs.title', { name: logGenerator?.name ?? '' })}
         size="2xl"
-        className="!max-w-[80vw]"
-        bodyClassName="p-4 flex flex-col gap-3 max-h-[80vh] overflow-y-auto"
+        className="!max-w-[95vw]"
+        bodyClassName="p-4 flex flex-col gap-3 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-end gap-3">
           <div className="flex flex-col gap-1 w-24">
@@ -471,19 +471,13 @@ function AdminGenerators() {
           </div>
           {logLoading && <span className="text-xs text-neutral-500 font-mono pb-1">{t('common.loading')}</span>}
         </div>
-        <div className="flex-1 overflow-auto rounded bg-neutral-950 border border-neutral-700 p-3 min-h-[400px]">
-          {logLoading ? (
-            <div className="flex justify-center items-center h-full py-12 text-neutral-400 text-sm">
-              {t('common.loading')}
-            </div>
-          ) : logContent ? (
-            <pre className="text-xs text-neutral-300 font-mono whitespace-pre-wrap break-all leading-5">
-              {logContent}
-            </pre>
-          ) : (
-            <p className="text-neutral-500 text-xs font-mono py-4 text-center">{t('admin.generators.logs.empty')}</p>
-          )}
-        </div>
+        <AnsiLog
+          content={logContent}
+          loading={logLoading}
+          empty={t('admin.generators.logs.empty')}
+          className="flex-1"
+          scrollToBottom
+        />
       </Modal>
     </div>
   );
