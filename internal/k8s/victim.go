@@ -116,7 +116,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				return nil
 			}
 			capture := corev1.Container{
-				Name:            "capture",
+				Name:            CaptureContainerName,
 				Image:           config.Env.K8S.CaptureImage,
 				ImagePullPolicy: corev1.PullIfNotPresent,
 				Command:         []string{"/bin/sh", "-c"},

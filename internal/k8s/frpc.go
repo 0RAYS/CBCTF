@@ -230,7 +230,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			}
 			containers := []corev1.Container{
 				{
-					Name:            "frpc",
+					Name:            FrpcContainerName,
 					Image:           config.Env.K8S.Frp.FrpcImage,
 					ImagePullPolicy: corev1.PullIfNotPresent,
 					Args:            []string{"-c", "/etc/frp/frpc.toml"},
@@ -243,7 +243,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 					},
 				},
 				{
-					Name:            "nginx",
+					Name:            NginxContainerName,
 					Image:           config.Env.K8S.Frp.NginxImage,
 					ImagePullPolicy: corev1.PullIfNotPresent,
 					VolumeMounts: []corev1.VolumeMount{
@@ -256,7 +256,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				},
 			}
 			capture := corev1.Container{
-				Name:            "capture",
+				Name:            CaptureContainerName,
 				Image:           config.Env.K8S.CaptureImage,
 				ImagePullPolicy: corev1.PullIfNotPresent,
 				Command:         []string{"/bin/sh", "-c"},

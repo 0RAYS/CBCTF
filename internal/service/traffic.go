@@ -3,6 +3,7 @@ package service
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
+	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
@@ -334,13 +335,13 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 			Label:   buildTrafficCenterLabel(victim),
 			Exposed: victim.RemoteAddr(),
 		},
-		Summary:     summary,
-		Nodes:       nodeList,
-		Edges:       edgeList,
-		Timeline:    timeline,
-		TopTalkers:  buildTrafficRankingResp(topTalkers, 6),
-		TopEdges:    buildTrafficRankingResp(topEdges, 6),
-		IPs:         ips,
+		Summary:    summary,
+		Nodes:      nodeList,
+		Edges:      edgeList,
+		Timeline:   timeline,
+		TopTalkers: buildTrafficRankingResp(topTalkers, 6),
+		TopEdges:   buildTrafficRankingResp(topEdges, 6),
+		IPs:        ips,
 	}, model.SuccessRetVal()
 }
 
@@ -570,7 +571,7 @@ func addPodServicesByIP(servicesByIP map[string][]string, podSpec model.PodSpec)
 
 func isTrafficInfraContainer(name string) bool {
 	switch strings.ToLower(strings.TrimSpace(name)) {
-	case "capture", "nginx", "frpc":
+	case k8s.CaptureContainerName, k8s.NginxContainerName, k8s.FrpcContainerName:
 		return true
 	default:
 		return false

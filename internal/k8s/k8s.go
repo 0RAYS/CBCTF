@@ -23,8 +23,9 @@ const (
 	GeneratorPodTag = "generator"
 	FrpcPodTag      = "frpc"
 
-	// CaptureContainerName 是注入到每个靶机 Pod 中用于流量采集的 sidecar 容器名
 	CaptureContainerName = "capture"
+	NginxContainerName   = "nginx"
+	FrpcContainerName    = "frpc"
 )
 
 var (
