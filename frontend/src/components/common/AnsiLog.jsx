@@ -32,11 +32,13 @@ const AnsiLog = forwardRef(function AnsiLog(
 ) {
   const innerRef = useRef(null);
 
-  // 将外部 ref 指向内部滚动容器
+  // 始终将外部 ref 指向内部滚动容器（无论处于哪种渲染状态）
   useImperativeHandle(ref, () => innerRef.current);
 
+  const isEmpty = !content || (Array.isArray(content) && content.length === 0);
+
   const html = useMemo(() => {
-    if (!content || (Array.isArray(content) && content.length === 0)) return '';
+    if (isEmpty) return '';
 
     const lines = Array.isArray(content) ? content : content.split('\n');
 
@@ -61,27 +63,22 @@ const AnsiLog = forwardRef(function AnsiLog(
     el.scrollTop = el.scrollHeight;
   }, [html, loading, scrollToBottom]);
 
-  const baseClass = 'bg-neutral-950 border border-neutral-700 rounded p-3';
-
-  if (loading) {
-    return (
-      <div className={`flex items-center justify-center ${baseClass} min-h-[400px] ${className}`}>
-        <div className="w-3 h-3 rounded-full border border-neutral-500 border-t-transparent animate-spin" />
-      </div>
-    );
-  }
-
-  if (!content || (Array.isArray(content) && content.length === 0)) {
-    return (
-      <div className={`flex items-center justify-center ${baseClass} min-h-[400px] ${className}`}>
-        <p className="text-neutral-600 text-xs font-mono">{empty}</p>
-      </div>
-    );
-  }
+  const baseClass = 'bg-neutral-950 border border-neutral-700 rounded p-3 overflow-auto';
 
   return (
-    <div ref={innerRef} className={`overflow-auto ${baseClass} ${className}`} onClick={onClick}>
-      <div dangerouslySetInnerHTML={{ __html: html }} />
+    <div ref={innerRef} className={`${baseClass} ${className}`} onClick={onClick}>
+      {loading ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="w-3 h-3 rounded-full border border-neutral-500 border-t-transparent animate-spin" />
+        </div>
+      ) : isEmpty ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <p className="text-neutral-600 text-xs font-mono">{empty}</p>
+        </div>
+      ) : (
+        <div dangerouslySetInnerHTML={{ __html: html }} />
+      )}
+      {/* sentinel 始终渲染，保证 IntersectionObserver 能在 mount 时就拿到 ref */}
       {sentinel}
     </div>
   );
