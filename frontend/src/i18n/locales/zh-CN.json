@@ -2941,17 +2941,6 @@
       "tip2": "阅读比赛规则和计分说明",
       "tip3": "与队友协调分工和题目方向"
     },
-    "welcome": {
-      "title": "欢迎来到 CBCTF",
-      "subtitle": "初次参加 CTF？了解一下比赛流程",
-      "step1": "加入比赛",
-      "step1Desc": "浏览赛事, 和队伍一起报名参赛",
-      "step2": "解题得旗",
-      "step2Desc": "在 Web、密码、逆向、取证、二进制等方向中寻找 flag",
-      "step3": "积分排名",
-      "step3Desc": "一血奖励最快解出每道题目的参赛者",
-      "dismiss": "知道了"
-    },
     "noGamesDescription": "暂无已发布的比赛",
     "noChallengesDescription": "题目尚未发布"
   },
