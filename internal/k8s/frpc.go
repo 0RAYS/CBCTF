@@ -174,7 +174,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 		return frpcPods
 	}(victim.ID, frpcPodNameL)...)
 	victim.Resources.FrpcPodNames = append(model.StringList(nil), frpcPodNameL...)
-	labels := VictimLabels(victim, map[string]string{FrpcPodTag: FrpcPodTag})
+	labels := VictimLabels(victim, map[string]string{RoleLabel: FrpcPodTag})
 	wg := utils.NewGroup(ctx)
 	for _, name := range frpcPodNameL {
 		wg.Go(func() error {
