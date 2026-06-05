@@ -2,6 +2,7 @@ import {
   IconBan,
   IconClockPlay,
   IconDownload,
+  IconFileText,
   IconGraph,
   IconRefresh,
   IconTable,
@@ -28,6 +29,7 @@ export function ContainersTable({
   onPageChange,
   onViewTrafficGraph,
   onDownloadTraffic,
+  onViewLogs,
   isVictimStoppable,
   formatTime,
   formatRemaining,
@@ -189,6 +191,18 @@ export function ContainersTable({
                       >
                         <IconDownload size={18} />
                       </Button>
+                      {['pending', 'running', 'terminating'].includes(container.status) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="!text-geek-400 hover:!text-geek-300"
+                          onClick={() => onViewLogs(container)}
+                          aria-label={t('admin.contests.containers.logs.viewLogs')}
+                          title={t('admin.contests.containers.logs.viewLogs')}
+                        >
+                          <IconFileText size={18} />
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </motion.tr>

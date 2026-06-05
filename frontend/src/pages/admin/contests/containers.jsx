@@ -9,10 +9,12 @@ import {
   getContestTeams,
   getContestChallenges,
   downloadContainerTraffic,
+  getContestVictimPods,
+  getContestVictimPodLogs,
 } from '../../../api/admin/contest';
 import { getUserList } from '../../../api/admin/user';
 import TrafficGraphModal from '../../../components/features/Admin/Contests/TrafficGraphModal';
-import { Button } from '../../../components/common';
+import { Button, Modal } from '../../../components/common';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -24,6 +26,7 @@ import {
   IconArrowsMaximize,
   IconChevronLeft,
   IconChevronRight,
+  IconRefresh,
 } from '@tabler/icons-react';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
 import { ContainerStats } from './_blocks/ContainerStats';
@@ -101,6 +104,17 @@ function ContestContainers() {
   const [detailChallengeTotal, setDetailChallengeTotal] = useState(0);
   const [teamTotal, setTeamTotal] = useState(0);
   const [trafficGraphContainer, setTrafficGraphContainer] = useState(null);
+
+  // Pod 日志相关状态
+  const [logModalOpen, setLogModalOpen] = useState(false);
+  const [logVictim, setLogVictim] = useState(null);
+  const [logPods, setLogPods] = useState([]);
+  const [logPodsLoading, setLogPodsLoading] = useState(false);
+  const [logSelectedPod, setLogSelectedPod] = useState('');
+  const [logContainerName, setLogContainerName] = useState('');
+  const [logLines, setLogLines] = useState(1000);
+  const [logContent, setLogContent] = useState('');
+  const [logLoading, setLogLoading] = useState(false);
 
   // 统计信息
   const [stats, setStats] = useState({
@@ -556,6 +570,60 @@ function ContestContainers() {
     }
   };
 
+  const handleViewLogs = async (container) => {
+    setLogVictim(container);
+    setLogPods([]);
+    setLogSelectedPod('');
+    setLogContainerName('');
+    setLogLines(1000);
+    setLogContent('');
+    setLogModalOpen(true);
+    setLogPodsLoading(true);
+    try {
+      const res = await getContestVictimPods(parseInt(contestId, 10), container.id);
+      const pods = res.data?.pods ?? [];
+      setLogPods(pods);
+      if (pods.length > 0) {
+        setLogSelectedPod(pods[0].name);
+        const firstContainers = pods[0].containers ?? [];
+        setLogContainerName(firstContainers.length > 0 ? firstContainers[0] : '');
+      }
+    } catch {
+      toast.error(t('admin.contests.containers.logs.fetchPodsFailed'));
+    } finally {
+      setLogPodsLoading(false);
+    }
+  };
+
+  const fetchContestVictimLogs = async () => {
+    if (!logVictim || !logSelectedPod) return;
+    setLogLoading(true);
+    try {
+      const res = await getContestVictimPodLogs(
+        parseInt(contestId, 10),
+        logVictim.id,
+        logSelectedPod,
+        logContainerName,
+        logLines
+      );
+      setLogContent(res.data?.logs ?? '');
+    } catch {
+      toast.error(t('admin.contests.containers.logs.fetchLogsFailed'));
+    } finally {
+      setLogLoading(false);
+    }
+  };
+
+  const handleLogPodChange = (podName) => {
+    setLogSelectedPod(podName);
+    setLogContainerName('');
+    setLogContent('');
+    const pod = logPods.find((p) => p.name === podName);
+    if (pod && pod.containers?.length > 0) {
+      setLogContainerName(pod.containers[0]);
+    }
+  };
+
   return (
     <>
       <style>
@@ -841,6 +909,7 @@ function ContestContainers() {
           onPageChange={handlePageChange}
           onViewTrafficGraph={handleViewTrafficGraph}
           onDownloadTraffic={handleDownloadTraffic}
+          onViewLogs={handleViewLogs}
           isVictimStoppable={isVictimStoppable}
           formatTime={formatTime}
           formatRemaining={formatRemaining}
@@ -895,6 +964,99 @@ function ContestContainers() {
           contestId={parseInt(contestId, 10)}
           teamId={trafficGraphContainer?.team_id}
         />
+
+        {/* Victim Pod Log Modal */}
+        <Modal
+          isOpen={logModalOpen}
+          onClose={() => setLogModalOpen(false)}
+          title={t('admin.contests.containers.logs.title', { id: logVictim?.id ?? '' })}
+          size="lg"
+        >
+          <div className="flex flex-col gap-3">
+            {logPodsLoading ? (
+              <div className="flex justify-center py-6 text-neutral-400 text-sm">{t('common.loading')}</div>
+            ) : logPods.length === 0 ? (
+              <p className="text-neutral-500 text-sm py-4 text-center">{t('admin.contests.containers.logs.noPods')}</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-neutral-400 font-mono">
+                      {t('admin.contests.containers.logs.podName')}
+                    </label>
+                    <select
+                      value={logSelectedPod}
+                      onChange={(e) => handleLogPodChange(e.target.value)}
+                      className="bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-200 focus:outline-none focus:border-geek-400"
+                    >
+                      {logPods.map((pod) => (
+                        <option key={pod.name} value={pod.name} className="bg-neutral-900">
+                          {pod.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-neutral-400 font-mono">
+                      {t('admin.contests.containers.logs.containerName')}
+                    </label>
+                    <select
+                      value={logContainerName}
+                      onChange={(e) => setLogContainerName(e.target.value)}
+                      className="bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-200 focus:outline-none focus:border-geek-400"
+                    >
+                      <option value="" className="bg-neutral-900">
+                        {t('admin.contests.containers.logs.containerDefault')}
+                      </option>
+                      {(logPods.find((p) => p.name === logSelectedPod)?.containers ?? []).map((c) => (
+                        <option key={c} value={c} className="bg-neutral-900">
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-neutral-400 font-mono">
+                      {t('admin.contests.containers.logs.lines')}
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      step={100}
+                      value={logLines}
+                      onChange={(e) => setLogLines(Math.max(1, parseInt(e.target.value, 10) || 1000))}
+                      className="bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-200 focus:outline-none focus:border-geek-400"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={fetchContestVictimLogs}
+                    leftIcon={<IconRefresh size={13} />}
+                    disabled={logLoading || !logSelectedPod}
+                  >
+                    {t('admin.contests.containers.logs.fetch')}
+                  </Button>
+                </div>
+                <div className="relative min-h-[300px] max-h-[55vh] overflow-auto rounded bg-neutral-950 border border-neutral-700 p-3">
+                  {logLoading ? (
+                    <div className="flex justify-center items-center h-full py-12 text-neutral-400 text-sm">
+                      {t('common.loading')}
+                    </div>
+                  ) : logContent ? (
+                    <pre className="text-xs text-neutral-300 font-mono whitespace-pre-wrap break-all">{logContent}</pre>
+                  ) : (
+                    <p className="text-neutral-500 text-xs font-mono py-4 text-center">
+                      {t('admin.contests.containers.logs.empty')}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </Modal>
       </div>
     </>
   );

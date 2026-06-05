@@ -931,6 +931,19 @@
           "stopTitle": "停止靶机",
           "stopConfirm": "停止",
           "stopPrompt": "确定要停止选中的 {{count}} 个靶机吗？"
+        },
+        "logs": {
+          "viewLogs": "查看日志",
+          "title": "靶机日志 — #{{id}}",
+          "podName": "Pod 名称",
+          "containerName": "容器名称",
+          "containerDefault": "默认（不指定）",
+          "lines": "行数",
+          "fetch": "获取日志",
+          "empty": "暂无日志内容，请选择 Pod 后点击获取",
+          "noPods": "该靶机暂无运行中的 Pod",
+          "fetchPodsFailed": "获取 Pod 列表失败",
+          "fetchLogsFailed": "获取日志失败"
         }
       },
       "challenges": {
@@ -1096,7 +1109,8 @@
           "successLast": "最近成功",
           "failure": "失败次数",
           "failureLast": "最近失败",
-          "status": "状态"
+          "status": "状态",
+          "actions": "操作"
         },
         "status": {
           "waiting": "等待中",
@@ -1110,12 +1124,20 @@
           "successes": "总成功次数",
           "failures": "总失败次数"
         },
+        "logs": {
+          "viewLogs": "查看日志",
+          "title": "生成器日志 — {{name}}",
+          "lines": "行数",
+          "empty": "暂无日志内容",
+          "fetchFailed": "获取日志失败"
+        },
         "toast": {
           "fetchFailed": "加载生成器列表失败",
           "startFailed": "启动生成器失败",
           "stopSuccess": "生成器已停止",
           "stopFailed": "停止生成器失败",
-          "selectRequired": "请至少选择一个题目"
+          "selectRequired": "请至少选择一个题目",
+          "logFailed": "获取生成器日志失败"
         }
       }
     },
@@ -1179,6 +1201,19 @@
         "stopTitle": "停止靶机",
         "stopConfirm": "停止",
         "stopPrompt": "确定要停止选中的 {{count}} 个靶机吗？"
+      },
+      "logs": {
+        "viewLogs": "查看日志",
+        "title": "靶机日志 — #{{id}}",
+        "podName": "Pod 名称",
+        "containerName": "容器名称",
+        "containerDefault": "默认（不指定）",
+        "lines": "行数",
+        "fetch": "获取日志",
+        "empty": "暂无日志内容，请选择 Pod 后点击获取",
+        "noPods": "该靶机暂无运行中的 Pod",
+        "fetchPodsFailed": "获取 Pod 列表失败",
+        "fetchLogsFailed": "获取日志失败"
       }
     },
     "generators": {
@@ -1199,19 +1234,28 @@
         "successLast": "最后成功",
         "failure": "失败次数",
         "failureLast": "最后失败",
-        "status": "状态"
+        "status": "状态",
+        "actions": "操作"
       },
       "stats": {
         "total": "生成器总数",
         "successes": "总成功次数",
         "failures": "总失败次数"
       },
+      "logs": {
+        "viewLogs": "查看日志",
+        "title": "生成器日志 — {{name}}",
+        "lines": "行数",
+        "empty": "暂无日志内容",
+        "fetchFailed": "获取日志失败"
+      },
       "toast": {
         "fetchFailed": "获取生成器列表失败",
         "startFailed": "启动生成器失败",
         "stopSuccess": "生成器已停止",
         "stopFailed": "停止生成器失败",
-        "selectRequired": "请至少选择一个题目"
+        "selectRequired": "请至少选择一个题目",
+        "logFailed": "获取生成器日志失败"
       }
     },
     "challenge": {

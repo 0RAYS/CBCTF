@@ -6,11 +6,21 @@ import {
   startContestGenerators,
   stopContestGenerators,
   getContestChallenges,
+  getContestGeneratorLogs,
 } from '../../../api/admin/contest';
 import { Modal } from '../../../components/common';
 import { Button, Pagination, Card, EmptyState, StatCard } from '../../../components/common';
 import { motion } from 'motion/react';
-import { IconPlayerPlay, IconBan, IconCheck, IconX, IconTrash, IconClockPlay, IconRefresh } from '@tabler/icons-react';
+import {
+  IconPlayerPlay,
+  IconBan,
+  IconCheck,
+  IconX,
+  IconTrash,
+  IconClockPlay,
+  IconRefresh,
+  IconFileText,
+} from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
 const STATUS_STYLES = {
@@ -48,6 +58,12 @@ function ContestGenerators() {
   const [dynamicChallenges, setDynamicChallenges] = useState([]);
   const [startModalOpen, setStartModalOpen] = useState(false);
   const [startCounts, setStartCounts] = useState({});
+
+  const [logModalOpen, setLogModalOpen] = useState(false);
+  const [logGenerator, setLogGenerator] = useState(null);
+  const [logLines, setLogLines] = useState(1000);
+  const [logContent, setLogContent] = useState('');
+  const [logLoading, setLogLoading] = useState(false);
 
   const fetchGenerators = async (page = 1, deleted = showDeleted) => {
     setLoading(true);
@@ -170,6 +186,35 @@ function ContestGenerators() {
       fetchGenerators(1);
     } catch {
       toast.error(t('admin.contests.generators.toast.startFailed'));
+    }
+  };
+
+  const openLogModal = async (gen) => {
+    setLogGenerator(gen);
+    setLogLines(1000);
+    setLogContent('');
+    setLogModalOpen(true);
+    setLogLoading(true);
+    try {
+      const res = await getContestGeneratorLogs(contestId, gen.id, 1000);
+      setLogContent(res.data?.logs ?? '');
+    } catch {
+      toast.error(t('admin.contests.generators.toast.logFailed'));
+    } finally {
+      setLogLoading(false);
+    }
+  };
+
+  const fetchLogs = async () => {
+    if (!logGenerator) return;
+    setLogLoading(true);
+    try {
+      const res = await getContestGeneratorLogs(contestId, logGenerator.id, logLines);
+      setLogContent(res.data?.logs ?? '');
+    } catch {
+      toast.error(t('admin.contests.generators.toast.logFailed'));
+    } finally {
+      setLogLoading(false);
     }
   };
 
@@ -300,6 +345,9 @@ function ContestGenerators() {
                   <th className="py-3 px-4 text-left" scope="col">
                     {t('admin.contests.generators.columns.status')}
                   </th>
+                  <th className="py-3 px-4 text-left" scope="col">
+                    {t('admin.contests.generators.columns.actions')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -329,6 +377,18 @@ function ContestGenerators() {
                     <td className="py-3 px-4 text-neutral-400 text-xs">{formatTime(gen.failure_last)}</td>
                     <td className="py-3 px-4">
                       <GeneratorStatusBadge status={gen.status} t={t} />
+                    </td>
+                    <td className="py-3 px-4">
+                      {['pending', 'running', 'terminating'].includes(gen.status) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openLogModal(gen)}
+                          title={t('admin.contests.generators.logs.viewLogs')}
+                        >
+                          <IconFileText size={16} />
+                        </Button>
+                      )}
                     </td>
                   </motion.tr>
                 ))}
@@ -396,6 +456,52 @@ function ContestGenerators() {
             >
               {t('admin.contests.generators.startSelected')}
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Log Modal */}
+      <Modal
+        isOpen={logModalOpen}
+        onClose={() => setLogModalOpen(false)}
+        title={t('admin.contests.generators.logs.title', { name: logGenerator?.name ?? '' })}
+        size="lg"
+      >
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-neutral-400 font-mono shrink-0">
+              {t('admin.contests.generators.logs.lines')}
+            </label>
+            <input
+              type="number"
+              min={1}
+              step={100}
+              value={logLines}
+              onChange={(e) => setLogLines(Math.max(1, parseInt(e.target.value, 10) || 1000))}
+              className="w-24 bg-neutral-800 border border-neutral-700 rounded px-2 py-1 text-sm text-neutral-200 text-center focus:outline-none focus:border-geek-400"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={fetchLogs}
+              leftIcon={<IconRefresh size={13} />}
+              disabled={logLoading}
+            >
+              {t('common.refresh')}
+            </Button>
+          </div>
+          <div className="relative min-h-[300px] max-h-[60vh] overflow-auto rounded bg-neutral-950 border border-neutral-700 p-3">
+            {logLoading ? (
+              <div className="flex justify-center items-center h-full py-12 text-neutral-400 text-sm">
+                {t('common.loading')}
+              </div>
+            ) : logContent ? (
+              <pre className="text-xs text-neutral-300 font-mono whitespace-pre-wrap break-all">{logContent}</pre>
+            ) : (
+              <p className="text-neutral-500 text-xs font-mono py-4 text-center">
+                {t('admin.contests.generators.logs.empty')}
+              </p>
+            )}
           </div>
         </div>
       </Modal>

@@ -3,10 +3,14 @@ package router
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/k8s"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+	"context"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -52,4 +56,30 @@ func StopGenerator(ctx *gin.Context) {
 	go service.StopGenerators(db.DB, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
+}
+
+// GetGeneratorLogs 获取指定 generator 的 Pod 日志（pending/running/terminating 状态）
+func GetGeneratorLogs(ctx *gin.Context) {
+	generator := middleware.GetGenerator(ctx)
+	switch generator.Status {
+	case model.PendingGeneratorStatus, model.RunningGeneratorStatus, model.TerminatingGeneratorStatus:
+	default:
+		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": "generator is not active"}})
+		return
+	}
+
+	var form dto.GetGeneratorLogsForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	logs, ret := k8s.GetPodLogs(ctxTimeout, generator.Name, "", form.Lines)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"logs": logs}))
 }

@@ -349,6 +349,23 @@ export const startContestVictims = (contestId, challenges, teamRatio, duration) 
   });
 };
 
+// 获取比赛靶机 Pod 列表
+export const getContestVictimPods = (contestId, victimId) => {
+  return request({
+    url: `/admin/contests/${contestId}/victims/${victimId}/pods`,
+    method: 'GET',
+  });
+};
+
+// 获取比赛靶机 Pod 日志
+export const getContestVictimPodLogs = (contestId, victimId, podName, container = '', lines = 1000) => {
+  return request({
+    url: `/admin/contests/${contestId}/victims/${victimId}/pods/logs`,
+    method: 'GET',
+    params: { pod_name: podName, container, lines },
+  });
+};
+
 // 获取比赛作弊事件列表
 export const getContestCheats = (contestId, params = { limit: 20, offset: 0 }) => {
   return request({
@@ -424,5 +441,14 @@ export const stopContestGenerators = (contestId, generatorIds) => {
     url: `/admin/contests/${contestId}/generators`,
     method: 'DELETE',
     data: { generators: generatorIds },
+  });
+};
+
+// 获取附件生成器日志
+export const getContestGeneratorLogs = (contestId, generatorId, lines = 1000) => {
+  return request({
+    url: `/admin/contests/${contestId}/generators/${generatorId}/logs`,
+    method: 'GET',
+    params: { lines },
   });
 };
