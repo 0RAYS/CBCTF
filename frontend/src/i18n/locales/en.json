@@ -931,6 +931,19 @@
           "stopTitle": "Stop containers",
           "stopConfirm": "Stop",
           "stopPrompt": "Stop {{count}} selected containers?"
+        },
+        "logs": {
+          "viewLogs": "View Logs",
+          "title": "Container Logs — #{{id}}",
+          "podName": "Pod Name",
+          "containerName": "Container Name",
+          "containerDefault": "Default (unspecified)",
+          "lines": "Lines",
+          "fetch": "Fetch Logs",
+          "empty": "No log content. Select a Pod and click Fetch Logs.",
+          "noPods": "No running Pods found for this container",
+          "fetchPodsFailed": "Failed to fetch Pod list",
+          "fetchLogsFailed": "Failed to fetch logs"
         }
       },
       "challenges": {
@@ -1096,7 +1109,8 @@
           "successLast": "Last Success",
           "failure": "Failures",
           "failureLast": "Last Failure",
-          "status": "Status"
+          "status": "Status",
+          "actions": "Actions"
         },
         "status": {
           "waiting": "Waiting",
@@ -1110,12 +1124,20 @@
           "successes": "Total Successes",
           "failures": "Total Failures"
         },
+        "logs": {
+          "viewLogs": "View Logs",
+          "title": "Generator Logs — {{name}}",
+          "lines": "Lines",
+          "empty": "No log content",
+          "fetchFailed": "Failed to fetch logs"
+        },
         "toast": {
           "fetchFailed": "Failed to load generators",
           "startFailed": "Failed to start generators",
           "stopSuccess": "Generators stopped",
           "stopFailed": "Failed to stop generators",
-          "selectRequired": "Please select at least one challenge"
+          "selectRequired": "Please select at least one challenge",
+          "logFailed": "Failed to fetch generator logs"
         }
       }
     },
@@ -1179,6 +1201,19 @@
         "stopTitle": "Stop containers",
         "stopConfirm": "Stop",
         "stopPrompt": "Stop {{count}} selected containers?"
+      },
+      "logs": {
+        "viewLogs": "View Logs",
+        "title": "Container Logs — #{{id}}",
+        "podName": "Pod Name",
+        "containerName": "Container Name",
+        "containerDefault": "Default (unspecified)",
+        "lines": "Lines",
+        "fetch": "Fetch Logs",
+        "empty": "No log content. Select a Pod and click Fetch Logs.",
+        "noPods": "No running Pods found for this container",
+        "fetchPodsFailed": "Failed to fetch Pod list",
+        "fetchLogsFailed": "Failed to fetch logs"
       }
     },
     "generators": {
@@ -1199,19 +1234,28 @@
         "successLast": "Last Success",
         "failure": "Failures",
         "failureLast": "Last Failure",
-        "status": "Status"
+        "status": "Status",
+        "actions": "Actions"
       },
       "stats": {
         "total": "Total Generators",
         "successes": "Total Successes",
         "failures": "Total Failures"
       },
+      "logs": {
+        "viewLogs": "View Logs",
+        "title": "Generator Logs — {{name}}",
+        "lines": "Lines",
+        "empty": "No log content",
+        "fetchFailed": "Failed to fetch logs"
+      },
       "toast": {
         "fetchFailed": "Failed to load generators",
         "startFailed": "Failed to start generators",
         "stopSuccess": "Generators stopped",
         "stopFailed": "Failed to stop generators",
-        "selectRequired": "Please select at least one challenge"
+        "selectRequired": "Please select at least one challenge",
+        "logFailed": "Failed to fetch generator logs"
       }
     },
     "challenge": {

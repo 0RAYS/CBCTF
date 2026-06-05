@@ -28,3 +28,14 @@ type StartGeneratorsForm struct {
 type StopGeneratorsForm struct {
 	Generators []uint `form:"generators" json:"generators" binding:"required,dive,gt=0"`
 }
+
+type GetGeneratorLogsForm struct {
+	Lines int64 `form:"lines" json:"lines" binding:"omitempty,gt=0"`
+}
+
+func (f *GetGeneratorLogsForm) Validate(_ *gin.Context) model.RetVal {
+	if f.Lines <= 0 {
+		f.Lines = 1000
+	}
+	return model.SuccessRetVal()
+}

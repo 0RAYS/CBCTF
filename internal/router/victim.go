@@ -3,10 +3,14 @@ package router
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/k8s"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+	"context"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -115,4 +119,64 @@ func StopVictims(ctx *gin.Context) {
 	go service.StopVictims(db.DB, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
+}
+
+// GetVictimPods 列出指定 victim 关联的 Pods（pending/running/terminating 状态）
+func GetVictimPods(ctx *gin.Context) {
+	victim := middleware.GetVictim(ctx)
+	switch victim.Status {
+	case model.PendingVictimStatus, model.RunningVictimStatus, model.TerminatingVictimStatus:
+	default:
+		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": "victim is not active"}})
+		return
+	}
+
+	labels := k8s.VictimLabels(victim)
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	podList, ret := k8s.ListPods(ctxTimeout, labels)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+
+	pods := make([]gin.H, 0, len(podList.Items))
+	for _, pod := range podList.Items {
+		containers := make([]string, 0, len(pod.Spec.Containers))
+		for _, c := range pod.Spec.Containers {
+			containers = append(containers, c.Name)
+		}
+		pods = append(pods, gin.H{
+			"name":       pod.Name,
+			"status":     string(pod.Status.Phase),
+			"containers": containers,
+		})
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"pods": pods}))
+}
+
+// GetVictimPodLogs 获取指定 victim 的某个 Pod 日志（pending/running/terminating 状态）
+func GetVictimPodLogs(ctx *gin.Context) {
+	victim := middleware.GetVictim(ctx)
+	switch victim.Status {
+	case model.PendingVictimStatus, model.RunningVictimStatus, model.TerminatingVictimStatus:
+	default:
+		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": "victim is not active"}})
+		return
+	}
+
+	var form dto.GetVictimPodLogsForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	logs, ret := k8s.GetPodLogs(ctxTimeout, form.PodName, form.Container, form.Lines)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"logs": logs}))
 }

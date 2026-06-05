@@ -443,6 +443,38 @@ func GetContestFlag(ctx *gin.Context) model.ContestFlag {
 	return contestFlag.(model.ContestFlag)
 }
 
+// SetGenerator 保存 model.Generator 至上下文
+func SetGenerator(ctx *gin.Context) {
+	type generatorIDUri struct {
+		GeneratorID uint `uri:"generatorID" binding:"required"`
+	}
+	var generatorID generatorIDUri
+	if err := ctx.ShouldBindUri(&generatorID); err != nil {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		return
+	}
+	generator, ret := db.InitGeneratorRepo(db.DB).GetByID(generatorID.GeneratorID)
+	if !ret.OK {
+		resp.AbortJSON(ctx, ret)
+		return
+	}
+	if contest := GetContest(ctx); contest.ID != 0 && (!generator.ContestID.Valid || generator.ContestID.V != contest.ID) {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		return
+	}
+	ctx.Set("Generator", generator)
+	ctx.Next()
+}
+
+// GetGenerator 从上下文中获取 model.Generator
+func GetGenerator(ctx *gin.Context) model.Generator {
+	generator, ok := ctx.Get("Generator")
+	if !ok || generator == nil {
+		return model.Generator{}
+	}
+	return generator.(model.Generator)
+}
+
 func SetVictim(ctx *gin.Context) {
 	type victimIDUri struct {
 		VictimID uint `uri:"victimID" binding:"required"`

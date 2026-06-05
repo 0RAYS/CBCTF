@@ -318,10 +318,15 @@ func Init() *gin.Engine {
 		{
 			adminVictim.GET("", GetVictims)
 			adminVictim.DELETE("", StopVictims)
-			adminTraffic := adminVictim.Group("/:victimID/traffic", middleware.SetVictim)
+			adminSingleVictim := adminVictim.Group("/:victimID", middleware.SetVictim)
 			{
-				adminTraffic.GET("/download", middleware.SetTrafficFile, DownloadFile(model.DownloadTrafficEventType))
-				adminTraffic.GET("", GetTraffics)
+				adminTraffic := adminSingleVictim.Group("/traffic")
+				{
+					adminTraffic.GET("/download", middleware.SetTrafficFile, DownloadFile(model.DownloadTrafficEventType))
+					adminTraffic.GET("", GetTraffics)
+				}
+				adminSingleVictim.GET("/pods", GetVictimPods)
+				adminSingleVictim.GET("/pods/logs", GetVictimPodLogs)
 			}
 		}
 
@@ -330,6 +335,7 @@ func Init() *gin.Engine {
 			adminGenerator.GET("", GetGenerators)
 			adminGenerator.POST("", middleware.RateLimit("test_generators", 1, time.Minute), StartGenerator)
 			adminGenerator.DELETE("", StopGenerator)
+			adminGenerator.GET("/:generatorID/logs", middleware.SetGenerator, GetGeneratorLogs)
 		}
 
 		adminImages := admin.Group("/images")
@@ -429,6 +435,11 @@ func Init() *gin.Engine {
 				adminContestVictim.GET("", GetVictims)
 				adminContestVictim.POST("", middleware.RateLimit("warmup_victims", 1, time.Minute), StartVictims)
 				adminContestVictim.DELETE("", StopVictims)
+				adminContestSingleVictim := adminContestVictim.Group("/:victimID", middleware.SetVictim)
+				{
+					adminContestSingleVictim.GET("/pods", GetVictimPods)
+					adminContestSingleVictim.GET("/pods/logs", GetVictimPodLogs)
+				}
 			}
 
 			adminContestGenerator := adminContest.Group("/generators")
@@ -436,6 +447,7 @@ func Init() *gin.Engine {
 				adminContestGenerator.GET("", GetGenerators)
 				adminContestGenerator.POST("", middleware.RateLimit("warmup_generators", 1, time.Minute), StartGenerator)
 				adminContestGenerator.DELETE("", StopGenerator)
+				adminContestGenerator.GET("/:generatorID/logs", middleware.SetGenerator, GetGeneratorLogs)
 			}
 		}
 

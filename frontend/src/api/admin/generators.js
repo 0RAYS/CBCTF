@@ -7,3 +7,6 @@ export const startGenerators = (challenges) =>
 
 export const stopGenerators = (generatorIds) =>
   request({ url: '/admin/generators', method: 'DELETE', data: { generators: generatorIds } });
+
+export const getGeneratorLogs = (generatorId, lines = 1000) =>
+  request({ url: `/admin/generators/${generatorId}/logs`, method: 'GET', params: { lines } });
