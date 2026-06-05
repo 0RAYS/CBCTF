@@ -6,11 +6,11 @@ import (
 )
 
 const (
-	WaitingGeneratorStatus = "waiting"
-	PendingGeneratorStatus = "pending"
+	WaitingGeneratorStatus     = "waiting"
+	PendingGeneratorStatus     = "pending"
+	RunningGeneratorStatus     = "running"
 	TerminatingGeneratorStatus = "terminating"
-	RunningGeneratorStatus = "running"
-	StoppedGeneratorStatus = "stopped"
+	StoppedGeneratorStatus     = "stopped"
 )
 
 // Generator
