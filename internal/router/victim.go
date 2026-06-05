@@ -144,7 +144,13 @@ func GetVictimPods(ctx *gin.Context) {
 	for _, pod := range podList.Items {
 		containers := make([]string, 0, len(pod.Spec.Containers))
 		for _, c := range pod.Spec.Containers {
+			if c.Name == k8s.CaptureContainerName {
+				continue
+			}
 			containers = append(containers, c.Name)
+		}
+		if len(containers) == 0 {
+			continue
 		}
 		pods = append(pods, gin.H{
 			"name":       pod.Name,

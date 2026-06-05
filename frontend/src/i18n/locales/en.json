@@ -937,10 +937,9 @@
           "title": "Container Logs — #{{id}}",
           "podName": "Pod Name",
           "containerName": "Container Name",
-          "containerDefault": "Default (unspecified)",
           "lines": "Lines",
           "fetch": "Fetch Logs",
-          "empty": "No log content. Select a Pod and click Fetch Logs.",
+          "empty": "No log content. Click Fetch Logs.",
           "noPods": "No running Pods found for this container",
           "fetchPodsFailed": "Failed to fetch Pod list",
           "fetchLogsFailed": "Failed to fetch logs"
@@ -1207,10 +1206,9 @@
         "title": "Container Logs — #{{id}}",
         "podName": "Pod Name",
         "containerName": "Container Name",
-        "containerDefault": "Default (unspecified)",
         "lines": "Lines",
         "fetch": "Fetch Logs",
-        "empty": "No log content. Select a Pod and click Fetch Logs.",
+        "empty": "No log content. Click Fetch Logs.",
         "noPods": "No running Pods found for this container",
         "fetchPodsFailed": "Failed to fetch Pod list",
         "fetchLogsFailed": "Failed to fetch logs"
