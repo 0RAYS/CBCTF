@@ -13,7 +13,7 @@ import (
 // stopUnCtrlGenerator 关闭不受控的 model.Generator
 func stopUnCtrlGeneratorTask() model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	pods, ret := k8s.ListPods(ctx, map[string]string{k8s.GeneratorPodTag: k8s.GeneratorPodTag})
+	pods, ret := k8s.ListPods(ctx, map[string]string{k8s.RoleLabel: k8s.GeneratorPodTag})
 	cancel()
 	if !ret.OK {
 		return ret

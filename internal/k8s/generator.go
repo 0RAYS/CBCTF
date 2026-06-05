@@ -34,7 +34,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 		pod    *corev1.Pod
 		ret    model.RetVal
 		err    error
-		labels = GeneratorLabels(generator, map[string]string{GeneratorPodTag: GeneratorPodTag})
+		labels = GeneratorLabels(generator, map[string]string{RoleLabel: GeneratorPodTag})
 	)
 	if challenge.GeneratorImage == "" {
 		return nil, model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
@@ -96,7 +96,7 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 	if ret := DeletePod(ctx, generator.Name); !ret.OK {
 		return ret
 	}
-	labels := GeneratorLabels(generator, map[string]string{GeneratorPodTag: GeneratorPodTag})
+	labels := GeneratorLabels(generator, map[string]string{RoleLabel: GeneratorPodTag})
 	if ret := DeleteServiceCollection(ctx, labels); !ret.OK {
 		return ret
 	}

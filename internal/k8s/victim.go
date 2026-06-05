@@ -61,7 +61,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 		"Creating victim k8s resources: victim_id=%d team_id=%d challenge_id=%d pods=%d vpc=%t frp=%t",
 		victim.ID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods), victim.Spec.NetworkPlan.Name != "", config.Env.K8S.Frp.On,
 	)
-	labels := VictimLabels(victim, map[string]string{VictimPodTag: VictimPodTag})
+	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag})
 
 	subnetMap, netAttachDefMap, endpoints, ret := createVictimNetworkResources(ctx, &victim, labels)
 	if !ret.OK {
@@ -443,7 +443,7 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 }
 
 func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVal {
-	labels := VictimLabels(victim, map[string]string{VictimPodTag: VictimPodTag})
+	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag})
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 	for {
