@@ -62,21 +62,13 @@ flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 - **Redis 缓存 / 任务队列** + **PostgreSQL 数据存储** + **NFS 网络存储**
 
 <img src="static/img/dashboard.png" width="100%" alt="管理后台" />
-
-<table>
-  <tr>
-    <td><img src="static/img/contest.png" alt="比赛详情" /></td>
-    <td><img src="static/img/scoreboard-1.png" alt="排行榜" /></td>
-  </tr>
-  <tr>
-    <td><img src="static/img/contest-settings.png" alt="比赛设置" /></td>
-    <td><img src="static/img/settings.png" alt="系统设置" /></td>
-  </tr>
-  <tr>
-    <td><img src="static/img/branding.png" alt="品牌化配置" /></td>
-    <td><img src="static/img/log.png" alt="日志" /></td>
-  </tr>
-</table>
+<img src="static/img/contest.png" width="100%" alt="比赛详情" />
+<img src="static/img/scoreboard-1.png" width="100%" alt="排行榜" />
+<img src="static/img/scoreboard-2.png" width="100%" alt="排行榜（图表）" />
+<img src="static/img/contest-settings.png" width="100%" alt="比赛设置" />
+<img src="static/img/settings.png" width="100%" alt="系统设置" />
+<img src="static/img/branding.png" width="100%" alt="品牌化配置" />
+<img src="static/img/log.png" width="100%" alt="日志" />
 
 ## 构建
 
@@ -149,12 +141,11 @@ networks:
 
 > 完整示例：[example/pods/vpc/docker-compose.yaml](example/pods/vpc/docker-compose.yaml)
 
-<table>
-  <tr>
-    <td><img src="static/img/docker-compose.png" alt="容器配置" /></td>
-    <td><img src="static/img/vm.png" alt="虚拟机" /></td>
-  </tr>
-</table>
+<img src="static/img/docker-compose.png" width="100%" alt="容器配置" />
+<img src="static/img/vm.png" width="100%" alt="虚拟机" />
+<img src="static/img/victims-1.png" width="100%" alt="靶机列表" />
+<img src="static/img/victims-2.png" width="100%" alt="靶机详情" />
+<img src="static/img/victims-3.png" width="100%" alt="靶机终端" />
 
 ## 动态附件系统
 
