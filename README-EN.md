@@ -148,7 +148,7 @@ networks:
 <img src="static/img/victims-2.png" width="100%" alt="Victim Detail" />
 <img src="static/img/victims-3.png" width="100%" alt="Victim Terminal" />
 
-## Dynamic Attachment System
+## Dynamic Attachment
 
 Containerized generation on Kubernetes. Upload a Python script and the platform runs it in an isolated environment to
 produce a unique attachment for each team.

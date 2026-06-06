@@ -147,7 +147,7 @@ networks:
 <img src="static/img/victims-2.png" width="100%" alt="靶机详情" />
 <img src="static/img/victims-3.png" width="100%" alt="靶机终端" />
 
-## 动态附件系统
+## 动态附件
 
 基于 Kubernetes 容器化生成，支持上传 Python 脚本，在隔离环境中为每个队伍生成唯一附件。
 
