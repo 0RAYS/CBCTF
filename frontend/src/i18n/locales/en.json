@@ -2637,8 +2637,8 @@
         "jenkins": "CI/CD Pipeline"
       },
       "roles": {
-        "frontendLead": "Frontend Lead",
-        "backendLead": "Backend Lead"
+        "frontendLead": "Frontend",
+        "backendLead": "Backend"
       }
     },
     "team": {
