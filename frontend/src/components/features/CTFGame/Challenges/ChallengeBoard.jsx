@@ -36,7 +36,7 @@ function ChallengeBoard({
   teamInfo,
   totalCount = 0,
   currentPage = 1,
-  pageSize = 12,
+  pageSize = 20,
   onPageChange,
   isLoading = false,
 }) {
