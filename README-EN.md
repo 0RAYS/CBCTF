@@ -9,7 +9,7 @@
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.20+-326CE5?style=flat-square&logo=kubernetes&logoColor=white)](https://kubernetes.io)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-6.0+-DC382D?style=flat-square&logo=redis&logoColor=white)](https://redis.io)
-[![License](https://img.shields.io/badge/License-Apache%202.0-597ef7?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/License-AGPL%20v3-597ef7?style=flat-square)](LICENSE)
 
 English · [简体中文](README.md)
 
@@ -180,4 +180,4 @@ and [PR #1213](https://github.com/k8snetworkplumbingwg/multus-cni/pull/1213).
 
 ## License
 
-This project is licensed under the [Apache License 2.0](LICENSE).
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).

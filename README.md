@@ -9,7 +9,7 @@
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.20+-326CE5?style=flat-square&logo=kubernetes&logoColor=white)](https://kubernetes.io)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-6.0+-DC382D?style=flat-square&logo=redis&logoColor=white)](https://redis.io)
-[![License](https://img.shields.io/badge/License-Apache%202.0-597ef7?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/License-AGPL%20v3-597ef7?style=flat-square)](LICENSE)
 
 [English](README-EN.md) · 简体中文
 
@@ -176,4 +176,4 @@ Plugin存在已知问题（[OOMKilled #1346](https://github.com/k8snetworkplumbi
 
 ## 许可证
 
-本项目采用 [Apache License 2.0](LICENSE) 开源协议。
+本项目采用 [GNU Affero General Public License v3.0](LICENSE) 开源协议。
