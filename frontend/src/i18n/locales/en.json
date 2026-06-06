@@ -2633,8 +2633,7 @@
         "postgres": "Database",
         "redis": "Caching",
         "docker": "Container Platform",
-        "k8s": "Container Orchestration",
-        "jenkins": "CI/CD Pipeline"
+        "k8s": "Container Orchestration"
       },
       "roles": {
         "frontendLead": "Frontend",
