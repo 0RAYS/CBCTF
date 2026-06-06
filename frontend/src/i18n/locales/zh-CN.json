@@ -2637,8 +2637,8 @@
         "jenkins": "CI/CD 流水线"
       },
       "roles": {
-        "frontendLead": "前端负责人",
-        "backendLead": "后端负责人"
+        "frontendLead": "前端",
+        "backendLead": "后端"
       }
     },
     "team": {
