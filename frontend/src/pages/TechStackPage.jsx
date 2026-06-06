@@ -24,9 +24,8 @@ function TechStackPage() {
       {
         category: t('support.techStack.categories.devops'),
         items: [
-          { name: 'Docker', icon: '🐳', description: t('support.techStack.items.docker') },
+          { name: 'Containerd', icon: '🐳', description: t('support.techStack.items.docker') },
           { name: 'K8s', icon: '⚓️', description: t('support.techStack.items.k8s') },
-          { name: 'Jenkins', icon: '🔄', description: t('support.techStack.items.jenkins') },
         ],
       },
     ],

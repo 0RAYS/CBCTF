@@ -2633,8 +2633,7 @@
         "postgres": "数据库",
         "redis": "缓存",
         "docker": "靶机平台",
-        "k8s": "靶机编排",
-        "jenkins": "CI/CD 流水线"
+        "k8s": "靶机编排"
       },
       "roles": {
         "frontendLead": "前端",
