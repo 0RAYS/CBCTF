@@ -21,6 +21,8 @@ CBCTF is a CTF competition platform maintained by [0RAYS](https://github.com/0ra
 orchestrated on Kubernetes. It supports dynamic attachment generation, dynamic container distribution, hybrid
 container/VM deployments, and network penetration scenario construction.
 
+<img src="static/img/homepage.png" width="100%" alt="Homepage" />
+
 ## Features
 
 ### Challenge Types
@@ -33,6 +35,8 @@ container/VM deployments, and network penetration scenario construction.
 | **Dynamic Container · VPC Mode** | Each container runs in its own Pod with static IP assignment. Ideal for penetration scenarios |
 
 Each challenge supports multiple flags, each scored independently.
+
+<img src="static/img/challenges.png" width="100%" alt="Challenge List" />
 
 ### Flag Types
 
@@ -53,9 +57,27 @@ The flag prefix can be customized in event settings (default: `CBCTF`):
 - **OAuth / OIDC** — Third-party authentication with automatic user group assignment
 - **Platform Branding** — Global configuration for logo, name, theme color, etc.
 - **Hot-reload Config** — All system configuration changes take effect immediately without restart
+- **Webhook** — GET / POST
 - **Internationalization (i18n)** — Multi-language interface support
 - **Prometheus Metrics** — Full runtime metric exposure
 - **Redis Cache / Task Queue** + **PostgreSQL Storage** + **NFS Network Storage**
+
+<img src="static/img/dashboard.png" width="100%" alt="Admin Dashboard" />
+
+<table>
+  <tr>
+    <td><img src="static/img/contest.png" alt="Contest" /></td>
+    <td><img src="static/img/scoreboard-1.png" alt="Scoreboard" /></td>
+  </tr>
+  <tr>
+    <td><img src="static/img/contest-settings.png" alt="Contest Settings" /></td>
+    <td><img src="static/img/settings.png" alt="System Settings" /></td>
+  </tr>
+  <tr>
+    <td><img src="static/img/branding.png" alt="Branding" /></td>
+    <td><img src="static/img/log.png" alt="Logs" /></td>
+  </tr>
+</table>
 
 ## Build
 
@@ -127,6 +149,13 @@ networks:
 ```
 
 > Full example: [example/pods/vpc/docker-compose.yaml](example/pods/vpc/docker-compose.yaml)
+
+<table>
+  <tr>
+    <td><img src="static/img/docker-compose.png" alt="Container Config" /></td>
+    <td><img src="static/img/vm.png" alt="Virtual Machine" /></td>
+  </tr>
+</table>
 
 ## Dynamic Attachment System
 
