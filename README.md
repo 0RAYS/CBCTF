@@ -1,168 +1,91 @@
+<div align="center">
+
 # CBCTF
 
-[![Go Version](https://img.shields.io/badge/Go-1.26+-blue.svg)](https://golang.org)
-[![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.20+-blue.svg)](https://kubernetes.io)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-blue.svg)](https://www.postgresql.org)
-[![Redis](https://img.shields.io/badge/Redis-6.0+-red.svg)](https://redis.io)
-[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
+**基于 Kubernetes 的现代化 CTF 竞赛平台**
 
-CBCTF 是一个基于 Go 语言开发的高性能 CTF 竞赛平台, 前后端一体化编译, 支持动态容器、动态附件、VPC 网络隔离等特性。
+[![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?style=flat-square&logo=go&logoColor=white)](https://golang.org)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.20+-326CE5?style=flat-square&logo=kubernetes&logoColor=white)](https://kubernetes.io)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Redis](https://img.shields.io/badge/Redis-6.0+-DC382D?style=flat-square&logo=redis&logoColor=white)](https://redis.io)
+[![License](https://img.shields.io/badge/License-Apache%202.0-597ef7?style=flat-square)](LICENSE)
 
-## 特性概览
+[English](README-EN.md) · 简体中文
 
-**题目系统**
-- 静态题目 / 动态题目 / 动态容器
-- Flag 类型: 静态 Flag、动态 Flag、UUID Flag, 可注入环境变量或文件挂载
-- 分值系统: 静态 / 线性 / 非线性动态分值, 支持三血奖励
+</div>
 
-**竞赛管理**
-- 团队管理、实时排行榜、公告系统
-- Writeup 收集与批量下载
-- 完整的比赛事件日志
+---
 
-**动态容器**
-- 基于 Kubernetes 的队伍隔离容器环境
-- Pod / VPC 两种网络模式, VPC 基于 Kube-OVN 实现网络隔离
-- 支持 Frp 端口转发、镜像预热、容器预热、流量抓取
+CBCTF 是由 [0RAYS](https://github.com/0rays) 维护的 CTF 竞赛平台，基于 Go 语言构建，原生支持
+Kubernetes编排。平台支持动态附件生成、动态容器分发、容器与虚拟机混合部署、网络渗透场景构建等特性。
 
-**动态附件生成**
-- 基于 Kubernetes 的容器化隔离生成
-- 可基于通用 Docker 镜像, 通过上传 Python 脚本进行生成
-
-**安全特性**
-- 设备指纹 (FingerprintJS) + JWT 双重认证
-- 作弊检测（Flag 共享、设备指纹异常）
-- 基于 Redis 的速率限制, 支持全局及 IP 白名单
-
-**其他**
-- 异步任务队列（邮件、Webhook、附件生成、图片处理）
-- OAuth / OIDC 第三方认证
-- 国际化 (i18n) 支持
-- Prometheus 监控指标
-
-## 技术栈
-
-### 后端
-
-| 组件        | 技术                | 版本    |
-|-----------|-------------------|-------|
-| 语言        | Go                | 1.26  |
-| Web 框架    | Gin               | 1.12  |
-| ORM       | GORM              | 1.31  |
-| 数据库       | PostgreSQL        | 16+   |
-| 缓存 / 消息队列 | Redis             | 6.0+  |
-| 异步任务      | Asynq             | 0.26  |
-| 定时任务      | robfig/cron       | v3    |
-| 容器编排      | Kubernetes        | 1.20+ |
-| 网络插件      | Kube-OVN / Multus | -     |
-| JWT       | golang-jwt        | v5    |
-| 配置管理      | Viper             | 1.21  |
-
-### 前端
-
-| 组件       | 技术            | 版本   |
-|----------|---------------|------|
-| 框架       | React         | 19   |
-| 构建工具     | Vite          | 7    |
-| 状态管理     | Redux Toolkit | 2    |
-| HTTP 客户端 | Axios         | 1.15 |
-| CSS      | Tailwind CSS  | 4    |
-| 路由       | React Router  | 7    |
-| 国际化      | i18next       | 25   |
-| 图表       | ECharts       | 6    |
-| 代码编辑器    | Monaco Editor | 4    |
-| 设备指纹     | FingerprintJS | 5    |
-
-## 快速开始
-
-### 环境要求
-
-- Go 1.26+
-- Node.js 24+ / pnpm
-- PostgreSQL 16+
-- Redis 6.0+
-- Kubernetes 1.20+（动态容器功能需要）
-
-### 构建
-
-```bash
-# 构建前端
-cd frontend && pnpm install && pnpm run build && cd ..
-
-# 构建后端（前端静态文件会被嵌入二进制，流量抓取功能依赖 libpcap）
-CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
-```
-
-### 运行
-
-首次运行会自动生成 `config.yaml` 配置文件, 修改配置后重新启动: 
-
-```bash
-./CBCTF
-```
-
-## 配置说明
-
-配置文件 `config.yaml` 在首次运行时从内置默认配置自动生成。主要配置段: 
-
-| 配置段          | 说明                                    |
-|--------------|---------------------------------------|
-| `host`       | 后端服务对外地址                              |
-| `path`       | 数据存储路径                                |
-| `log`        | 日志级别 (DEBUG/INFO/WARNING/ERROR)、是否持久化 |
-| `gin`        | 服务监听地址/端口、上传限制、速率限制、CORS、JWT          |
-| `gorm.postgres` | PostgreSQL 连接配置、连接池参数                 |
-| `redis`      | Redis 连接配置                            |
-| `k8s`        | Kubeconfig 路径、命名空间、流量捕获镜像、Frp 配置      |
-| `cheat`      | 作弊检测 IP 白名单                           |
-| `webhook`    | Webhook 目标地址黑名单                       |
-| `asynq`      | 异步任务并发数                               |
-| `registration` | 是否允许注册、新用户默认分组 ID                     |
-| `geocity_db` | GeoIP 数据库路径（GeoLite2-City.mmdb）       |
-
-支持环境变量覆盖, 前缀为 `CBCTF_`, 例如 `CBCTF_GIN_PORT=9000`。
-
-## 题目系统
+## 功能特性
 
 ### 题目类型
 
-- **静态题目** - 队伍间共用附件, 适合传统 CTF 题目
-- **动态题目** - 实时生成唯一附件, 确保每个队伍获得不同的挑战
-- **动态容器** - 自动生成并启动队伍隔离的容器环境
+| 类型                | 说明                                  |
+|-------------------|-------------------------------------|
+| **静态题目**          | 所有队伍共用附件，flag 相同                    |
+| **动态附件**          | 容器为每个队伍独立生成附件，flag 各不相同             |
+| **动态容器 · Pod 模式** | 多容器共享同一 Pod 网络，容器间通过 `localhost` 通信 |
+| **动态容器 · VPC 模式** | 每个容器独立 Pod，须分配静态 IP，适合渗透场景          |
+
+每道题目均可配置多个 flag，每个 flag 独立计分。
 
 ### Flag 类型
 
-| 类型        | 格式              | 说明             |
-|-----------|-----------------|----------------|
-| 静态 Flag   | `static{固定内容}`  | 每次生成的 Flag 均相等 |
-| 动态 Flag   | `leet{随机内容}` | 基于模板随机变化, 保持可读性 |
-| UUID Flag | `uuid{}`        | 标准 UUID 格式     |
+flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 
-动态容器支持将 Flag 注入至环境变量或作为文件挂载至指定路径。
+| 类型       | 原始值                      | 实际 Flag                                       |
+|----------|--------------------------|-----------------------------------------------|
+| `static` | `static{this_is_a_flag}` | `CBCTF{this_is_a_flag}`                       |
+| `leet`   | `leet{this_is_a_flag}`   | `CBCTF{ThiS-ls_4-fIaG}`                       |
+| `uuid`   | `uuid{}`                 | `CBCTF{1301ea62-ccd2-4543-b663-993f87b6d44a}` |
 
-### 分值系统
+### 平台能力
 
-- **静态分数** - 分值固定, 不随解题人数变化
-- **线性分数** - 随解题人数增加等量递减
-- **非线性分数** - 指数衰减公式: `(Score - MinScore) × e^(-5/Decay × Solvers) + MinScore`
+- **动态分值** — 一二三血额外获得题目分值的 5% / 3% / 1%
+- **Frp 内网穿透** — 容器端口转发，保留原始客户端 IP
+- **SMTP 邮件验证** — 注册验证与密码找回
+- **Writeup 管理** — 支持收集与批量下载
+- **OAuth / OIDC** — 第三方认证，支持用户组自动分配
+- **平台品牌化** — Logo、名称、主题色等全局配置
+- **热重载配置** — 所有系统配置修改即时生效，无需重启
+- **国际化（i18n）** — 多语言界面支持
+- **Prometheus 监控** — 完整的运行时指标暴露
+- **Redis 缓存 / 任务队列** + **PostgreSQL 数据存储** + **NFS 网络存储**
 
-三血奖励: 一血 / 二血 / 三血分别额外获得初始分数的 5% / 3% / 1%。
+## 构建
 
-## 动态容器系统
+```bash
+# 1. 构建前端（静态文件会被嵌入二进制）
+cd frontend && pnpm install && pnpm run build && cd ..
+
+# 2. 构建后端（流量抓取功能依赖 libpcap，需启用 CGO）
+CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
+```
+
+也可直接使用 Docker 完成两阶段构建：
+
+```bash
+docker build -t cbctf .
+```
+
+## 动态容器
 
 ### 网络模式
 
-后端通过 docker-compose 配置自动区分网络环境: 
+后端通过 `docker-compose` 配置自动识别网络模式：
 
-| 模式  | 判断条件              | 说明                              |
-|-----|-------------------|---------------------------------|
-| Pod | 未配置 `networks` 字段 | 使用默认网络, 容器间可直接通信                 |
-| VPC | 配置了 `networks` 字段 | 基于 Kube-OVN 的 VPC 网络隔离, 需手动指定 IP |
+| 模式      | 判断条件              | 说明                              |
+|---------|-------------------|---------------------------------|
+| **Pod** | 未配置 `networks` 字段 | 使用默认网络，容器间可直接通信                 |
+| **VPC** | 配置了 `networks` 字段 | 基于 Kube-OVN 的 VPC 网络隔离，需手动指定 IP |
 
 ### 配置示例
 
-**Pod 模式: **
+**Pod 模式**
 
 ```yaml
 version: '3'
@@ -174,9 +97,9 @@ services:
       - "80:80"
 ```
 
-详细示例: [Pod 配置示例](example/pods/pod/docker-compose.yaml)
+> 完整示例：[example/pods/pod/docker-compose.yaml](example/pods/pod/docker-compose.yaml)
 
-**VPC 模式: **
+**VPC 模式（含 KubeVirt 虚拟机）**
 
 ```yaml
 version: '3'
@@ -202,34 +125,35 @@ networks:
           gateway: 192.168.1.1
 ```
 
-详细示例: [VPC 配置示例](example/pods/vpc/docker-compose.yaml)
+> 完整示例：[example/pods/vpc/docker-compose.yaml](example/pods/vpc/docker-compose.yaml)
 
 ## 动态附件系统
 
-基于 Kubernetes 容器化生成, 支持上传 Python 脚本在隔离环境中为每个队伍生成唯一附件。
+基于 Kubernetes 容器化生成，支持上传 Python 脚本，在隔离环境中为每个队伍生成唯一附件。
 
-详细示例: [动态附件示例](example/dynamic/README.md)
+**生成器合约：**
 
-## 环境依赖（Kubernetes）
+- 容器必须包含 `sleep` 和 `unzip`
+- 脚本路径固定为 `/root/run.sh <team_id> <base64_encoded_flags>`
+- 产物须写入 `/root/mnt/attachments/{id}.zip`
+- 禁止使用 `latest` 镜像标签
 
-动态容器和动态附件功能依赖以下 Kubernetes 组件: 
+> 完整示例：[example/dynamic/README.md](example/dynamic/README.md)
 
-| 组件                                                               | 说明         |
-|------------------------------------------------------------------|------------|
-| [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离支持 |
-| [Multus](https://github.com/k8snetworkplumbingwg/multus-cni)     | 多网络接口支持    |
+## Kubernetes 依赖
 
-**Multus 插件选择建议: **
+动态容器与动态附件功能依赖以下组件：
 
-推荐使用 **Thin Plugin**, 无需手动配置且稳定性更好。避免使用 Thick Plugin, 已知存在以下问题: 
+| 组件                                                               | 用途       |
+|------------------------------------------------------------------|----------|
+| [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离 |
+| [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) | 多网络接口    |
 
-- [OOMKilled](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346)
-- [Text file busy](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1221)
-
-如需使用 Thick Plugin, 请参考: 
-- [Issue #1346](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346#issuecomment-2644110944)
-- [PR #1213](https://github.com/k8snetworkplumbingwg/multus-cni/pull/1213)
+**Multus 插件选择建议：** 推荐使用 **Thin Plugin**，无需手动配置且稳定性更好。Thick
+Plugin存在已知问题（[OOMKilled #1346](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346)、[Text file busy #1221](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1221)
+），如必须使用请参考 [#1346 评论](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346#issuecomment-2644110944)
+和 [PR #1213](https://github.com/k8snetworkplumbingwg/multus-cni/pull/1213)。
 
 ## 许可证
 
-本项目采用 [Apache License 2.0](LICENSE)。
+本项目采用 [Apache License 2.0](LICENSE) 开源协议。
