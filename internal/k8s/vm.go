@@ -102,6 +102,7 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 						}
 						return annotations
 					}(),
+					Labels: options.Labels,
 				},
 				Spec: v1.VirtualMachineInstanceSpec{
 					Domain: v1.DomainSpec{
