@@ -63,21 +63,13 @@ The flag prefix can be customized in event settings (default: `CBCTF`):
 - **Redis Cache / Task Queue** + **PostgreSQL Storage** + **NFS Network Storage**
 
 <img src="static/img/dashboard.png" width="100%" alt="Admin Dashboard" />
-
-<table>
-  <tr>
-    <td><img src="static/img/contest.png" alt="Contest" /></td>
-    <td><img src="static/img/scoreboard-1.png" alt="Scoreboard" /></td>
-  </tr>
-  <tr>
-    <td><img src="static/img/contest-settings.png" alt="Contest Settings" /></td>
-    <td><img src="static/img/settings.png" alt="System Settings" /></td>
-  </tr>
-  <tr>
-    <td><img src="static/img/branding.png" alt="Branding" /></td>
-    <td><img src="static/img/log.png" alt="Logs" /></td>
-  </tr>
-</table>
+<img src="static/img/contest.png" width="100%" alt="Contest" />
+<img src="static/img/scoreboard-1.png" width="100%" alt="Scoreboard" />
+<img src="static/img/scoreboard-2.png" width="100%" alt="Scoreboard (Chart)" />
+<img src="static/img/contest-settings.png" width="100%" alt="Contest Settings" />
+<img src="static/img/settings.png" width="100%" alt="System Settings" />
+<img src="static/img/branding.png" width="100%" alt="Branding" />
+<img src="static/img/log.png" width="100%" alt="Logs" />
 
 ## Build
 
@@ -150,12 +142,11 @@ networks:
 
 > Full example: [example/pods/vpc/docker-compose.yaml](example/pods/vpc/docker-compose.yaml)
 
-<table>
-  <tr>
-    <td><img src="static/img/docker-compose.png" alt="Container Config" /></td>
-    <td><img src="static/img/vm.png" alt="Virtual Machine" /></td>
-  </tr>
-</table>
+<img src="static/img/docker-compose.png" width="100%" alt="Container Config" />
+<img src="static/img/vm.png" width="100%" alt="Virtual Machine" />
+<img src="static/img/victims-1.png" width="100%" alt="Victim List" />
+<img src="static/img/victims-2.png" width="100%" alt="Victim Detail" />
+<img src="static/img/victims-3.png" width="100%" alt="Victim Terminal" />
 
 ## Dynamic Attachment System
 
