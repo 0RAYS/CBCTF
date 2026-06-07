@@ -190,7 +190,24 @@ func extractTrafficConnection(packet gopacket.Packet, processLookup trafficProce
 			}
 		}
 	}
+	if isIgnoredTrafficIP(connection.SrcIP) || isIgnoredTrafficIP(connection.DstIP) {
+		return Connection{}, false
+	}
 	return connection, true
+}
+
+func isIgnoredTrafficIP(value string) bool {
+	ip := net.ParseIP(strings.TrimSpace(value))
+	if ip == nil {
+		return false
+	}
+	if ip.IsLoopback() || ip.IsUnspecified() || ip.IsMulticast() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
+		return true
+	}
+	if ipv4 := ip.To4(); ipv4 != nil {
+		return ipv4.Equal(net.IPv4bcast)
+	}
+	return false
 }
 
 func buildTrafficProcessComment(process *TrafficProcessInfo) string {
