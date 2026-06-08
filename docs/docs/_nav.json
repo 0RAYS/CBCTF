@@ -1,16 +1,22 @@
 [
   {
-    "text": "Guide",
+    "text": "开始",
     "link": "/guide/start/introduction",
-    "activeMatch": "/guide/"
+    "activeMatch": "/guide/start/"
   },
   {
-    "text": "API",
-    "link": "/api/",
-    "activeMatch": "/api/"
+    "text": "部署",
+    "link": "/deploy/cluster",
+    "activeMatch": "/deploy/"
   },
   {
-    "text": "Document",
-    "link": "https://rspress.rs/"
+    "text": "功能",
+    "link": "/guide/features/challenge",
+    "activeMatch": "/guide/features/"
+  },
+  {
+    "text": "管理员",
+    "link": "/admin/overview",
+    "activeMatch": "/admin/"
   }
 ]

@@ -2,11 +2,11 @@
   {
     "type": "dir-section-header",
     "name": "start",
-    "label": "Getting Started"
+    "label": "开始"
   },
   {
     "type": "dir-section-header",
-    "name": "use-mdx",
-    "label": "Markdown & MDX"
+    "name": "features",
+    "label": "功能"
   }
 ]
