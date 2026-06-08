@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh">
+  <head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>常见问题 - CBCTF</title>
+<script>{;const saved = localStorage.getItem('rspress-theme-appearance');const preferDark = window.matchMedia('(prefers-color-scheme: dark)').matches;const isDark = !saved || saved === 'auto' ? preferDark : saved === 'dark';document.documentElement.classList.toggle('dark', isDark);document.documentElement.classList.toggle('rp-dark', isDark);document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';}</script>
+<link href="/static/css/styles.be79a79be3.css" rel="stylesheet">
+<script defer src="/static/js/styles.e855c42a07.js"></script>
+<script defer src="/static/js/lib-react.d0adebc4a6.js"></script>
+<script defer src="/static/js/lib-router.acabf0f462.js"></script>
+<script defer src="/static/js/879.9a79eaa2ca.js"></script>
+<script defer src="/static/js/index.cfa5b389ad.js"></script>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Rspress v2.0.14">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:title" content="常见问题 - CBCTF">
+<meta name="description" content="基于 Kubernetes 的现代化 CTF 竞赛平台">
+<meta property="og:description" content="基于 Kubernetes 的现代化 CTF 竞赛平台"></head>
+
+  <body>
+    <div id="__rspress_root"><link rel="preload" as="image" href="/logo.svg"/><header class="rp-nav"><div class="rp-nav__left"><div class="rp-nav__title"><a href="/" class="rp-nav__title__link rp-link"><div class="rp-nav__title__logo"><img src="/logo.svg" alt="logo" id="logo" class="rspress-logo rp-nav__title__logo-image rp-nav__title__logo-image--light"/><img src="/logo.svg" alt="logo" id="logo" class="rspress-logo rp-nav__title__logo-image rp-nav__title__logo-image--dark"/></div></a></div></div><div class="rp-nav__right"><button class="rp-search-button"><div class="rp-search-button__content"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="none" viewBox="0 0 20 21" class="rp-search-button__icon"><path fill="currentColor" d="M8.333 1.913A6.667 6.667 0 0 1 15 8.58c0 1.54-.525 2.957-1.402 4.085l4.49 4.492a.834.834 0 0 1-1.177 1.178l-4.491-4.49a6.64 6.64 0 0 1-4.087 1.402 6.667 6.667 0 0 1 0-13.334m0 1.667a5 5 0 1 0 0 10 5 5 0 0 0 0-10"></path></svg><span class="rp-search-button__word">搜索</span></div><div class="rp-search-button__hotkey" style="opacity:0"><span></span><span>K</span></div></button><div class="rp-search-button--mobile"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="none" viewBox="0 0 20 21"><path fill="currentColor" d="M8.333 1.913A6.667 6.667 0 0 1 15 8.58c0 1.54-.525 2.957-1.402 4.085l4.49 4.492a.834.834 0 0 1-1.177 1.178l-4.491-4.49a6.64 6.64 0 0 1-4.087 1.402 6.667 6.667 0 0 1 0-13.334m0 1.667a5 5 0 1 0 0 10 5 5 0 0 0 0-10"></path></svg></div><ul class="rp-nav-menu rp-nav-menu--right"><li class="rp-nav-menu__item"><a href="/guide/start/introduction.html" class="rp-nav-menu__item__container rp-link">开始</a></li><li class="rp-nav-menu__item rp-nav-menu__item--active"><a href="/deploy/cluster.html" class="rp-nav-menu__item__container rp-link">部署</a></li><li class="rp-nav-menu__item"><a href="/guide/features/challenge.html" class="rp-nav-menu__item__container rp-link">功能</a></li><li class="rp-nav-menu__item"><a href="/admin/overview.html" class="rp-nav-menu__item__container rp-link">管理员</a></li></ul><div class="rp-nav__others"><div class="rp-nav-menu__divider"></div><div class="rp-switch-appearance"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="rp-switch-appearance__icon rp-switch-appearance__icon--sun"><path fill="currentColor" d="m7.001 15.848-1.226 1.226a.58.58 0 0 0 0 .818.58.58 0 0 0 .818 0l1.226-1.226a.58.58 0 0 0 0-.818.58.58 0 0 0-.818 0m-.352-8.735a.584.584 0 0 0 .825-.825L6.237 5.051a.584.584 0 0 0-.825.825zM5.011 11.07h-1.75a.584.584 0 0 0 0 1.167h1.75c.324 0 .584-.26.584-.583a.585.585 0 0 0-.584-.584m7.003-5.835c.324 0 .584-.26.584-.584V2.9a.58.58 0 0 0-.584-.584.58.58 0 0 0-.583.583V4.65c0 .323.262.584.583.584m5.616 1.621 1.226-1.225a.58.58 0 0 0 0-.818.58.58 0 0 0-.818 0l-1.226 1.225a.58.58 0 0 0 0 .818.576.576 0 0 0 .818 0m3.138 4.214h-1.75a.58.58 0 0 0-.584.584c0 .324.26.584.583.584h1.751a.584.584 0 1 0 0-1.167m-3.389 5.124a.584.584 0 0 0-.825.825l1.238 1.238a.584.584 0 0 0 .825-.826zm-5.365-9.795a5.256 5.256 0 0 0-5.257 5.258 5.256 5.256 0 0 0 5.257 5.257 5.256 5.256 0 0 0 5.257-5.257 5.256 5.256 0 0 0-5.257-5.258m0 11.675a.58.58 0 0 0-.583.583v1.751a.582.582 0 1 0 1.167 0v-1.75a.584.584 0 0 0-.584-.584"></path></svg><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="currentColor" viewBox="0 0 19 19" class="rp-switch-appearance__icon rp-switch-appearance__icon--moon"><path fill="currentColor" d="M9.166 0a9.2 9.2 0 0 1 1.857.188.834.834 0 0 1 .042 1.623 4.47 4.47 0 1 0 5.457 5.457l.048-.135a.834.834 0 0 1 1.575.177q.186.902.188 1.856A9.168 9.168 0 1 1 9.166 0"></path></svg></div><div class="rp-social-links"><a href="https://github.com/0RAYS/CBCTF" target="_blank" rel="noopener noreferrer" class="rp-social-links__item"><div class="rp-social-links__icon"><div class="rp-social-links__icon"><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></div></div></a><ul class="rp-hover-group rp-hover-group--hidden rp-hover-group--right"></ul></div></div><button aria-label="mobile hamburger" class="rp-nav-hamburger rp-nav-hamburger__sm"><svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="none" viewBox="0 0 21 21"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.667" d="M3.645 5.225h13.333M3.645 10.225h13.333M3.645 15.225h13.333"></path></svg></button><button aria-label="mobile hamburger" class="rp-nav-hamburger rp-nav-hamburger__md"><svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="none" viewBox="0 0 21 21"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.667" d="M3.645 5.225h13.333M3.645 10.225h13.333M3.645 15.225h13.333"></path></svg><ul class="rp-hover-group rp-hover-group--hidden rp-hover-group--right"><div class="rp-nav-menu__others-mobile__container"><div class="rp-nav-hamburger__md__hover-group"><div class="rp-nav-screen-appearance"><div class="rp-nav-screen-appearance__left">主题</div><div class="rp-nav-screen-appearance__right"></div></div><div class="rp-nav-screen-divider"></div><div class="rp-social-links"><a href="https://github.com/0RAYS/CBCTF" target="_blank" rel="noopener noreferrer" class="rp-social-links__item"><div class="rp-social-links__icon"><div class="rp-social-links__icon"><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></div></div></a><ul class="rp-hover-group rp-hover-group--hidden rp-hover-group--right"></ul></div></div></div></ul></button></div></header><div class="rp-doc-layout__menu"><div class="rp-sidebar-menu"><button type="button" class="rp-sidebar-menu__left"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M4 6h24v2H4zm0 18h24v2H4zm0-12h24v2H4zm0 6h24v2H4z"></path></svg><span>菜单</span></button><button type="button" class="rp-sidebar-menu__right"><span class="rp-sidebar-menu__right__text">目录</span><svg width="14" height="14" class="rp-progress-circle"><circle cx="7" cy="7" r="6" stroke-linecap="round" fill="none" stroke="var(--rp-c-divider-light)" stroke-width="2"></circle><circle cx="7" cy="7" r="6" stroke-linecap="round" fill="none" stroke="var(--rp-c-brand)" stroke-width="2" stroke-dasharray="37.69911184307752" stroke-dashoffset="37.69911184307752" transform="rotate(-90 7 7)" style="transition:stroke-dashoffset 0.3s"></circle></svg><svg width="1em" height="1em" viewBox="0 0 32 32" class="rp-sidebar-menu__right__icon" style="transform:rotate(0deg);transition:transform 0.2s ease-out"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></button></div></div><div class="rp-doc-layout__container"><aside class="rp-doc-layout__sidebar rp-scrollbar"><a href="/deploy/cluster.html" class="rp-sidebar-item rp-link" style="padding-left:12px" data-depth="0"><div class="rp-sidebar-item__left"><span class="rp-doc">K8s 集群搭建</span></div><div class="rp-sidebar-item__right"></div></a><a href="/deploy/helm.html" class="rp-sidebar-item rp-link" style="padding-left:12px" data-depth="0"><div class="rp-sidebar-item__left"><span class="rp-doc">Helm 部署</span></div><div class="rp-sidebar-item__right"></div></a><a href="/deploy/settings.html" class="rp-sidebar-item rp-link" style="padding-left:12px" data-depth="0"><div class="rp-sidebar-item__left"><span class="rp-doc">配置说明</span></div><div class="rp-sidebar-item__right"></div></a><a href="/deploy/separation.html" class="rp-sidebar-item rp-link" style="padding-left:12px" data-depth="0"><div class="rp-sidebar-item__left"><span class="rp-doc">前后端分离</span></div><div class="rp-sidebar-item__right"></div></a><a href="/deploy/troubleshooting.html" class="rp-sidebar-item rp-sidebar-item--active rp-link" style="padding-left:12px" data-depth="0"><div class="rp-sidebar-item__left"><span class="rp-doc">常见问题</span></div><div class="rp-sidebar-item__right"></div></a></aside><div class="rp-doc-layout__doc"><main class="rp-doc-layout__doc-container"><div class="rp-doc rspress-doc"><!--$--><h1 class="rp-toc-include" id="常见问题"><a href="#常见问题" class="rp-header-anchor rp-link" aria-hidden="true">#</a>常见问题<!-- --> </h1>
+<h2 class="rp-toc-include" id="服务启动失败"><a href="#服务启动失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>服务启动失败</h2>
+<p>排查顺序：</p>
+<ol>
+<li>查看应用日志：<code>kubectl logs -n cbctf deployment/cbctf</code></li>
+<li>检查 PostgreSQL 和 Redis Pod 是否 Ready</li>
+<li>检查 Secret 中的数据库、Redis、JWT 配置是否正确</li>
+<li>检查应用 ServiceAccount 是否绑定了 Chart 创建的 ClusterRole</li>
+<li>如果使用 VPC 网络，检查 Kube-OVN 和 Multus</li>
+<li>如果使用 VM 靶机，检查 KubeVirt 组件、CRD 和节点虚拟化能力</li>
+</ol>
+<h2 class="rp-toc-include" id="数据库连接失败"><a href="#数据库连接失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>数据库连接失败</h2>
+<p>常见原因：</p>
+<ul>
+<li>PostgreSQL Pod 未启动或 Service 名称不可解析</li>
+<li><code>postgres.auth.password</code> 与 Secret 中的密码不一致</li>
+<li>数据库 PVC 损坏、容量不足或权限异常</li>
+<li>外部数据库要求 SSL，但 <code>gorm.postgres.sslmode</code> 未设置为 <code>true</code></li>
+</ul>
+<p>应用启动时会自动迁移数据库。如果迁移失败，服务会退出，需要先修复数据库连接或权限问题。</p>
+<h2 class="rp-toc-include" id="redis-连接失败"><a href="#redis-连接失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>Redis 连接失败</h2>
+<p>Redis 用于缓存和 Asynq 任务队列。连接失败会影响登录状态、限流、后台任务、邮件、Webhook、动态附件和靶机操作。</p>
+<p>排查方向：</p>
+<ul>
+<li>Redis Pod、Service、Secret 是否正常</li>
+<li><code>redis.auth.password</code> 是否与运行中 Redis 一致</li>
+<li>网络策略或命名空间 DNS 是否阻断访问</li>
+<li>Redis PVC 是否容量不足</li>
+</ul>
+<h2 class="rp-toc-include" id="前端页面无法访问"><a href="#前端页面无法访问" class="rp-header-anchor rp-link" aria-hidden="true">#</a>前端页面无法访问</h2>
+<p>平台页面默认在 <code>/platform/</code> 下，根路径 <code>/</code> 会重定向到 <code>/platform</code>。前端使用 HashRouter，登录页路径是 <code>/platform/#/login</code>。</p>
+<p>排查方向：</p>
+<ul>
+<li>访问路径是否包含 <code>/platform/</code></li>
+<li>Ingress 是否把 <code>/</code> 路径转发到应用 Service</li>
+<li><code>cbctf.host</code> 是否为实际外部地址，且没有尾部 <code>/</code></li>
+<li>浏览器控制台是否有 CORS 或资源加载错误</li>
+</ul>
+<h2 class="rp-toc-include" id="helm-部署后无法访问"><a href="#helm-部署后无法访问" class="rp-header-anchor rp-link" aria-hidden="true">#</a>Helm 部署后无法访问</h2>
+<p>排查方向：</p>
+<ul>
+<li><code>kubectl get ingress -n cbctf</code> 查看 Ingress 是否生成</li>
+<li>检查 IngressClass、域名解析、TLS Secret 和负载均衡地址</li>
+<li>检查 Service 端口是否为 <code>8000</code>，应用容器端口是否为 <code>cbctf.gin.port</code></li>
+<li>使用 <code>kubectl port-forward -n cbctf svc/cbctf 8000:8000</code> 判断应用本身是否正常</li>
+</ul>
+<h2 class="rp-toc-include" id="登录或-oauth-跳转异常"><a href="#登录或-oauth-跳转异常" class="rp-header-anchor rp-link" aria-hidden="true">#</a>登录或 OAuth 跳转异常</h2>
+<p>排查方向：</p>
+<ul>
+<li><code>cbctf.host</code> 必须是用户浏览器可访问的外部地址</li>
+<li>OAuth 提供商回调地址应指向后端的 <code>/oauth/{provider}/callback</code></li>
+<li>如果前后端分离，当前 OAuth 登录完成后仍默认跳回后端 <code>/platform/#/oauth/callback</code> 页面</li>
+<li>检查 <code>gin.cors</code> 是否包含前端来源</li>
+</ul>
+<h2 class="rp-toc-include" id="上传失败"><a href="#上传失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>上传失败</h2>
+<p>排查方向：</p>
+<ul>
+<li><code>gin.upload.max</code> 是否小于上传文件大小</li>
+<li>Ingress 或反向代理是否有更小的 body size 限制</li>
+<li><code>/app/data</code> PVC 是否可写、容量是否充足</li>
+<li>管理员或用户是否具备对应上传权限</li>
+</ul>
+<h2 class="rp-toc-include" id="靶机无法启动"><a href="#靶机无法启动" class="rp-header-anchor rp-link" aria-hidden="true">#</a>靶机无法启动</h2>
+<p>排查方向：</p>
+<ul>
+<li>应用日志和任务日志是否有 Kubernetes API 错误</li>
+<li>ServiceAccount 是否有创建 Pod、Service、NetworkPolicy、Job、Multus、KubeVirt、Kube-OVN 资源的权限</li>
+<li>题目镜像是否存在、tag 是否正确、节点是否能拉取</li>
+<li>集群 CPU、内存、存储或配额是否不足</li>
+<li>题目端口、资源、环境变量和 Flag 注入配置是否正确</li>
+<li>VPC 模式是否安装 Kube-OVN/Multus，并配置节点标签</li>
+<li>VM 模式是否安装 KubeVirt，service 是否配置 <code>x-kubevirt: true</code>、<code>mem_limit</code>、VPC 网络、静态 IP 和 MAC 地址</li>
+<li>FRP 模式是否配置可用 FRPS、token 和端口池</li>
+</ul>
+<h2 class="rp-toc-include" id="kubevirt-vm-启动失败"><a href="#kubevirt-vm-启动失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>KubeVirt VM 启动失败</h2>
+<p>排查方向：</p>
+<ul>
+<li><code>kubectl get vm -n cbctf</code> 查看 <code>VirtualMachine</code> 是否创建</li>
+<li><code>kubectl describe vm &lt;name&gt; -n cbctf</code> 和 <code>kubectl describe vmi &lt;name&gt; -n cbctf</code> 查看 KubeVirt 事件</li>
+<li>检查 <code>kubevirt.io/virtualmachines</code> RBAC 是否包含 <code>create</code>、<code>get</code>、<code>deletecollection</code></li>
+<li>检查 VM 镜像是否是可启动的 KubeVirt <code>containerDisk</code> 镜像</li>
+<li>检查节点是否支持虚拟化，KubeVirt 组件和 <code>virt-launcher</code> Pod 是否正常</li>
+<li>检查 compose 是否使用 VPC 网络，并为每张 VM 网卡配置合法的 <code>ipv4_address</code> 和 <code>mac_address</code></li>
+<li>如果 cloud-init 未生效，检查镜像内是否安装并启用 cloud-init，<code>x-cloudinit.write_files</code> 路径和权限是否正确</li>
+</ul>
+<h2 class="rp-toc-include" id="镜像拉取失败"><a href="#镜像拉取失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>镜像拉取失败</h2>
+<p>排查方向：</p>
+<ul>
+<li>镜像仓库地址、tag、平台架构是否正确</li>
+<li>私有仓库是否配置 <code>imagePullSecrets</code> 或 <code>imageCredentials</code></li>
+<li>节点是否可以访问镜像仓库</li>
+<li>是否达到镜像仓库限流</li>
+</ul>
+<h2 class="rp-toc-include" id="邮件发送失败"><a href="#邮件发送失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>邮件发送失败</h2>
+<p>排查方向：</p>
+<ul>
+<li>后台 SMTP 配置是否正确</li>
+<li>Redis 和 Asynq 邮件队列是否正常</li>
+<li>SMTP 服务是否允许集群出口访问</li>
+<li>发件账号、密码、TLS/端口设置是否符合服务商要求</li>
+</ul>
+<h2 class="rp-toc-include" id="webhook-失败"><a href="#webhook-失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>Webhook 失败</h2>
+<p>排查方向：</p>
+<ul>
+<li>Webhook 目标是否在 <code>webhook.whitelist</code> 允许范围内</li>
+<li>集群是否能访问目标地址</li>
+<li>目标服务是否返回非 2xx 状态</li>
+<li>查看后台 Webhook 历史记录和任务日志</li>
+</ul>
+<h2 class="rp-toc-include" id="安全建议"><a href="#安全建议" class="rp-header-anchor rp-link" aria-hidden="true">#</a>安全建议</h2>
+<p>:::warning</p>
+<ul>
+<li>首次登录后立即修改 <code>admin</code> 密码</li>
+<li>生产环境设置固定、足够长的 <code>gin.jwt.secret</code></li>
+<li>数据库、Redis、SMTP、OAuth、FRP 使用强密码或随机密钥</li>
+<li>使用 HTTPS，并正确配置 Ingress TLS</li>
+<li>限制管理后台访问来源，按角色授予最小权限</li>
+<li>Kubernetes RBAC 不要授予超过平台运行所需的权限</li>
+<li>为题目容器设置 CPU、内存、网络和命名空间隔离</li>
+<li>定期备份 PostgreSQL 和 <code>/app/data</code></li>
+<li>不要公开 <code>config.yaml</code>、kubeconfig、Secret、私有镜像凭据和含敏感信息的日志
+:::</li>
+</ul><!--/$--></div><footer class="rp-doc-footer"><div class="rp-doc-footer__edit"></div><div class="rp-doc-footer__divider"></div><div class="rp-prev-next-page"><a href="/deploy/separation.html" class="rp-prev-next-page__item rp-prev-next-page__prev rp-link"><span class="rp-prev-next-page__item__desc">上一页</span><span class="rp-prev-next-page__item__title"><svg width="1em" height="1em" viewBox="0 0 32 32" class="rp-prev-next-page__icon rp-prev-next-page__rotate_180"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg><span>前后端分离</span></span></a><div class="rp-prev-next-page__placeholder"></div></div></footer></main></div><aside class="rp-doc-layout__outline rp-scrollbar"><div class="rp-outline"><div class="rp-outline__title">目录<svg width="14" height="14" class="rp-progress-circle"><circle cx="7" cy="7" r="6" stroke-linecap="round" fill="none" stroke="var(--rp-c-divider-light)" stroke-width="2"></circle><circle cx="7" cy="7" r="6" stroke-linecap="round" fill="none" stroke="var(--rp-c-brand)" stroke-width="2" stroke-dasharray="37.69911184307752" stroke-dashoffset="37.69911184307752" transform="rotate(-90 7 7)" style="transition:stroke-dashoffset 0.3s"></circle></svg></div><nav class="rp-outline__toc rp-scrollbar"><a href="#服务启动失败" class="rp-toc-item rp-link" title="服务启动失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">服务启动失败</span></a><a href="#数据库连接失败" class="rp-toc-item rp-link" title="数据库连接失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">数据库连接失败</span></a><a href="#redis-连接失败" class="rp-toc-item rp-link" title="Redis 连接失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">Redis 连接失败</span></a><a href="#前端页面无法访问" class="rp-toc-item rp-link" title="前端页面无法访问" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">前端页面无法访问</span></a><a href="#helm-部署后无法访问" class="rp-toc-item rp-link" title="Helm 部署后无法访问" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">Helm 部署后无法访问</span></a><a href="#登录或-oauth-跳转异常" class="rp-toc-item rp-link" title="登录或 OAuth 跳转异常" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">登录或 OAuth 跳转异常</span></a><a href="#上传失败" class="rp-toc-item rp-link" title="上传失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">上传失败</span></a><a href="#靶机无法启动" class="rp-toc-item rp-link" title="靶机无法启动" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">靶机无法启动</span></a><a href="#kubevirt-vm-启动失败" class="rp-toc-item rp-link" title="KubeVirt VM 启动失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">KubeVirt VM 启动失败</span></a><a href="#镜像拉取失败" class="rp-toc-item rp-link" title="镜像拉取失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">镜像拉取失败</span></a><a href="#邮件发送失败" class="rp-toc-item rp-link" title="邮件发送失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">邮件发送失败</span></a><a href="#webhook-失败" class="rp-toc-item rp-link" title="Webhook 失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">Webhook 失败</span></a><a href="#安全建议" class="rp-toc-item rp-link" title="安全建议" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">安全建议</span></a></nav><div class="rp-outline__divider"></div><div class="rp-outline__bottom"></div></div></aside></div></div>
+    <div id="__rspress_modal_container"></div>
+  </body>
+</html>
