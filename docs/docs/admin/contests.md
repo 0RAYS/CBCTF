@@ -19,37 +19,38 @@ sidebar_position: 5
 
 ## 比赛状态切换
 
-平台根据 `start` 和 `duration` 字段自动切换状态, 无需手动操作: 
+平台根据 `start` 和 `duration` 字段自动切换状态, 无需手动操作:
 
-| 时间条件 | 状态 |
-|---------|------|
-| 当前时间 < start | `coming` |
+| 时间条件                            | 状态        |
+|---------------------------------|-----------|
+| 当前时间 < start                    | `coming`  |
 | start ≤ 当前时间 < start + duration | `running` |
-| 当前时间 ≥ start + duration | `over` |
+| 当前时间 ≥ start + duration         | `over`    |
 
 ## 队伍管理
 
 通过 `GET /admin/contests/:contestID/teams`（`admin:team:list`）查看所有队伍。
 
-管理操作: 
+管理操作:
 
-| 操作 | API | 权限 |
-|------|-----|------|
-| 查看队伍详情 | `GET /admin/contests/:contestID/teams/:teamID` | `admin:team:read` |
-| 查看队伍成员 | `GET .../users` | `admin:team:read` |
-| 修改队伍信息 | `PUT .../teams/:teamID` | `admin:team:update` |
-| 踢出成员 | `POST .../kick` | `admin:team:update` |
-| 删除队伍 | `DELETE .../teams/:teamID` | `admin:team:delete` |
-| 查看提交记录 | `GET .../submissions` | `admin:team:read` |
-| 查看 Flag | `GET .../flags` | `admin:team:read` |
+| 操作      | API                                            | 权限                  |
+|---------|------------------------------------------------|---------------------|
+| 查看队伍详情  | `GET /admin/contests/:contestID/teams/:teamID` | `admin:team:read`   |
+| 查看队伍成员  | `GET .../users`                                | `admin:team:read`   |
+| 修改队伍信息  | `PUT .../teams/:teamID`                        | `admin:team:update` |
+| 踢出成员    | `POST .../kick`                                | `admin:team:update` |
+| 删除队伍    | `DELETE .../teams/:teamID`                     | `admin:team:delete` |
+| 查看提交记录  | `GET .../submissions`                          | `admin:team:read`   |
+| 查看 Flag | `GET .../flags`                                | `admin:team:read`   |
 
 ## 批量靶机控制
 
-通过 `POST /admin/contests/:contestID/victims` 和 `DELETE /admin/contests/:contestID/victims`（`admin:victim:control`）批量启动/停止该比赛的所有靶机。
+通过 `POST /admin/contests/:contestID/victims` 和 `DELETE /admin/contests/:contestID/victims`（`admin:victim:control`
+）批量启动/停止该比赛的所有靶机。
 
 ## 流量捕获
 
-管理员可为指定队伍的靶机下载流量捕获文件: 
+管理员可为指定队伍的靶机下载流量捕获文件:
 
 ```
 GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download
@@ -63,13 +64,14 @@ GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download
 
 ## 镜像预热
 
-通过 `POST /admin/contests/:contestID/images`（`admin:image:pull`）触发将该比赛所有题目的容器镜像预拉取到各 Kubernetes 节点, 避免比赛开始时因拉取镜像导致延迟。
+通过 `POST /admin/contests/:contestID/images`（`admin:image:pull`）触发将该比赛所有题目的容器镜像预拉取到各 Kubernetes 节点,
+避免比赛开始时因拉取镜像导致延迟。
 
 **建议在比赛开始前 30-60 分钟执行。**
 
 ## Writeup 收集
 
-选手上传 Writeup 后, 管理员可通过以下方式访问: 
+选手上传 Writeup 后, 管理员可通过以下方式访问:
 
 ```
 GET /admin/contests/:contestID/teams/:teamID/writeups        # 列表（需 admin:team_writeup:list）

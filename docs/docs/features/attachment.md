@@ -6,14 +6,14 @@ sidebar_position: 4
 
 ## 附件类型
 
-| 类型 | 适用题型 | 说明 |
-|------|---------|------|
-| 静态附件 | 静态题、容器题 | 上传一次, 所有队伍共享 |
-| 动态附件 | 动态附件题 | 每队单独生成, 依赖 Kubernetes |
+| 类型   | 适用题型    | 说明                    |
+|------|---------|-----------------------|
+| 静态附件 | 静态题、容器题 | 上传一次, 所有队伍共享          |
+| 动态附件 | 动态附件题   | 每队单独生成, 依赖 Kubernetes |
 
 ## 真实工作流程
 
-动态附件不会根据配置自动常驻启动生成器池。当前实现是: 
+动态附件不会根据配置自动常驻启动生成器池。当前实现是:
 
 1. 管理员先在后台启动生成器 Pod
 2. 队伍初始化或重置题目时, 平台从可用生成器中随机选择一个
@@ -31,7 +31,7 @@ sidebar_position: 4
 
 ### 可选上传 `generator.zip`
 
-若题目上传了 `generator.zip`, 平台会在容器内执行: 
+若题目上传了 `generator.zip`, 平台会在容器内执行:
 
 ```bash
 unzip /root/mnt/generator.zip -d /root
@@ -41,20 +41,20 @@ unzip /root/mnt/generator.zip -d /root
 
 ### 执行入口
 
-平台执行命令: 
+平台执行命令:
 
 ```bash
 ./run.sh {team_id} {base64(base64(flag1),base64(flag2),...)}
 ```
 
-参数说明: 
+参数说明:
 
 - `$1`: 队伍 ID
 - `$2`: 多 Flag 的二次 Base64 编码结果
 
 ### 输出路径
 
-生成结果必须写入: 
+生成结果必须写入:
 
 ```text
 /root/mnt/attachments/{team_id}.zip
@@ -89,7 +89,7 @@ zip -j /root/mnt/attachments/${TEAM_ID}.zip /tmp/challenge/*
 
 ## 管理入口
 
-生成器支持两种预热方式: 
+生成器支持两种预热方式:
 
 - 全局生成器: `/admin/generators`
 - 某场比赛专用生成器: `/admin/contests/{contestID}/generators`
