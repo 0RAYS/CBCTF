@@ -170,6 +170,7 @@ Dynamic containers and dynamic attachments require the following components:
 |------------------------------------------------------------------|------------------------------------|
 | [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC network isolation              |
 | [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) | Multiple network interface support |
+| [KubeVirt](https://kubevirt.io/)                                 | VirtualMachine support             |
 
 ## License
 
