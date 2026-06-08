@@ -4,7 +4,8 @@ sidebar_position: 2
 
 # 快速上手
 
-推荐使用 Helm 将 CBCTF 部署到 Kubernetes。仓库中的 Dockerfile 用于构建应用镜像；如果需要动态附件或动态靶机，运行环境仍需要 Kubernetes 权限、共享存储和可拉取的题目镜像。
+推荐使用 Helm 将 CBCTF 部署到 Kubernetes。仓库中的 Dockerfile 用于构建应用镜像；如果需要动态附件或动态靶机，运行环境仍需要
+Kubernetes 权限、共享存储和可拉取的题目镜像。
 
 ## Helm 快速部署
 
@@ -32,16 +33,16 @@ kubectl port-forward -n cbctf svc/cbctf 8000:8000
 
 ## 生产部署前建议修改
 
-| 配置项 | 说明 | 示例 |
-|---|---|---|
-| `cbctf.host` | 平台外部访问地址 | `https://ctf.example.com` |
-| `ingress.hosts[0].host` | Ingress 域名 | `ctf.example.com` |
-| `cbctf.gin.cors` | 允许的前端访问地址 | `https://ctf.example.com` |
-| `cbctf.gin.proxies` | Ingress 或反向代理来源 | `10.244.0.0/16` |
-| `cbctf.gin.jwt.secret` | JWT 密钥，生产环境建议显式设置 | `change-me-long-random` |
-| `postgres.auth.password` | PostgreSQL 密码，留空会自动生成 | `example-postgres-password` |
-| `redis.auth.password` | Redis 密码，留空会自动生成 | `example-redis-password` |
-| `persistence.storageClass` | 共享数据卷 StorageClass | `nfs-client` |
+| 配置项                        | 说明                    | 示例                          |
+|----------------------------|-----------------------|-----------------------------|
+| `cbctf.host`               | 平台外部访问地址              | `https://ctf.example.com`   |
+| `ingress.hosts[0].host`    | Ingress 域名            | `ctf.example.com`           |
+| `cbctf.gin.cors`           | 允许的前端访问地址             | `https://ctf.example.com`   |
+| `cbctf.gin.proxies`        | Ingress 或反向代理来源       | `10.244.0.0/16`             |
+| `cbctf.gin.jwt.secret`     | JWT 密钥，生产环境建议显式设置     | `change-me-long-random`     |
+| `postgres.auth.password`   | PostgreSQL 密码，留空会自动生成 | `example-postgres-password` |
+| `redis.auth.password`      | Redis 密码，留空会自动生成      | `example-redis-password`    |
+| `persistence.storageClass` | 共享数据卷 StorageClass    | `nfs-client`                |
 
 不要在 values 文件中写入真实生产密钥后提交到仓库。
 

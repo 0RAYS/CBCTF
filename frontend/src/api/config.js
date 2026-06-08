@@ -1,5 +1,5 @@
 // API配置常量
 export const API_CONFIG = {
   // API基础URL
-  BASE_URL: '',
+  BASE_URL: 'https://training.0rays.club',
 };

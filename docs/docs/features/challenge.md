@@ -8,16 +8,16 @@ CBCTF 支持三种题目类型, 覆盖从传统静态题到复杂网络靶机的
 
 ## 类型概览
 
-| 特性 | 静态题 | 动态附件题 | 容器题 |
-|------|:------:|:----------:|:------:|
-| 类型标识 | `static` | `dynamic` | `pods` |
-| 共享静态附件 | ✓ | — | ✓ |
-| per-team 动态附件 | — | ✓ | — |
-| 静态 Flag | ✓ | ✓ | ✓ |
-| 动态 Flag | — | ✓ | ✓ |
-| UUID Flag | — | ✓ | ✓ |
-| 容器靶机 | — | — | ✓ |
-| 需要 Kubernetes | — | ✓ | ✓ |
+| 特性            |   静态题    |   动态附件题   |  容器题   |
+|---------------|:--------:|:---------:|:------:|
+| 类型标识          | `static` | `dynamic` | `pods` |
+| 共享静态附件        |    ✓     |     —     |   ✓    |
+| per-team 动态附件 |    —     |     ✓     |   —    |
+| 静态 Flag       |    ✓     |     ✓     |   ✓    |
+| 动态 Flag       |    —     |     ✓     |   ✓    |
+| UUID Flag     |    —     |     ✓     |   ✓    |
+| 容器靶机          |    —     |     —     |   ✓    |
+| 需要 Kubernetes |    —     |     ✓     |   ✓    |
 
 ## 静态题（static）
 
@@ -48,7 +48,8 @@ CBCTF 支持三种题目类型, 覆盖从传统静态题到复杂网络靶机的
 
 - 每队拥有独立的容器实例, 互不干扰
 - 支持 Pod 网络模式（简单多容器）、VPC 网络模式（复杂网络拓扑）和 KubeVirt VM 模式
-- `docker-compose.yaml` 支持 service 级扩展字段 `x-kubevirt: true`, 用于标记该 service 按 KubeVirt VM 配置处理；可配合 `x-boot` 和 `x-cloudinit` 传递启动与 cloud-init 字段配置
+- `docker-compose.yaml` 支持 service 级扩展字段 `x-kubevirt: true`, 用于标记该 service 按 KubeVirt VM 配置处理；可配合
+  `x-boot` 和 `x-cloudinit` 传递启动与 cloud-init 字段配置
 - flag 通过环境变量或文件 volume 注入容器
 - 需要 Kubernetes 集群（VPC 模式还需要 Kube-OVN + Multus，VM 模式还需要 KubeVirt）
 

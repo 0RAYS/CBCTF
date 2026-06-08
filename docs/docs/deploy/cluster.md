@@ -4,26 +4,19 @@ sidebar_position: 1
 
 # K8s 集群搭建
 
-本文介绍如何搭建支持 CBCTF 动态附件题和容器题的 Kubernetes 集群。由于项目当前仅支持 Helm 部署, 若仅使用静态题, 也建议至少准备基础的 Kubernetes、PostgreSQL 和 Redis 运行环境。
+本文介绍如何搭建支持 CBCTF 动态附件题和容器题的 Kubernetes 集群。
 
 ## 硬件要求
 
-准备多台运行 Ubuntu 22.04+ 的 Linux 服务器, 分为: 
+准备多台运行 Ubuntu 22.04+ 的 Linux 服务器, 分为:
 
 - **Master 节点** × 1: 管理 K8s 控制平面
 - **Worker 节点** × N: 运行题目容器, 建议至少 2 台
 
-### VMware ESXi 说明
-
-若使用 ESXi 虚拟机, 需在 vSwitch 上开启混杂模式（`Promiscuous Mode`）和 MAC 地址更改（`MAC Address Changes`）, 否则 VPC 网络无法正常工作。
-
-![vswitch.png](img/vswitch.png)
-
-> 不支持 macvlan 的云服务商通常无法使用 VPC 网络模式, 只能运行 Pod 网络模式的容器题。KubeVirt VM 模式依赖 VPC 网络，因此也会受到相同限制。
-
 ### KubeVirt 节点要求
 
-VM 靶机依赖 KubeVirt。集群节点需要支持硬件虚拟化或可用的嵌套虚拟化能力，并且 KubeVirt 控制组件、CRD 和 virt-launcher Pod 能正常运行。
+VM 靶机依赖 KubeVirt。集群节点需要支持硬件虚拟化或可用的嵌套虚拟化能力，并且 KubeVirt 控制组件、CRD 和 virt-launcher Pod
+能正常运行。
 
 检查节点虚拟化能力：
 
@@ -35,7 +28,7 @@ egrep -c '(vmx|svm)' /proc/cpuinfo
 
 ## 安装 NFS 客户端
 
-动态附件与题目文件共享依赖 RWX 存储。所有节点需要安装 NFS 客户端: 
+动态附件与题目文件共享依赖 RWX 存储。所有节点需要安装 NFS 客户端:
 
 ```bash
 sudo apt update
@@ -53,7 +46,7 @@ curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | \
   INSTALL_K3S_MIRROR=cn sh - --flannel-backend=none --disable-network-policy
 ```
 
-安装完成后: 
+安装完成后:
 
 - kubeconfig 位于 `/etc/rancher/k3s/k3s.yaml`
 - 节点 Token 位于 `/var/lib/rancher/k3s/server/node-token`
@@ -70,19 +63,20 @@ curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | \
 
 ## 安装 Multus CNI
 
-[Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) 为 VPC 网络模式提供多网卡支持: 
+[Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) 为 VPC 网络模式提供多网卡支持:
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/master/deployments/multus-daemonset.yml
 ```
 
-若 K3S + Flannel 环境出现 `cannot find valid master CNI config`, 需按 Multus 官方文档调整 `--multus-kubeconfig-file-host` 与 CNI 目录。
+若 K3S + Flannel 环境出现 `cannot find valid master CNI config`, 需按 Multus 官方文档调整
+`--multus-kubeconfig-file-host` 与 CNI 目录。
 
 ## 安装 Kube-OVN
 
 [Kube-OVN](https://kubeovn.github.io/docs/stable/) 提供 VPC 网络隔离功能。推荐参考其官方安装文档部署稳定版本。
 
-示例: 
+示例:
 
 ```bash
 wget https://raw.githubusercontent.com/kubeovn/kube-ovn/refs/tags/v1.16.0/dist/images/install.sh
@@ -91,7 +85,8 @@ bash install.sh
 
 ## 安装 KubeVirt
 
-[KubeVirt](https://kubevirt.io/) 为 VM 靶机提供 `VirtualMachine` 资源和运行时能力。建议按 KubeVirt 官方文档安装稳定版本，并确认 `kubevirt` 命名空间中的组件 Ready。
+[KubeVirt](https://kubevirt.io/) 为 VM 靶机提供 `VirtualMachine` 资源和运行时能力。建议按 KubeVirt 官方文档安装稳定版本，并确认
+`kubevirt` 命名空间中的组件 Ready。
 
 检查示例：
 
@@ -101,13 +96,14 @@ kubectl get pods -n kubevirt
 kubectl api-resources | grep virtualmachines
 ```
 
-CBCTF 只会创建和删除 `VirtualMachine` 资源，不会自动安装 KubeVirt。VM 题目镜像需要由出题人制作成 KubeVirt 可启动的 `containerDisk` 镜像。
+CBCTF 只会创建和删除 `VirtualMachine` 资源，不会自动安装 KubeVirt。VM 题目镜像需要由出题人制作成 KubeVirt 可启动的
+`containerDisk` 镜像。
 
 ## 配置 StorageClass
 
 动态附件依赖支持 `ReadWriteMany` 的 PVC。K3S 默认 `local-path` 不支持 RWX, 需改用 NFS 等共享存储方案。
 
-建议流程: 
+建议流程:
 
 1. 取消 `local-path` 的默认 StorageClass 标记。
 2. 安装支持 RWX 的 StorageClass, 例如 `nfs-subdir-external-provisioner`。
@@ -115,9 +111,10 @@ CBCTF 只会创建和删除 `VirtualMachine` 资源，不会自动安装 KubeVir
 
 ## 启动时资源检查与创建
 
-Helm 安装后, 应用启动时会检查或创建以下资源: 
+Helm 安装后, 应用启动时会检查或创建以下资源:
 
 - 命名空间: `{namespace}`
 - 共享存储 PVC: `{namespace}-shared-volume`
 
-其中 PVC 缺失会导致动态附件不可用。KubeVirt 资源不会在启动时创建，只有启动包含 `x-kubevirt: true` 的 VM 靶机时才会创建对应 `VirtualMachine`。
+其中 PVC 缺失会导致动态附件不可用。KubeVirt 资源不会在启动时创建，只有启动包含 `x-kubevirt: true` 的 VM 靶机时才会创建对应
+`VirtualMachine`。

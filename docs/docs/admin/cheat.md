@@ -30,24 +30,24 @@ CBCTF 内置多维度自动作弊检测, 管理员可查看、确认或驳回检
 
 ## 作弊记录字段
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `type` | string | 处理状态（`suspicious` / `cheater` / `pass`） |
-| `reason` | string | 详细原因描述 |
-| `reason_type` | string | 检测规则类型（`same_device` / `same_web_ip` / `same_victim_ip` / `wrong_flag` / `token_magic`） |
-| `magic` | string | 涉及的设备指纹（仅设备类检测） |
-| `ip` | string | 涉及的 IP 地址 |
-| `time` | datetime | 检测时间 |
-| `checked` | bool | 管理员是否已审核 |
-| `comment` | string | 管理员备注 |
+| 字段            | 类型       | 说明                                                                                      |
+|---------------|----------|-----------------------------------------------------------------------------------------|
+| `type`        | string   | 处理状态（`suspicious` / `cheater` / `pass`）                                                 |
+| `reason`      | string   | 详细原因描述                                                                                  |
+| `reason_type` | string   | 检测规则类型（`same_device` / `same_web_ip` / `same_victim_ip` / `wrong_flag` / `token_magic`） |
+| `magic`       | string   | 涉及的设备指纹（仅设备类检测）                                                                         |
+| `ip`          | string   | 涉及的 IP 地址                                                                               |
+| `time`        | datetime | 检测时间                                                                                    |
+| `checked`     | bool     | 管理员是否已审核                                                                                |
+| `comment`     | string   | 管理员备注                                                                                   |
 
 ## 作弊状态
 
-| 状态 | 说明 |
-|------|------|
+| 状态           | 说明            |
+|--------------|---------------|
 | `suspicious` | 系统自动检测, 待人工确认 |
-| `cheater` | 确认为作弊 |
-| `pass` | 确认为误报 |
+| `cheater`    | 确认为作弊         |
+| `pass`       | 确认为误报         |
 
 ## 管理员处理流程
 
@@ -76,7 +76,7 @@ DELETE /admin/contests/:contestID/cheats
 
 ## IP 白名单
 
-在 `config.yaml` 中配置 IP 白名单, 白名单内的 IP 不触发 IP 类作弊检测: 
+在 `config.yaml` 中配置 IP 白名单, 白名单内的 IP 不触发 IP 类作弊检测:
 
 ```yaml
 cheat:
@@ -92,13 +92,13 @@ cheat:
 
 ## 误报场景说明
 
-以下场景可能导致误报, 管理员应结合实际情况判断: 
+以下场景可能导致误报, 管理员应结合实际情况判断:
 
-| 场景 | 可能误报的类型 |
-|------|--------------|
-| 大学/公司内网（NAT） | `same_web_ip`、`same_victim_ip` |
-| 商业 VPN 服务 | `same_web_ip` |
-| 参赛者使用多个浏览器或无痕模式 | `token_magic` |
-| 比赛现场同一 WiFi | `same_web_ip` |
+| 场景              | 可能误报的类型                        |
+|-----------------|--------------------------------|
+| 大学/公司内网（NAT）    | `same_web_ip`、`same_victim_ip` |
+| 商业 VPN 服务       | `same_web_ip`                  |
+| 参赛者使用多个浏览器或无痕模式 | `token_magic`                  |
+| 比赛现场同一 WiFi     | `same_web_ip`                  |
 
 建议将竞赛现场的出口 IP 加入白名单, 或在 Helm values 中配置 `cbctf.cheat.ip.whitelist`。
