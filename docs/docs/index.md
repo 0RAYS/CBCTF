@@ -13,7 +13,7 @@ hero:
       text: 查看介绍
       link: /guide/start/introduction
   image:
-    src: /logo.svg
+    src: /logo.png
     alt: CBCTF
 features:
   - title: 动态容器与虚拟机

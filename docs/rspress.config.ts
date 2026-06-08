@@ -6,10 +6,10 @@ export default defineConfig({
   lang: 'zh',
   title: 'CBCTF',
   description: '基于 Kubernetes 的现代化 CTF 竞赛平台',
-  icon: '/logo.svg',
+  icon: '/logo.png',
   logo: {
-    light: '/logo.svg',
-    dark: '/logo.svg',
+    light: '/logo.png',
+    dark: '/logo.png',
   },
   themeConfig: {
     socialLinks: [
