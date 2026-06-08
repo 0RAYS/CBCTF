@@ -2,42 +2,42 @@
 pageType: home
 
 hero:
-  name: My Site
-  text: A cool website!
-  tagline: This is the tagline
+  name: CBCTF
+  text: 基于 Kubernetes 的现代化 CTF 竞赛平台
+  tagline: 动态容器 · 虚拟机靶机 · 动态附件 · 网络渗透场景构建
   actions:
     - theme: brand
-      text: Quick Start
-      link: /guide/start/introduction
+      text: 快速上手
+      link: /guide/start/quick-start
     - theme: alt
-      text: GitHub
-      link: https://github.com/web-infra-dev/rspress
+      text: 查看介绍
+      link: /guide/start/introduction
   image:
-    src: /rspress-icon.png
-    alt: Logo
+    src: /logo.svg
+    alt: CBCTF
 features:
-  - title: Blazing fast build speed
-    details: The core compilation module is based on the Rust front-end toolchain, providing a more ultimate development experience.
-    icon: 🏃🏻‍♀️
-    link: /guide/start/introduction
-  - title: Support for MDX content writing
-    details: MDX is a powerful way to write content, allowing you to use React components in Markdown.
+  - title: 动态容器与虚拟机
+    details: 支持 Pod、VPC 网络隔离模式以及 KubeVirt VM 靶机，覆盖 Web、Pwn、渗透等各类场景。
+    icon: 🐳
+    link: /guide/features/container
+  - title: 动态附件生成
+    details: 每支队伍独立生成含唯一 Flag 的附件，防止抄答案，支持 Python 自定义生成逻辑。
     icon: 📦
-    link: /guide/use-mdx/components
-  - title: Built-in full-text search
-    details: Automatically generates a full-text search index for you during construction, providing out-of-the-box full-text search capabilities.
-    icon: 🎨
-    link: https://rspress.rs/guide/advanced/custom-search
-  - title: AI-friendly
-    details: Generate llms.txt and Markdown files compliant with the llms.txt specification through SSG-MD, making it easier for large language models to understand and use your documentation.
-    icon: 🤖
-    link: https://rspress.rs/guide/basic/ssg-md
-  - title: Static site generation
-    details: In production, it automatically builds into static HTML files, which can be easily deployed anywhere.
-    icon: 🌈
-    link: https://rspress.rs/guide/basic/ssg
-  - title: Providing multiple custom capabilities
-    details: Through its extension mechanism, you can easily extend theme UI and build process.
-    icon: 🔥
-    link: https://rspress.rs/guide/basic/custom-theme
+    link: /guide/features/attachment
+  - title: 多维度作弊检测
+    details: 内置设备指纹、IP、跨队 Flag 提交等五种检测机制，自动标记可疑行为。
+    icon: 🔍
+    link: /admin/cheat
+  - title: 灵活计分系统
+    details: 静态、线性、对数三种计分类型，支持三血奖励和多 Flag 独立计分。
+    icon: 📊
+    link: /guide/features/scoring
+  - title: Helm 一键部署
+    details: Chart 内置 PostgreSQL 和 Redis，支持 PVC 持久化、Ingress TLS 和镜像拉取凭据。
+    icon: ⚡
+    link: /deploy/helm
+  - title: OAuth / OIDC 认证
+    details: 支持多个第三方认证提供商，可配置用户组自动分配，兼容 GitHub 等标准 OAuth 流程。
+    icon: 🔐
+    link: /guide/features/auth
 ---
