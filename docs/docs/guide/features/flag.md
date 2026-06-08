@@ -79,21 +79,30 @@ services:
 
 **方式二：文件注入**
 
-通过 service 下的 `x-volumes` 扩展字段配置 flag，平台将 flag 写入容器内的指定文件路径：
+通过 service 下的 `x-volumes` 扩展字段配置，平台将文件内容写入容器内的指定路径（通过 Kubernetes ConfigMap + VolumeMount 实现）。`content` 中可嵌入任意数量的 flag 模板，也可包含其他非 flag 内容：
 
 ```yaml
 services:
   web:
-    image: nginx:latest
+    image: nginx:1.25
     x-kubevirt: false
     x-volumes:
-      - path: /flags/flag1.txt
+      - path: /flag
         content: uuid{}
-      - path: /flags/flag2.txt
-        content: leet{this_is_a_dynamic_flag}
+      - path: /etc/app/config.env
+        content: |
+          APP_MODE=prod
+          SECRET_KEY=static{shared_secret}
+          FLAG=leet{another_flag}
+      - path: /home/ctf/readme.txt
+        content: |
+          Welcome to the challenge!
+          The flag is hidden somewhere on this machine.
     ports:
       - "80:80"
 ```
+
+每个 `x-volumes` 条目对应容器内一个文件。`content` 中出现的 `static{}`、`leet{}` 或 `uuid{}` 会被识别为 flag 模板并在启动时替换为实际 flag 值，其余内容原样写入文件。
 
 ## Flag 生成时机
 

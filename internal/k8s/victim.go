@@ -162,21 +162,20 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			// 兼容非 VPC 模式下, 一个 Pod 多个 Container, 使用循环来处理
 			for _, container := range pod.Spec.Containers {
 				volumeMounts := make([]corev1.VolumeMount, 0)
-				for _, fileMount := range container.FileMounts {
-					path := fileMount.Path
-					filename := path[strings.LastIndex(path, "/")+1:]
-					flagConfigMap, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-						Name:   fmt.Sprintf("flag-%s", utils.RandHexStr(20)),
+				for _, volumeMount := range container.VolumeMounts {
+					filename := volumeMount.Path[strings.LastIndex(volumeMount.Path, "/")+1:]
+					cm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
+						Name:   fmt.Sprintf("vol-%s", utils.RandHexStr(20)),
 						Labels: labels,
-						Data:   map[string]string{filename: fileMount.Content},
+						Data:   map[string]string{filename: volumeMount.Content},
 					})
 					if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 						return errors.New(err.(string))
 					}
-					volumeName := fmt.Sprintf("flag-%s", utils.RandHexStr(10))
+					volumeName := fmt.Sprintf("vol-%s", utils.RandHexStr(10))
 					volumeMounts = append(volumeMounts, corev1.VolumeMount{
 						Name:      volumeName,
-						MountPath: path,
+						MountPath: volumeMount.Path,
 						SubPath:   filename,
 					})
 					volumes = append(volumes, corev1.Volume{
@@ -184,13 +183,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 						VolumeSource: corev1.VolumeSource{
 							ConfigMap: &corev1.ConfigMapVolumeSource{
 								LocalObjectReference: corev1.LocalObjectReference{
-									Name: flagConfigMap.Name,
+									Name: cm.Name,
 								},
 							},
 						},
 					})
 				}
-
 				envs := make([]corev1.EnvVar, 0, len(container.Environment))
 				for key, value := range container.Environment {
 					envs = append(envs, corev1.EnvVar{Name: key, Value: value})

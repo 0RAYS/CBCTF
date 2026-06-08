@@ -20,7 +20,7 @@ CBCTF 是一个 Kubernetes 原生 CTF 平台。题目以 docker-compose YAML 为
 
 ## 二、Flag 类型
 
-在 docker-compose YAML 的 `environment` 或 `x-volumes` 中使用以下前缀声明 flag：
+在 docker-compose YAML 的 `environment`、`x-volumes` 或 `x-cloudinit.write_files` 中使用以下前缀声明 flag：
 
 | 语法 | 行为 | 示例 |
 |------|------|------|
@@ -31,8 +31,8 @@ CBCTF 是一个 Kubernetes 原生 CTF 平台。题目以 docker-compose YAML 为
 **Flag 注入方式（`x-flag-binding` 字段，平台自动推断）：**
 
 - **环境变量注入**：写在 `environment` 中，平台将 flag 值替换后作为 `EnvVar` 注入容器
-- **文件注入**：写在 `x-volumes` 中，平台创建 ConfigMap 挂载为文件
-- **cloud-init 注入**：写在 `x-cloudinit.write_files[].content` 中（仅 KubeVirt VM）
+- **文件注入**：写在 `x-volumes[*].content` 中，`content` 可包含任意文本，其中出现的 flag 模板在启动时被替换，文件整体通过 ConfigMap + VolumeMount 挂载到容器
+- **cloud-init 注入**：写在 `x-cloudinit.write_files[*].content` 中（仅 KubeVirt VM）
 
 ---
 
@@ -182,7 +182,7 @@ if __name__ == "__main__":
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `x-volumes` | `[]{ path: string, content: string }` | 将 content 作为文件注入到容器 path |
+| `x-volumes` | `[]{ path: string, content: string }` | 将文件注入到容器指定路径，content 可嵌入 flag 模板 |
 | `x-kubevirt` | `bool` | `true` 时创建 KubeVirt VM，需在 VPC 模式下使用 |
 | `x-boot` | `{ bootloader: "efi"\|"bios", secure_boot: bool }` | VM 引导配置 |
 | `x-cloudinit` | cloud-init 配置对象 | 见下方 cloud-init 说明 |
@@ -202,8 +202,13 @@ services:
     environment:
       FLAG: uuid{}              # 注入为环境变量
     x-volumes:
-      - path: /flag             # 注入为文件（platform 使用 ConfigMap + volumeMount）
+      - path: /flag             # 纯 flag 文件
         content: leet{secret_flag_in_file}
+      - path: /etc/challenge/info.txt   # 混合内容：静态文本 + flag 模板
+        content: |
+          Level: hard
+          Hint: check the /flag file
+          Token: uuid{}
 
   db:
     image: docker.0rays.club/library/mysql:8.0

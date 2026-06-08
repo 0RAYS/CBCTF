@@ -97,7 +97,7 @@ networks:
 
 - `command`、`working_dir`、普通环境变量和 `x-volumes` 不会被注入到 KubeVirt VM，请使用 `x-cloudinit.write_files` 写入文件和
   Flag
-- `x-cloudinit.write_files[*].content` 中出现的 `static{}`、`leet{}` 或 `uuid{}` 会被识别为 cloud-init 文件 Flag
+- `x-cloudinit.write_files[*].content` 中出现的 `static{}`、`leet{}` 或 `uuid{}` 会被识别为 flag 模板并在启动时替换为实际值
 - `ports` 不被使用，虚拟机不可直接暴露端口，访问路径需按题目设计单独设计
 - VM 必须接入至少一个 VPC 网络
   :::

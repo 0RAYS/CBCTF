@@ -125,19 +125,20 @@ func (f *FlagBinding) Scan(value any) error {
 }
 
 type ChallengeContainerTemplate struct {
-	Key         string          `json:"key"`
-	Name        string          `json:"name"`
-	Image       string          `json:"image"`
-	CPU         float32         `json:"cpu"`
-	Memory      int64           `json:"memory"`
-	WorkingDir  string          `json:"working_dir"`
-	Command     StringList      `json:"command"`
-	Environment StringMap       `json:"environment"`
-	KubeVirt    bool            `json:"kubevirt"`
-	Bootloader  string          `json:"bootloader"`
-	SecureBoot  bool            `json:"secure_boot"`
-	UserData    CloudInitConfig `json:"user_data"`
-	Exposes     Exposes         `json:"exposes"`
+	Key          string          `json:"key"`
+	Name         string          `json:"name"`
+	Image        string          `json:"image"`
+	CPU          float32         `json:"cpu"`
+	Memory       int64           `json:"memory"`
+	WorkingDir   string          `json:"working_dir"`
+	Command      StringList      `json:"command"`
+	Environment  StringMap       `json:"environment"`
+	KubeVirt     bool            `json:"kubevirt"`
+	Bootloader   string          `json:"bootloader"`
+	SecureBoot   bool            `json:"secure_boot"`
+	UserData     CloudInitConfig `json:"user_data"`
+	VolumeMounts XVolumes        `json:"volume_mounts"`
+	Exposes      Exposes         `json:"exposes"`
 }
 
 type ChallengePodTemplate struct {
@@ -167,29 +168,24 @@ func (c *ChallengeTemplate) Scan(value any) error {
 }
 
 type VictimContainerSpec struct {
-	Key         string          `json:"key"`
-	Name        string          `json:"name"`
-	Image       string          `json:"image"`
-	Resources   ResourceSpec    `json:"resources"`
-	WorkingDir  string          `json:"working_dir"`
-	Command     StringList      `json:"command"`
-	Environment StringMap       `json:"environment"`
-	KubeVirt    bool            `json:"kubevirt"`
-	Bootloader  string          `json:"bootloader"`
-	SecureBoot  bool            `json:"secure_boot"`
-	UserData    CloudInitConfig `json:"user_data"`
-	FileMounts  []FileMountSpec `json:"file_mounts"`
-	Exposes     Exposes         `json:"exposes"`
+	Key          string          `json:"key"`
+	Name         string          `json:"name"`
+	Image        string          `json:"image"`
+	Resources    ResourceSpec    `json:"resources"`
+	WorkingDir   string          `json:"working_dir"`
+	Command      StringList      `json:"command"`
+	Environment  StringMap       `json:"environment"`
+	KubeVirt     bool            `json:"kubevirt"`
+	Bootloader   string          `json:"bootloader"`
+	SecureBoot   bool            `json:"secure_boot"`
+	UserData     CloudInitConfig `json:"user_data"`
+	VolumeMounts XVolumes        `json:"volume_mounts"`
+	Exposes      Exposes         `json:"exposes"`
 }
 
 type ResourceSpec struct {
 	CPUMillis   int64 `json:"cpu_millis"`
 	MemoryBytes int64 `json:"memory_bytes"`
-}
-
-type FileMountSpec struct {
-	Path    string `json:"path"`
-	Content string `json:"content"`
 }
 
 type PodSpec struct {

@@ -12,9 +12,6 @@ services:
       APP_ENV: production
       FLAG_1: uuid{}
       FLAG_2: leet{this_is_a_leet_flag}
-    x-volumes:
-      - path: /flag
-        content: leet{this_is_a_file_flag}
     x-kubevirt: true
     x-boot:
       bootloader: efi
@@ -42,15 +39,16 @@ services:
           members:
             - ctf
       write_files:
+        - path: /flag
+          content: leet{this_is_a_vm_flag}
+          owner: root:root
+          permissions: "0400"
         - path: /etc/motd
           content: |
             Welcome to CBCTF web1.
             This file was written by cloud-init.
           owner: root:root
           permissions: "0644"
-          encoding: text/plain
-          append: false
-          defer: false
       ssh_authorized_keys:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleRootKey root@example
     networks:
@@ -71,9 +69,6 @@ services:
     environment:
       APP_ENV: production
       FLAG_3: uuid{}
-    x-volumes:
-      - path: /flag
-        content: leet{this_is_a_file_flag}
     x-kubevirt: true
     x-boot:
       bootloader: efi
@@ -100,14 +95,13 @@ services:
           members:
             - ctf
       write_files:
+        - path: /flag
+          content: leet{this_is_a_vm_flag}
+          owner: root:root
+          permissions: "0400"
         - path: /etc/motd
           content: |
             Welcome to CBCTF web2.
-          owner: root:root
-          permissions: "0644"
-          encoding: text/plain
-          append: false
-          defer: false
       ssh_authorized_keys:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleRootKey root@example
     networks:
@@ -132,41 +126,13 @@ services:
     x-volumes:
       - path: /flag
         content: leet{this_is_a_file_flag}
+      - path: /etc/challenge/hint.txt
+        content: |
+          Welcome to CBCTF web3.
+          The flag is hidden somewhere on this machine.
     x-kubevirt: false
     x-boot:
       bootloader: bios
-    x-cloudinit:
-      users:
-        - name: ctf
-          gecos: CTF Player
-          groups:
-            - users
-          sudo:
-            - ALL=(ALL) NOPASSWD:ALL
-          shell: /bin/bash
-          homedir: /home/ctf
-          lock_passwd: false
-          passwd: "$6$rounds=4096$saltstring$examplehash"
-          plain_text_passwd: changeme
-          ssh_authorized_keys:
-            - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleUserKey ctf@example
-          no_create_home: false
-          system: false
-      groups:
-        - name: users
-          members:
-            - ctf
-      write_files:
-        - path: /etc/motd
-          content: |
-            Welcome to CBCTF web3.
-          owner: root:root
-          permissions: "0644"
-          encoding: text/plain
-          append: false
-          defer: false
-      ssh_authorized_keys:
-        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleRootKey root@example
     networks:
       network3:
         ipv4_address: 192.168.2.4
