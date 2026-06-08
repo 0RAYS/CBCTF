@@ -168,6 +168,7 @@ networks:
 |------------------------------------------------------------------|----------|
 | [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离 |
 | [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) | 多网络接口    |
+| [KubeVirt](https://kubevirt.io/)                                 | 虚拟机调度    |
 
 ## 许可证
 
