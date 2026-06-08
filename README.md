@@ -169,11 +169,6 @@ networks:
 | [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离 |
 | [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) | 多网络接口    |
 
-**Multus 插件选择建议：** 推荐使用 **Thin Plugin**，无需手动配置且稳定性更好。Thick
-Plugin存在已知问题（[OOMKilled #1346](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346)、[Text file busy #1221](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1221)
-），如必须使用请参考 [#1346 评论](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346#issuecomment-2644110944)
-和 [PR #1213](https://github.com/k8snetworkplumbingwg/multus-cni/pull/1213)。
-
 ## 许可证
 
 本项目采用 [GNU Affero General Public License v3.0](LICENSE) 开源协议。

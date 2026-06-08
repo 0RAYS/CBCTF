@@ -171,13 +171,6 @@ Dynamic containers and dynamic attachments require the following components:
 | [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC network isolation              |
 | [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) | Multiple network interface support |
 
-**Multus plugin recommendation:** Use the **Thin Plugin** — zero manual configuration and better stability. The Thick
-Plugin has known
-issues ([OOMKilled #1346](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346), [Text file busy #1221](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1221)).
-If you must use it,
-see [#1346 comment](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346#issuecomment-2644110944)
-and [PR #1213](https://github.com/k8snetworkplumbingwg/multus-cni/pull/1213).
-
 ## License
 
 This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).
