@@ -11,8 +11,7 @@
 
 ### KubeVirt 节点要求
 
-VM 靶机依赖 KubeVirt。集群节点需要支持硬件虚拟化或可用的嵌套虚拟化能力，并且 KubeVirt 控制组件、CRD 和 virt-launcher Pod
-能正常运行。
+VM 靶机依赖 KubeVirt。集群节点需要支持硬件虚拟化或可用的嵌套虚拟化能力。
 
 检查节点虚拟化能力：
 
