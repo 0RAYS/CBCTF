@@ -56,9 +56,6 @@ function HeroSection() {
               <Button variant="primary" size="lg" className="shadow-focus-strong" onClick={() => navigate('/games')}>
                 {home.hero.primaryAction}
               </Button>
-              <Button variant="outline" size="lg" onClick={() => navigate('/support')}>
-                {home.hero.secondaryAction}
-              </Button>
             </div>
           </motion.div>
 

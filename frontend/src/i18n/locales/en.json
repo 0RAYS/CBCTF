@@ -95,8 +95,6 @@
   "footer": {
     "copyright": "© 2026 CBCTF",
     "icp": "陕ICP备2025076339号-1",
-    "support": "Support",
-    "contact": "Contact",
     "github": "GitHub"
   },
   "nav": {
@@ -2600,48 +2598,6 @@
       "validation": {
         "currentPasswordRequired": "Current password is required"
       }
-    }
-  },
-  "contact": {
-    "title": "Contact Us",
-    "methods": {
-      "github": {
-        "title": "GitHub",
-        "description": "Search in our repositories",
-        "action": "VIEW REPO"
-      },
-      "email": {
-        "title": "Email Support",
-        "description": "Contact us directly for business inquiries",
-        "action": "SEND EMAIL"
-      }
-    }
-  },
-  "support": {
-    "techStack": {
-      "title": "Technology Stack",
-      "categories": {
-        "frontend": "Frontend",
-        "backend": "Backend",
-        "devops": "DevOps"
-      },
-      "items": {
-        "react": "UI Framework",
-        "tailwind": "Styling",
-        "motion": "Animations",
-        "go": "API Server",
-        "postgres": "Database",
-        "redis": "Caching",
-        "docker": "Container Platform",
-        "k8s": "Container Orchestration"
-      },
-      "roles": {
-        "frontendLead": "Frontend",
-        "backendLead": "Backend"
-      }
-    },
-    "team": {
-      "title": "Development Team"
     }
   },
   "game": {

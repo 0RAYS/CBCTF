@@ -95,8 +95,6 @@
   "footer": {
     "copyright": "© 2026 CBCTF",
     "icp": "陕ICP备2025076339号-1",
-    "support": "支持",
-    "contact": "联系",
     "github": "GitHub"
   },
   "nav": {
@@ -2600,48 +2598,6 @@
       "validation": {
         "currentPasswordRequired": "当前密码为必填"
       }
-    }
-  },
-  "contact": {
-    "title": "联系我们",
-    "methods": {
-      "github": {
-        "title": "GitHub",
-        "description": "在我们的仓库中查找",
-        "action": "查看仓库"
-      },
-      "email": {
-        "title": "邮件支持",
-        "description": "直接联系我们进行商务咨询",
-        "action": "发送邮件"
-      }
-    }
-  },
-  "support": {
-    "techStack": {
-      "title": "技术栈",
-      "categories": {
-        "frontend": "前端",
-        "backend": "后端",
-        "devops": "DevOps"
-      },
-      "items": {
-        "react": "UI 框架",
-        "tailwind": "样式",
-        "motion": "动效",
-        "go": "API 服务",
-        "postgres": "数据库",
-        "redis": "缓存",
-        "docker": "靶机平台",
-        "k8s": "靶机编排"
-      },
-      "roles": {
-        "frontendLead": "前端",
-        "backendLead": "后端"
-      }
-    },
-    "team": {
-      "title": "开发团队"
     }
   },
   "game": {
