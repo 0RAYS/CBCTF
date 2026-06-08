@@ -9,7 +9,7 @@
 <script defer src="/static/js/lib-react.d0adebc4a6.js"></script>
 <script defer src="/static/js/lib-router.acabf0f462.js"></script>
 <script defer src="/static/js/879.9a79eaa2ca.js"></script>
-<script defer src="/static/js/index.ea2732076d.js"></script>
+<script defer src="/static/js/index.5bf46961fa.js"></script>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="generator" content="Rspress v2.0.14">
 <link rel="icon" href="/logo.png">
@@ -28,8 +28,7 @@
 <li><strong>Worker 节点</strong> × N：运行题目容器，建议至少 2 台</li>
 </ul>
 <h3 class="rp-toc-include" id="kubevirt-节点要求"><a href="#kubevirt-节点要求" class="rp-header-anchor rp-link" aria-hidden="true">#</a>KubeVirt 节点要求</h3>
-<p>VM 靶机依赖 KubeVirt。集群节点需要支持硬件虚拟化或可用的嵌套虚拟化能力，并且 KubeVirt 控制组件、CRD 和 virt-launcher Pod
-能正常运行。</p>
+<p>VM 靶机依赖 KubeVirt。集群节点需要支持硬件虚拟化或可用的嵌套虚拟化能力。</p>
 <p>检查节点虚拟化能力：</p>
 <div class="rp-codeblock language-bash"><div class="rp-codeblock__content"><div class="rp-codeblock__content__scroll-container rp-scrollbar rp-scrollbar--always"><pre class="shiki css-variables" style="background-color:var(--shiki-background);color:var(--shiki-foreground)" tabindex="0" data-lang="bash"><code><span class="line"><span style="color:var(--shiki-token-function)">egrep</span><span style="color:var(--shiki-token-string)"> -c</span><span style="color:var(--shiki-token-string-expression)"> &#x27;(vmx|svm)&#x27;</span><span style="color:var(--shiki-token-string)"> /proc/cpuinfo</span></span></code></pre></div><div class="rp-code-button-group"><button class="rp-code-button-group__button rp-code-wrap-button" title="切换代码换行" aria-label="切换代码换行"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="rp-code-button-group__icon rp-code-button-group__icon--wrapped"><path fill="currentColor" d="M21 5H3v2h18zM3 19h7v-2H3zm0-6h15c1 0 2 .43 2 2s-1 2-2 2h-2v-2l-4 3 4 3v-2h2c2.95 0 4-1.27 4-4 0-2.72-1-4-4-4H3z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="rp-code-button-group__icon rp-code-button-group__icon--wrap"><path fill="currentColor" d="M16 7H3V5h13zM3 19h13v-2H3zm19-7-4-3v2H3v2h15v2z"></path></svg></button><button class="rp-code-button-group__button rp-code-copy-button" title="复制代码"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="rp-code-button-group__icon rp-code-copy-button__icon rp-code-copy-button__icon--copy"><path fill="currentColor" d="M20 8v12H8V8zm0-2H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2"></path><path fill="currentColor" d="M4 16H2V4a2 2 0 0 1 2-2h12v2H4Z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="rp-code-button-group__icon rp-code-copy-button__icon rp-code-copy-button__icon--success"><path fill="currentColor" d="m9.55 18-5.7-5.7 1.425-1.425L9.55 15.15l9.175-9.175L20.15 7.4z"></path></svg></button></div></div></div>
 <p>返回值大于 <code>0</code> 通常表示节点 CPU 暴露了虚拟化能力。若运行在云厂商或虚拟化平台中，还需要确认该环境允许嵌套虚拟化。</p>
