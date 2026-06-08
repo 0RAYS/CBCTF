@@ -12,7 +12,6 @@ function Footer({ copyright, icp, links }) {
     link: 'https://beian.miit.gov.cn/',
   };
   const resolvedLinks = links ?? [
-    { label: t('footer.support'), href: '/support', isExternal: false },
     { label: 'support@0rays.club', href: 'mailto:support@0rays.club', isExternal: true },
     { label: t('footer.github'), href: REPO_URL, isExternal: true },
   ];

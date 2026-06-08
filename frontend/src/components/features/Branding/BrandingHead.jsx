@@ -24,8 +24,6 @@ const resolveRouteTitle = (pathname, t) => {
     ['/settings', 'nav.settings'],
     ['/games', 'nav.games'],
     ['/login', 'auth.login'],
-    ['/support', 'footer.support'],
-    ['/contact', 'footer.contact'],
   ];
   const exact = matchers.find(([prefix]) => pathname.startsWith(prefix));
   if (exact) return t(exact[1]);
