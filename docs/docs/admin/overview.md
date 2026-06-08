@@ -33,48 +33,48 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 
 ## 后台页面
 
-| 页面 | 说明 |
-|---|---|
-| Dashboard | 查看系统状态 |
-| Contests | 创建和管理比赛 |
-| RBAC | 管理用户、分组、角色和权限 |
+| 页面         | 说明                      |
+|------------|-------------------------|
+| Dashboard  | 查看系统状态                  |
+| Contests   | 创建和管理比赛                 |
+| RBAC       | 管理用户、分组、角色和权限           |
 | Challenges | 管理题库、附件、Flag、动态附件和容器题测试 |
-| Victims | 查看和停止运行中的靶机，查看流量 |
-| Generators | 查看和控制动态附件生成器 |
-| Images | 预热题目镜像 |
-| OAuth | 管理 OAuth/OIDC 登录提供商 |
-| SMTP | 管理邮件发送配置和邮件记录 |
-| CronJobs | 查看和更新后台 Cron 任务 |
-| Webhook | 管理出站 Webhook 和历史记录 |
-| Branding | 配置站点名称、Logo、首页文案等品牌信息 |
-| Files | 查看、下载、删除平台文件 |
-| Tasks | 查看后台任务和实时任务状态 |
-| System | 查看和更新系统配置，触发重启 |
-| Logs | 查看平台日志 |
+| Victims    | 查看和停止运行中的靶机，查看流量        |
+| Generators | 查看和控制动态附件生成器            |
+| Images     | 预热题目镜像                  |
+| OAuth      | 管理 OAuth/OIDC 登录提供商     |
+| SMTP       | 管理邮件发送配置和邮件记录           |
+| CronJobs   | 查看和更新后台 Cron 任务         |
+| Webhook    | 管理出站 Webhook 和历史记录      |
+| Branding   | 配置站点名称、Logo、首页文案等品牌信息   |
+| Files      | 查看、下载、删除平台文件            |
+| Tasks      | 查看后台任务和实时任务状态           |
+| System     | 查看和更新系统配置，触发重启          |
+| Logs       | 查看平台日志                  |
 
 ## 比赛管理页面
 
-| 页面 | 说明 |
-|---|---|
-| Settings | 比赛基础信息、时间、规则、奖项等 |
-| Notices | 比赛公告 |
-| Challenges | 比赛题目和比赛内 Flag |
-| Scoreboard | 排行榜和排名时间线 |
-| Teams | 队伍、成员、提交、Flag、Writeup、靶机历史 |
-| Images | 比赛题目镜像预热 |
-| Victims | 比赛内靶机预热、查看和停止 |
-| Generators | 比赛内动态附件生成器管理 |
-| Cheats | 作弊检测记录 |
+| 页面         | 说明                         |
+|------------|----------------------------|
+| Settings   | 比赛基础信息、时间、规则、奖项等           |
+| Notices    | 比赛公告                       |
+| Challenges | 比赛题目和比赛内 Flag              |
+| Scoreboard | 排行榜和排名时间线                  |
+| Teams      | 队伍、成员、提交、Flag、Writeup、靶机历史 |
+| Images     | 比赛题目镜像预热                   |
+| Victims    | 比赛内靶机预热、查看和停止              |
+| Generators | 比赛内动态附件生成器管理               |
+| Cheats     | 作弊检测记录                     |
 
 ## 角色和权限
 
 系统初始化默认角色：
 
-| 角色 | 说明 |
-|---|---|
-| `admin` | 系统管理员，拥有全部权限 |
-| `organizer` | 赛事主办方，拥有比赛、题目、队伍、公告、作弊、比赛内靶机等管理权限 |
-| `user` | 普通选手，拥有参赛、队伍、题目、提交、靶机控制和 Writeup 权限 |
+| 角色          | 说明                                  |
+|-------------|-------------------------------------|
+| `admin`     | 系统管理员，拥有全部权限                        |
+| `organizer` | 赛事主办方，拥有比赛、题目、队伍、公告、作弊、比赛内靶机等管理权限   |
+| `user`      | 普通选手，拥有参赛、队伍、题目、提交、靶机控制和 Writeup 权限 |
 
 :::tip
 后台导航会根据当前用户可访问接口过滤。授权后如果页面仍不可见，重新登录或检查 `/me/permissions` 返回的权限列表。

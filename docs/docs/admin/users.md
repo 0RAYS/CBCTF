@@ -2,13 +2,13 @@
 
 ## 用户字段
 
-| 字段 | 说明 |
-|---|---|
-| `name` | 用户名 |
-| `email` | 邮箱（用于登录和邮件通知） |
-| `verified` | 邮箱是否已验证 |
-| `picture` | 头像 URL |
-| `description` | 个人简介 |
+| 字段            | 说明            |
+|---------------|---------------|
+| `name`        | 用户名           |
+| `email`       | 邮箱（用于登录和邮件通知） |
+| `verified`    | 邮箱是否已验证       |
+| `picture`     | 头像 URL        |
+| `description` | 个人简介          |
 
 ## 手动创建用户
 
@@ -29,7 +29,8 @@
 
 ### 自动分配
 
-在 `registration.default_group` 中配置分组 ID，新注册用户自动加入该分组。也可在 OAuth 配置的 `default_group` 字段中为 OAuth 登录用户单独设置默认分组。
+在 `registration.default_group` 中配置分组 ID，新注册用户自动加入该分组。也可在 OAuth 配置的 `default_group` 字段中为
+OAuth 登录用户单独设置默认分组。
 
 ### 手动添加/移除用户
 
