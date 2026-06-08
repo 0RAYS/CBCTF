@@ -4,9 +4,9 @@
 
 CBCTF 采用两层题目管理：
 
-| 层级 | 说明 |
-|---|---|
-| **全局题库** | 题目模板，不直接对选手可见 |
+| 层级                         | 说明                 |
+|----------------------------|--------------------|
+| **全局题库**                   | 题目模板，不直接对选手可见      |
 | **比赛题目（ContestChallenge）** | 将全局题目关联到比赛，可覆盖部分字段 |
 
 对全局题库的修改（如更新附件）会影响所有使用该题目的比赛。对比赛题目的覆盖配置（name、description 等）仅影响该场比赛。
@@ -36,7 +36,9 @@ CBCTF 采用两层题目管理：
 4. 测试完成后停止靶机
 
 :::info
-测试模式下不产生实际的 flag 和队伍记录。如果题目使用 `x-kubevirt: true`，测试前应确认集群已安装 KubeVirt，题目使用 VPC 网络并配置了每张网卡的 `ipv4_address` 和 `mac_address`。VM 模式的 `ports` 不会生成平台访问地址；普通环境变量和 `x-volumes` 也不会注入到虚拟机，建议通过 `x-cloudinit.write_files` 验证文件和 Flag 写入。
+测试模式下不产生实际的 flag 和队伍记录。如果题目使用 `x-kubevirt: true`，测试前应确认集群已安装 KubeVirt，题目使用 VPC
+网络并配置了每张网卡的 `ipv4_address` 和 `mac_address`。VM 模式的 `ports` 不会生成平台访问地址；普通环境变量和 `x-volumes`
+也不会注入到虚拟机，建议通过 `x-cloudinit.write_files` 验证文件和 Flag 写入。
 :::
 
 ## 加入比赛
@@ -45,19 +47,20 @@ CBCTF 采用两层题目管理：
 
 加入时可覆盖以下字段（仅对本场比赛生效）：
 
-| 字段 | 说明 |
-|---|---|
-| `name` | 比赛中显示的题目名称 |
-| `description` | 比赛中显示的题目描述 |
-| `category` | 分类 |
-| `tags` | 标签 |
-| `hints` | 提示列表（选手可查看） |
-| `hidden` | 是否在比赛中隐藏该题目 |
+| 字段              | 说明              |
+|-----------------|-----------------|
+| `name`          | 比赛中显示的题目名称      |
+| `description`   | 比赛中显示的题目描述      |
+| `category`      | 分类              |
+| `tags`          | 标签              |
+| `hints`         | 提示列表（选手可查看）     |
+| `hidden`        | 是否在比赛中隐藏该题目     |
 | `attempt_limit` | 提交次数限制（0 表示无限制） |
 
 ## 管理比赛 Flag 分数
 
-通过 `PUT /admin/contests/:contestID/challenges/:challengeID/flags/:flagID`（`admin:contest_challenge_flag:update`）为每个 flag 独立配置计分：
+通过 `PUT /admin/contests/:contestID/challenges/:challengeID/flags/:flagID`（`admin:contest_challenge_flag:update`）为每个
+flag 独立配置计分：
 
 ```json
 {
@@ -79,7 +82,9 @@ CBCTF 采用两层题目管理：
 ```json
 [
   {
-    "policyTypes": ["Egress"],
+    "policyTypes": [
+      "Egress"
+    ],
     "egress": [
       {
         "to": [

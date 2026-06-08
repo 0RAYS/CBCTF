@@ -4,16 +4,16 @@ Webhook 允许平台在特定事件发生时，向外部系统（Slack、Discord
 
 ## Webhook 字段
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `name` | string | Webhook 名称（仅用于标识） |
-| `url` | string | 目标 URL |
-| `method` | string | HTTP 方法（`POST`、`GET` 等） |
-| `headers` | object | 自定义 HTTP 请求头，如 `{"Authorization": "Bearer token"}` |
-| `timeout` | int | 请求超时（毫秒） |
-| `retry` | int | 失败后重试次数 |
-| `on` | bool | 是否启用此 Webhook |
-| `events` | []string | 订阅的事件类型列表 |
+| 字段        | 类型       | 说明                                                 |
+|-----------|----------|----------------------------------------------------|
+| `name`    | string   | Webhook 名称（仅用于标识）                                  |
+| `url`     | string   | 目标 URL                                             |
+| `method`  | string   | HTTP 方法（`POST`、`GET` 等）                            |
+| `headers` | object   | 自定义 HTTP 请求头，如 `{"Authorization": "Bearer token"}` |
+| `timeout` | int      | 请求超时（毫秒）                                           |
+| `retry`   | int      | 失败后重试次数                                            |
+| `on`      | bool     | 是否启用此 Webhook                                      |
+| `events`  | []string | 订阅的事件类型列表                                          |
 
 ## 触发事件
 

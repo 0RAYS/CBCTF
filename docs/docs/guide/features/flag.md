@@ -4,11 +4,11 @@ CBCTF 支持三种 flag 类型，每道题可配置多个 flag，每个 flag 独
 
 ## Flag 类型
 
-| 类型 | 配置格式 | 生成结果（前缀 `CBCTF`） | 特点 |
-|---|---|---|---|
-| 静态 | `static{content}` | `CBCTF{content}` | 所有队伍相同 |
-| 动态 | `leet{template}` | `CBCTF{ThiliS-iS-4_Dyn4MIC_FLaG}` | 每队不同，**长度可变** |
-| UUID | `uuid{}` | `CBCTF{550e8400-e29b-41d4-a716-446655440000}` | 每队不同，标准 UUID 格式 |
+| 类型   | 配置格式              | 生成结果（前缀 `CBCTF`）                              | 特点              |
+|------|-------------------|-----------------------------------------------|-----------------|
+| 静态   | `static{content}` | `CBCTF{content}`                              | 所有队伍相同          |
+| 动态   | `leet{template}`  | `CBCTF{ThiliS-iS-4_Dyn4MIC_FLaG}`             | 每队不同，**长度可变**   |
+| UUID | `uuid{}`          | `CBCTF{550e8400-e29b-41d4-a716-446655440000}` | 每队不同，标准 UUID 格式 |
 
 :::info
 flag 的实际前缀由比赛配置中的 `prefix` 字段决定，而非固定为 `CBCTF`。
