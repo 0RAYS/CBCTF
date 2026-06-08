@@ -18,7 +18,7 @@
 5. 将 `{team_id}.zip` 提供给队伍下载
 
 :::warning
-如果没有预热生成器，动态附件题会因"无可用生成器"而无法初始化。
+如果没有提前启动生成器，动态附件题会因"无可用生成器"而无法初始化。
 :::
 
 ## 生成器要求
@@ -87,9 +87,9 @@ zip -j /root/mnt/attachments/${TEAM_ID}.zip /tmp/challenge/*
 
 ## 管理入口
 
-生成器支持两种预热方式：
+生成器支持两种管理方式：
 
-- **全局生成器**：`/admin/generators`
-- **比赛专用生成器**：`/admin/contests/{contestID}/generators`
+- **全局生成器**：`/admin/generators`，仅用于全局管理和测试附件生成，此处启动的生成器无法被赛事用于生成附件
+- **比赛专用生成器**：`/admin/contests/{contestID}/generators`，可被全局管理关闭和查看
 
-建议在比赛开始前预热动态附件题所需的生成器实例。
+须在比赛开始前，通过赛事专用生成器管理启动动态附件题所需的生成器实例。
