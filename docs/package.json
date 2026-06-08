@@ -1,45 +1,21 @@
 {
-  "name": "cbctf-docs",
-  "version": "0.0.0",
+  "name": "rspress-doc-template",
+  "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "docusaurus": "docusaurus",
-    "start": "docusaurus start",
-    "build": "docusaurus build",
-    "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy",
-    "clear": "docusaurus clear",
-    "serve": "docusaurus serve",
-    "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids"
+    "build": "rspress build",
+    "dev": "rspress dev",
+    "preview": "rspress preview"
   },
   "dependencies": {
-    "@docusaurus/core": "3.10.1",
-    "@docusaurus/faster": "^3.10.1",
-    "@docusaurus/preset-classic": "3.10.1",
-    "@mdx-js/react": "^3.1.1",
-    "clsx": "^2.1.1",
-    "prism-react-renderer": "^2.4.1",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "@rspress/core": "^2.0.13"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.10.1",
-    "@docusaurus/types": "3.10.1"
-  },
-  "browserslist": {
-    "production": [
-      ">0.5%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 3 chrome version",
-      "last 3 firefox version",
-      "last 5 safari version"
-    ]
-  },
-  "engines": {
-    "node": ">=18.0"
+    "@types/node": "^22.8.1",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
   }
 }
