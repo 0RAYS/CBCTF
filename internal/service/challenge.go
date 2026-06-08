@@ -381,6 +381,25 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 				}
 			}
 		}
+		if volumes, ok := app.Extensions[model.XVolumesExtension].(model.XVolumes); ok {
+			for _, volume := range volumes {
+				if volume.Path == "" {
+					continue
+				}
+				containerTemplate.VolumeMounts = append(containerTemplate.VolumeMounts, volume)
+				for _, value := range extractFlagTemplates(volume.Content) {
+				flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+					Value: value,
+					Binding: model.FlagBinding{
+						PodKey:       podKey,
+						ContainerKey: containerKey,
+						Type:         model.FileFlagBindingType,
+						Target:       volume.Path,
+					},
+				})
+				}
+			}
+		}
 		template.Pods = append(template.Pods, model.ChallengePodTemplate{
 			Key:          podKey,
 			Name:         name,
@@ -397,22 +416,6 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 						ContainerKey: containerKey,
 						Type:         model.EnvFlagBindingType,
 						Target:       k,
-					},
-				})
-			}
-		}
-		if volumes, ok := app.Extensions[model.XVolumesExtension].(model.XVolumes); ok {
-			for _, volume := range volumes {
-				if volume.Path == "" || volume.Content == "" {
-					continue
-				}
-				flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-					Value: volume.Content,
-					Binding: model.FlagBinding{
-						PodKey:       podKey,
-						ContainerKey: containerKey,
-						Type:         model.FileFlagBindingType,
-						Target:       volume.Path,
 					},
 				})
 			}

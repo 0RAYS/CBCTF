@@ -38,7 +38,7 @@ CBCTF 采用两层题目管理：
 :::info
 测试模式下不产生实际的 flag 和队伍记录。如果题目使用 `x-kubevirt: true`，测试前应确认集群已安装 KubeVirt，题目使用 VPC
 网络并配置了每张网卡的 `ipv4_address` 和 `mac_address`。VM 模式的 `ports` 不会生成平台访问地址；普通环境变量和 `x-volumes`
-也不会注入到虚拟机，建议通过 `x-cloudinit.write_files` 验证文件和 Flag 写入。
+不会注入到虚拟机，需改用 `x-cloudinit.write_files` 注入文件和 Flag。
 :::
 
 ## 加入比赛

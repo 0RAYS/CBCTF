@@ -93,15 +93,15 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 				CPUMillis:   int64(containerTemplate.CPU * 1000),
 				MemoryBytes: containerTemplate.Memory,
 			},
-			WorkingDir:  containerTemplate.WorkingDir,
-			Command:     append(model.StringList(nil), containerTemplate.Command...),
-			Environment: make(model.StringMap),
-			KubeVirt:    containerTemplate.KubeVirt,
-			Bootloader:  containerTemplate.Bootloader,
-			SecureBoot:  containerTemplate.SecureBoot,
-			UserData:    containerTemplate.UserData,
-			FileMounts:  make([]model.FileMountSpec, 0),
-			Exposes:     append(model.Exposes(nil), containerTemplate.Exposes...),
+			WorkingDir:   containerTemplate.WorkingDir,
+			Command:      append(model.StringList(nil), containerTemplate.Command...),
+			Environment:  make(model.StringMap),
+			KubeVirt:     containerTemplate.KubeVirt,
+			Bootloader:   containerTemplate.Bootloader,
+			SecureBoot:   containerTemplate.SecureBoot,
+			UserData:     containerTemplate.UserData,
+			VolumeMounts: append(model.XVolumes(nil), containerTemplate.VolumeMounts...),
+			Exposes:      append(model.Exposes(nil), containerTemplate.Exposes...),
 		}
 		for key, value := range containerTemplate.Environment {
 			containerSpec.Environment[key] = value
@@ -113,25 +113,34 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			} else if !victim.TeamID.Valid {
 				value = fmt.Sprintf("flag{%s}", renderChallengeFlagValue(flag.Value))
 			}
-			switch flag.Binding.Type {
-			case model.EnvFlagBindingType:
-				containerSpec.Environment[flag.Binding.Target] = value
-			case model.FileFlagBindingType:
-				containerSpec.FileMounts = append(containerSpec.FileMounts, model.FileMountSpec{Path: flag.Binding.Target, Content: value})
-			case model.CloudInitFileFlagBindingType:
-				for i := range containerSpec.UserData.WriteFiles {
-					if containerSpec.UserData.WriteFiles[i].Path != flag.Binding.Target {
-						continue
-					}
-					containerSpec.UserData.WriteFiles[i].Content = strings.ReplaceAll(
-						containerSpec.UserData.WriteFiles[i].Content,
-						flag.Value,
-						value,
-					)
+		switch flag.Binding.Type {
+		case model.EnvFlagBindingType:
+			containerSpec.Environment[flag.Binding.Target] = value
+		case model.FileFlagBindingType:
+			for i := range containerSpec.VolumeMounts {
+				if containerSpec.VolumeMounts[i].Path != flag.Binding.Target {
+					continue
 				}
-			default:
-				return model.VictimContainerSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
+				containerSpec.VolumeMounts[i].Content = strings.ReplaceAll(
+					containerSpec.VolumeMounts[i].Content,
+					flag.Value,
+					value,
+				)
 			}
+		case model.CloudInitFileFlagBindingType:
+			for i := range containerSpec.UserData.WriteFiles {
+				if containerSpec.UserData.WriteFiles[i].Path != flag.Binding.Target {
+					continue
+				}
+				containerSpec.UserData.WriteFiles[i].Content = strings.ReplaceAll(
+					containerSpec.UserData.WriteFiles[i].Content,
+					flag.Value,
+					value,
+				)
+			}
+		default:
+			return model.VictimContainerSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
+		}
 		}
 		return containerSpec, model.SuccessRetVal()
 	}

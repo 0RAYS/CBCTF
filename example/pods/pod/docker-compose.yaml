@@ -18,6 +18,11 @@ services:
     x-volumes:
       - path: /flag
         content: leet{this_is_a_file_flag}
+      - path: /etc/challenge/config.txt
+        content: |
+          LEVEL=hard
+          SECRET=static{shared_secret}
+          HINT=find the flag in /flag
     x-kubevirt: false
     x-boot:
       bootloader: efi
