@@ -10,7 +10,6 @@ export function getFooterConfig(t, footerBranding = {}) {
       link: footerBranding.icpLink || 'https://beian.miit.gov.cn/',
     },
     links: [
-      { label: t('footer.support'), href: '/support', isExternal: false },
       { label: contactEmail, href: `mailto:${contactEmail}`, isExternal: true },
       { label: t('footer.github'), href: footerBranding.githubURL || REPO_URL, isExternal: true },
     ],
