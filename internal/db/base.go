@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -48,11 +49,35 @@ func (b *BaseRepo[M]) IsUniqueKeyValue(id uint, key string, value any) bool {
 	return m.GetBaseModel().ID == id || !ret.OK
 }
 
+func (b *BaseRepo[M]) IsUniqueConditionValue(id uint, conditions map[string]any) (bool, model.RetVal) {
+	m, ret := b.Get(GetOptions{Conditions: conditions})
+	if ret.OK {
+		return m.GetBaseModel().ID == id, model.SuccessRetVal()
+	}
+	if ret.Msg == i18n.Model.NotFound {
+		return true, model.SuccessRetVal()
+	}
+	return false, ret
+}
+
 func (b *BaseRepo[M]) Insert(m M) (M, model.RetVal) {
 	for _, key := range model.UniqueFields(m) {
 		value := utils.GetFieldByJSONTag(m, key)
 		if !b.IsUniqueKeyValue(0, key, value) {
 			return *new(M), model.RetVal{Msg: i18n.Model.DuplicateKeyValue, Attr: map[string]any{"Model": model.Name(m), "Key": key}}
+		}
+	}
+	for _, fields := range model.UniqueIndexes(m) {
+		conditions := make(map[string]any, len(fields))
+		for _, field := range fields {
+			conditions[field] = utils.GetFieldByJSONTag(m, field)
+		}
+		unique, ret := b.IsUniqueConditionValue(0, conditions)
+		if !ret.OK {
+			return *new(M), ret
+		}
+		if !unique {
+			return *new(M), model.RetVal{Msg: i18n.Model.DuplicateKeyValue, Attr: map[string]any{"Model": model.Name(m), "Key": strings.Join(fields, ",")}}
 		}
 	}
 	if res := b.DB.Model(new(M)).Create(&m); res.Error != nil {
@@ -231,6 +256,46 @@ func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 	for _, key := range model.UniqueFields(*new(M)) {
 		if value, ok := data[key]; ok && !b.IsUniqueKeyValue(id, key, value) {
 			return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": model.Name(*new(M)), "Key": key}}
+		}
+	}
+	var current M
+	var hasCurrent bool
+	getCurrent := func() (M, model.RetVal) {
+		if hasCurrent {
+			return current, model.SuccessRetVal()
+		}
+		m, ret := b.GetByID(id)
+		if !ret.OK {
+			return *new(M), ret
+		}
+		current = m
+		hasCurrent = true
+		return current, model.SuccessRetVal()
+	}
+	for _, fields := range model.UniqueIndexes(*new(M)) {
+		changed := false
+		conditions := make(map[string]any, len(fields))
+		for _, field := range fields {
+			if value, ok := data[field]; ok {
+				conditions[field] = value
+				changed = true
+				continue
+			}
+			m, ret := getCurrent()
+			if !ret.OK {
+				return ret
+			}
+			conditions[field] = utils.GetFieldByJSONTag(m, field)
+		}
+		if !changed {
+			continue
+		}
+		unique, ret := b.IsUniqueConditionValue(id, conditions)
+		if !ret.OK {
+			return ret
+		}
+		if !unique {
+			return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": model.Name(*new(M)), "Key": strings.Join(fields, ",")}}
 		}
 	}
 	for {
