@@ -51,15 +51,7 @@ func InitChallengeFlagRepo(tx *gorm.DB) *ChallengeFlagRepo {
 }
 
 func (c *ChallengeFlagRepo) DeleteByChallengeID(challengeIDL ...uint) model.RetVal {
-	if len(challengeIDL) == 0 {
-		return model.SuccessRetVal()
-	}
-	var challengeFlagIDL []uint
-	if res := c.DB.Model(&model.ChallengeFlag{}).Where("challenge_id IN ?", challengeIDL).Pluck("id", &challengeFlagIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get ChallengeFlags by challenge IDs %v: %s", challengeIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.ChallengeFlag.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return c.Delete(challengeFlagIDL...)
+	return c.DeleteByFieldID("challenge_id", challengeIDL...)
 }
 
 func (c *ChallengeFlagRepo) Delete(idL ...uint) model.RetVal {

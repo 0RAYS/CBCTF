@@ -120,31 +120,9 @@ func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
 }
 
 func (v *VictimRepo) DeleteByChallengeID(challengeIDL ...uint) model.RetVal {
-	if len(challengeIDL) == 0 {
-		return model.SuccessRetVal()
-	}
-	var victimIDL []uint
-	if res := v.DB.Model(&model.Victim{}).Where("challenge_id IN ?", challengeIDL).Pluck("id", &victimIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get Victims by challenge IDs %v: %s", challengeIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Victim.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	if len(victimIDL) == 0 {
-		return model.SuccessRetVal()
-	}
-	return v.Delete(victimIDL...)
+	return v.DeleteByFieldID("challenge_id", challengeIDL...)
 }
 
 func (v *VictimRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
-	if len(contestIDL) == 0 {
-		return model.SuccessRetVal()
-	}
-	var victimIDL []uint
-	if res := v.DB.Model(&model.Victim{}).Where("contest_id IN ?", contestIDL).Pluck("id", &victimIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get Victims by contest IDs %v: %s", contestIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Victim.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	if len(victimIDL) == 0 {
-		return model.SuccessRetVal()
-	}
-	return v.Delete(victimIDL...)
+	return v.DeleteByFieldID("contest_id", contestIDL...)
 }

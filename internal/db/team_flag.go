@@ -56,27 +56,15 @@ func InitTeamFlagRepo(tx *gorm.DB) *TeamFlagRepo {
 }
 
 func (t *TeamFlagRepo) DeleteByTeamID(teamIDL ...uint) model.RetVal {
-	return t.deleteByField("team_id", teamIDL...)
+	return t.DeleteByFieldID("team_id", teamIDL...)
 }
 
 func (t *TeamFlagRepo) DeleteByChallengeFlagID(challengeFlagIDL ...uint) model.RetVal {
-	return t.deleteByField("challenge_flag_id", challengeFlagIDL...)
+	return t.DeleteByFieldID("challenge_flag_id", challengeFlagIDL...)
 }
 
 func (t *TeamFlagRepo) DeleteByContestFlagID(contestFlagIDL ...uint) model.RetVal {
-	return t.deleteByField("contest_flag_id", contestFlagIDL...)
-}
-
-func (t *TeamFlagRepo) deleteByField(field string, values ...uint) model.RetVal {
-	if len(values) == 0 {
-		return model.SuccessRetVal()
-	}
-	var teamFlagIDL []uint
-	if res := t.DB.Model(&model.TeamFlag{}).Where(field+" IN ?", values).Pluck("id", &teamFlagIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get TeamFlags by %s %v: %s", field, values, res.Error)
-		return model.RetVal{Msg: i18n.Model.TeamFlag.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return t.Delete(teamFlagIDL...)
+	return t.DeleteByFieldID("contest_flag_id", contestFlagIDL...)
 }
 
 type TeamFlagWithChallenge struct {

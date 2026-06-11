@@ -1,8 +1,6 @@
 package db
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
@@ -57,13 +55,5 @@ func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {
 }
 
 func (n *NoticeRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
-	if len(contestIDL) == 0 {
-		return model.SuccessRetVal()
-	}
-	var noticeIDL []uint
-	if res := n.DB.Model(&model.Notice{}).Where("contest_id IN ?", contestIDL).Pluck("id", &noticeIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get Notices by contest IDs %v: %s", contestIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Notice.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return n.Delete(noticeIDL...)
+	return n.DeleteByFieldID("contest_id", contestIDL...)
 }
