@@ -216,7 +216,7 @@ func (t *TeamRepo) CountUsersMap(teamIDL ...uint) (map[uint]int64, model.RetVal)
 }
 
 func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
-	teamL, _, ret := t.List(-1, -1, GetOptions{
+	teamL, ret := t.FindAll(GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Preloads: map[string]GetOptions{
 			"Users":       {},

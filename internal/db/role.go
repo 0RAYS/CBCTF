@@ -105,7 +105,7 @@ func (r *RoleRepo) GetFallbackRoleID(excludedRoleIDL ...uint) (uint, model.RetVa
 
 func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
 	groupRepo := InitGroupRepo(r.DB)
-	groupL, _, ret := groupRepo.List(-1, -1, GetOptions{
+	groupL, ret := groupRepo.FindAll(GetOptions{
 		Conditions: map[string]any{"role_id": idL},
 	})
 	if !ret.OK {

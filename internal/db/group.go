@@ -89,7 +89,7 @@ func (g *GroupRepo) CountUsers(groupID uint) (int64, model.RetVal) {
 }
 
 func (g *GroupRepo) Delete(idL ...uint) model.RetVal {
-	groupL, _, ret := g.List(-1, -1, GetOptions{
+	groupL, ret := g.FindAll(GetOptions{
 		Conditions: map[string]interface{}{"id": idL},
 		Preloads:   map[string]GetOptions{"Users": {}},
 	})

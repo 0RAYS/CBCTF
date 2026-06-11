@@ -205,6 +205,23 @@ func (b *BaseRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int6
 	return ms, count, model.SuccessRetVal()
 }
 
+func (b *BaseRepo[M]) FindAll(optionsL ...GetOptions) ([]M, model.RetVal) {
+	options := GetOptions{}
+	if len(optionsL) > 0 {
+		options = optionsL[0]
+	}
+	ms := make([]M, 0)
+	tx := applyGetOptions(b.DB.Model(new(M)), options)
+	if len(options.Sort) == 0 {
+		tx = tx.Order("id")
+	}
+	if res := tx.Find(&ms); res.Error != nil {
+		log.Logger.Warningf("Failed to get %s: %s", model.Name(*new(M)), res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(*new(M)), "Error": res.Error.Error()}}
+	}
+	return ms, model.SuccessRetVal()
+}
+
 func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 	var count uint
 	data := options.Convert2Map()

@@ -51,7 +51,7 @@ func InitChallengeFlagRepo(tx *gorm.DB) *ChallengeFlagRepo {
 }
 
 func (c *ChallengeFlagRepo) Delete(idL ...uint) model.RetVal {
-	challengeFlagL, _, ret := c.List(-1, -1, GetOptions{
+	challengeFlagL, ret := c.FindAll(GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Preloads: map[string]GetOptions{
 			"ContestFlags": {},

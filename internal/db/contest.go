@@ -218,7 +218,7 @@ func (c *ContestRepo) CountNotices(contestID uint) (int64, model.RetVal) {
 }
 
 func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
-	contestL, _, ret := c.List(-1, -1, GetOptions{
+	contestL, ret := c.FindAll(GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Preloads: map[string]GetOptions{
 			"Teams":             {},
