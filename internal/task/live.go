@@ -15,7 +15,7 @@ var inspector *asynq.Inspector
 
 func ListLiveTasks(status, queue, taskID string, limit, offset int) ([]*asynq.TaskInfo, int64, []string, []string, model.RetVal) {
 	if inspector == nil {
-		return nil, 0, nil, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "task inspector unavailable"}}
+		return nil, 0, nil, nil, model.RetVal{Msg: i18n.Task.InspectorUnavailable}
 	}
 	if limit <= 0 {
 		limit = 20

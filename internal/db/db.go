@@ -23,7 +23,7 @@ func WithTransaction(fn func(tx *Tx) model.RetVal) model.RetVal {
 
 func WithTransactionDB(root *gorm.DB, fn func(tx *Tx) model.RetVal) model.RetVal {
 	if root == nil {
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "database is nil"}}
+		return model.RetVal{Msg: i18n.DB.Unavailable}
 	}
 	var ret model.RetVal
 	err := root.Transaction(func(tx *gorm.DB) error {

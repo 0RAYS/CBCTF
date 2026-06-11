@@ -64,6 +64,7 @@ model:
     createError: "Create File error: {{.Error}}"
     deleteError: "Delete File error: {{.Error}}"
     notFound: "File not found"
+    invalidPicture: "Invalid picture target"
   generator:
     notAvailable: "Has no available attachment generators, please contact administrator"
     notStoppable: "Can only stop running generators"
@@ -77,6 +78,8 @@ model:
     invalidType: "Invalid Notice type"
     notFound: "Notice not found"
     deleteError: "Delete Notice error: {{.Error}}"
+  oauth:
+    missingIDClaim: "OAuth response is missing the user ID claim"
   permission:
     getError: "Get Permission error: {{.Error}}"
     notFound: "Permission not found"
@@ -89,6 +92,7 @@ model:
     cannotDeleteDefault: "Cannot delete default role"
     getError: "Get Role error: {{.Error}}"
     deleteError: "Delete Role error: {{.Error}}"
+    noFallbackRole: "No fallback role available"
   rolePermission:
     createError: "Create RolePermission error: {{.Error}}"
     deleteError: "Delete RolePermission error: {{.Error}}"
@@ -160,10 +164,19 @@ redis:
   getError: "Get {{.Key}} error: {{.Error}}"
   notFound: "{{.Key}} not found"
   deleteError: "Delete {{.Key}} error: {{.Error}}"
+  invalidScriptResult: "Redis script returned an invalid result"
+  invalidScriptPort: "Redis script returned an invalid port"
+  invalidScriptSuccessFlag: "Redis script returned an invalid success flag"
+  noAvailablePort: "No available FRP forwarding port"
 task:
   enqueueError: "Enqueue error: {{.Error}}"
+  inspectorUnavailable: "Task inspector is unavailable"
 k8s:
   createError: "Create {{.Model}} error: {{.Error}}"
   getError: "Get {{.Model}} error: {{.Error}}"
   notFound: "{{.Model}} not found"
   deleteError: "Delete {{.Model}} error: {{.Error}}"
+  podRunError: "Pod failed to run: {{.Pod}} {{.Phase}} {{.Reason}}"
+  attachmentTimeout: "Timed out waiting for attachment generation"
+db:
+  unavailable: "Database is unavailable"

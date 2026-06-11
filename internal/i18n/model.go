@@ -72,6 +72,7 @@ type File struct {
 	CreateError    string
 	DeleteError    string
 	NotFound       string
+	InvalidPicture string
 }
 
 type Generator struct {
@@ -93,6 +94,10 @@ type Notice struct {
 	DeleteError string
 }
 
+type Oauth struct {
+	MissingIDClaim string
+}
+
 type Permission struct {
 	GetError string
 	NotFound string
@@ -111,6 +116,7 @@ type Role struct {
 	CannotDeleteDefault string
 	GetError            string
 	DeleteError         string
+	NoFallbackRole      string
 }
 
 type RolePermission struct {
@@ -238,6 +244,7 @@ var Model = struct {
 	Generator        Generator
 	Group            Group
 	Notice           Notice
+	Oauth            Oauth
 	Permission       Permission
 	Pod              Pod
 	Request          Request
@@ -324,6 +331,7 @@ var Model = struct {
 		CreateError:    "model.file.createError",
 		DeleteError:    "model.file.deleteError",
 		NotFound:       "model.file.notFound",
+		InvalidPicture: "model.file.invalidPicture",
 	},
 	Generator: Generator{
 		NotAvailable: "model.generator.notAvailable",
@@ -341,6 +349,9 @@ var Model = struct {
 		NotFound:    "model.notice.notFound",
 		DeleteError: "model.notice.deleteError",
 	},
+	Oauth: Oauth{
+		MissingIDClaim: "model.oauth.missingIDClaim",
+	},
 	Permission: Permission{
 		GetError: "model.permission.getError",
 		NotFound: "model.permission.notFound",
@@ -356,6 +367,7 @@ var Model = struct {
 		CannotDeleteDefault: "model.role.cannotDeleteDefault",
 		GetError:            "model.role.getError",
 		DeleteError:         "model.role.deleteError",
+		NoFallbackRole:      "model.role.noFallbackRole",
 	},
 	RolePermission: RolePermission{
 		CreateError: "model.rolePermission.createError",

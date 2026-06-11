@@ -64,6 +64,7 @@ model:
     createError: "500"
     deleteError: "500"
     notFound: "404"
+    invalidPicture: "400"
   generator:
     notAvailable: "400"
     notStoppable: "400"
@@ -77,6 +78,8 @@ model:
     invalidType: "400"
     notFound: "404"
     deleteError: "500"
+  oauth:
+    missingIDClaim: "400"
   permission:
     getError: "500"
     notFound: "404"
@@ -89,6 +92,7 @@ model:
     cannotDeleteDefault: "403"
     getError: "500"
     deleteError: "500"
+    noFallbackRole: "500"
   rolePermission:
     createError: "500"
     deleteError: "500"
@@ -158,10 +162,19 @@ redis:
   getError: "500"
   notFound: "404"
   deleteError: "500"
+  invalidScriptResult: "500"
+  invalidScriptPort: "500"
+  invalidScriptSuccessFlag: "500"
+  noAvailablePort: "500"
 task:
   enqueueError: "500"
+  inspectorUnavailable: "500"
 k8s:
   createError: "500"
   getError: "500"
   notFound: "404"
   deleteError: "500"
+  podRunError: "500"
+  attachmentTimeout: "500"
+db:
+  unavailable: "500"

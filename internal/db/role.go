@@ -96,8 +96,7 @@ func (r *RoleRepo) GetFallbackRoleID(excludedRoleIDL ...uint) (uint, model.RetVa
 	}
 	if slices.Contains(excludedRoleIDL, userRole.ID) {
 		return 0, model.RetVal{
-			Msg:  i18n.Model.Role.GetError,
-			Attr: map[string]any{"Error": "no fallback role available"},
+			Msg: i18n.Model.Role.NoFallbackRole,
 		}
 	}
 	return userRole.ID, model.SuccessRetVal()
