@@ -129,42 +129,31 @@ func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset
 }
 
 func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
-	challengeL, ret := c.FindAll(GetOptions{
-		Conditions: map[string]any{"rand_id": randIDL},
-		Preloads: map[string]GetOptions{
-			"ChallengeFlags":    {},
-			"ContestChallenges": {},
-			"Submissions":       {},
-		},
-	})
-	if !ret.OK {
-		if ret.Msg != i18n.Model.NotFound {
-			return ret
-		}
-		return model.SuccessRetVal()
+	var challengeIDL []uint
+	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Pluck("id", &challengeIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get Challenges: %s", res.Error)
+		return model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0)
-	challengeIDL := make([]uint, 0, len(challengeL))
-	for _, challenge := range challengeL {
-		challengeIDL = append(challengeIDL, challenge.ID)
-		for _, challengeFlag := range challenge.ChallengeFlags {
-			challengeFlagIDL = append(challengeFlagIDL, challengeFlag.ID)
-		}
-		for _, contestChallenge := range challenge.ContestChallenges {
-			contestChallengeIDL = append(contestChallengeIDL, contestChallenge.ID)
-		}
-		for _, submission := range challenge.Submissions {
-			submissionIDL = append(submissionIDL, submission.ID)
-		}
+	var challengeFlagIDL []uint
+	if res := c.DB.Model(&model.ChallengeFlag{}).Where("challenge_id IN ?", challengeIDL).Pluck("id", &challengeFlagIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get ChallengeFlags for challenges %v: %s", challengeIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(model.ChallengeFlag{}), "Error": res.Error.Error()}}
 	}
+	var contestChallengeIDL []uint
+	if res := c.DB.Model(&model.ContestChallenge{}).Where("challenge_id IN ?", challengeIDL).Pluck("id", &contestChallengeIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get ContestChallenges for challenges %v: %s", challengeIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	var ret model.RetVal
 	if ret = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ret.OK {
 		return ret
 	}
 	if ret = InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ret.OK {
 		return ret
 	}
-	if ret = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ret.OK {
-		return ret
+	if res := c.DB.Where("challenge_id IN ?", challengeIDL).Delete(&model.Submission{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Submissions for challenges %v: %s", challengeIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Submission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if ret = InitGeneratorRepo(c.DB).DeleteByChallengeID(challengeIDL...); !ret.OK {
 		return ret

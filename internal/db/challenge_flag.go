@@ -51,33 +51,17 @@ func InitChallengeFlagRepo(tx *gorm.DB) *ChallengeFlagRepo {
 }
 
 func (c *ChallengeFlagRepo) Delete(idL ...uint) model.RetVal {
-	challengeFlagL, ret := c.FindAll(GetOptions{
-		Conditions: map[string]any{"id": idL},
-		Preloads: map[string]GetOptions{
-			"ContestFlags": {},
-			"TeamFlags":    {},
-		},
-	})
-	if !ret.OK {
-		if ret.Msg != i18n.Model.NotFound {
-			return ret
-		}
-		return model.SuccessRetVal()
+	var contestFlagIDL []uint
+	if res := c.DB.Model(&model.ContestFlag{}).Where("challenge_flag_id IN ?", idL).Pluck("id", &contestFlagIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get ContestFlags for challenge flags %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.ContestFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	contestFlagIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
-	for _, challengeFlag := range challengeFlagL {
-		for _, contestFlag := range challengeFlag.ContestFlags {
-			contestFlagIDL = append(contestFlagIDL, contestFlag.ID)
-		}
-		for _, teamFlag := range challengeFlag.TeamFlags {
-			teamFlagIDL = append(teamFlagIDL, teamFlag.ID)
-		}
-	}
-	if ret = InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ret.OK {
+	if ret := InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ret.OK {
 		return ret
 	}
-	if ret = InitTeamFlagRepo(c.DB).Delete(teamFlagIDL...); !ret.OK {
-		return ret
+	if res := c.DB.Where("challenge_flag_id IN ?", idL).Delete(&model.TeamFlag{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete TeamFlags for challenge flags %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Name(model.TeamFlag{}), "Error": res.Error.Error()}}
 	}
 	if res := c.DB.Model(&model.ChallengeFlag{}).Where("id IN ?", idL).Delete(&model.ChallengeFlag{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ChallengeFlag: %s", res.Error)
