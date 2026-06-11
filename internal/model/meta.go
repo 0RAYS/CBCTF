@@ -7,11 +7,12 @@ import (
 )
 
 type Metadata struct {
-	Name         string
-	Table        string
-	UniqueFields []string
-	QueryFields  []string
-	SearchFields []string
+	Name          string
+	Table         string
+	UniqueFields  []string
+	UniqueIndexes [][]string
+	QueryFields   []string
+	SearchFields  []string
 }
 
 var metadataRegistry = map[reflect.Type]Metadata{
@@ -36,7 +37,7 @@ var metadataRegistry = map[reflect.Type]Metadata{
 	reflect.TypeFor[Cheat](): {
 		Name:         "Cheat",
 		Table:        "cheats",
-		UniqueFields: []string{"id"},
+		UniqueFields: []string{"id", "hash"},
 		QueryFields:  []string{"id", "magic", "ip", "reason", "reason_type", "type", "checked", "hash", "comment", "time", "contest_id"},
 		SearchFields: []string{"magic", "ip", "reason", "reason_type", "type", "hash", "comment"},
 	},
@@ -48,11 +49,12 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		SearchFields: []string{"name", "description", "prefix"},
 	},
 	reflect.TypeFor[ContestChallenge](): {
-		Name:         "ContestChallenge",
-		Table:        "contest_challenges",
-		UniqueFields: []string{"id"},
-		QueryFields:  []string{"id", "contest_id", "challenge_id", "name", "category", "type", "hidden"},
-		SearchFields: []string{"name", "category", "type"},
+		Name:          "ContestChallenge",
+		Table:         "contest_challenges",
+		UniqueFields:  []string{"id"},
+		UniqueIndexes: [][]string{{"contest_id", "challenge_id"}},
+		QueryFields:   []string{"id", "contest_id", "challenge_id", "name", "category", "type", "hidden"},
+		SearchFields:  []string{"name", "category", "type"},
 	},
 	reflect.TypeFor[ContestFlag](): {
 		Name:         "ContestFlag",
@@ -148,7 +150,7 @@ var metadataRegistry = map[reflect.Type]Metadata{
 	reflect.TypeFor[Setting](): {
 		Name:         "Setting",
 		Table:        "settings",
-		UniqueFields: []string{"key"},
+		UniqueFields: []string{"id", "key"},
 		QueryFields:  []string{"id", "key"},
 	},
 	reflect.TypeFor[Smtp](): {
@@ -173,29 +175,32 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		SearchFields: []string{"value", "ip"},
 	},
 	reflect.TypeFor[Team](): {
-		Name:         "Team",
-		Table:        "teams",
-		UniqueFields: []string{"id"},
-		QueryFields:  []string{"id", "name", "description", "banned", "hidden", "contest_id"},
-		SearchFields: []string{"name", "description"},
+		Name:          "Team",
+		Table:         "teams",
+		UniqueFields:  []string{"id"},
+		UniqueIndexes: [][]string{{"contest_id", "name"}},
+		QueryFields:   []string{"id", "name", "description", "banned", "hidden", "contest_id"},
+		SearchFields:  []string{"name", "description"},
 	},
 	reflect.TypeFor[TeamFlag](): {
-		Name:         "TeamFlag",
-		Table:        "team_flags",
-		UniqueFields: []string{"id"},
-		SearchFields: []string{"value"},
+		Name:          "TeamFlag",
+		Table:         "team_flags",
+		UniqueFields:  []string{"id"},
+		UniqueIndexes: [][]string{{"team_id", "contest_flag_id"}},
+		SearchFields:  []string{"value"},
 	},
 	reflect.TypeFor[Traffic](): {
 		Name:         "Traffic",
 		Table:        "traffics",
-		UniqueFields: []string{"id"},
+		UniqueFields: []string{"id", "victim_id"},
 	},
 	reflect.TypeFor[User](): {
-		Name:         "User",
-		Table:        "users",
-		UniqueFields: []string{"id", "name", "email"},
-		QueryFields:  []string{"id", "name", "email", "description", "verified", "banned", "hidden", "provider"},
-		SearchFields: []string{"name", "email", "description", "provider"},
+		Name:          "User",
+		Table:         "users",
+		UniqueFields:  []string{"id", "name", "email"},
+		UniqueIndexes: [][]string{{"provider", "provider_user_id"}},
+		QueryFields:   []string{"id", "name", "email", "description", "verified", "banned", "hidden", "provider"},
+		SearchFields:  []string{"name", "email", "description", "provider"},
 	},
 	reflect.TypeFor[Victim](): {
 		Name:         "Victim",
@@ -239,6 +244,15 @@ func Name(m any) string {
 
 func UniqueFields(m any) []string {
 	return slices.Clone(MetadataOf(m).UniqueFields)
+}
+
+func UniqueIndexes(m any) [][]string {
+	indexes := MetadataOf(m).UniqueIndexes
+	result := make([][]string, 0, len(indexes))
+	for _, index := range indexes {
+		result = append(result, slices.Clone(index))
+	}
+	return result
 }
 
 func QueryFields(m any) []string {
