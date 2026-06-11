@@ -64,9 +64,13 @@ func (f *FileRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.Fil
 }
 
 func (f *FileRepo) DeleteByRandID(randIDL ...string) model.RetVal {
-	if res := f.DB.Model(&model.File{}).Where("rand_id IN ?", randIDL).Delete(&model.File{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete File: %s", res.Error)
+	if len(randIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	var fileIDL []uint
+	if res := f.DB.Model(&model.File{}).Where("rand_id IN ?", randIDL).Pluck("id", &fileIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get Files by rand IDs %v: %s", randIDL, res.Error)
 		return model.RetVal{Msg: i18n.Model.File.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	return model.SuccessRetVal()
+	return f.Delete(fileIDL...)
 }

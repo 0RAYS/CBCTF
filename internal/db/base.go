@@ -44,9 +44,15 @@ type DiffUpdateOptions interface {
 	Convert2Expr() map[string]any
 }
 
-func (b *BaseRepo[M]) IsUniqueKeyValue(id uint, key string, value any) bool {
+func (b *BaseRepo[M]) IsUniqueKeyValue(id uint, key string, value any) (bool, model.RetVal) {
 	m, ret := b.GetByUniqueField(key, value)
-	return m.GetBaseModel().ID == id || !ret.OK
+	if ret.OK {
+		return m.GetBaseModel().ID == id, model.SuccessRetVal()
+	}
+	if ret.Msg == i18n.Model.NotFound {
+		return true, model.SuccessRetVal()
+	}
+	return false, ret
 }
 
 func (b *BaseRepo[M]) IsUniqueConditionValue(id uint, conditions map[string]any) (bool, model.RetVal) {
@@ -63,7 +69,11 @@ func (b *BaseRepo[M]) IsUniqueConditionValue(id uint, conditions map[string]any)
 func (b *BaseRepo[M]) Insert(m M) (M, model.RetVal) {
 	for _, key := range model.UniqueFields(m) {
 		value := utils.GetFieldByJSONTag(m, key)
-		if !b.IsUniqueKeyValue(0, key, value) {
+		unique, ret := b.IsUniqueKeyValue(0, key, value)
+		if !ret.OK {
+			return *new(M), ret
+		}
+		if !unique {
 			return *new(M), model.RetVal{Msg: i18n.Model.DuplicateKeyValue, Attr: map[string]any{"Model": model.Name(m), "Key": key}}
 		}
 	}
@@ -254,8 +264,14 @@ func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	for _, key := range model.UniqueFields(*new(M)) {
-		if value, ok := data[key]; ok && !b.IsUniqueKeyValue(id, key, value) {
-			return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": model.Name(*new(M)), "Key": key}}
+		if value, ok := data[key]; ok {
+			unique, ret := b.IsUniqueKeyValue(id, key, value)
+			if !ret.OK {
+				return ret
+			}
+			if !unique {
+				return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": model.Name(*new(M)), "Key": key}}
+			}
 		}
 	}
 	var current M
@@ -332,6 +348,9 @@ func (b *BaseRepo[M]) DiffUpdate(id uint, options DiffUpdateOptions) model.RetVa
 }
 
 func (b *BaseRepo[M]) Delete(idL ...uint) model.RetVal {
+	if len(idL) == 0 {
+		return model.SuccessRetVal()
+	}
 	res := b.DB.Model(new(M)).Where("id IN ?", idL).Delete(new(M))
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete %s: %s", model.Name(*new(M)), res.Error)

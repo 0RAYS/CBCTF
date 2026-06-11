@@ -35,9 +35,24 @@ func InitPodRepo(tx *gorm.DB) *PodRepo {
 }
 
 func (p *PodRepo) Delete(idL ...uint) model.RetVal {
+	if len(idL) == 0 {
+		return model.SuccessRetVal()
+	}
 	if res := p.DB.Model(&model.Pod{}).Where("id IN ?", idL).Delete(&model.Pod{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Pod: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.Pod.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
+}
+
+func (p *PodRepo) DeleteByVictimID(victimIDL ...uint) model.RetVal {
+	if len(victimIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	var podIDL []uint
+	if res := p.DB.Model(&model.Pod{}).Where("victim_id IN ?", victimIDL).Pluck("id", &podIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get Pods by victim IDs %v: %s", victimIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Pod.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return p.Delete(podIDL...)
 }

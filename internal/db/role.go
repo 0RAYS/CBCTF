@@ -104,6 +104,9 @@ func (r *RoleRepo) GetFallbackRoleID(excludedRoleIDL ...uint) (uint, model.RetVa
 }
 
 func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
+	if len(idL) == 0 {
+		return model.SuccessRetVal()
+	}
 	groupRepo := InitGroupRepo(r.DB)
 	groupL, ret := groupRepo.FindAll(GetOptions{
 		Conditions: map[string]any{"role_id": idL},
@@ -119,6 +122,9 @@ func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
 		if ret = groupRepo.Update(group.ID, UpdateGroupOptions{RoleID: &fallbackRoleID}); !ret.OK {
 			return ret
 		}
+	}
+	if ret = DeleteRolePermissionByRoleID(r.DB, idL...); !ret.OK {
+		return ret
 	}
 	if res := r.DB.Model(&model.Role{}).Where("id IN ?", idL).Delete(&model.Role{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Role: %s", res.Error)

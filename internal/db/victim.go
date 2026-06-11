@@ -92,6 +92,9 @@ func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, mod
 }
 
 func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
+	if len(idL) == 0 {
+		return model.SuccessRetVal()
+	}
 	victimL, ret := v.FindAll(GetOptions{
 		Conditions: map[string]any{"id": idL},
 	})
@@ -101,9 +104,8 @@ func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
 		}
 		return model.SuccessRetVal()
 	}
-	if res := v.DB.Where("victim_id IN ?", idL).Delete(&model.Pod{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Pods for victims %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Pod.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	if ret = InitPodRepo(v.DB).DeleteByVictimID(idL...); !ret.OK {
+		return ret
 	}
 	for _, victim := range victimL {
 		if ret = v.Update(victim.ID, UpdateVictimOptions{Status: new(model.StoppedVictimStatus)}); !ret.OK {

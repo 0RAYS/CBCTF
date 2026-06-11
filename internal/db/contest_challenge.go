@@ -81,6 +81,26 @@ func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {
 	}
 }
 
+func (c *ContestChallengeRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
+	return c.deleteByField("contest_id", contestIDL...)
+}
+
+func (c *ContestChallengeRepo) DeleteByChallengeID(challengeIDL ...uint) model.RetVal {
+	return c.deleteByField("challenge_id", challengeIDL...)
+}
+
+func (c *ContestChallengeRepo) deleteByField(field string, values ...uint) model.RetVal {
+	if len(values) == 0 {
+		return model.SuccessRetVal()
+	}
+	var contestChallengeIDL []uint
+	if res := c.DB.Model(&model.ContestChallenge{}).Where(field+" IN ?", values).Pluck("id", &contestChallengeIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get ContestChallenges by %s %v: %s", field, values, res.Error)
+		return model.RetVal{Msg: i18n.Model.ContestChallenge.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return c.Delete(contestChallengeIDL...)
+}
+
 func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challengeID uint) bool {
 	_, ret := c.Get(GetOptions{
 		Conditions: map[string]any{"contest_id": contestID, "challenge_id": challengeID},
@@ -189,17 +209,14 @@ func (c *ContestChallengeRepo) ListUnsolvedID(teamID, contestID uint, category s
 }
 
 func (c *ContestChallengeRepo) Delete(idL ...uint) model.RetVal {
-	var contestFlagIDL []uint
-	if res := c.DB.Model(&model.ContestFlag{}).Where("contest_challenge_id IN ?", idL).Pluck("id", &contestFlagIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get ContestFlags for contest challenges %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.ContestFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	if len(idL) == 0 {
+		return model.SuccessRetVal()
 	}
-	if ret := InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ret.OK {
+	if ret := InitContestFlagRepo(c.DB).DeleteByContestChallengeID(idL...); !ret.OK {
 		return ret
 	}
-	if res := c.DB.Where("contest_challenge_id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Submissions for contest challenges %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Submission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	if ret := InitSubmissionRepo(c.DB).DeleteByContestChallengeID(idL...); !ret.OK {
+		return ret
 	}
 	if res := c.DB.Model(&model.ContestChallenge{}).Where("id IN ?", idL).Delete(&model.ContestChallenge{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ContestChallenge: %s", res.Error)

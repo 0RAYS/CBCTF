@@ -39,10 +39,18 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 			return model.User{}, ret
 		}
 		// 获取用户失败的时创建新用户
-		if !userRepo.IsUniqueKeyValue(0, "name", name) {
+		unique, uniqueRet := userRepo.IsUniqueKeyValue(0, "name", name)
+		if !uniqueRet.OK {
+			return model.User{}, uniqueRet
+		}
+		if !unique {
 			name = fmt.Sprintf("%s_%s", utils.RandHexStr(10), provider.Provider)
 		}
-		if !userRepo.IsUniqueKeyValue(0, "email", email) {
+		unique, uniqueRet = userRepo.IsUniqueKeyValue(0, "email", email)
+		if !uniqueRet.OK {
+			return model.User{}, uniqueRet
+		}
+		if !unique {
 			email = fmt.Sprintf("%s@%s.com", utils.RandHexStr(10), provider.Uri)
 		}
 		user, ret = userRepo.Insert(model.User{

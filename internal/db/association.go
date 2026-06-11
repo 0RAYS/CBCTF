@@ -27,6 +27,30 @@ func DeleteUserFromTeam(tx *gorm.DB, user model.User, team model.Team) model.Ret
 	return model.SuccessRetVal()
 }
 
+func DeleteUserTeamByUserID(tx *gorm.DB, userIDL ...uint) model.RetVal {
+	if len(userIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	res := tx.Where("user_id IN ?", userIDL).Delete(&model.UserTeam{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete UserTeam by user IDs %v: %s", userIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.UserTeam.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
+func DeleteUserTeamByTeamID(tx *gorm.DB, teamIDL ...uint) model.RetVal {
+	if len(teamIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	res := tx.Where("team_id IN ?", teamIDL).Delete(&model.UserTeam{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete UserTeam by team IDs %v: %s", teamIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.UserTeam.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
 func AppendUserToContest(tx *gorm.DB, user model.User, contest model.Contest) model.RetVal {
 	res := tx.Model(&model.UserContest{}).Create(&model.UserContest{UserID: user.ID, ContestID: contest.ID})
 	if res.Error != nil {
@@ -41,6 +65,37 @@ func DeleteUserFromContest(tx *gorm.DB, user model.User, contest model.Contest) 
 		Delete(&model.UserContest{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete User from Contest: %s", res.Error)
+		return model.RetVal{Msg: i18n.Model.UserContest.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
+func DeleteUserContestByUserID(tx *gorm.DB, userIDL ...uint) model.RetVal {
+	if len(userIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	res := tx.Where("user_id IN ?", userIDL).Delete(&model.UserContest{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete UserContest by user IDs %v: %s", userIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.UserContest.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
+func DeleteUserContestByTeamID(tx *gorm.DB, teamIDL ...uint) model.RetVal {
+	if len(teamIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	res := tx.Exec(`
+		DELETE FROM user_contests
+		USING user_teams, teams
+		WHERE user_contests.user_id = user_teams.user_id
+			AND user_contests.contest_id = teams.contest_id
+			AND user_teams.team_id = teams.id
+			AND teams.id IN ?
+	`, teamIDL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete UserContest by team IDs %v: %s", teamIDL, res.Error)
 		return model.RetVal{Msg: i18n.Model.UserContest.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
@@ -65,6 +120,30 @@ func DeleteUserFromGroup(tx *gorm.DB, user model.User, group model.Group) model.
 	return model.SuccessRetVal()
 }
 
+func DeleteUserGroupByUserID(tx *gorm.DB, userIDL ...uint) model.RetVal {
+	if len(userIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	res := tx.Where("user_id IN ?", userIDL).Delete(&model.UserGroup{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete UserGroup by user IDs %v: %s", userIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.UserGroup.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
+func DeleteUserGroupByGroupID(tx *gorm.DB, groupIDL ...uint) model.RetVal {
+	if len(groupIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	res := tx.Where("group_id IN ?", groupIDL).Delete(&model.UserGroup{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete UserGroup by group IDs %v: %s", groupIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.UserGroup.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
 func AssignPermissionToRole(tx *gorm.DB, permission model.Permission, role model.Role) model.RetVal {
 	res := tx.Model(&model.RolePermission{}).Create(&model.RolePermission{RoleID: role.ID, PermissionID: permission.ID})
 	if res.Error != nil {
@@ -79,6 +158,18 @@ func RevokePermissionFromRole(tx *gorm.DB, permission model.Permission, role mod
 		Delete(&model.RolePermission{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to revoke Role Permission: %s", res.Error)
+		return model.RetVal{Msg: i18n.Model.RolePermission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
+func DeleteRolePermissionByRoleID(tx *gorm.DB, roleIDL ...uint) model.RetVal {
+	if len(roleIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	res := tx.Where("role_id IN ?", roleIDL).Delete(&model.RolePermission{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete RolePermission by role IDs %v: %s", roleIDL, res.Error)
 		return model.RetVal{Msg: i18n.Model.RolePermission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
