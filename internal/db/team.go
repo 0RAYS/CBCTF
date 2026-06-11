@@ -4,8 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
-	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -234,11 +232,6 @@ func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
 	}
 	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
 	for _, team := range teamL {
-		if ret = t.Update(team.ID, UpdateTeamOptions{
-			Name: new(fmt.Sprintf("%s_deleted_%s", team.Name, utils.RandHexStr(6))),
-		}); !ret.OK {
-			return ret
-		}
 		for _, user := range team.Users {
 			if ret = DeleteUserFromContest(t.DB, user, model.Contest{BaseModel: model.BaseModel{ID: team.ContestID}}); !ret.OK {
 				return ret
