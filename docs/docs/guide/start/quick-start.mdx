@@ -1,3 +1,5 @@
+import { Steps } from '@rspress/core/theme';
+
 # 快速上手
 
 推荐使用 Helm 将 CBCTF 部署到 Kubernetes。
@@ -15,26 +17,9 @@
 
 ## Helm 快速部署
 
-Chart 位于仓库根目录的 `chart/`，可添加为 repo
-
-```bash
-helm repo add cbctf https://cbctf.0rays.club
-```
-
-须编辑默认 values 后再安装，**系统安装后将无法通过重新应用 values 修改配置**，一切以数据库中的配置为准，通过系统配置页修改：
-
-```bash
-helm show values cbctf/cbctf > values.yaml
-helm install cbctf cbctf/cbctf -n cbctf --create-namespace -f values.yaml
-```
-
-如果暂时没有 Ingress，可先端口转发访问：
-
-```bash
-kubectl port-forward -n cbctf svc/cbctf 8000:8000
-```
-
-访问地址：`http://127.0.0.1:8000/platform/#/login`
+:::warning
+没有快速部署，必炸，请仔细阅读[部署](/deploy/cluster.html)
+:::
 
 ## 初始管理员
 
@@ -56,13 +41,24 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 
 本地运行需要先准备 PostgreSQL 和 Redis。
 
+<Steps>
+
+### 构建前端
+
 ```bash
 cd frontend
 pnpm install
 pnpm run build
+```
+
+### 启动后端
+
+```bash
 cd ..
 go run .
 ```
+
+</Steps>
 
 首次运行如果没有 `config.yaml`，程序会生成默认配置并退出。修改数据库、Redis、监听地址和 JWT
 密钥后再次启动。当系统初次正常运行之后，本地配置文件仅作为数据库初次连接和配置文件预览使用，将会被数据库中的配置内容覆盖
