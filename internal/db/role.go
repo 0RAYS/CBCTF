@@ -5,8 +5,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
-	"fmt"
 	"slices"
 
 	"gorm.io/gorm"
@@ -106,13 +104,6 @@ func (r *RoleRepo) GetFallbackRoleID(excludedRoleIDL ...uint) (uint, model.RetVa
 }
 
 func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
-	roleL, _, ret := r.List(-1, -1, GetOptions{Conditions: map[string]interface{}{"id": idL}})
-	if !ret.OK {
-		if ret.Msg != i18n.Model.NotFound {
-			return ret
-		}
-		return model.SuccessRetVal()
-	}
 	groupRepo := InitGroupRepo(r.DB)
 	groupL, _, ret := groupRepo.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"role_id": idL},
@@ -126,13 +117,6 @@ func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
 	}
 	for _, group := range groupL {
 		if ret = groupRepo.Update(group.ID, UpdateGroupOptions{RoleID: &fallbackRoleID}); !ret.OK {
-			return ret
-		}
-	}
-	for _, role := range roleL {
-		if ret = r.Update(role.ID, UpdateRoleOptions{
-			Name: new(fmt.Sprintf("%s_deleted_%s", role.Name, utils.RandHexStr(6))),
-		}); !ret.OK {
 			return ret
 		}
 	}

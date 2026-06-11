@@ -4,8 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
-	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -102,11 +100,6 @@ func (g *GroupRepo) Delete(idL ...uint) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	for _, group := range groupL {
-		if ret = g.Update(group.ID, UpdateGroupOptions{
-			Name: new(fmt.Sprintf("%s_deleted_%s", group.Name, utils.RandHexStr(6))),
-		}); !ret.OK {
-			return ret
-		}
 		for _, user := range group.Users {
 			if ret = DeleteUserFromGroup(g.DB, user, group); !ret.OK {
 				return ret

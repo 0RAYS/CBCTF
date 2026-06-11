@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
 	"CBCTF/internal/utils"
-	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -280,13 +279,6 @@ func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	for _, user := range userL {
-		if ret = u.Update(user.ID, UpdateUserOptions{
-			Name:           new(fmt.Sprintf("%s_deleted_%s", user.Name, utils.RandHexStr(6))),
-			Email:          new(fmt.Sprintf("%s_deleted_%s", user.Email, utils.RandHexStr(6))),
-			ProviderUserID: new(fmt.Sprintf("%s_deleted_%s", user.ProviderUserID, utils.RandHexStr(6))),
-		}); !ret.OK {
-			return ret
-		}
 		for _, team := range user.Teams {
 			if ret = DeleteUserFromContest(u.DB, user, model.Contest{BaseModel: model.BaseModel{ID: team.ContestID}}); !ret.OK {
 				return ret
