@@ -15,40 +15,25 @@ PostgreSQL 和 Redis。
 
 ## 安装
 
-创建命名空间并安装：
+添加 Helm Repo
 
 ```bash
-helm install cbctf ./chart -n cbctf --create-namespace
+helm repo add cbctf https://cbctf.0rays.club
 ```
 
-推荐使用自定义 values：
+**须使用自定义 values**
+
+初次安装后，系统配置将以数据库中内容为准，**尽可能一次性配置正确**，不再从 values 中读取**（但在连接数据库时会使用 values 中地址）**：
 
 ```bash
-cp chart/values.yaml my-values.yaml
-helm install cbctf ./chart -n cbctf --create-namespace -f my-values.yaml
+helm show values cbctf/cbctf > values.yaml
+helm install cbctf cbctf/cbctf -n cbctf --create-namespace -f values.yaml
 ```
-
-查看状态：
-
-```bash
-kubectl get pods -n cbctf
-kubectl get svc -n cbctf
-kubectl get ingress -n cbctf
-kubectl logs -n cbctf deployment/cbctf
-```
-
-没有 Ingress 时可用端口转发：
-
-```bash
-kubectl port-forward -n cbctf svc/cbctf 8000:8000
-```
-
-访问 `http://127.0.0.1:8000/platform/#/login`。
 
 ## 升级和卸载
 
 ```bash
-helm upgrade cbctf ./chart -n cbctf -f my-values.yaml
+helm upgrade cbctf cbctf/cbctf -n cbctf -f values.yaml
 helm uninstall cbctf -n cbctf
 ```
 
@@ -178,3 +163,15 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 ```
 
 如果 Pod 反复重启，优先检查日志中的数据库、Redis、RBAC、PVC、KubeVirt、Kube-OVN/Multus 相关错误。
+
+## 启动时资源检查与创建
+
+Helm 安装后，应用启动时会检查或创建以下资源：
+
+- 命名空间：`{namespace}`
+- 共享存储 PVC：`{namespace}-shared-volume`
+
+:::warning
+PVC 缺失会导致动态附件不可用。KubeVirt 资源不会在启动时创建，只有启动包含 `x-kubevirt: true` 的 VM 靶机时才会创建对应
+`VirtualMachine`。
+:::

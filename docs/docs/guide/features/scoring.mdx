@@ -1,3 +1,5 @@
+import { Tabs, Tab } from '@rspress/core/theme';
+
 # 计分系统
 
 CBCTF 支持三种计分类型，可在比赛中对每个 flag 独立配置。
@@ -18,7 +20,13 @@ CBCTF 支持三种计分类型，可在比赛中对每个 flag 独立配置。
 | `MinScore` | `100`  | 分数下限，解题人数再多也不低于此值  |
 | `Decay`    | `50`   | 衰减控制参数（含义因类型而异，见下） |
 
-## 静态分数
+## 计分类型
+
+<Tabs groupId="score-type">
+
+<Tab label="静态分数">
+
+### 静态分数
 
 ```
 score = Score
@@ -30,7 +38,11 @@ score = Score
 
 适用场景：难度固定的题目，或不希望使用动态计分的比赛。
 
-## 线性分数
+</Tab>
+
+<Tab label="线性分数">
+
+### 线性分数
 
 ```
 score = max(Score - Decay × solvers, MinScore)
@@ -50,7 +62,11 @@ score = max(Score - Decay × solvers, MinScore)
 
 适用场景：竞争性较强、参赛人数较少的比赛。
 
-## 对数分数
+</Tab>
+
+<Tab label="对数分数">
+
+### 对数分数
 
 ```
 score = (Score - MinScore) × exp(-5/Decay × solvers) + MinScore
@@ -70,6 +86,10 @@ score = (Score - MinScore) × exp(-5/Decay × solvers) + MinScore
 |  200 |    102 |
 
 前期降分较快，后期趋于平稳。适用场景：大型 CTF 比赛，题目难度分布合理。
+
+</Tab>
+
+</Tabs>
 
 ## 三血奖励（Blood Bonus）
 

@@ -45,12 +45,19 @@ flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 - **Redis 缓存 / 任务队列** + **PostgreSQL 数据存储** + **NFS 网络存储**
 
 <img src="/img/dashboard.png" width="100%" alt="管理后台" />
+
 <img src="/img/contest.png" width="100%" alt="比赛详情" />
+
 <img src="/img/scoreboard-1.png" width="100%" alt="排行榜" />
+
 <img src="/img/scoreboard-2.png" width="100%" alt="排行榜（图表）" />
+
 <img src="/img/contest-settings.png" width="100%" alt="比赛设置" />
+
 <img src="/img/settings.png" width="100%" alt="系统设置" />
+
 <img src="/img/branding.png" width="100%" alt="品牌化配置" />
+
 <img src="/img/log.png" width="100%" alt="日志" />
 
 ## 构建
@@ -94,8 +101,7 @@ services:
       - "80:80"
 ```
 
->
-完整示例：[example/pods/pod/docker-compose.yaml](https://github.com/0RAYS/CBCTF/blob/main/example/pods/pod/docker-compose.yaml)
+> 完整示例：[example/pods/pod/docker-compose.yaml][pod-compose]
 
 **VPC 模式（含 KubeVirt 虚拟机）**
 
@@ -123,13 +129,16 @@ networks:
           gateway: 192.168.1.1
 ```
 
->
-完整示例：[example/pods/vpc/docker-compose.yaml](https://github.com/0RAYS/CBCTF/blob/main/example/pods/vpc/docker-compose.yaml)
+> 完整示例：[example/pods/vpc/docker-compose.yaml][vpc-compose]
 
 <img src="/img/docker-compose.png" width="100%" alt="容器配置" />
+
 <img src="/img/vm.png" width="100%" alt="虚拟机" />
+
 <img src="/img/victims-1.png" width="100%" alt="靶机列表" />
+
 <img src="/img/victims-2.png" width="100%" alt="靶机详情" />
+
 <img src="/img/victims-3.png" width="100%" alt="靶机终端" />
 
 ## 动态附件
@@ -158,3 +167,6 @@ networks:
 ## 许可证
 
 本项目采用 [GNU Affero General Public License v3.0](https://github.com/0RAYS/CBCTF?tab=AGPL-3.0-1-ov-file) 开源协议。
+
+[pod-compose]: https://github.com/0RAYS/CBCTF/blob/main/example/pods/pod/docker-compose.yaml
+[vpc-compose]: https://github.com/0RAYS/CBCTF/blob/main/example/pods/vpc/docker-compose.yaml
