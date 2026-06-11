@@ -22,7 +22,10 @@ model:
     deleteError: "Delete Challenge error: {{.Error}}"
   challengeFlag:
     invalidType: "Invalid challenge flag type"
+    getError: "Get ChallengeFlag error: {{.Error}}"
     deleteError: "Delete ChallengeFlag error: {{.Error}}"
+  cronJob:
+    getError: "Get CronJob error: {{.Error}}"
   cheat:
     invalidType: "Invalid cheat type"
     createError: "Create Cheat error: {{.Error}}"
@@ -47,6 +50,7 @@ model:
     notFound: "ContestFlag not found"
   device:
     createError: "Create Device error: {{.Error}}"
+    getError: "Get Device error: {{.Error}}"
   docker:
     invalidComposeYaml: "Invalid docker-compose.yaml: {{.Error}}"
     deleteError: "Delete Docker error: {{.Error}}"
@@ -96,6 +100,8 @@ model:
     notAllowed: "Not allowed submit flag"
     getError: "Get Submission error: {{.Error}}"
     deleteError: "Delete Submission error: {{.Error}}"
+  task:
+    getError: "Get Task error: {{.Error}}"
   team:
     banned: "Team is banned"
     full: "Team is full"
@@ -109,6 +115,7 @@ model:
     notMatch: "Flag is wrong"
     alreadySolved: "Already solved"
     getError: "Get TeamFlag error: {{.Error}}"
+    deleteError: "Delete TeamFlag error: {{.Error}}"
     notFound: "TeamFlag not found"
   traffic:
     getError: "Get Traffic error: {{.Error}}"

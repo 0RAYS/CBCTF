@@ -22,7 +22,10 @@ model:
     deleteError: "500"
   challengeFlag:
     invalidType: "400"
+    getError: "500"
     deleteError: "500"
+  cronJob:
+    getError: "500"
   cheat:
     invalidType: "400"
     createError: "500"
@@ -47,6 +50,7 @@ model:
     notFound: "404"
   device:
     createError: "500"
+    getError: "500"
   docker:
     invalidComposeYaml: "400"
     deleteError: "500"
@@ -96,6 +100,8 @@ model:
     notAllowed: "400"
     getError: "500"
     deleteError: "500"
+  task:
+    getError: "500"
   team:
     banned: "403"
     full: "400"
@@ -109,6 +115,7 @@ model:
     notMatch: "400"
     alreadySolved: "400"
     getError: "500"
+    deleteError: "500"
     notFound: "404"
   traffic:
     getError: "500"
