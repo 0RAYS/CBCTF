@@ -216,15 +216,7 @@ func (t *TeamRepo) CountUsersMap(teamIDL ...uint) (map[uint]int64, model.RetVal)
 }
 
 func (t *TeamRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
-	if len(contestIDL) == 0 {
-		return model.SuccessRetVal()
-	}
-	var teamIDL []uint
-	if res := t.DB.Model(&model.Team{}).Where("contest_id IN ?", contestIDL).Pluck("id", &teamIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get Teams by contest IDs %v: %s", contestIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Team.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return t.Delete(teamIDL...)
+	return t.DeleteByFieldID("contest_id", contestIDL...)
 }
 
 func (t *TeamRepo) Delete(idL ...uint) model.RetVal {

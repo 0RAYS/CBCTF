@@ -358,3 +358,15 @@ func (b *BaseRepo[M]) Delete(idL ...uint) model.RetVal {
 	}
 	return model.SuccessRetVal()
 }
+
+func (b *BaseRepo[M]) DeleteByFieldID(field string, idL ...uint) model.RetVal {
+	if len(idL) == 0 {
+		return model.SuccessRetVal()
+	}
+	var targetIDL []uint
+	if res := b.DB.Model(new(M)).Where(field+" IN ?", idL).Pluck("id", &targetIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get %s by %s %v: %s", model.Name(*new(M)), field, idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Name(*new(M)), "Error": res.Error.Error()}}
+	}
+	return b.Delete(targetIDL...)
+}

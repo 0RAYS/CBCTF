@@ -123,13 +123,5 @@ func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, model.RetVa
 }
 
 func (c *CheatRepo) DeleteByContestID(idL ...uint) model.RetVal {
-	if len(idL) == 0 {
-		return model.SuccessRetVal()
-	}
-	var cheatIDL []uint
-	if res := c.DB.Model(&model.Cheat{}).Where("contest_id IN ?", idL).Pluck("id", &cheatIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get Cheats by contest IDs %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Cheat.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return c.Delete(cheatIDL...)
+	return c.DeleteByFieldID("contest_id", idL...)
 }

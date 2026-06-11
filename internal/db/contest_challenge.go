@@ -82,23 +82,11 @@ func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {
 }
 
 func (c *ContestChallengeRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
-	return c.deleteByField("contest_id", contestIDL...)
+	return c.DeleteByFieldID("contest_id", contestIDL...)
 }
 
 func (c *ContestChallengeRepo) DeleteByChallengeID(challengeIDL ...uint) model.RetVal {
-	return c.deleteByField("challenge_id", challengeIDL...)
-}
-
-func (c *ContestChallengeRepo) deleteByField(field string, values ...uint) model.RetVal {
-	if len(values) == 0 {
-		return model.SuccessRetVal()
-	}
-	var contestChallengeIDL []uint
-	if res := c.DB.Model(&model.ContestChallenge{}).Where(field+" IN ?", values).Pluck("id", &contestChallengeIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get ContestChallenges by %s %v: %s", field, values, res.Error)
-		return model.RetVal{Msg: i18n.Model.ContestChallenge.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return c.Delete(contestChallengeIDL...)
+	return c.DeleteByFieldID("challenge_id", challengeIDL...)
 }
 
 func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challengeID uint) bool {

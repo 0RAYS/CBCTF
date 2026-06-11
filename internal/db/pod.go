@@ -46,13 +46,5 @@ func (p *PodRepo) Delete(idL ...uint) model.RetVal {
 }
 
 func (p *PodRepo) DeleteByVictimID(victimIDL ...uint) model.RetVal {
-	if len(victimIDL) == 0 {
-		return model.SuccessRetVal()
-	}
-	var podIDL []uint
-	if res := p.DB.Model(&model.Pod{}).Where("victim_id IN ?", victimIDL).Pluck("id", &podIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get Pods by victim IDs %v: %s", victimIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Pod.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return p.Delete(podIDL...)
+	return p.DeleteByFieldID("victim_id", victimIDL...)
 }

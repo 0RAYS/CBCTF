@@ -92,27 +92,15 @@ func InitContestFlagRepo(tx *gorm.DB) *ContestFlagRepo {
 }
 
 func (c *ContestFlagRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
-	return c.deleteByField("contest_id", contestIDL...)
+	return c.DeleteByFieldID("contest_id", contestIDL...)
 }
 
 func (c *ContestFlagRepo) DeleteByContestChallengeID(contestChallengeIDL ...uint) model.RetVal {
-	return c.deleteByField("contest_challenge_id", contestChallengeIDL...)
+	return c.DeleteByFieldID("contest_challenge_id", contestChallengeIDL...)
 }
 
 func (c *ContestFlagRepo) DeleteByChallengeFlagID(challengeFlagIDL ...uint) model.RetVal {
-	return c.deleteByField("challenge_flag_id", challengeFlagIDL...)
-}
-
-func (c *ContestFlagRepo) deleteByField(field string, values ...uint) model.RetVal {
-	if len(values) == 0 {
-		return model.SuccessRetVal()
-	}
-	var contestFlagIDL []uint
-	if res := c.DB.Model(&model.ContestFlag{}).Where(field+" IN ?", values).Pluck("id", &contestFlagIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get ContestFlags by %s %v: %s", field, values, res.Error)
-		return model.RetVal{Msg: i18n.Model.ContestFlag.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return c.Delete(contestFlagIDL...)
+	return c.DeleteByFieldID("challenge_flag_id", challengeFlagIDL...)
 }
 
 type UserSolvedContestFlag struct {
