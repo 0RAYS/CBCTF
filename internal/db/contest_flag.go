@@ -159,7 +159,7 @@ func (c *ContestFlagRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := c.DB.Where("contest_flag_id IN ?", idL).Delete(&model.TeamFlag{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete TeamFlags for contest flags %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Name(model.TeamFlag{}), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.TeamFlag.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if res := c.DB.Model(&model.ContestFlag{}).Where("id IN ?", idL).Delete(&model.ContestFlag{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ContestFlags: %s", res.Error)

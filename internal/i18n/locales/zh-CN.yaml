@@ -22,7 +22,10 @@ model:
     deleteError: "删除 Challenge 失败: {{.Error}}"
   challengeFlag:
     invalidType: "错误的 flag 类型"
+    getError: "获取 ChallengeFlag 失败: {{.Error}}"
     deleteError: "删除 ChallengeFlag 失败: {{.Error}}"
+  cronJob:
+    getError: "获取 CronJob 失败: {{.Error}}"
   cheat:
     invalidType: "不合法的作弊类型"
     createError: "创建 Cheat 失败: {{.Error}}"
@@ -47,6 +50,7 @@ model:
     notFound: "ContestFlag 不存在"
   device:
     createError: "创建 Device 失败: {{.Error}}"
+    getError: "获取 Device 失败: {{.Error}}"
   docker:
     invalidComposeYaml: "不合法的 docker-compose.yaml: {{.Error}}"
     deleteError: "删除 Docker 失败: {{.Error}}"
@@ -96,6 +100,8 @@ model:
     notAllowed: "不允许提交 flag"
     getError: "获取 Submission 失败: {{.Error}}"
     deleteError: "删除 Submission 失败: {{.Error}}"
+  task:
+    getError: "获取 Task 失败: {{.Error}}"
   team:
     banned: "队伍被封禁"
     full: "队伍已满"
@@ -109,6 +115,7 @@ model:
     notMatch: "flag 错误"
     alreadySolved: "已解出 flag"
     getError: "获取 TeamFlag 失败: {{.Error}}"
+    deleteError: "删除 TeamFlag 失败: {{.Error}}"
     notFound: "TeamFlag 不存在"
   traffic:
     getError: "获取 Traffic 失败: {{.Error}}"

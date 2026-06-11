@@ -237,7 +237,7 @@ func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := t.DB.Where("team_id IN ?", idL).Delete(&model.TeamFlag{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete TeamFlags for teams %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Name(model.TeamFlag{}), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.TeamFlag.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
 		log.Logger.Errorf("Failed to delete Team: %s", res.Error)

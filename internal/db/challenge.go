@@ -137,7 +137,7 @@ func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 	var challengeFlagIDL []uint
 	if res := c.DB.Model(&model.ChallengeFlag{}).Where("challenge_id IN ?", challengeIDL).Pluck("id", &challengeFlagIDL); res.Error != nil {
 		log.Logger.Warningf("Failed to get ChallengeFlags for challenges %v: %s", challengeIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(model.ChallengeFlag{}), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.ChallengeFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	var contestChallengeIDL []uint
 	if res := c.DB.Model(&model.ContestChallenge{}).Where("challenge_id IN ?", challengeIDL).Pluck("id", &contestChallengeIDL); res.Error != nil {

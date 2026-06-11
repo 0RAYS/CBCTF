@@ -9,7 +9,12 @@ type Challenge struct {
 
 type ChallengeFlag struct {
 	InvalidType string
+	GetError    string
 	DeleteError string
+}
+
+type CronJob struct {
+	GetError string
 }
 
 type Cheat struct {
@@ -44,6 +49,7 @@ type ContestFlag struct {
 
 type Device struct {
 	CreateError string
+	GetError    string
 }
 
 type Docker struct {
@@ -124,6 +130,10 @@ type Submission struct {
 	DeleteError string
 }
 
+type ModelTask struct {
+	GetError string
+}
+
 type Team struct {
 	Banned             string
 	Full               string
@@ -139,6 +149,7 @@ type TeamFlag struct {
 	NotMatch      string
 	AlreadySolved string
 	GetError      string
+	DeleteError   string
 	NotFound      string
 }
 
@@ -219,6 +230,7 @@ var Model = struct {
 	Contest          Contest
 	ContestChallenge ContestChallenge
 	ContestFlag      ContestFlag
+	CronJob          CronJob
 	Device           Device
 	Docker           Docker
 	Email            Email
@@ -233,6 +245,7 @@ var Model = struct {
 	RolePermission   RolePermission
 	Setting          Setting
 	Submission       Submission
+	Task             ModelTask
 	Team             Team
 	TeamFlag         TeamFlag
 	Traffic          Traffic
@@ -259,8 +272,12 @@ var Model = struct {
 		DeleteError: "model.challenge.deleteError",
 	},
 	ChallengeFlag: ChallengeFlag{
-		InvalidType: "model.challenge.invalidType",
+		InvalidType: "model.challengeFlag.invalidType",
+		GetError:    "model.challengeFlag.getError",
 		DeleteError: "model.challengeFlag.deleteError",
+	},
+	CronJob: CronJob{
+		GetError: "model.cronJob.getError",
 	},
 	Cheat: Cheat{
 		InvalidType: "model.cheat.invalidType",
@@ -290,6 +307,7 @@ var Model = struct {
 	},
 	Device: Device{
 		CreateError: "model.device.createError",
+		GetError:    "model.device.getError",
 	},
 	Docker: Docker{
 		InvalidComposeYaml: "model.docker.invalidComposeYaml",
@@ -353,6 +371,9 @@ var Model = struct {
 		GetError:    "model.submission.getError",
 		DeleteError: "model.submission.deleteError",
 	},
+	Task: ModelTask{
+		GetError: "model.task.getError",
+	},
 	Team: Team{
 		Banned:             "model.team.banned",
 		Full:               "model.team.full",
@@ -367,6 +388,7 @@ var Model = struct {
 		NotMatch:      "model.teamFlag.notMatch",
 		AlreadySolved: "model.teamFlag.alreadySolved",
 		GetError:      "model.teamFlag.getError",
+		DeleteError:   "model.teamFlag.deleteError",
 		NotFound:      "model.teamFlag.notFound",
 	},
 	Traffic: Traffic{

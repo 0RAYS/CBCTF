@@ -56,7 +56,7 @@ func (t *TaskRepo) ListQueues() ([]string, model.RetVal) {
 		Where("queue <> ''").
 		Order("queue ASC").
 		Pluck("queue", &queues).Error; err != nil {
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(model.Task{}), "Error": err.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.Task.GetError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	sort.Strings(queues)
 	return queues, model.SuccessRetVal()
