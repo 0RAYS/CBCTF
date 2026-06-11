@@ -8,10 +8,14 @@ var K8S = struct {
 	// Model
 	NotFound string
 	// Model Error
-	DeleteError string
+	DeleteError       string
+	PodRunError       string
+	AttachmentTimeout string
 }{
-	CreateError: "k8s.createError",
-	GetError:    "k8s.getError",
-	NotFound:    "k8s.notFound",
-	DeleteError: "k8s.deleteError",
+	CreateError:       "k8s.createError",
+	GetError:          "k8s.getError",
+	NotFound:          "k8s.notFound",
+	DeleteError:       "k8s.deleteError",
+	PodRunError:       "k8s.podRunError",
+	AttachmentTimeout: "k8s.attachmentTimeout",
 }

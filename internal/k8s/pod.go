@@ -91,7 +91,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		}
 		if pod.Status.Phase != corev1.PodPending {
 			log.Logger.Warningf("Failed to run Pod %s: phase=%s, reason=%s", pod.Name, pod.Status.Phase, pod.Status.Reason)
-			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Failed to run Pod"}}
+			return nil, model.RetVal{Msg: i18n.K8S.PodRunError, Attr: map[string]any{"Pod": pod.Name, "Phase": pod.Status.Phase, "Reason": pod.Status.Reason}}
 		}
 		time.Sleep(500 * time.Millisecond)
 	}

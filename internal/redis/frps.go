@@ -78,18 +78,18 @@ func LockFrpsPort(host string, portRange []int32, protocol string) (int32, model
 	}
 	resultSlice, ok := result.([]interface{})
 	if !ok || len(resultSlice) != 2 {
-		return 0, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Unexpected result format from Lua script"}}
+		return 0, model.RetVal{Msg: i18n.Redis.InvalidScriptResult}
 	}
 	port, ok := resultSlice[0].(int64)
 	if !ok {
-		return 0, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Invalid port in result"}}
+		return 0, model.RetVal{Msg: i18n.Redis.InvalidScriptPort}
 	}
 	success, ok := resultSlice[1].(int64)
 	if !ok {
-		return 0, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Invalid success flag in result"}}
+		return 0, model.RetVal{Msg: i18n.Redis.InvalidScriptSuccessFlag}
 	}
 	if success != 1 {
-		return int32(port), model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": nil}}
+		return int32(port), model.RetVal{Msg: i18n.Redis.NoAvailablePort}
 	}
 	return int32(port), model.SuccessRetVal()
 }

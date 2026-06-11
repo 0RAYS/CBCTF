@@ -64,6 +64,7 @@ model:
     createError: "创建 File 失败: {{.Error}}"
     deleteError: "删除 File 失败: {{.Error}}"
     notFound: "文件不存在"
+    invalidPicture: "不合法的图片关联对象"
   generator:
     notAvailable: "没有可用的附件生成器, 请联系管理员检查生成器状态"
     notStoppable: "仅允许停止运行中的生成器"
@@ -77,6 +78,8 @@ model:
     invalidType: "不合法的通知类型"
     notFound: "通知不存在"
     deleteError: "删除通知失败: {{.Error}}"
+  oauth:
+    missingIDClaim: "OAuth 响应缺少用户 ID 字段"
   permission:
     getError: "获取 Permission 失败: {{.Error}}"
     notFound: "权限不存在"
@@ -89,6 +92,7 @@ model:
     cannotDeleteDefault: "不允许删除默认角色"
     getError: "获取 Role 失败: {{.Error}}"
     deleteError: "删除 Role 失败: {{.Error}}"
+    noFallbackRole: "没有可用的默认回退角色"
   rolePermission:
     createError: "创建 RolePermission 失败: {{.Error}}"
     deleteError: "删除 RolePermission 失败: {{.Error}}"
@@ -160,10 +164,19 @@ redis:
   getError: "获取 {{.Key}} 缓存失败: {{.Error}}"
   notFound: "{{.Key}} 未缓存"
   deleteError: "删除 {{.Key}} 缓存失败: {{.Error}}"
+  invalidScriptResult: "Redis 脚本返回格式异常"
+  invalidScriptPort: "Redis 脚本返回端口无效"
+  invalidScriptSuccessFlag: "Redis 脚本返回成功标记无效"
+  noAvailablePort: "没有可用的 FRP 转发端口"
 task:
   enqueueError: "提交任务队列失败: {{.Error}}"
+  inspectorUnavailable: "任务队列检查器不可用"
 k8s:
   createError: "创建 {{.Model}} 失败: {{.Error}}"
   getError: "获取 {{.Model}} 失败: {{.Error}}"
   notFound: "{{.Model}} 不存在"
   deleteError: "删除 {{.Model}} 失败: {{.Error}}"
+  podRunError: "Pod 启动失败: {{.Pod}} {{.Phase}} {{.Reason}}"
+  attachmentTimeout: "等待附件生成超时"
+db:
+  unavailable: "数据库不可用"
