@@ -216,42 +216,28 @@ func (t *TeamRepo) CountUsersMap(teamIDL ...uint) (map[uint]int64, model.RetVal)
 }
 
 func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
-	teamL, ret := t.FindAll(GetOptions{
-		Conditions: map[string]any{"id": idL},
-		Preloads: map[string]GetOptions{
-			"Users":       {},
-			"Submissions": {},
-			"TeamFlags":   {},
-		},
-	})
-	if !ret.OK {
-		if ret.Msg != i18n.Model.NotFound && ret.Msg != i18n.Model.Team.NotFound {
-			return ret
-		}
-		return model.SuccessRetVal()
+	if res := t.DB.Exec(`
+		DELETE FROM user_contests
+		USING user_teams, teams
+		WHERE user_contests.user_id = user_teams.user_id
+			AND user_contests.contest_id = teams.contest_id
+			AND user_teams.team_id = teams.id
+			AND teams.id IN ?
+	`, idL); res.Error != nil {
+		log.Logger.Warningf("Failed to delete UserContest for teams %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.UserContest.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
-	for _, team := range teamL {
-		for _, user := range team.Users {
-			if ret = DeleteUserFromContest(t.DB, user, model.Contest{BaseModel: model.BaseModel{ID: team.ContestID}}); !ret.OK {
-				return ret
-			}
-			if ret = DeleteUserFromTeam(t.DB, user, team); !ret.OK {
-				return ret
-			}
-		}
-		for _, submission := range team.Submissions {
-			submissionIDL = append(submissionIDL, submission.ID)
-		}
-		for _, teamFlag := range team.TeamFlags {
-			teamFlagIDL = append(teamFlagIDL, teamFlag.ID)
-		}
+	if res := t.DB.Where("team_id IN ?", idL).Delete(&model.UserTeam{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete UserTeam for teams %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.UserTeam.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	if ret = InitSubmissionRepo(t.DB).Delete(submissionIDL...); !ret.OK {
-		return ret
+	if res := t.DB.Where("team_id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Submissions for teams %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Submission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	if ret = InitTeamFlagRepo(t.DB).Delete(teamFlagIDL...); !ret.OK {
-		return ret
+	if res := t.DB.Where("team_id IN ?", idL).Delete(&model.TeamFlag{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete TeamFlags for teams %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Name(model.TeamFlag{}), "Error": res.Error.Error()}}
 	}
 	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
 		log.Logger.Errorf("Failed to delete Team: %s", res.Error)

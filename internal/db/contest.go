@@ -218,54 +218,39 @@ func (c *ContestRepo) CountNotices(contestID uint) (int64, model.RetVal) {
 }
 
 func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
-	contestL, ret := c.FindAll(GetOptions{
-		Conditions: map[string]any{"id": idL},
-		Preloads: map[string]GetOptions{
-			"Teams":             {},
-			"Notices":           {},
-			"ContestChallenges": {},
-			"ContestFlags":      {},
-			"Submissions":       {},
-		},
-	})
-	if !ret.OK {
-		if ret.Msg != i18n.Model.NotFound && ret.Msg != i18n.Model.Contest.NotFound {
-			return ret
-		}
-		return model.SuccessRetVal()
+	var teamIDL []uint
+	if res := c.DB.Model(&model.Team{}).Where("contest_id IN ?", idL).Pluck("id", &teamIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get Teams for contests %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Team.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	teamIDL, noticeIDL, contestChallengeIDL, contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
-	for _, contest := range contestL {
-		for _, team := range contest.Teams {
-			teamIDL = append(teamIDL, team.ID)
-		}
-		for _, notice := range contest.Notices {
-			noticeIDL = append(noticeIDL, notice.ID)
-		}
-		for _, contestChallenge := range contest.ContestChallenges {
-			contestChallengeIDL = append(contestChallengeIDL, contestChallenge.ID)
-		}
-		for _, contestFlag := range contest.ContestFlags {
-			contestFlagIDL = append(contestFlagIDL, contestFlag.ID)
-		}
-		for _, submission := range contest.Submissions {
-			submissionIDL = append(submissionIDL, submission.ID)
-		}
+	var contestChallengeIDL []uint
+	if res := c.DB.Model(&model.ContestChallenge{}).Where("contest_id IN ?", idL).Pluck("id", &contestChallengeIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get ContestChallenges for contests %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
+
+	var ret model.RetVal
 	if ret = InitTeamRepo(c.DB).Delete(teamIDL...); !ret.OK {
 		return ret
 	}
-	if ret = InitNoticeRepo(c.DB).Delete(noticeIDL...); !ret.OK {
-		return ret
+	if res := c.DB.Where("contest_id IN ?", idL).Delete(&model.Notice{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Notices for contests %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Notice.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if ret = InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ret.OK {
 		return ret
 	}
+	var contestFlagIDL []uint
+	if res := c.DB.Model(&model.ContestFlag{}).Where("contest_id IN ?", idL).Pluck("id", &contestFlagIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get ContestFlags for contests %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.ContestFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
 	if ret = InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ret.OK {
 		return ret
 	}
-	if ret = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ret.OK {
-		return ret
+	if res := c.DB.Where("contest_id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Submissions for contests %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Submission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if ret = InitGeneratorRepo(c.DB).DeleteByContestID(idL...); !ret.OK {
 		return ret
