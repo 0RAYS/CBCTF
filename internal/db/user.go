@@ -268,21 +268,20 @@ func (u *UserRepo) CountContests(userID uint) (int64, model.RetVal) {
 }
 
 func (u *UserRepo) Delete(idL ...uint) model.RetVal {
-	if res := u.DB.Where("user_id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Submissions for users %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Submission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	if len(idL) == 0 {
+		return model.SuccessRetVal()
 	}
-	if res := u.DB.Where("user_id IN ?", idL).Delete(&model.UserTeam{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete UserTeam for users %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.UserTeam.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	if ret := InitSubmissionRepo(u.DB).DeleteByUserID(idL...); !ret.OK {
+		return ret
 	}
-	if res := u.DB.Where("user_id IN ?", idL).Delete(&model.UserContest{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete UserContest for users %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.UserContest.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	if ret := DeleteUserTeamByUserID(u.DB, idL...); !ret.OK {
+		return ret
 	}
-	if res := u.DB.Where("user_id IN ?", idL).Delete(&model.UserGroup{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete UserGroup for users %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.UserGroup.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	if ret := DeleteUserContestByUserID(u.DB, idL...); !ret.OK {
+		return ret
+	}
+	if ret := DeleteUserGroupByUserID(u.DB, idL...); !ret.OK {
+		return ret
 	}
 	if res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.User{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete User: %s", res.Error)

@@ -89,9 +89,11 @@ func (g *GroupRepo) CountUsers(groupID uint) (int64, model.RetVal) {
 }
 
 func (g *GroupRepo) Delete(idL ...uint) model.RetVal {
-	if res := g.DB.Where("group_id IN ?", idL).Delete(&model.UserGroup{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete UserGroup for groups %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.UserGroup.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	if len(idL) == 0 {
+		return model.SuccessRetVal()
+	}
+	if ret := DeleteUserGroupByGroupID(g.DB, idL...); !ret.OK {
+		return ret
 	}
 	if res := g.DB.Model(&model.Group{}).Where("id IN ?", idL).Delete(&model.Group{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Group: %s", res.Error)

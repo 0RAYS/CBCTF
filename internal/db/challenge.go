@@ -129,31 +129,20 @@ func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset
 }
 
 func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
+	if len(randIDL) == 0 {
+		return model.SuccessRetVal()
+	}
 	var challengeIDL []uint
 	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Pluck("id", &challengeIDL); res.Error != nil {
 		log.Logger.Warningf("Failed to get Challenges: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	var challengeFlagIDL []uint
-	if res := c.DB.Model(&model.ChallengeFlag{}).Where("challenge_id IN ?", challengeIDL).Pluck("id", &challengeFlagIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get ChallengeFlags for challenges %v: %s", challengeIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.ChallengeFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	var contestChallengeIDL []uint
-	if res := c.DB.Model(&model.ContestChallenge{}).Where("challenge_id IN ?", challengeIDL).Pluck("id", &contestChallengeIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get ContestChallenges for challenges %v: %s", challengeIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
 	var ret model.RetVal
-	if ret = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ret.OK {
+	if ret = InitContestChallengeRepo(c.DB).DeleteByChallengeID(challengeIDL...); !ret.OK {
 		return ret
 	}
-	if ret = InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ret.OK {
+	if ret = InitChallengeFlagRepo(c.DB).DeleteByChallengeID(challengeIDL...); !ret.OK {
 		return ret
-	}
-	if res := c.DB.Where("challenge_id IN ?", challengeIDL).Delete(&model.Submission{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Submissions for challenges %v: %s", challengeIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Submission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if ret = InitGeneratorRepo(c.DB).DeleteByChallengeID(challengeIDL...); !ret.OK {
 		return ret

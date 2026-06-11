@@ -71,6 +71,42 @@ func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 	}
 }
 
+func (s *SubmissionRepo) DeleteByUserID(userIDL ...uint) model.RetVal {
+	return s.deleteByField("user_id", userIDL...)
+}
+
+func (s *SubmissionRepo) DeleteByTeamID(teamIDL ...uint) model.RetVal {
+	return s.deleteByField("team_id", teamIDL...)
+}
+
+func (s *SubmissionRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
+	return s.deleteByField("contest_id", contestIDL...)
+}
+
+func (s *SubmissionRepo) DeleteByChallengeID(challengeIDL ...uint) model.RetVal {
+	return s.deleteByField("challenge_id", challengeIDL...)
+}
+
+func (s *SubmissionRepo) DeleteByContestChallengeID(contestChallengeIDL ...uint) model.RetVal {
+	return s.deleteByField("contest_challenge_id", contestChallengeIDL...)
+}
+
+func (s *SubmissionRepo) DeleteByContestFlagID(contestFlagIDL ...uint) model.RetVal {
+	return s.deleteByField("contest_flag_id", contestFlagIDL...)
+}
+
+func (s *SubmissionRepo) deleteByField(field string, values ...uint) model.RetVal {
+	if len(values) == 0 {
+		return model.SuccessRetVal()
+	}
+	var submissionIDL []uint
+	if res := s.DB.Model(&model.Submission{}).Where(field+" IN ?", values).Pluck("id", &submissionIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get Submissions by %s %v: %s", field, values, res.Error)
+		return model.RetVal{Msg: i18n.Model.Submission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return s.Delete(submissionIDL...)
+}
+
 func (s *SubmissionRepo) GetBloodRankMap(contestFlagIDL ...uint) (map[uint]map[uint]int, model.RetVal) {
 	rankMap := make(map[uint]map[uint]int)
 	if len(contestFlagIDL) == 0 {

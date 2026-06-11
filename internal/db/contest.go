@@ -218,39 +218,18 @@ func (c *ContestRepo) CountNotices(contestID uint) (int64, model.RetVal) {
 }
 
 func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
-	var teamIDL []uint
-	if res := c.DB.Model(&model.Team{}).Where("contest_id IN ?", idL).Pluck("id", &teamIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get Teams for contests %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Team.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	if len(idL) == 0 {
+		return model.SuccessRetVal()
 	}
-	var contestChallengeIDL []uint
-	if res := c.DB.Model(&model.ContestChallenge{}).Where("contest_id IN ?", idL).Pluck("id", &contestChallengeIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get ContestChallenges for contests %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-
 	var ret model.RetVal
-	if ret = InitTeamRepo(c.DB).Delete(teamIDL...); !ret.OK {
+	if ret = InitContestChallengeRepo(c.DB).DeleteByContestID(idL...); !ret.OK {
 		return ret
 	}
-	if res := c.DB.Where("contest_id IN ?", idL).Delete(&model.Notice{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Notices for contests %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Notice.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	if ret = InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ret.OK {
+	if ret = InitTeamRepo(c.DB).DeleteByContestID(idL...); !ret.OK {
 		return ret
 	}
-	var contestFlagIDL []uint
-	if res := c.DB.Model(&model.ContestFlag{}).Where("contest_id IN ?", idL).Pluck("id", &contestFlagIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get ContestFlags for contests %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.ContestFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	if ret = InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ret.OK {
+	if ret = InitNoticeRepo(c.DB).DeleteByContestID(idL...); !ret.OK {
 		return ret
-	}
-	if res := c.DB.Where("contest_id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Submissions for contests %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.Submission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if ret = InitGeneratorRepo(c.DB).DeleteByContestID(idL...); !ret.OK {
 		return ret

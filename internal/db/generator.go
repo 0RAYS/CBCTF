@@ -112,6 +112,9 @@ func (g *GeneratorRepo) UpdateStatus(id uint, success bool, last time.Time) mode
 }
 
 func (g *GeneratorRepo) Delete(idL ...uint) model.RetVal {
+	if len(idL) == 0 {
+		return model.SuccessRetVal()
+	}
 	for _, id := range idL {
 		if ret := g.Update(id, UpdateGeneratorOptions{Status: new(model.StoppedGeneratorStatus)}); !ret.OK {
 			return ret
