@@ -268,7 +268,7 @@ func (u *UserRepo) CountContests(userID uint) (int64, model.RetVal) {
 }
 
 func (u *UserRepo) Delete(idL ...uint) model.RetVal {
-	userL, _, ret := u.List(-1, -1, GetOptions{
+	userL, ret := u.FindAll(GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Preloads:   map[string]GetOptions{"Teams": {}},
 	})

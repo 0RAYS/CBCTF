@@ -115,7 +115,7 @@ func (c *ContestChallengeRepo) ListContestImages(contestID uint) ([]string, bool
 		images = append(images, image)
 	}
 
-	dynamicChallenges, _, ret := c.List(-1, -1, GetOptions{
+	dynamicChallenges, ret := c.FindAll(GetOptions{
 		Conditions: map[string]any{"contest_id": contestID, "type": model.DynamicChallengeType},
 		Preloads:   map[string]GetOptions{"Challenge": {}},
 	})
@@ -126,7 +126,7 @@ func (c *ContestChallengeRepo) ListContestImages(contestID uint) ([]string, bool
 		addImage(contestChallenge.Challenge.GeneratorImage)
 	}
 
-	podChallenges, _, ret := c.List(-1, -1, GetOptions{
+	podChallenges, ret := c.FindAll(GetOptions{
 		Conditions: map[string]any{"contest_id": contestID, "type": model.PodsChallengeType},
 		Preloads:   map[string]GetOptions{"Challenge": {}},
 	})
@@ -189,7 +189,7 @@ func (c *ContestChallengeRepo) ListUnsolvedID(teamID, contestID uint, category s
 }
 
 func (c *ContestChallengeRepo) Delete(idL ...uint) model.RetVal {
-	contestChallengeL, _, ret := c.List(-1, -1, GetOptions{
+	contestChallengeL, ret := c.FindAll(GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Preloads:   map[string]GetOptions{"ContestFlags": {}, "Submissions": {}},
 	})

@@ -92,7 +92,7 @@ func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, mod
 }
 
 func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
-	victimL, _, ret := v.List(-1, -1, GetOptions{
+	victimL, ret := v.FindAll(GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Preloads:   map[string]GetOptions{"Pods": {}},
 	})
