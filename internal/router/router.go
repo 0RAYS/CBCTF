@@ -171,14 +171,14 @@ func Init() *gin.Engine {
 			)
 		}
 
-		// WriteUp
-		contestWriteUp := contest.Group(
+		// Writeup
+		contestWriteup := contest.Group(
 			"/writeups",
 			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing,
 		)
 		{
-			contestWriteUp.POST("", UploadWriteUp)
-			contestWriteUp.GET("", GetWriteUPs)
+			contestWriteup.POST("", UploadWriteup)
+			contestWriteup.GET("", GetWriteUPs)
 		}
 	}
 
@@ -355,7 +355,7 @@ func Init() *gin.Engine {
 			adminContest.GET("/rank", GetTeamRanking)
 			adminContest.GET("/scoreboard", GetScoreboard)
 			adminContest.GET("/timeline", GetRankTimeline)
-			adminContest.GET("/writeups/export", ExportContestWriteUps)
+			adminContest.GET("/writeups/export", ExportContestWriteups)
 
 			adminContest.GET("/teams", GetTeams)
 			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeam)
@@ -383,7 +383,7 @@ func Init() *gin.Engine {
 
 				adminContestTeam.GET("/writeups", GetWriteUPs)
 				adminContestTeam.GET("/writeups/:fileID",
-					middleware.SetTeamWriteUpFile, DownloadFile(model.DownloadWriteUpEventType),
+					middleware.SetTeamWriteupFile, DownloadFile(model.DownloadWriteupEventType),
 				)
 			}
 

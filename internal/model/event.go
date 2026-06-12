@@ -81,8 +81,8 @@ const (
 	StartGeneratorEventType = "start_generator"
 	StopGeneratorEventType  = "stop_generator"
 
-	UploadWriteUpEventType   = "upload_writeup"
-	DownloadWriteUpEventType = "download_writeup"
+	UploadWriteupEventType   = "upload_writeup"
+	DownloadWriteupEventType = "download_writeup"
 
 	DownloadFileEventType = "download_file"
 	DeleteFileEventType   = "delete_file"
@@ -127,7 +127,7 @@ var EventTypes = []string{
 	DownloadTrafficEventType,
 	ReadFlagEventType, SubmitFlagEventType,
 	StartGeneratorEventType, StopGeneratorEventType,
-	UploadWriteUpEventType, DownloadWriteUpEventType,
+	UploadWriteupEventType, DownloadWriteupEventType,
 	DownloadFileEventType, DeleteFileEventType,
 	CreateRoleEventType, UpdateRoleEventType, DeleteRoleEventType,
 	CreateGroupEventType, UpdateGroupEventType, DeleteGroupEventType,

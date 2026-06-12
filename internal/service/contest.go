@@ -46,8 +46,8 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 			},
 			{
 				Date:        form.Start.Add(duration).Add(time.Hour * 2),
-				Title:       "截至提交 WriteUp",
-				Description: "截至提交 WriteUp, 成绩作废",
+				Title:       "截至提交 Writeup",
+				Description: "截至提交 Writeup, 成绩作废",
 			},
 		}
 	}
