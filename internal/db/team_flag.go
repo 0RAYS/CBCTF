@@ -59,10 +59,6 @@ func (t *TeamFlagRepo) DeleteByTeamID(teamIDL ...uint) model.RetVal {
 	return t.DeleteByFieldID("team_id", teamIDL...)
 }
 
-func (t *TeamFlagRepo) DeleteByChallengeFlagID(challengeFlagIDL ...uint) model.RetVal {
-	return t.DeleteByFieldID("challenge_flag_id", challengeFlagIDL...)
-}
-
 func (t *TeamFlagRepo) DeleteByContestFlagID(contestFlagIDL ...uint) model.RetVal {
 	return t.DeleteByFieldID("contest_flag_id", contestFlagIDL...)
 }
