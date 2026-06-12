@@ -113,34 +113,34 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			} else if !victim.TeamID.Valid {
 				value = fmt.Sprintf("flag{%s}", renderChallengeFlagValue(flag.Value))
 			}
-		switch flag.Binding.Type {
-		case model.EnvFlagBindingType:
-			containerSpec.Environment[flag.Binding.Target] = value
-		case model.FileFlagBindingType:
-			for i := range containerSpec.VolumeMounts {
-				if containerSpec.VolumeMounts[i].Path != flag.Binding.Target {
-					continue
+			switch flag.Binding.Type {
+			case model.EnvFlagBindingType:
+				containerSpec.Environment[flag.Binding.Target] = value
+			case model.FileFlagBindingType:
+				for i := range containerSpec.VolumeMounts {
+					if containerSpec.VolumeMounts[i].Path != flag.Binding.Target {
+						continue
+					}
+					containerSpec.VolumeMounts[i].Content = strings.ReplaceAll(
+						containerSpec.VolumeMounts[i].Content,
+						flag.Value,
+						value,
+					)
 				}
-				containerSpec.VolumeMounts[i].Content = strings.ReplaceAll(
-					containerSpec.VolumeMounts[i].Content,
-					flag.Value,
-					value,
-				)
-			}
-		case model.CloudInitFileFlagBindingType:
-			for i := range containerSpec.UserData.WriteFiles {
-				if containerSpec.UserData.WriteFiles[i].Path != flag.Binding.Target {
-					continue
+			case model.CloudInitFileFlagBindingType:
+				for i := range containerSpec.UserData.WriteFiles {
+					if containerSpec.UserData.WriteFiles[i].Path != flag.Binding.Target {
+						continue
+					}
+					containerSpec.UserData.WriteFiles[i].Content = strings.ReplaceAll(
+						containerSpec.UserData.WriteFiles[i].Content,
+						flag.Value,
+						value,
+					)
 				}
-				containerSpec.UserData.WriteFiles[i].Content = strings.ReplaceAll(
-					containerSpec.UserData.WriteFiles[i].Content,
-					flag.Value,
-					value,
-				)
+			default:
+				return model.VictimContainerSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
 			}
-		default:
-			return model.VictimContainerSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
-		}
 		}
 		return containerSpec, model.SuccessRetVal()
 	}
@@ -222,10 +222,10 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 	return spec, model.SuccessRetVal()
 }
 
-func buildPodRecords(victim model.Victim) []db.CreatePodOptions {
-	options := make([]db.CreatePodOptions, 0, len(victim.Spec.Pods))
+func buildPodRecords(victim model.Victim) []model.Pod {
+	options := make([]model.Pod, 0, len(victim.Spec.Pods))
 	for _, podSpec := range victim.Spec.Pods {
-		options = append(options, db.CreatePodOptions{
+		options = append(options, model.Pod{
 			VictimID: victim.ID,
 			Name: fmt.Sprintf("pod-%d-%d-%s-%s", victim.ContestChallengeID.V, victim.UserID, func() string {
 				name := strings.ToLower(podSpec.Key)
@@ -271,7 +271,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	if !ret.OK {
 		return ret
 	}
-	victim, ret := victimRepo.Create(db.CreateVictimOptions{
+	victim, ret := victimRepo.Create(model.Victim{
 		UserID:             userID,
 		TeamID:             sql.Null[uint]{V: teamID, Valid: teamID > 0},
 		ContestID:          sql.Null[uint]{V: contestID, Valid: contestID > 0},
@@ -280,6 +280,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		Start:              time.Now(),
 		Duration:           duration,
 		Spec:               spec,
+		Status:             model.WaitingVictimStatus,
 	})
 	if !ret.OK {
 		return ret

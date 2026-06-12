@@ -12,32 +12,6 @@ type FileRepo struct {
 	BaseRepo[model.File]
 }
 
-type CreateFileOptions struct {
-	RandID   string
-	Filename string
-	Size     int64
-	Path     model.FilePath
-	Model    string
-	ModelID  uint
-	Suffix   string
-	Hash     string
-	Type     model.FileType
-}
-
-func (c CreateFileOptions) Convert2Model() model.Model {
-	return model.File{
-		RandID:   c.RandID,
-		Filename: c.Filename,
-		Size:     c.Size,
-		Path:     c.Path,
-		Model:    c.Model,
-		ModelID:  c.ModelID,
-		Suffix:   c.Suffix,
-		Hash:     c.Hash,
-		Type:     c.Type,
-	}
-}
-
 func InitFileRepo(tx *gorm.DB) *FileRepo {
 	return &FileRepo{
 		BaseRepo: BaseRepo[model.File]{
@@ -46,17 +20,16 @@ func InitFileRepo(tx *gorm.DB) *FileRepo {
 	}
 }
 
-func (f *FileRepo) Create(options CreateFileOptions) (model.File, model.RetVal) {
-	records, ret := f.Get(GetOptions{Conditions: map[string]any{"hash": options.Hash}})
+func (f *FileRepo) Create(file model.File) (model.File, model.RetVal) {
+	records, ret := f.Get(GetOptions{Conditions: map[string]any{"hash": file.Hash}})
 	if ret.OK {
-		options.Path = records.Path
+		file.Path = records.Path
 	}
-	m := options.Convert2Model().(model.File)
-	if res := f.DB.Model(&model.File{}).Create(&m); res.Error != nil {
+	if res := f.DB.Model(&model.File{}).Create(&file); res.Error != nil {
 		log.Logger.Warningf("Failed to create File: %s", res.Error)
 		return model.File{}, model.RetVal{Msg: i18n.Model.File.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	return m, model.SuccessRetVal()
+	return file, model.SuccessRetVal()
 }
 
 func (f *FileRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.File, model.RetVal) {

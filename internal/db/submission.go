@@ -19,34 +19,6 @@ type BloodRankRow struct {
 	BloodRank     int
 }
 
-type CreateSubmissionOptions struct {
-	ContestChallengeID uint
-	ContestID          uint
-	ChallengeID        uint
-	TeamID             uint
-	UserID             uint
-	ContestFlagID      uint
-	Value              string
-	Solved             bool
-	Score              float64
-	IP                 string
-}
-
-func (c CreateSubmissionOptions) Convert2Model() model.Model {
-	return model.Submission{
-		ContestChallengeID: c.ContestChallengeID,
-		ContestID:          c.ContestID,
-		ChallengeID:        c.ChallengeID,
-		TeamID:             c.TeamID,
-		UserID:             c.UserID,
-		ContestFlagID:      c.ContestFlagID,
-		Value:              c.Value,
-		Solved:             c.Solved,
-		Score:              c.Score,
-		IP:                 c.IP,
-	}
-}
-
 type UpdateSubmissionOptions struct {
 	Solved *bool
 	Score  *float64

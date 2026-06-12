@@ -24,7 +24,7 @@ func ListRoles(tx *gorm.DB, form dto.ListModelsForm) ([]model.Role, int64, model
 }
 
 func CreateRole(tx *gorm.DB, form dto.CreateRoleForm) (model.Role, model.RetVal) {
-	return db.InitRoleRepo(tx).Create(db.CreateRoleOptions{
+	return db.InitRoleRepo(tx).Create(model.Role{
 		Name:        form.Name,
 		Description: form.Description,
 	})

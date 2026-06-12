@@ -13,36 +13,6 @@ type ContestFlagRepo struct {
 	BaseRepo[model.ContestFlag]
 }
 
-type CreateContestFlagOptions struct {
-	ContestID          uint
-	ContestChallengeID uint
-	ChallengeFlagID    uint
-	Value              string
-	Score              float64
-	CurrentScore       float64
-	Decay              float64
-	MinScore           float64
-	ScoreType          model.ScoreType
-	Solvers            int64
-	Last               time.Time
-}
-
-func (c CreateContestFlagOptions) Convert2Model() model.Model {
-	return model.ContestFlag{
-		ContestID:          c.ContestID,
-		ContestChallengeID: c.ContestChallengeID,
-		ChallengeFlagID:    c.ChallengeFlagID,
-		Value:              c.Value,
-		Score:              c.Score,
-		CurrentScore:       c.CurrentScore,
-		Decay:              c.Decay,
-		MinScore:           c.MinScore,
-		ScoreType:          c.ScoreType,
-		Solvers:            c.Solvers,
-		Last:               c.Last,
-	}
-}
-
 type UpdateContestFlagOptions struct {
 	Value        *string
 	Score        *float64

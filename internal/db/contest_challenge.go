@@ -13,34 +13,6 @@ type ContestChallengeRepo struct {
 	BaseRepo[model.ContestChallenge]
 }
 
-type CreateContestChallengeOptions struct {
-	ContestID   uint
-	ChallengeID uint
-	Name        string
-	Description string
-	Type        model.ChallengeType
-	Category    string
-	Hidden      bool
-	Attempt     int64
-	Hints       model.StringList
-	Tags        model.StringList
-}
-
-func (c CreateContestChallengeOptions) Convert2Model() model.Model {
-	return model.ContestChallenge{
-		ContestID:   c.ContestID,
-		ChallengeID: c.ChallengeID,
-		Name:        c.Name,
-		Description: c.Description,
-		Type:        c.Type,
-		Category:    c.Category,
-		Hidden:      c.Hidden,
-		Attempt:     c.Attempt,
-		Hints:       c.Hints,
-		Tags:        c.Tags,
-	}
-}
-
 type UpdateContestChallengeOptions struct {
 	Name        *string
 	Description *string

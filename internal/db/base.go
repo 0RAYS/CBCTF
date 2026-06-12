@@ -18,10 +18,6 @@ type BaseRepo[M model.Model] struct {
 	DB *gorm.DB
 }
 
-type CreateOptions interface {
-	Convert2Model() model.Model
-}
-
 type GetOptions struct {
 	Conditions map[string]any
 	Search     map[string]string
@@ -66,7 +62,7 @@ func (b *BaseRepo[M]) IsUniqueConditionValue(id uint, conditions map[string]any)
 	return false, ret
 }
 
-func (b *BaseRepo[M]) Insert(m M) (M, model.RetVal) {
+func (b *BaseRepo[M]) Create(m M) (M, model.RetVal) {
 	for _, key := range model.UniqueFields(m) {
 		value := utils.GetFieldByJSONTag(m, key)
 		unique, ret := b.IsUniqueKeyValue(0, key, value)
@@ -95,10 +91,6 @@ func (b *BaseRepo[M]) Insert(m M) (M, model.RetVal) {
 		return *new(M), model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Name(m), "Error": res.Error.Error()}}
 	}
 	return m, model.SuccessRetVal()
-}
-
-func (b *BaseRepo[M]) Create(options CreateOptions) (M, model.RetVal) {
-	return b.Insert(options.Convert2Model().(M))
 }
 
 func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {

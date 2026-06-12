@@ -224,7 +224,7 @@ func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, 
 	return db.InitChallengeRepo(tx).List(form.Limit, form.Offset, options)
 }
 
-func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db.CreateChallengeFlagOptions, model.RetVal) {
+func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []model.ChallengeFlag, model.RetVal) {
 	prefix := utils.RandHexStr(10)
 	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix, map[string]any{
 		model.XVolumesExtension:   model.XVolumes{},
@@ -267,7 +267,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 	template := model.ChallengeTemplate{
 		Pods: make([]model.ChallengePodTemplate, 0, len(config.Services)),
 	}
-	flagOptions := make([]db.CreateChallengeFlagOptions, 0)
+	flagOptions := make([]model.ChallengeFlag, 0)
 	extractFlagTemplates := func(content string) []string {
 		seen := make(map[string]struct{})
 		templates := make([]string, 0)
@@ -369,7 +369,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 			containerTemplate.UserData = cloudInit.CloudConfig()
 			for _, writeFile := range cloudInit.WriteFiles {
 				for _, value := range extractFlagTemplates(writeFile.Content) {
-					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+					flagOptions = append(flagOptions, model.ChallengeFlag{
 						Value: value,
 						Binding: model.FlagBinding{
 							PodKey:       podKey,
@@ -388,15 +388,15 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 				}
 				containerTemplate.VolumeMounts = append(containerTemplate.VolumeMounts, volume)
 				for _, value := range extractFlagTemplates(volume.Content) {
-				flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-					Value: value,
-					Binding: model.FlagBinding{
-						PodKey:       podKey,
-						ContainerKey: containerKey,
-						Type:         model.FileFlagBindingType,
-						Target:       volume.Path,
-					},
-				})
+					flagOptions = append(flagOptions, model.ChallengeFlag{
+						Value: value,
+						Binding: model.FlagBinding{
+							PodKey:       podKey,
+							ContainerKey: containerKey,
+							Type:         model.FileFlagBindingType,
+							Target:       volume.Path,
+						},
+					})
 				}
 			}
 		}
@@ -409,7 +409,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 		})
 		for k, v := range app.Environment {
 			if strings.HasPrefix(k, model.EnvFlagPrefix) {
-				flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+				flagOptions = append(flagOptions, model.ChallengeFlag{
 					Value: *v,
 					Binding: model.FlagBinding{
 						PodKey:       podKey,
@@ -426,7 +426,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 
 func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge, model.RetVal) {
 	challengeRepo, challengeFlagRepo := db.InitChallengeRepo(tx), db.InitChallengeFlagRepo(tx)
-	options := db.CreateChallengeOptions{
+	options := model.Challenge{
 		RandID:          utils.UUID(),
 		Name:            form.Name,
 		Description:     form.Description,
@@ -435,7 +435,7 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 		GeneratorImage:  form.GeneratorImage,
 		NetworkPolicies: form.NetworkPolicies,
 	}
-	var podFlagOptions []db.CreateChallengeFlagOptions
+	var podFlagOptions []model.ChallengeFlag
 	if form.Type == model.PodsChallengeType {
 		template, flags, ret := buildChallengeTemplate(form.DockerCompose)
 		if !ret.OK {
@@ -451,7 +451,7 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 	switch form.Type {
 	case model.StaticChallengeType:
 		for _, flag := range form.Flags {
-			if _, ret = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+			if _, ret = challengeFlagRepo.Create(model.ChallengeFlag{
 				ChallengeID: challenge.ID,
 				Value:       flag,
 			}); !ret.OK {
@@ -460,7 +460,7 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 		}
 	case model.DynamicChallengeType:
 		for _, flag := range form.Flags {
-			if _, ret = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+			if _, ret = challengeFlagRepo.Create(model.ChallengeFlag{
 				ChallengeID: challenge.ID,
 				Value:       flag,
 			}); !ret.OK {
@@ -501,7 +501,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 					return id == flag.ID
 				})
 			} else {
-				if _, ret := challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+				if _, ret := challengeFlagRepo.Create(model.ChallengeFlag{
 					ChallengeID: challenge.ID,
 					Value:       flag.Value,
 				}); !ret.OK {
@@ -531,7 +531,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 			if !ret.OK {
 				return ret
 			}
-			if ret := db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
+			if ret = db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 				Name:            form.Name,
 				Description:     form.Description,
 				Category:        form.Category,
@@ -543,7 +543,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 			repo := db.InitChallengeFlagRepo(tx)
 			for _, flag := range flags {
 				flag.ChallengeID = challenge.ID
-				if _, ret := repo.Create(flag); !ret.OK {
+				if _, ret = repo.Create(flag); !ret.OK {
 					return ret
 				}
 			}

@@ -13,42 +13,6 @@ type ContestRepo struct {
 	BaseRepo[model.Contest]
 }
 
-type CreateContestOptions struct {
-	Name        string
-	Description string
-	Captcha     string
-	Picture     model.FileURL
-	Prefix      string
-	Size        int
-	Start       time.Time
-	Duration    time.Duration
-	Blood       bool
-	Hidden      bool
-	Victims     int64
-	Rules       model.StringList
-	Prizes      model.Prizes
-	Timelines   model.Timelines
-}
-
-func (c CreateContestOptions) Convert2Model() model.Model {
-	return model.Contest{
-		Name:        c.Name,
-		Description: c.Description,
-		Captcha:     c.Captcha,
-		Picture:     c.Picture,
-		Prefix:      c.Prefix,
-		Size:        c.Size,
-		Start:       c.Start,
-		Duration:    c.Duration,
-		Blood:       c.Blood,
-		Hidden:      c.Hidden,
-		Victims:     c.Victims,
-		Rules:       c.Rules,
-		Prizes:      c.Prizes,
-		Timelines:   c.Timelines,
-	}
-}
-
 type UpdateContestOptions struct {
 	Name        *string
 	Description *string

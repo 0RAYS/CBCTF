@@ -13,32 +13,6 @@ type TeamRepo struct {
 	BaseRepo[model.Team]
 }
 
-type CreateTeamOptions struct {
-	Name        string
-	ContestID   uint
-	Description string
-	Captcha     string
-	Picture     model.FileURL
-	Banned      bool
-	Hidden      bool
-	CaptainID   uint
-	Last        time.Time
-}
-
-func (c CreateTeamOptions) Convert2Model() model.Model {
-	return model.Team{
-		Name:        c.Name,
-		ContestID:   c.ContestID,
-		Description: c.Description,
-		Captcha:     c.Captcha,
-		Picture:     c.Picture,
-		Banned:      c.Banned,
-		Hidden:      c.Hidden,
-		CaptainID:   c.CaptainID,
-		Last:        c.Last,
-	}
-}
-
 type UpdateTeamOptions struct {
 	Name        *string
 	Description *string

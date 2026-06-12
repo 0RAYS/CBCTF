@@ -10,22 +10,6 @@ type NoticeRepo struct {
 	BaseRepo[model.Notice]
 }
 
-type CreateNoticeOptions struct {
-	ContestID uint
-	Title     string
-	Content   string
-	Type      string
-}
-
-func (c CreateNoticeOptions) Convert2Model() model.Model {
-	return model.Notice{
-		ContestID: c.ContestID,
-		Title:     c.Title,
-		Content:   c.Content,
-		Type:      c.Type,
-	}
-}
-
 type UpdateNoticeOptions struct {
 	Title   *string
 	Content *string

@@ -23,7 +23,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest
 		return model.Submission{}, ret
 	}
 
-	options := db.CreateSubmissionOptions{
+	options := model.Submission{
 		ContestChallengeID: contestChallenge.ID,
 		ContestID:          contest.ID,
 		ChallengeID:        contestChallenge.ChallengeID,

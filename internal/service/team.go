@@ -120,7 +120,7 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Cr
 	if repo.IsInContest(contest.ID, user.ID) {
 		return model.Team{}, model.RetVal{Msg: i18n.Model.Contest.DuplicateMember}
 	}
-	team, ret := repo.Create(db.CreateTeamOptions{
+	team, ret := repo.Create(model.Team{
 		Name:        form.Name,
 		ContestID:   contest.ID,
 		Description: form.Description,

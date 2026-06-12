@@ -53,7 +53,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		if !unique {
 			email = fmt.Sprintf("%s@%s.com", utils.RandHexStr(10), provider.Uri)
 		}
-		user, ret = userRepo.Insert(model.User{
+		user, ret = userRepo.Create(model.User{
 			Name:           name,
 			Password:       model.NeverLoginPWD,
 			Email:          email,
@@ -139,7 +139,7 @@ func ListOauthProviders(tx *gorm.DB, form dto.ListModelsForm) ([]model.Oauth, in
 }
 
 func CreateOauthProvider(tx *gorm.DB, form dto.CreateOauthProviderForm) (model.Oauth, model.RetVal) {
-	return db.InitOauthRepo(tx).Create(db.CreateOauthOptions{
+	return db.InitOauthRepo(tx).Create(model.Oauth{
 		AuthURL:          form.AuthURL,
 		TokenURL:         form.TokenURL,
 		UserInfoURL:      form.UserInfoURL,

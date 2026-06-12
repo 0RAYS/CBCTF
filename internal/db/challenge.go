@@ -12,30 +12,6 @@ type ChallengeRepo struct {
 	BaseRepo[model.Challenge]
 }
 
-type CreateChallengeOptions struct {
-	RandID          string
-	Name            string
-	Description     string
-	Category        string
-	Type            model.ChallengeType
-	GeneratorImage  string
-	NetworkPolicies model.NetworkPolicies
-	Template        model.ChallengeTemplate
-}
-
-func (c CreateChallengeOptions) Convert2Model() model.Model {
-	return model.Challenge{
-		RandID:          c.RandID,
-		Name:            c.Name,
-		Description:     c.Description,
-		Category:        c.Category,
-		Type:            c.Type,
-		GeneratorImage:  c.GeneratorImage,
-		NetworkPolicies: c.NetworkPolicies,
-		Template:        c.Template,
-	}
-}
-
 type UpdateChallengeOptions struct {
 	Name            *string
 	Description     *string

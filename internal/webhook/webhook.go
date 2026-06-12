@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"slices"
@@ -91,7 +92,7 @@ func SendPayload(event model.Event, target model.Webhook) error {
 	client := &http.Client{Timeout: timeout}
 	resp, err := client.Do(req)
 	duration := time.Since(start)
-	options := db.CreateWebhookHistoryOptions{
+	options := model.WebhookHistory{
 		WebhookID: target.ID,
 		EventID:   event.ID,
 		RespCode:  0,
@@ -105,7 +106,9 @@ func SendPayload(event model.Event, target model.Webhook) error {
 		db.InitWebhookHistoryRepo(db.DB).Create(options)
 		return err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
 	options.RespCode = resp.StatusCode
 	options.Success = resp.StatusCode >= 200 && resp.StatusCode < 300
 	if !options.Success {

@@ -3,6 +3,7 @@ package task
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -31,13 +32,13 @@ func recordTaskExecution(ctx context.Context, t *asynq.Task, status string, resu
 	if err != nil {
 		errorMsg = err.Error()
 	}
-	if _, ret := db.InitTaskRepo(db.DB).Create(db.CreateTaskOptions{
+	if _, ret := db.InitTaskRepo(db.DB).Create(model.Task{
 		TaskID:      taskID,
 		Type:        t.Type(),
 		Queue:       queue,
 		Status:      status,
-		Payload:     decodeTaskPayload(t.Payload()),
-		Result:      result,
+		Payload:     model.TaskPayload{V: decodeTaskPayload(t.Payload())},
+		Result:      model.TaskPayload{V: result},
 		Error:       errorMsg,
 		RetryCount:  retryCount,
 		MaxRetry:    maxRetry,

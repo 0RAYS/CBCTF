@@ -27,17 +27,16 @@ func (t *TrafficRepo) UpsertIPs(victimID uint, ips []string) model.RetVal {
 	if len(ips) == 0 {
 		return model.SuccessRetVal()
 	}
-	record := model.Traffic{
-		VictimID: victimID,
-		IPs:      ips,
-	}
 	res := t.DB.Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "victim_id"}},
 		DoUpdates: clause.Assignments(map[string]any{
 			"ips":        gorm.Expr("(SELECT jsonb_agg(DISTINCT val) FROM jsonb_array_elements_text(traffics.ips || EXCLUDED.ips) AS val)"),
 			"updated_at": gorm.Expr("NOW()"),
 		}),
-	}).Create(&record)
+	}).Create(&model.Traffic{
+		VictimID: victimID,
+		IPs:      ips,
+	})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to upsert traffic IPs: victim_id=%d error=%s", victimID, res.Error)
 		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": "Traffic", "Error": res.Error.Error()}}

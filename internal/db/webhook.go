@@ -11,30 +11,6 @@ type WebhookRepo struct {
 	BaseRepo[model.Webhook]
 }
 
-type CreateWebhookOptions struct {
-	Name    string
-	URL     string
-	Method  string
-	Headers model.StringMap
-	Timeout int64
-	Retry   int
-	On      bool
-	Events  model.StringList
-}
-
-func (c CreateWebhookOptions) Convert2Model() model.Model {
-	return model.Webhook{
-		Name:    c.Name,
-		URL:     c.URL,
-		Method:  c.Method,
-		Headers: c.Headers,
-		Timeout: c.Timeout,
-		Retry:   c.Retry,
-		On:      c.On,
-		Events:  c.Events,
-	}
-}
-
 type UpdateWebhookOptions struct {
 	Name        *string
 	URL         *string

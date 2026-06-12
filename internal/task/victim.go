@@ -76,7 +76,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			frpcPods := victim.Pods[basePodCount:]
 			persistedFrpcPods := make([]model.Pod, 0, len(frpcPods))
 			for _, frpcPod := range frpcPods {
-				p, ret := podRepo.Create(db.CreatePodOptions{
+				p, ret := podRepo.Create(model.Pod{
 					VictimID: victim.ID,
 					Name:     frpcPod.Name,
 				})

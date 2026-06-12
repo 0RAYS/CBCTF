@@ -47,7 +47,7 @@ func ListGroupUsers(tx *gorm.DB, group model.Group, form dto.ListModelsForm) ([]
 }
 
 func CreateGroup(tx *gorm.DB, form dto.CreateGroupForm) (model.Group, model.RetVal) {
-	return db.InitGroupRepo(tx).Create(db.CreateGroupOptions{
+	return db.InitGroupRepo(tx).Create(model.Group{
 		RoleID:      form.RoleID,
 		Name:        form.Name,
 		Description: form.Description,

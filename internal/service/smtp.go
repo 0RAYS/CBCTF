@@ -14,7 +14,7 @@ func ListSmtps(tx *gorm.DB, form dto.ListModelsForm) ([]model.Smtp, int64, model
 }
 
 func CreateSmtp(tx *gorm.DB, form dto.CreateSmtpForm) (model.Smtp, model.RetVal) {
-	return db.InitSmtpRepo(tx).Create(db.CreateSmtpOptions{
+	return db.InitSmtpRepo(tx).Create(model.Smtp{
 		Address: form.Address,
 		Host:    form.Host,
 		Port:    form.Port,
@@ -57,4 +57,3 @@ func TestSmtp(smtp model.Smtp, form dto.TestSmtpForm) model.RetVal {
 	}
 	return model.SuccessRetVal()
 }
-

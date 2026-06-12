@@ -12,20 +12,6 @@ type ChallengeFlagRepo struct {
 	BaseRepo[model.ChallengeFlag]
 }
 
-type CreateChallengeFlagOptions struct {
-	ChallengeID uint
-	Value       string
-	Binding     model.FlagBinding
-}
-
-func (c CreateChallengeFlagOptions) Convert2Model() model.Model {
-	return model.ChallengeFlag{
-		ChallengeID: c.ChallengeID,
-		Value:       c.Value,
-		Binding:     c.Binding,
-	}
-}
-
 type UpdateChallengeFlagOptions struct {
 	Value   *string
 	Binding *model.FlagBinding

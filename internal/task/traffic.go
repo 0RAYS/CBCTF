@@ -63,7 +63,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 	if err := ctx.Err(); err != nil {
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	archive := func(victim model.Victim) (db.CreateFileOptions, bool) {
+	archive := func(victim model.Victim) (model.File, bool) {
 		start := time.Now()
 		log.Logger.Debugf("Enrich pcap with process info: victim_id=%d path=%s", victim.ID, victim.TrafficBasePath())
 		if errs := utils.EnrichPcapDirWithContext(ctx, victim.TrafficBasePath()); len(errs) > 0 {
@@ -73,24 +73,24 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 		}
 		if err := ctx.Err(); err != nil {
 			log.Logger.Warningf("Traffic archive cancelled after enrichment: victim_id=%d error=%s", victim.ID, err)
-			return db.CreateFileOptions{}, false
+			return model.File{}, false
 		}
 		log.Logger.Debugf("Archiving victim traffic pcaps: victim_id=%d path=%s", victim.ID, victim.TrafficBasePath())
 		if err := utils.ZipWithContext(ctx, victim.TrafficBasePath(), victim.TrafficZipPath()); err != nil {
 			log.Logger.Warningf("Failed to archive victim traffic pcaps: victim_id=%d error=%s", victim.ID, err)
-			return db.CreateFileOptions{}, false
+			return model.File{}, false
 		}
 		if err := ctx.Err(); err != nil {
 			log.Logger.Warningf("Traffic archive cancelled after zip: victim_id=%d error=%s", victim.ID, err)
-			return db.CreateFileOptions{}, false
+			return model.File{}, false
 		}
 		size, hash, err := utils.GetFileInfoByPath(ctx, victim.TrafficZipPath())
 		if err != nil {
 			log.Logger.Warningf("Failed to get traffic archive info: victim_id=%d path=%s error=%s", victim.ID, victim.TrafficZipPath(), err)
-			return db.CreateFileOptions{}, false
+			return model.File{}, false
 		}
 		log.Logger.Debugf("Archived victim traffic pcaps: victim_id=%d size=%d duration=%s", victim.ID, size, time.Since(start))
-		return db.CreateFileOptions{
+		return model.File{
 			RandID:   utils.UUID(),
 			Filename: "traffics.zip",
 			Size:     size,

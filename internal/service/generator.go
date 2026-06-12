@@ -43,11 +43,12 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 			}
 		}
 		for range challengeCount[challenge.RandID] {
-			generator, ret := generatorRepo.Create(db.CreateGeneratorOptions{
+			generator, ret := generatorRepo.Create(model.Generator{
 				ChallengeID:   challenge.ID,
 				ChallengeName: challenge.Name,
 				ContestID:     sql.Null[uint]{V: contestID, Valid: contestID > 0},
 				Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandHexStr(6)),
+				Status:        model.WaitingGeneratorStatus,
 			})
 			if !ret.OK {
 				failedCreate++

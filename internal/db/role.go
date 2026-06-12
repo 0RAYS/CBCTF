@@ -14,18 +14,6 @@ type RoleRepo struct {
 	BaseRepo[model.Role]
 }
 
-type CreateRoleOptions struct {
-	Name        string
-	Description string
-}
-
-func (c CreateRoleOptions) Convert2Model() model.Model {
-	return model.Role{
-		Name:        c.Name,
-		Description: c.Description,
-	}
-}
-
 type UpdateRoleOptions struct {
 	Name        *string
 	Description *string

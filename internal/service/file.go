@@ -34,7 +34,7 @@ func SavePicture(tx *gorm.DB, modelName string, modelID uint, file *multipart.Fi
 		log.Logger.Warningf("Failed to get file info: %s", err)
 		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	options := db.CreateFileOptions{
+	record, ret := fileRepo.Create(model.File{
 		RandID:   utils.UUID(),
 		Filename: file.Filename,
 		Size:     size,
@@ -44,8 +44,7 @@ func SavePicture(tx *gorm.DB, modelName string, modelID uint, file *multipart.Fi
 		Suffix:   suffix,
 		Hash:     hash,
 		Type:     model.PictureFileType,
-	}
-	record, ret := fileRepo.Create(options)
+	})
 	if ret.OK {
 		prometheus.RecordFileUpload(record.Suffix, record.Size)
 	}
@@ -95,7 +94,7 @@ func SaveChallenge(tx *gorm.DB, challenge model.Challenge, file *multipart.FileH
 			return model.File{}, ret
 		}
 	}
-	record, ret = fileRepo.Create(db.CreateFileOptions{
+	record, ret = fileRepo.Create(model.File{
 		RandID:   utils.UUID(),
 		Filename: file.Filename,
 		Size:     size,
@@ -125,7 +124,7 @@ func SaveWriteup(tx *gorm.DB, contest model.Contest, team model.Team, file *mult
 		log.Logger.Warningf("Failed to get file info: %s", err)
 		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	record, ret := db.InitFileRepo(tx).Create(db.CreateFileOptions{
+	record, ret := db.InitFileRepo(tx).Create(model.File{
 		RandID:   utils.UUID(),
 		Filename: file.Filename,
 		Size:     size,

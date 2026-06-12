@@ -72,7 +72,7 @@ func CreateWebhook(tx *gorm.DB, form dto.CreateWebhookForm) (model.Webhook, mode
 	if ret := validateWebhookURL(form.URL); !ret.OK {
 		return model.Webhook{}, ret
 	}
-	return db.InitWebhookRepo(tx).Create(db.CreateWebhookOptions{
+	return db.InitWebhookRepo(tx).Create(model.Webhook{
 		Name:    form.Name,
 		URL:     form.URL,
 		Method:  form.Method,
