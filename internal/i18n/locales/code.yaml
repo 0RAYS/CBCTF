@@ -5,6 +5,7 @@ response:
   badRequest: "400"
   unauthorized: "401"
   forbidden: "403"
+  requestTooLarge: "413"
   tooManyRequests: "429"
 model:
   duplicateKeyValue: "400"

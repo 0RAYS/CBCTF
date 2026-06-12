@@ -5,6 +5,7 @@ response:
   badRequest: "请求参数无效: {{.Error}}"
   unauthorized: "请先登录"
   forbidden: "无权访问"
+  requestTooLarge: "请求体过大, 最大允许 {{.Limit}}"
   tooManyRequests: "请求过于频繁, 请在 {{.Seconds}} 秒后重试"
 model:
   duplicateKeyValue: "{{.Model}} 的 {{.Key}} 已存在"
