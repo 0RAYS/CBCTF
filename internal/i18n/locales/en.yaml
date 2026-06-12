@@ -5,6 +5,7 @@ response:
   badRequest: "Invalid request: {{.Error}}"
   unauthorized: "Sign in required"
   forbidden: "Access denied"
+  requestTooLarge: "Request body is too large. Maximum allowed: {{.Limit}}"
   tooManyRequests: "Too many requests. Try again in {{.Seconds}} seconds"
 model:
   duplicateKeyValue: "{{.Model}} {{.Key}} already exists"

@@ -24,8 +24,6 @@ func Init() *gin.Engine {
 		log.Logger.Warningf("Set trusted proxies failed: %s", err)
 	}
 
-	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
-
 	router.Use(middleware.SetTrace, middleware.SetMagic, middleware.Cors())
 
 	{
@@ -83,7 +81,7 @@ func Init() *gin.Engine {
 		user.PUT("/password", ChangePwd)
 		user.PUT("", UpdateUser)
 		user.DELETE("", DeleteUser)
-		user.POST("/picture", UploadPicture("self"))
+		user.POST("/picture", middleware.LimitUploadSize, UploadPicture("self"))
 		user.POST("/activate",
 			middleware.RateLimit("activate", 1, time.Minute), ActivateEmail,
 		)
@@ -114,7 +112,7 @@ func Init() *gin.Engine {
 				middleware.ContestIsNotOver, middleware.CheckCaptain, UpdateTeam,
 			)
 			contestTeam.POST("/picture",
-				middleware.ContestIsNotOver, middleware.CheckCaptain, UploadPicture("team"),
+				middleware.ContestIsNotOver, middleware.CheckCaptain, middleware.LimitUploadSize, UploadPicture("team"),
 			)
 			contestTeam.DELETE("",
 				middleware.ContestIsComing, middleware.CheckCaptain, DeleteTeam,
@@ -200,7 +198,7 @@ func Init() *gin.Engine {
 
 		admin.GET("/branding", GetAdminBranding)
 		admin.PUT("/branding", UpdateBranding)
-		admin.POST("/branding/logo", UploadPicture("branding"))
+		admin.POST("/branding/logo", middleware.LimitUploadSize, UploadPicture("branding"))
 
 		admin.GET("/permissions", GetPermissions)
 		adminPermission := admin.Group("/permissions/:permissionID", middleware.SetPermission)
@@ -240,7 +238,7 @@ func Init() *gin.Engine {
 			adminUser.GET("", GetUser)
 			adminUser.PUT("", UpdateUser)
 			adminUser.DELETE("", DeleteUser)
-			adminUser.POST("/picture", UploadPicture("user"))
+			adminUser.POST("/picture", middleware.LimitUploadSize, UploadPicture("user"))
 		}
 
 		admin.GET("/oauth", GetOauthProviders)
@@ -249,7 +247,7 @@ func Init() *gin.Engine {
 		{
 			adminOauth.GET("", GetOauthProvider)
 			adminOauth.PUT("", UpdateOauthProvider)
-			adminOauth.POST("/picture", UploadPicture("oauth"))
+			adminOauth.POST("/picture", middleware.LimitUploadSize, UploadPicture("oauth"))
 			adminOauth.DELETE("", DeleteOauthProvider)
 		}
 
@@ -351,7 +349,7 @@ func Init() *gin.Engine {
 			adminContest.GET("", GetContest)
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
-			adminContest.POST("/picture", UploadPicture("contest"))
+			adminContest.POST("/picture", middleware.LimitUploadSize, UploadPicture("contest"))
 			adminContest.GET("/rank", GetTeamRanking)
 			adminContest.GET("/scoreboard", GetScoreboard)
 			adminContest.GET("/timeline", GetRankTimeline)
@@ -365,7 +363,7 @@ func Init() *gin.Engine {
 				adminContestTeam.PUT("", UpdateTeam)
 				adminContestTeam.DELETE("", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
-				adminContestTeam.POST("/picture", UploadPicture("team"))
+				adminContestTeam.POST("/picture", middleware.LimitUploadSize, UploadPicture("team"))
 
 				adminContestTeam.GET("/flags", GetTeamFlags)
 
