@@ -74,7 +74,7 @@ func UpdatePicture(tx *gorm.DB, v string, id uint, record model.File) (string, m
 	return string(path), ret
 }
 
-func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.FileHeader, path string) (model.File, model.RetVal) {
+func SaveChallenge(tx *gorm.DB, challenge model.Challenge, file *multipart.FileHeader, path string) (model.File, model.RetVal) {
 	var (
 		fileRepo = db.InitFileRepo(tx)
 		suffix   = strings.ToLower(filepath.Ext(file.Filename))

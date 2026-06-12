@@ -21,8 +21,10 @@ gin:
   proxies:
     - 127.0.0.1
   upload:
-    # Size limited
-    max: 8
+    # Upload size limits in MiB
+    picture: 8
+    challenge: 8
+    writeup: 8
   ratelimit:
     # Global rate limit
     global: 100

@@ -16,7 +16,9 @@ import (
 )
 
 func Init() *gin.Engine {
-	imageMaxBytes := int64(config.Env.Gin.Upload.Max) << 20
+	pictureMaxBytes := int64(config.Env.Gin.Upload.Picture) << 20
+	challengeMaxBytes := int64(config.Env.Gin.Upload.Challenge) << 20
+	writeupMaxBytes := int64(config.Env.Gin.Upload.Writeup) << 20
 
 	gin.SetMode(strings.ToLower(config.Env.Gin.Mode))
 	router := gin.New()
@@ -83,7 +85,7 @@ func Init() *gin.Engine {
 		user.PUT("/password", ChangePwd)
 		user.PUT("", UpdateUser)
 		user.DELETE("", DeleteUser)
-		user.POST("/picture", middleware.LimitUploadSize(imageMaxBytes), UploadPicture("self"))
+		user.POST("/picture", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("self"))
 		user.POST("/activate",
 			middleware.RateLimit("activate", 1, time.Minute), ActivateEmail,
 		)
@@ -114,7 +116,7 @@ func Init() *gin.Engine {
 				middleware.ContestIsNotOver, middleware.CheckCaptain, UpdateTeam,
 			)
 			contestTeam.POST("/picture",
-				middleware.ContestIsNotOver, middleware.CheckCaptain, middleware.LimitUploadSize(imageMaxBytes), UploadPicture("team"),
+				middleware.ContestIsNotOver, middleware.CheckCaptain, middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("team"),
 			)
 			contestTeam.DELETE("",
 				middleware.ContestIsComing, middleware.CheckCaptain, DeleteTeam,
@@ -177,7 +179,7 @@ func Init() *gin.Engine {
 			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing,
 		)
 		{
-			contestWriteup.POST("", UploadWriteup)
+			contestWriteup.POST("", middleware.LimitUploadSize(writeupMaxBytes), UploadWriteup)
 			contestWriteup.GET("", GetWriteUPs)
 		}
 	}
@@ -200,7 +202,7 @@ func Init() *gin.Engine {
 
 		admin.GET("/branding", GetAdminBranding)
 		admin.PUT("/branding", UpdateBranding)
-		admin.POST("/branding/logo", middleware.LimitUploadSize(imageMaxBytes), UploadPicture("branding"))
+		admin.POST("/branding/logo", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("branding"))
 
 		admin.GET("/permissions", GetPermissions)
 		adminPermission := admin.Group("/permissions/:permissionID", middleware.SetPermission)
@@ -240,7 +242,7 @@ func Init() *gin.Engine {
 			adminUser.GET("", GetUser)
 			adminUser.PUT("", UpdateUser)
 			adminUser.DELETE("", DeleteUser)
-			adminUser.POST("/picture", middleware.LimitUploadSize(imageMaxBytes), UploadPicture("user"))
+			adminUser.POST("/picture", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("user"))
 		}
 
 		admin.GET("/oauth", GetOauthProviders)
@@ -249,7 +251,7 @@ func Init() *gin.Engine {
 		{
 			adminOauth.GET("", GetOauthProvider)
 			adminOauth.PUT("", UpdateOauthProvider)
-			adminOauth.POST("/picture", middleware.LimitUploadSize(imageMaxBytes), UploadPicture("oauth"))
+			adminOauth.POST("/picture", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("oauth"))
 			adminOauth.DELETE("", DeleteOauthProvider)
 		}
 
@@ -297,7 +299,7 @@ func Init() *gin.Engine {
 			)
 			adminChallenge.PUT("", UpdateChallenge)
 			adminChallenge.DELETE("", DeleteChallenge)
-			adminChallenge.POST("/upload", UploadChallengeFile)
+			adminChallenge.POST("/upload", middleware.LimitUploadSize(challengeMaxBytes), UploadChallenge)
 
 			adminChallengeTest := adminChallenge.Group("/test")
 			{
@@ -351,7 +353,7 @@ func Init() *gin.Engine {
 			adminContest.GET("", GetContest)
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
-			adminContest.POST("/picture", middleware.LimitUploadSize(imageMaxBytes), UploadPicture("contest"))
+			adminContest.POST("/picture", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("contest"))
 			adminContest.GET("/rank", GetTeamRanking)
 			adminContest.GET("/scoreboard", GetScoreboard)
 			adminContest.GET("/timeline", GetRankTimeline)
@@ -365,7 +367,7 @@ func Init() *gin.Engine {
 				adminContestTeam.PUT("", UpdateTeam)
 				adminContestTeam.DELETE("", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
-				adminContestTeam.POST("/picture", middleware.LimitUploadSize(imageMaxBytes), UploadPicture("team"))
+				adminContestTeam.POST("/picture", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("team"))
 
 				adminContestTeam.GET("/flags", GetTeamFlags)
 

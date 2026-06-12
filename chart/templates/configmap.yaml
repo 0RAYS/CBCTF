@@ -31,7 +31,9 @@ data:
       host: {{ .Values.cbctf.gin.host | quote }}
       port: {{ .Values.cbctf.gin.port }}
       upload:
-        max: {{ .Values.cbctf.gin.upload.max }}
+        picture: {{ .Values.cbctf.gin.upload.picture }}
+        challenge: {{ .Values.cbctf.gin.upload.challenge }}
+        writeup: {{ .Values.cbctf.gin.upload.writeup }}
       proxies:
         {{- range .Values.cbctf.gin.proxies }}
         - {{ . | quote }}

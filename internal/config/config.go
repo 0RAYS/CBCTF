@@ -48,7 +48,9 @@ type Config struct {
 		Host   string `mapstructure:"host" json:"host"`
 		Port   uint   `mapstructure:"port" json:"port"`
 		Upload struct {
-			Max int `mapstructure:"max" json:"max"`
+			Picture   int `mapstructure:"picture" json:"picture"`
+			Challenge int `mapstructure:"challenge" json:"challenge"`
+			Writeup   int `mapstructure:"writeup" json:"writeup"`
 		} `mapstructure:"upload" json:"upload"`
 		Proxies   []string `mapstructure:"proxies" json:"proxies"`
 		RateLimit struct {

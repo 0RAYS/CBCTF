@@ -77,7 +77,9 @@ export function normalizeConfig(source) {
       mode: fallback(source?.gin_mode, fallback(source?.gin?.mode, '')),
       port: fallback(source?.gin_port, fallback(source?.gin?.port, 0)),
       upload: {
-        max: fallback(source?.gin_upload_max, fallback(source?.gin?.upload?.max, 0)),
+        picture: fallback(source?.gin_upload_picture, fallback(source?.gin?.upload?.picture, 0)),
+        challenge: fallback(source?.gin_upload_challenge, fallback(source?.gin?.upload?.challenge, 0)),
+        writeup: fallback(source?.gin_upload_writeup, fallback(source?.gin?.upload?.writeup, 0)),
       },
       ratelimit: {
         global: fallback(source?.gin_ratelimit_global, fallback(source?.gin?.ratelimit?.global, 0)),

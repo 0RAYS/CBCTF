@@ -98,7 +98,9 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.GinModeSettingKey, Value: model.SettingValue{V: config.Env.Gin.Mode}},
 		{Key: model.GinHostSettingKey, Value: model.SettingValue{V: config.Env.Gin.Host}},
 		{Key: model.GinPortSettingKey, Value: model.SettingValue{V: config.Env.Gin.Port}},
-		{Key: model.GinUploadMaxSettingKey, Value: model.SettingValue{V: config.Env.Gin.Upload.Max}},
+		{Key: model.GinUploadPictureSettingKey, Value: model.SettingValue{V: config.Env.Gin.Upload.Picture}},
+		{Key: model.GinUploadChallengeSettingKey, Value: model.SettingValue{V: config.Env.Gin.Upload.Challenge}},
+		{Key: model.GinUploadWriteupSettingKey, Value: model.SettingValue{V: config.Env.Gin.Upload.Writeup}},
 		{Key: model.GinProxiesSettingKey, Value: model.SettingValue{V: config.Env.Gin.Proxies}},
 		{Key: model.GinRateLimitGlobalSettingKey, Value: model.SettingValue{V: config.Env.Gin.RateLimit.Global}},
 		{Key: model.GinRateLimitWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.RateLimit.Whitelist}},
@@ -190,7 +192,13 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	if config.Env.Gin.Port, ret = GetValue[uint](s, model.GinPortSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Gin.Upload.Max, ret = GetValue[int](s, model.GinUploadMaxSettingKey); !ret.OK {
+	if config.Env.Gin.Upload.Picture, ret = GetValue[int](s, model.GinUploadPictureSettingKey); !ret.OK {
+		return ret
+	}
+	if config.Env.Gin.Upload.Challenge, ret = GetValue[int](s, model.GinUploadChallengeSettingKey); !ret.OK {
+		return ret
+	}
+	if config.Env.Gin.Upload.Writeup, ret = GetValue[int](s, model.GinUploadWriteupSettingKey); !ret.OK {
 		return ret
 	}
 	if config.Env.Gin.Proxies, ret = GetValue[[]string](s, model.GinProxiesSettingKey); !ret.OK {
