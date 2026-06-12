@@ -12,20 +12,6 @@ type GroupRepo struct {
 	BaseRepo[model.Group]
 }
 
-type CreateGroupOptions struct {
-	RoleID      uint
-	Name        string
-	Description string
-}
-
-func (c CreateGroupOptions) Convert2Model() model.Model {
-	return model.Group{
-		RoleID:      c.RoleID,
-		Name:        c.Name,
-		Description: c.Description,
-	}
-}
-
 type UpdateGroupOptions struct {
 	RoleID      *uint
 	Name        *string

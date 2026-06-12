@@ -82,7 +82,7 @@ func SendEmailWithSender(sender *Sender, to, subject, htmlContent string) error 
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", htmlContent)
-	options := db.CreateEmailOptions{
+	email := model.Email{
 		SmtpID:  sender.Smtp.ID,
 		From:    sender.Smtp.Address,
 		To:      to,
@@ -92,9 +92,9 @@ func SendEmailWithSender(sender *Sender, to, subject, htmlContent string) error 
 	}
 	err := gomail.Send(*sender.Auth, m)
 	if err != nil {
-		options.Success = false
+		email.Success = false
 	}
-	db.InitEmailRepo(db.DB).Create(options)
+	db.InitEmailRepo(db.DB).Create(email)
 	return err
 }
 

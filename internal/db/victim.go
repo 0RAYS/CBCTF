@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"database/sql"
 	"time"
 
 	"gorm.io/gorm"
@@ -12,31 +11,6 @@ import (
 
 type VictimRepo struct {
 	BaseRepo[model.Victim]
-}
-
-type CreateVictimOptions struct {
-	ChallengeID        uint
-	ContestID          sql.Null[uint]
-	ContestChallengeID sql.Null[uint]
-	TeamID             sql.Null[uint]
-	UserID             uint
-	Start              time.Time
-	Duration           time.Duration
-	Spec               model.VictimSpec
-}
-
-func (c CreateVictimOptions) Convert2Model() model.Model {
-	return model.Victim{
-		ChallengeID:        c.ChallengeID,
-		ContestID:          c.ContestID,
-		ContestChallengeID: c.ContestChallengeID,
-		TeamID:             c.TeamID,
-		UserID:             c.UserID,
-		Start:              c.Start,
-		Duration:           c.Duration,
-		Spec:               c.Spec,
-		Status:             model.WaitingVictimStatus,
-	}
 }
 
 type UpdateVictimOptions struct {

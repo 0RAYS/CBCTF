@@ -16,7 +16,7 @@ func ListNotices(tx *gorm.DB, contest model.Contest, form dto.ListModelsForm) ([
 }
 
 func CreateNotice(tx *gorm.DB, contest model.Contest, form dto.CreateNoticeForm) (model.Notice, model.RetVal) {
-	return db.InitNoticeRepo(tx).Create(db.CreateNoticeOptions{
+	return db.InitNoticeRepo(tx).Create(model.Notice{
 		ContestID: contest.ID,
 		Title:     form.Title,
 		Content:   form.Content,

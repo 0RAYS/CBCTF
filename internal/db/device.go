@@ -13,20 +13,6 @@ type DeviceRepo struct {
 	BaseRepo[model.Device]
 }
 
-type CreateDeviceOptions struct {
-	UserID uint
-	Magic  string
-	Count  int64
-}
-
-func (c CreateDeviceOptions) Convert2Model() model.Model {
-	return model.Device{
-		UserID: c.UserID,
-		Magic:  c.Magic,
-		Count:  c.Count,
-	}
-}
-
 type DiffUpdateDeviceOptions struct {
 	Count int64
 }
@@ -84,12 +70,10 @@ func (d *DeviceRepo) ListSharedContestDevices(contestID uint, start, end time.Ti
 	return rows, model.SuccessRetVal()
 }
 
-func (d *DeviceRepo) RecordDevice(options CreateDeviceOptions, count int64) model.RetVal {
+func (d *DeviceRepo) RecordDevice(device model.Device, count int64) model.RetVal {
 	if count == 0 {
 		return model.SuccessRetVal()
 	}
-
-	device := options.Convert2Model().(model.Device)
 	res := d.DB.Model(&model.Device{}).FirstOrCreate(&device, device)
 	if res.Error != nil {
 		return model.RetVal{Msg: i18n.Model.Device.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}

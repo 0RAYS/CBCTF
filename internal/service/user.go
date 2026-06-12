@@ -34,7 +34,7 @@ func BuildUserViews(tx *gorm.DB, users []model.User, includeCounts bool) []view.
 }
 
 func CreateUser(tx *gorm.DB, form dto.RegisterForm) (model.User, model.RetVal) {
-	user, ret := db.InitUserRepo(tx).Insert(model.User{
+	user, ret := db.InitUserRepo(tx).Create(model.User{
 		Name:           form.Name,
 		Password:       utils.HashPassword(form.Password),
 		Email:          form.Email,
@@ -57,7 +57,7 @@ func CreateUser(tx *gorm.DB, form dto.RegisterForm) (model.User, model.RetVal) {
 }
 
 func AdminCreateUser(tx *gorm.DB, form dto.CreateUserForm) (model.User, model.RetVal) {
-	return db.InitUserRepo(tx).Insert(model.User{
+	return db.InitUserRepo(tx).Create(model.User{
 		Name:           form.Name,
 		Password:       utils.HashPassword(form.Password),
 		Email:          form.Email,

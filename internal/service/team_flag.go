@@ -92,7 +92,7 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 			teamFlagL = append(teamFlagL, teamFlag)
 			continue
 		}
-		options := db.CreateTeamFlagOptions{
+		options := model.TeamFlag{
 			TeamID:          team.ID,
 			ContestFlagID:   contestFlag.ID,
 			ChallengeFlagID: contestFlag.ChallengeFlagID,

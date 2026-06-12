@@ -14,36 +14,6 @@ type UserRepo struct {
 	BaseRepo[model.User]
 }
 
-type CreateUserOptions struct {
-	Name           string
-	Password       string
-	Email          string
-	Picture        model.FileURL
-	Description    string
-	Verified       bool
-	Hidden         bool
-	Banned         bool
-	Provider       string
-	ProviderUserID string
-	OauthRaw       string
-}
-
-func (c CreateUserOptions) Convert2Model() model.Model {
-	return model.User{
-		Name:           c.Name,
-		Password:       c.Password,
-		Email:          c.Email,
-		Picture:        c.Picture,
-		Description:    c.Description,
-		Verified:       c.Verified,
-		Hidden:         c.Hidden,
-		Banned:         c.Banned,
-		Provider:       c.Provider,
-		ProviderUserID: c.ProviderUserID,
-		OauthRaw:       c.OauthRaw,
-	}
-}
-
 type UpdateUserOptions struct {
 	Name           *string
 	Password       *string
@@ -115,7 +85,7 @@ func (u *UserRepo) InitAdmin() model.RetVal {
 	}
 	if count == 0 {
 		pwd := utils.UUID()
-		admin, createRet := u.Insert(model.User{
+		admin, createRet := u.Create(model.User{
 			Name:           "admin",
 			Password:       utils.HashPassword(pwd),
 			Email:          "admin@0rays.club",

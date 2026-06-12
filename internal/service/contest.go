@@ -59,7 +59,7 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 			},
 		}
 	}
-	return repo.Create(db.CreateContestOptions{
+	return repo.Create(model.Contest{
 		Name:        form.Name,
 		Description: form.Description,
 		Captcha:     form.Captcha,

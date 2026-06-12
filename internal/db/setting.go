@@ -15,18 +15,6 @@ type SettingRepo struct {
 	BaseRepo[model.Setting]
 }
 
-type CreateSettingOptions struct {
-	Key   string
-	Value model.SettingValue
-}
-
-func (c CreateSettingOptions) Convert2Model() model.Model {
-	return model.Setting{
-		Key:   c.Key,
-		Value: c.Value,
-	}
-}
-
 type UpdateSettingOptions struct {
 	Value *model.SettingValue
 }
@@ -137,7 +125,7 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.RegistrationEnabledSettingKey, Value: model.SettingValue{V: config.Env.Registration.Enabled}},
 		{Key: model.RegistrationDefaultGroupSettingKey, Value: model.SettingValue{V: config.Env.Registration.DefaultGroup}},
 	} {
-		if _, ret := s.Create(CreateSettingOptions{
+		if _, ret := s.Create(model.Setting{
 			Key:   setting.Key,
 			Value: setting.Value,
 		}); !ret.OK && ret.Msg != i18n.Model.DuplicateKeyValue {

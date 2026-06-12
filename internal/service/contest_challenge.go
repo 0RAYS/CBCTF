@@ -32,8 +32,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 		ret = db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
 			contestChallengeRepo := db.InitContestChallengeRepo(tx2)
 			contestFlagRepo := db.InitContestFlagRepo(tx2)
-
-			options := db.CreateContestChallengeOptions{
+			contestChallenge, ret := contestChallengeRepo.Create(model.ContestChallenge{
 				ContestID:   contest.ID,
 				ChallengeID: challenge.ID,
 				Name:        challenge.Name,
@@ -41,13 +40,12 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 				Type:        challenge.Type,
 				Category:    challenge.Category,
 				Hidden:      true,
-			}
-			contestChallenge, ret := contestChallengeRepo.Create(options)
+			})
 			if !ret.OK {
 				return ret
 			}
 			for _, flag := range challenge.ChallengeFlags {
-				contestFlagOptions := db.CreateContestFlagOptions{
+				_, ret = contestFlagRepo.Create(model.ContestFlag{
 					ContestID:          contest.ID,
 					ContestChallengeID: contestChallenge.ID,
 					ChallengeFlagID:    flag.ID,
@@ -59,8 +57,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 					ScoreType:          0,
 					Solvers:            0,
 					Last:               time.Now(),
-				}
-				_, ret = contestFlagRepo.Create(contestFlagOptions)
+				})
 				if !ret.OK {
 					return ret
 				}

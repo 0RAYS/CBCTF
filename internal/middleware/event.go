@@ -27,7 +27,7 @@ func Events(ctx *gin.Context) {
 		GetUser(ctx), GetContest(ctx), GetTeam(ctx), GetFile(ctx), GetNotice(ctx), GetChallenge(ctx), GetWebhook(ctx),
 		GetContestChallenge(ctx), GetContestFlag(ctx), GetVictim(ctx), GetCheat(ctx), GetOauth(ctx), GetSmtp(ctx),
 	}
-	options := db.CreateEventOptions{
+	options := model.Event{
 		Type:    t,
 		Success: ctx.GetBool(CTXEventSuccessKey),
 		IP:      ctx.ClientIP(),

@@ -10,20 +10,6 @@ type PodRepo struct {
 	BaseRepo[model.Pod]
 }
 
-type CreatePodOptions struct {
-	VictimID uint
-	Name     string
-	Spec     model.PodSpec
-}
-
-func (c CreatePodOptions) Convert2Model() model.Model {
-	return model.Pod{
-		VictimID: c.VictimID,
-		Name:     c.Name,
-		Spec:     c.Spec,
-	}
-}
-
 func InitPodRepo(tx *gorm.DB) *PodRepo {
 	return &PodRepo{
 		BaseRepo: BaseRepo[model.Pod]{

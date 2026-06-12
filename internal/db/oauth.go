@@ -11,52 +11,6 @@ type OauthRepo struct {
 	BaseRepo[model.Oauth]
 }
 
-type CreateOauthOptions struct {
-	AuthURL          string
-	TokenURL         string
-	UserInfoURL      string
-	CallbackURL      string
-	ClientID         string
-	ClientSecret     string
-	Provider         string
-	Uri              string
-	Scopes           model.StringList
-	IDClaim          string
-	NameClaim        string
-	EmailClaim       string
-	PictureClaim     string
-	DescriptionClaim string
-	GroupsClaim      string
-	AdminGroup       string
-	DefaultGroup     uint
-	On               bool
-	Picture          model.FileURL
-}
-
-func (c CreateOauthOptions) Convert2Model() model.Model {
-	return model.Oauth{
-		AuthURL:          c.AuthURL,
-		TokenURL:         c.TokenURL,
-		UserInfoURL:      c.UserInfoURL,
-		CallbackURL:      c.CallbackURL,
-		ClientID:         c.ClientID,
-		ClientSecret:     c.ClientSecret,
-		Provider:         c.Provider,
-		Uri:              c.Uri,
-		Scopes:           c.Scopes,
-		IDClaim:          c.IDClaim,
-		NameClaim:        c.NameClaim,
-		EmailClaim:       c.EmailClaim,
-		PictureClaim:     c.PictureClaim,
-		DescriptionClaim: c.DescriptionClaim,
-		GroupsClaim:      c.GroupsClaim,
-		AdminGroup:       c.AdminGroup,
-		DefaultGroup:     c.DefaultGroup,
-		On:               c.On,
-		Picture:          c.Picture,
-	}
-}
-
 type UpdateOauthOptions struct {
 	AuthURL          *string
 	TokenURL         *string
@@ -153,11 +107,11 @@ func (o *OauthRepo) RegisterDefault() {
 	github := oauth.GetDefaultGithubOauth()
 	_, ret := o.GetByUniqueField("provider", github.Provider)
 	if !ret.OK {
-		o.Insert(github)
+		o.Create(github)
 	}
 	hduhelp := oauth.GetDefaultHDUHelpOauth()
 	_, ret = o.GetByUniqueField("provider", hduhelp.Provider)
 	if !ret.OK {
-		o.Insert(hduhelp)
+		o.Create(hduhelp)
 	}
 }

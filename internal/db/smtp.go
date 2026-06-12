@@ -11,24 +11,6 @@ type SmtpRepo struct {
 	BaseRepo[model.Smtp]
 }
 
-type CreateSmtpOptions struct {
-	Address string
-	Host    string
-	Port    int
-	Pwd     string
-	On      bool
-}
-
-func (c CreateSmtpOptions) Convert2Model() model.Model {
-	return model.Smtp{
-		Address: c.Address,
-		Host:    c.Host,
-		Port:    c.Port,
-		Pwd:     c.Pwd,
-		On:      c.On,
-	}
-}
-
 type UpdateSmtpOptions struct {
 	Address     *string
 	Host        *string

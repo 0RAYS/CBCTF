@@ -132,7 +132,7 @@ func CheckSameDevice(tx *gorm.DB, contest model.Contest) {
 			}
 		}
 
-		repo.Create(db.CreateCheatOptions{
+		repo.Create(model.Cheat{
 			ContestID:  contest.ID,
 			Model:      model.CheatRefModel{model.Name(model.User{}): userIDs},
 			Magic:      magic,
@@ -191,7 +191,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 		}
 		teamIDs = append(teamIDs, submission.TeamID)
 
-		cheatRepo.Create(db.CreateCheatOptions{
+		cheatRepo.Create(model.Cheat{
 			ContestID:  contest.ID,
 			Model:      model.CheatRefModel{model.Name(model.Team{}): teamIDs},
 			IP:         submission.IP,
@@ -263,7 +263,7 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 			}
 		}
 
-		cheatRepo.Create(db.CreateCheatOptions{
+		cheatRepo.Create(model.Cheat{
 			ContestID:  contest.ID,
 			Model:      model.CheatRefModel{model.Name(model.User{}): userIDs},
 			IP:         ip,
@@ -319,7 +319,7 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 			}
 		}
 
-		cheatRepo.Create(db.CreateCheatOptions{
+		cheatRepo.Create(model.Cheat{
 			ContestID:  contest.ID,
 			Model:      model.CheatRefModel{model.Name(model.Team{}): teamIDs},
 			IP:         ip,

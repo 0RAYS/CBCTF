@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"database/sql"
 	"time"
 
 	"gorm.io/gorm"
@@ -12,23 +11,6 @@ import (
 
 type GeneratorRepo struct {
 	BaseRepo[model.Generator]
-}
-
-type CreateGeneratorOptions struct {
-	ChallengeID   uint
-	ChallengeName string
-	ContestID     sql.Null[uint]
-	Name          string
-}
-
-func (c CreateGeneratorOptions) Convert2Model() model.Model {
-	return model.Generator{
-		ChallengeID:   c.ChallengeID,
-		ChallengeName: c.ChallengeName,
-		ContestID:     c.ContestID,
-		Name:          c.Name,
-		Status:        model.WaitingGeneratorStatus,
-	}
 }
 
 type UpdateGeneratorOptions struct {
