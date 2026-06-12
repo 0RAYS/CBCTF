@@ -91,16 +91,8 @@ func InitContestFlagRepo(tx *gorm.DB) *ContestFlagRepo {
 	}
 }
 
-func (c *ContestFlagRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
-	return c.DeleteByFieldID("contest_id", contestIDL...)
-}
-
 func (c *ContestFlagRepo) DeleteByContestChallengeID(contestChallengeIDL ...uint) model.RetVal {
 	return c.DeleteByFieldID("contest_challenge_id", contestChallengeIDL...)
-}
-
-func (c *ContestFlagRepo) DeleteByChallengeFlagID(challengeFlagIDL ...uint) model.RetVal {
-	return c.DeleteByFieldID("challenge_flag_id", challengeFlagIDL...)
 }
 
 type UserSolvedContestFlag struct {

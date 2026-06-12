@@ -79,14 +79,6 @@ func (s *SubmissionRepo) DeleteByTeamID(teamIDL ...uint) model.RetVal {
 	return s.DeleteByFieldID("team_id", teamIDL...)
 }
 
-func (s *SubmissionRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
-	return s.DeleteByFieldID("contest_id", contestIDL...)
-}
-
-func (s *SubmissionRepo) DeleteByChallengeID(challengeIDL ...uint) model.RetVal {
-	return s.DeleteByFieldID("challenge_id", challengeIDL...)
-}
-
 func (s *SubmissionRepo) DeleteByContestChallengeID(contestChallengeIDL ...uint) model.RetVal {
 	return s.DeleteByFieldID("contest_challenge_id", contestChallengeIDL...)
 }
