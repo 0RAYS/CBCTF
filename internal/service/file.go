@@ -112,7 +112,7 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 	return record, ret
 }
 
-func SaveWriteUp(tx *gorm.DB, contest model.Contest, team model.Team, file *multipart.FileHeader) (model.File, model.RetVal) {
+func SaveWriteup(tx *gorm.DB, contest model.Contest, team model.Team, file *multipart.FileHeader) (model.File, model.RetVal) {
 	var (
 		allowed = []string{".pdf", ".docx", ".doc"}
 		suffix  = strings.ToLower(filepath.Ext(file.Filename))
@@ -156,7 +156,7 @@ func ListFiles(tx *gorm.DB, form dto.GetFilesForm) ([]model.File, int64, model.R
 	return db.InitFileRepo(tx).List(form.Limit, form.Offset, options)
 }
 
-func ListWriteUps(tx *gorm.DB, team model.Team, form dto.ListModelsForm) ([]model.File, int64, model.RetVal) {
+func ListWriteups(tx *gorm.DB, team model.Team, form dto.ListModelsForm) ([]model.File, int64, model.RetVal) {
 	return db.InitFileRepo(tx).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"model": model.Name(team), "model_id": team.ID, "type": model.WriteupFileType},
 		Sort:       []string{"id DESC"},

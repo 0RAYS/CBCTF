@@ -155,16 +155,16 @@ func UploadChallengeFile(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal())
 }
 
-func UploadWriteUp(ctx *gin.Context) {
+func UploadWriteup(ctx *gin.Context) {
 	file, err := ctx.FormFile(string(model.WriteupFileType))
 	if err != nil {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
-	ctx.Set(middleware.CTXEventTypeKey, model.UploadWriteUpEventType)
+	ctx.Set(middleware.CTXEventTypeKey, model.UploadWriteupEventType)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	record, ret := service.SaveWriteUp(db.DB, contest, team, file)
+	record, ret := service.SaveWriteup(db.DB, contest, team, file)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -202,7 +202,7 @@ func GetWriteUPs(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	writeups, count, ret := service.ListWriteUps(db.DB, middleware.GetTeam(ctx), form)
+	writeups, count, ret := service.ListWriteups(db.DB, middleware.GetTeam(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -214,7 +214,7 @@ func GetWriteUPs(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "writeups": data}))
 }
 
-func ExportContestWriteUps(ctx *gin.Context) {
+func ExportContestWriteups(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	src := filepath.Join(config.Env.Path, "writeups", "contest-"+strconv.FormatUint(uint64(contest.ID), 10))
 	if stat, err := os.Stat(src); err != nil || !stat.IsDir() {

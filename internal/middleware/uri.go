@@ -256,7 +256,7 @@ func SetTrafficFile(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func SetTeamWriteUpFile(ctx *gin.Context) {
+func SetTeamWriteupFile(ctx *gin.Context) {
 	type fileIDUri struct {
 		FileID string `uri:"fileID" binding:"required"`
 	}
