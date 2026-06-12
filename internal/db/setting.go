@@ -54,8 +54,7 @@ func (s *SettingRepo) Get(key string, optionsL ...GetOptions) (model.Setting, mo
 func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.RetVal {
 	var count uint
 	data := options.Convert2Map()
-	value, ok := data["value"].(model.SettingValue)
-	if !ok || value.V == nil {
+	if value, ok := data["value"]; !ok || value == nil || reflect.ValueOf(value.(model.SettingValue).V).IsNil() {
 		return model.SuccessRetVal()
 	}
 	for {
