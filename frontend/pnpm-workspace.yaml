@@ -1,2 +1,4 @@
+minimumReleaseAgeExclude:
+  - dompurify
 allowBuilds:
   esbuild: true
