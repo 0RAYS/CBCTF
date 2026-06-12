@@ -48,12 +48,32 @@ export function GinConfigSection({ config, updateConfig }) {
         }
       />
       <ConfigField
-        label={t('admin.system.labels.ginUploadMax')}
+        label={t('admin.system.labels.ginUploadPicture')}
         type="number"
-        value={config.gin.upload.max}
+        value={config.gin.upload.picture}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.gin.upload.max = sanitizeNumber(value, config.gin.upload.max);
+            draft.gin.upload.picture = sanitizeNumber(value, config.gin.upload.picture);
+          })
+        }
+      />
+      <ConfigField
+        label={t('admin.system.labels.ginUploadChallenge')}
+        type="number"
+        value={config.gin.upload.challenge}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.gin.upload.challenge = sanitizeNumber(value, config.gin.upload.challenge);
+          })
+        }
+      />
+      <ConfigField
+        label={t('admin.system.labels.ginUploadWriteup')}
+        type="number"
+        value={config.gin.upload.writeup}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.gin.upload.writeup = sanitizeNumber(value, config.gin.upload.writeup);
           })
         }
       />

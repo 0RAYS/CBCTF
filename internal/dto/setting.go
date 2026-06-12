@@ -20,7 +20,9 @@ type UpdateSettingForm struct {
 	GinMode               *string   `form:"gin_mode" json:"gin_mode" binding:"omitempty,oneof=DEBUG TEST RELEASE debug test release"`
 	GinHost               *string   `form:"gin_host" json:"gin_host" binding:"omitempty,ip"`
 	GinPort               *uint     `form:"gin_port" json:"gin_port" binding:"omitempty,port"`
-	GinUploadMax          *int      `form:"gin_upload_max" json:"gin_upload_max" binding:"omitempty,gte=1"`
+	GinUploadPicture      *int      `form:"gin_upload_picture" json:"gin_upload_picture" binding:"omitempty,gte=1"`
+	GinUploadChallenge    *int      `form:"gin_upload_challenge" json:"gin_upload_challenge" binding:"omitempty,gte=1"`
+	GinUploadWriteup      *int      `form:"gin_upload_writeup" json:"gin_upload_writeup" binding:"omitempty,gte=1"`
 	GinProxies            *[]string `form:"gin_proxies" json:"gin_proxies" binding:"omitempty,dive,ip|cidr"`
 	GinRateLimitGlobal    *int      `form:"gin_ratelimit_global" json:"gin_ratelimit_global" binding:"omitempty,gte=1"`
 	GinRateLimitWhitelist *[]string `form:"gin_ratelimit_whitelist" json:"gin_ratelimit_whitelist" binding:"omitempty,dive,ip|cidr"`

@@ -63,6 +63,8 @@ helm uninstall cbctf -n cbctf
 
 ## 应用配置
 
+上传大小限制已拆分为 `cbctf.gin.upload.picture`、`cbctf.gin.upload.challenge`、`cbctf.gin.upload.writeup`。旧的 `cbctf.gin.upload.max` 不再生效。
+
 | 配置项                                | 说明                          | 示例                        |
 |------------------------------------|-----------------------------|---------------------------|
 | `cbctf.host`                       | 平台公开访问地址，不要带尾部 `/`          | `https://ctf.example.com` |
@@ -71,7 +73,9 @@ helm uninstall cbctf -n cbctf
 | `cbctf.gin.mode`                   | Gin 运行模式                    | `release`                 |
 | `cbctf.gin.host`                   | 容器内监听地址                     | `0.0.0.0`                 |
 | `cbctf.gin.port`                   | 容器内监听端口                     | `8000`                    |
-| `cbctf.gin.upload.max`             | 上传大小限制，单位 MiB               | `8`                       |
+| `cbctf.gin.upload.picture`         | 图片上传大小限制，单位 MiB             | `8`                       |
+| `cbctf.gin.upload.challenge`       | 题目附件上传大小限制，单位 MiB           | `8`                       |
+| `cbctf.gin.upload.writeup`         | 题解上传大小限制，单位 MiB             | `8`                       |
 | `cbctf.gin.proxies`                | 可信代理 IP 或 CIDR              | `10.244.0.0/16`           |
 | `cbctf.gin.cors`                   | CORS 允许来源                   | `https://ctf.example.com` |
 | `cbctf.gin.ratelimit.global`       | 全局限流                        | `100`                     |

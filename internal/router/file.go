@@ -123,7 +123,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 	}
 }
 
-func UploadChallengeFile(ctx *gin.Context) {
+func UploadChallenge(ctx *gin.Context) {
 	file, err := ctx.FormFile(string(model.ChallengeFileType))
 	if err != nil {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
@@ -141,7 +141,7 @@ func UploadChallengeFile(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
 		return
 	}
-	record, ret := service.SaveChallengeFile(db.DB, challenge, file, path)
+	record, ret := service.SaveChallenge(db.DB, challenge, file, path)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

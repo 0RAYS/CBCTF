@@ -90,7 +90,9 @@ cbctf:
     host: "0.0.0.0"
     port: 8000
     upload:
-      max: 8        # MB
+      picture: 8     # MB
+      challenge: 8   # MB
+      writeup: 8     # MB
     # Trusted reverse proxy IPs (add your ingress controller pod CIDR)
     proxies:
       - "127.0.0.1"
