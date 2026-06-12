@@ -9,7 +9,7 @@
 <script defer src="/static/js/lib-react.d0adebc4a6.js"></script>
 <script defer src="/static/js/lib-router.acabf0f462.js"></script>
 <script defer src="/static/js/350.b8f2667433.js"></script>
-<script defer src="/static/js/index.b4892432bf.js"></script>
+<script defer src="/static/js/index.67d1f5057e.js"></script>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="generator" content="Rspress v2.0.14">
 <link rel="icon" href="/logo.png">
@@ -141,6 +141,7 @@ PostgreSQL 和 Redis。</p>
 
 <div class="rp-table-scroll-container rp-scrollbar"><table><thead><tr><th>配置项</th><th>说明</th><th>示例</th></tr></thead><tbody><tr><td><code>image.repository</code></td><td>应用镜像仓库</td><td><code>ghcr.io/0rays/cbctf</code></td></tr><tr><td><code>image.tag</code></td><td>应用镜像标签</td><td><code>latest</code></td></tr><tr><td><code>imagePullSecrets</code></td><td>私有镜像拉取 Secret</td><td><code>[{name: regcred}]</code></td></tr><tr><td><code>imageCredentials.*</code></td><td>Chart 自动创建镜像仓库 Secret 的内联凭据</td><td><code>registry: ghcr.io</code></td></tr><tr><td><code>timezone</code></td><td>容器时区</td><td><code>Asia/Shanghai</code></td></tr><tr><td><code>service.type</code></td><td>Service 类型</td><td><code>ClusterIP</code></td></tr><tr><td><code>service.port</code></td><td>Service 端口</td><td><code>8000</code></td></tr><tr><td><code>ingress.enabled</code></td><td>是否启用 Ingress</td><td><code>true</code></td></tr><tr><td><code>ingress.className</code></td><td>IngressClass</td><td><code>nginx</code></td></tr><tr><td><code>ingress.hosts</code></td><td>域名和路径</td><td><code>ctf.example.com</code></td></tr><tr><td><code>ingress.tls</code></td><td>TLS Secret 配置</td><td><code>cbctf-tls</code></td></tr><tr><td><code>resources</code></td><td>应用 Pod 资源限制</td><td><code>requests.cpu: 500m</code></td></tr><tr><td><code>persistence.enabled</code></td><td>是否创建共享 PVC</td><td><code>true</code></td></tr><tr><td><code>persistence.storageClass</code></td><td>共享 PVC 的 StorageClass</td><td><code>nfs-client</code></td></tr><tr><td><code>persistence.accessMode</code></td><td>访问模式</td><td><code>ReadWriteMany</code></td></tr><tr><td><code>persistence.size</code></td><td>共享 PVC 容量</td><td><code>20Gi</code></td></tr><tr><td><code>persistence.existingClaim</code></td><td>复用已有 PVC</td><td><code>cbctf-data</code></td></tr></tbody></table></div>
 <h2 class="rp-toc-include" id="应用配置"><a href="#应用配置" class="rp-header-anchor rp-link" aria-hidden="true">#</a>应用配置</h2>
+<p>上传大小限制已拆分为 <code>cbctf.gin.upload.picture</code>、<code>cbctf.gin.upload.challenge</code>、<code>cbctf.gin.upload.writeup</code>。旧的 <code>cbctf.gin.upload.max</code> 不再生效。</p>
 
 
 
@@ -236,7 +237,17 @@ PostgreSQL 和 Redis。</p>
 
 
 
-<div class="rp-table-scroll-container rp-scrollbar"><table><thead><tr><th>配置项</th><th>说明</th><th>示例</th></tr></thead><tbody><tr><td><code>cbctf.host</code></td><td>平台公开访问地址，不要带尾部 <code>/</code></td><td><code>https://ctf.example.com</code></td></tr><tr><td><code>cbctf.log.level</code></td><td>应用日志级别</td><td><code>info</code></td></tr><tr><td><code>cbctf.log.save</code></td><td>是否持久化日志</td><td><code>false</code></td></tr><tr><td><code>cbctf.gin.mode</code></td><td>Gin 运行模式</td><td><code>release</code></td></tr><tr><td><code>cbctf.gin.host</code></td><td>容器内监听地址</td><td><code>0.0.0.0</code></td></tr><tr><td><code>cbctf.gin.port</code></td><td>容器内监听端口</td><td><code>8000</code></td></tr><tr><td><code>cbctf.gin.upload.max</code></td><td>上传大小限制，单位 MiB</td><td><code>8</code></td></tr><tr><td><code>cbctf.gin.proxies</code></td><td>可信代理 IP 或 CIDR</td><td><code>10.244.0.0/16</code></td></tr><tr><td><code>cbctf.gin.cors</code></td><td>CORS 允许来源</td><td><code>https://ctf.example.com</code></td></tr><tr><td><code>cbctf.gin.ratelimit.global</code></td><td>全局限流</td><td><code>100</code></td></tr><tr><td><code>cbctf.gin.jwt.secret</code></td><td>JWT 签名密钥，留空时 Chart 自动生成并复用</td><td><code>change-me-long-random</code></td></tr><tr><td><code>cbctf.gin.metrics.whitelist</code></td><td>允许访问 <code>/metrics</code> 的 IP 或 CIDR</td><td><code>10.0.0.0/8</code></td></tr><tr><td><code>cbctf.asynq.queues.traffic</code></td><td>靶机流量解析任务并发</td><td><code>2</code></td></tr><tr><td><code>cbctf.registration.enabled</code></td><td>是否允许公开注册</td><td><code>true</code></td></tr><tr><td><code>cbctf.registration.default_group</code></td><td>新用户默认分组 ID，<code>0</code> 表示不指定</td><td><code>0</code></td></tr><tr><td><code>cbctf.cheat.ip.whitelist</code></td><td>作弊检测 IP 白名单</td><td><code>10.0.0.0/8</code></td></tr><tr><td><code>cbctf.webhook.whitelist</code></td><td>Webhook 目标白名单</td><td><code>example.com</code></td></tr></tbody></table></div>
+
+
+
+
+
+
+
+
+
+
+<div class="rp-table-scroll-container rp-scrollbar"><table><thead><tr><th>配置项</th><th>说明</th><th>示例</th></tr></thead><tbody><tr><td><code>cbctf.host</code></td><td>平台公开访问地址，不要带尾部 <code>/</code></td><td><code>https://ctf.example.com</code></td></tr><tr><td><code>cbctf.log.level</code></td><td>应用日志级别</td><td><code>info</code></td></tr><tr><td><code>cbctf.log.save</code></td><td>是否持久化日志</td><td><code>false</code></td></tr><tr><td><code>cbctf.gin.mode</code></td><td>Gin 运行模式</td><td><code>release</code></td></tr><tr><td><code>cbctf.gin.host</code></td><td>容器内监听地址</td><td><code>0.0.0.0</code></td></tr><tr><td><code>cbctf.gin.port</code></td><td>容器内监听端口</td><td><code>8000</code></td></tr><tr><td><code>cbctf.gin.upload.picture</code></td><td>图片上传大小限制，单位 MiB</td><td><code>8</code></td></tr><tr><td><code>cbctf.gin.upload.challenge</code></td><td>题目附件上传大小限制，单位 MiB</td><td><code>8</code></td></tr><tr><td><code>cbctf.gin.upload.writeup</code></td><td>题解上传大小限制，单位 MiB</td><td><code>8</code></td></tr><tr><td><code>cbctf.gin.proxies</code></td><td>可信代理 IP 或 CIDR</td><td><code>10.244.0.0/16</code></td></tr><tr><td><code>cbctf.gin.cors</code></td><td>CORS 允许来源</td><td><code>https://ctf.example.com</code></td></tr><tr><td><code>cbctf.gin.ratelimit.global</code></td><td>全局限流</td><td><code>100</code></td></tr><tr><td><code>cbctf.gin.jwt.secret</code></td><td>JWT 签名密钥，留空时 Chart 自动生成并复用</td><td><code>change-me-long-random</code></td></tr><tr><td><code>cbctf.gin.metrics.whitelist</code></td><td>允许访问 <code>/metrics</code> 的 IP 或 CIDR</td><td><code>10.0.0.0/8</code></td></tr><tr><td><code>cbctf.asynq.queues.traffic</code></td><td>靶机流量解析任务并发</td><td><code>2</code></td></tr><tr><td><code>cbctf.registration.enabled</code></td><td>是否允许公开注册</td><td><code>true</code></td></tr><tr><td><code>cbctf.registration.default_group</code></td><td>新用户默认分组 ID，<code>0</code> 表示不指定</td><td><code>0</code></td></tr><tr><td><code>cbctf.cheat.ip.whitelist</code></td><td>作弊检测 IP 白名单</td><td><code>10.0.0.0/8</code></td></tr><tr><td><code>cbctf.webhook.whitelist</code></td><td>Webhook 目标白名单</td><td><code>example.com</code></td></tr></tbody></table></div>
 <p>Chart 会把 JWT 密钥写入 Secret，并通过 <code>CBCTF_GIN_JWT_SECRET</code> 注入容器。数据库和 Redis 密码也通过 Secret 注入。</p>
 <h2 class="rp-toc-include" id="postgresql-和-redis"><a href="#postgresql-和-redis" class="rp-header-anchor rp-link" aria-hidden="true">#</a>PostgreSQL 和 Redis</h2>
 
