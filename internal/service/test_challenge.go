@@ -2,6 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -32,7 +33,13 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	ret = k8s.GenAttachment(ctx, challenge, generator, 0, flags)
 	cancel()
-	db.InitGeneratorRepo(tx).UpdateStatus(generator.ID, ret.OK, time.Now())
+	generatorRepo := db.InitGeneratorRepo(tx)
+	_ = generatorRepo.UpdateStatus(generator.ID, ret.OK, time.Now())
+	if !ret.OK && (ret.Msg == i18n.Model.NotFound || ret.Msg == i18n.K8S.NotFound) {
+		if deleteRet := generatorRepo.Delete(generator.ID); !deleteRet.OK {
+			return deleteRet
+		}
+	}
 	if ret.OK {
 		log.Logger.Infof("Test attachment generated: challenge_id=%d generator_id=%d", challenge.ID, generator.ID)
 	}
