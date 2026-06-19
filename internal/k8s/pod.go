@@ -81,6 +81,8 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		log.Logger.Warningf("Failed to create Pod: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
 	for {
 		pod, ret = GetPod(ctx, options.Name)
 		if !ret.OK {
@@ -93,7 +95,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 			log.Logger.Warningf("Failed to run Pod %s: phase=%s, reason=%s", pod.Name, pod.Status.Phase, pod.Status.Reason)
 			return nil, model.RetVal{Msg: i18n.K8S.PodRunError, Attr: map[string]any{"Pod": pod.Name, "Phase": pod.Status.Phase, "Reason": pod.Status.Reason}}
 		}
-		time.Sleep(500 * time.Millisecond)
+		<-ticker.C
 	}
 	return pod, model.SuccessRetVal()
 }
