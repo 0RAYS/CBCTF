@@ -128,18 +128,19 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, generator mod
 	if _, _, err = Exec(ctx, generator.Name, pod.Spec.Containers[0].Name, command, nil); err != nil {
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
 	for {
-		select {
-		case <-ctx.Done():
-			return model.RetVal{Msg: i18n.K8S.AttachmentTimeout}
-		default:
-		}
 		// NFS 延迟写入, 主动触发读取
 		_, _ = os.ReadDir(path.Dir(filepath))
 		if _, err = os.Stat(filepath); err == nil {
 			break
 		}
-		time.Sleep(time.Second)
+		select {
+		case <-ctx.Done():
+			return model.RetVal{Msg: i18n.K8S.AttachmentTimeout}
+		case <-ticker.C:
+		}
 	}
 	log.Logger.Debugf("Attachment file is ready: team_id=%d challenge_id=%d path=%s", teamID, challenge.ID, filepath)
 	return model.SuccessRetVal()
