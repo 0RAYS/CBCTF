@@ -2,6 +2,7 @@ package task
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -68,8 +69,14 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	ret := k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags)
 	cancel()
-	db.InitGeneratorRepo(db.DB).UpdateStatus(payload.Generator.ID, ret.OK, time.Now())
+	generatorRepo := db.InitGeneratorRepo(db.DB)
+	_ = generatorRepo.UpdateStatus(payload.Generator.ID, ret.OK, time.Now())
 	if !ret.OK {
+		if ret.Msg == i18n.Model.NotFound || ret.Msg == i18n.K8S.NotFound {
+			if deleteRet := generatorRepo.Delete(payload.Generator.ID); !deleteRet.OK {
+				return fmt.Errorf("generate attachment failed: %s; delete unavailable generator failed: %s", ret.Msg, deleteRet.Msg)
+			}
+		}
 		return fmt.Errorf("generate attachment failed: %s", ret.Msg)
 	}
 	log.Logger.Infof("Attachment generated: user_id=%d team_id=%d challenge_id=%d generator_id=%d", payload.UserID, payload.TeamID, payload.Challenge.ID, payload.Generator.ID)
