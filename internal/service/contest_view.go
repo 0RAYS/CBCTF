@@ -79,6 +79,9 @@ func ListContests(tx *gorm.DB, form dto.ListModelsForm, admin bool) ([]view.Cont
 }
 
 func DeleteContest(tx *gorm.DB, contest model.Contest) model.RetVal {
+	if ret := stopGeneratorResources(tx, db.GetOptions{Conditions: map[string]any{"contest_id": contest.ID}}); !ret.OK {
+		return ret
+	}
 	return db.InitContestRepo(tx).Delete(contest.ID)
 }
 
