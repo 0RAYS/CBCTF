@@ -243,9 +243,9 @@ func buildPodRecords(victim model.Victim) []model.Pod {
 func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID, challengeID uint, durationL ...time.Duration) model.RetVal {
 	var (
 		challengeRepo = db.InitChallengeRepo(tx)
-		victimRepo    = db.InitVictimRepo(tx)
-		podRepo       = db.InitPodRepo(tx)
+		victim        model.Victim
 	)
+	victimRepo := db.InitVictimRepo(tx)
 	if _, ret := victimRepo.HasAliveVictim(teamID, challengeID); ret.OK {
 		log.Logger.Debugf("Start victim rejected: team_id=%d challenge_id=%d already has alive victim", teamID, challengeID)
 		return model.RetVal{Msg: i18n.Model.Victim.NotStartable}
@@ -271,30 +271,42 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	if !ret.OK {
 		return ret
 	}
-	victim, ret := victimRepo.Create(model.Victim{
-		UserID:             userID,
-		TeamID:             sql.Null[uint]{V: teamID, Valid: teamID > 0},
-		ContestID:          sql.Null[uint]{V: contestID, Valid: contestID > 0},
-		ContestChallengeID: sql.Null[uint]{V: contestChallengeID, Valid: contestChallengeID > 0},
-		ChallengeID:        challengeID,
-		Start:              time.Now(),
-		Duration:           duration,
-		Spec:               spec,
-		Status:             model.WaitingVictimStatus,
+	ret = db.WithTransactionDB(tx, func(tx2 *db.Tx) model.RetVal {
+		victimRepo := db.InitVictimRepo(tx2)
+		podRepo := db.InitPodRepo(tx2)
+		created, createRet := victimRepo.Create(model.Victim{
+			UserID:             userID,
+			TeamID:             sql.Null[uint]{V: teamID, Valid: teamID > 0},
+			ContestID:          sql.Null[uint]{V: contestID, Valid: contestID > 0},
+			ContestChallengeID: sql.Null[uint]{V: contestChallengeID, Valid: contestChallengeID > 0},
+			ChallengeID:        challengeID,
+			Start:              time.Now(),
+			Duration:           duration,
+			Spec:               spec,
+			Status:             model.WaitingVictimStatus,
+		})
+		if !createRet.OK {
+			return createRet
+		}
+		victim = created
+		for _, options := range buildPodRecords(victim) {
+			pod, createRet := podRepo.Create(options)
+			if !createRet.OK {
+				return createRet
+			}
+			victim.Pods = append(victim.Pods, pod)
+		}
+		return model.SuccessRetVal()
 	})
 	if !ret.OK {
 		return ret
 	}
-	for _, options := range buildPodRecords(victim) {
-		pod, createRet := podRepo.Create(options)
-		if !createRet.OK {
-			return createRet
-		}
-		victim.Pods = append(victim.Pods, pod)
-	}
 	_, err := task.EnqueueStartVictimTask(victim)
 	if err != nil {
 		log.Logger.Warningf("Failed to enqueue start victim task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v", victim.ID, userID, teamID, challengeID, err)
+		if cleanupRet := db.InitVictimRepo(tx).Delete(victim.ID); !cleanupRet.OK {
+			log.Logger.Warningf("Failed to cleanup victim after enqueue failure: victim_id=%d reason=%s", victim.ID, cleanupRet.Msg)
+		}
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	log.Logger.Infof(
