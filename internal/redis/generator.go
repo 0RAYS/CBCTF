@@ -18,7 +18,6 @@ var (
 const (
 	GeneratorKey               = "generator:%d"
 	GeneratorAttachmentLockKey = "generator:%d:locked"
-	generatorChallengeSetKey   = "generators:challenge:%d"
 	generatorContestSetKey     = "generators:contest:%d:challenge:%d"
 	generatorLockTTL           = 5 * time.Minute
 )
@@ -174,8 +173,8 @@ func UnlockGeneratorAttachment(ctx context.Context, generatorID uint, token stri
 }
 
 func generatorSetKey(contestID uint, contestValid bool, challengeID uint) string {
-	if contestValid && contestID > 0 {
-		return fmt.Sprintf(generatorContestSetKey, contestID, challengeID)
+	if !contestValid {
+		contestID = 0
 	}
-	return fmt.Sprintf(generatorChallengeSetKey, challengeID)
+	return fmt.Sprintf(generatorContestSetKey, contestID, challengeID)
 }
