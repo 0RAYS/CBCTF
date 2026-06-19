@@ -67,7 +67,7 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	ret := k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags)
 	cancel()
 	generatorRepo := db.InitGeneratorRepo(db.DB)
-	_ = generatorRepo.UpdateStatus(payload.Generator.ID, ret.OK, time.Now())
+	generatorRepo.UpdateStatus(payload.Generator.ID, ret.OK, time.Now())
 	if !ret.OK {
 		if ret.Msg == i18n.Model.NotFound || ret.Msg == i18n.K8S.NotFound {
 			if deleteRet := generatorRepo.Delete(payload.Generator.ID); !deleteRet.OK {
