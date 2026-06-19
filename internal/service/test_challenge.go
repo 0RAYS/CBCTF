@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/view"
 	"context"
 	"time"
@@ -25,10 +26,20 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	for _, flag := range challengeFlags {
 		flags = append(flags, flag.Value)
 	}
-	generator, ret := GetGenerator(tx, 0, challenge)
+	generator, lockToken, ret := GetGenerator(tx, 0, challenge)
 	if !ret.OK {
 		return ret
 	}
+	defer func() {
+		if lockToken == "" {
+			return
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := redis.UnlockGeneratorAttachment(ctx, generator.ID, lockToken); err != nil {
+			log.Logger.Warningf("Failed to unlock test generator attachment: generator_id=%d error=%v", generator.ID, err)
+		}
+	}()
 	log.Logger.Infof("Generating test attachment: challenge_id=%d generator_id=%d", challenge.ID, generator.ID)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	ret = k8s.GenAttachment(ctx, challenge, generator, 0, flags)
@@ -36,6 +47,11 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	generatorRepo := db.InitGeneratorRepo(tx)
 	generatorRepo.UpdateStatus(generator.ID, ret.OK, time.Now())
 	if !ret.OK && (ret.Msg == i18n.Model.NotFound || ret.Msg == i18n.K8S.NotFound) {
+		unregisterCtx, unregisterCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		if err := redis.UnregisterGenerator(unregisterCtx, generator); err != nil {
+			log.Logger.Warningf("Failed to unregister test generator: generator_id=%d error=%v", generator.ID, err)
+		}
+		unregisterCancel()
 		if deleteRet := generatorRepo.Delete(generator.ID); !deleteRet.OK {
 			return deleteRet
 		}

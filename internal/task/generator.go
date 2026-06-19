@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
+	"CBCTF/internal/redis"
 	"context"
 	"fmt"
 	"time"
@@ -60,7 +61,8 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 			log.Logger.Infof("Start generator skipped: generator_id=%d is terminating", generator.ID)
 			return nil
 		}
-		if ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
+		pendingStatus := model.PendingGeneratorStatus
+		if ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: &pendingStatus}); !ret.OK {
 			return fmt.Errorf("update generator failed: %s", ret.Msg)
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
@@ -74,10 +76,18 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 			cleanupQueued = true
 			return fmt.Errorf("start generator failed: %s", ret.Msg)
 		}
-		ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
+		runningStatus := model.RunningGeneratorStatus
+		ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: &runningStatus})
 		if !ret.OK {
 			return fmt.Errorf("update generator failed: %s", ret.Msg)
 		}
+		generator.Status = model.RunningGeneratorStatus
+		registerCtx, registerCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		if err := redis.RegisterGenerator(registerCtx, generator); err != nil {
+			registerCancel()
+			return fmt.Errorf("register generator failed: %w", err)
+		}
+		registerCancel()
 		log.Logger.Infof("Generator is running: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
 		return nil
 	}()
@@ -121,6 +131,11 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("get generator failed: %s", ret.Msg)
 	}
 	log.Logger.Infof("Stopping generator: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
+	unregisterCtx, unregisterCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	if err := redis.UnregisterGenerator(unregisterCtx, generator); err != nil {
+		log.Logger.Warningf("Failed to unregister generator before stop: generator_id=%d error=%v", generator.ID, err)
+	}
+	unregisterCancel()
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	ret = k8s.StopGenerator(ctx, generator)
 	cancel()

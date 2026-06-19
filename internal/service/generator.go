@@ -7,13 +7,13 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
 	"context"
-	"crypto/rand"
 	"database/sql"
+	"errors"
 	"fmt"
-	"math/big"
 	"time"
 
 	"gorm.io/gorm"
@@ -102,18 +102,23 @@ func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	repo := db.InitGeneratorRepo(tx)
-	if ret := repo.Update(generator.ID, db.UpdateGeneratorOptions{
-		Status: new(model.TerminatingGeneratorStatus),
-	}); !ret.OK {
+	terminatingStatus := model.TerminatingGeneratorStatus
+	if ret := repo.Update(generator.ID, db.UpdateGeneratorOptions{Status: &terminatingStatus}); !ret.OK {
 		return ret
 	}
 	generator.Status = model.TerminatingGeneratorStatus
+	if err := unregisterGenerator(generator); err != nil {
+		log.Logger.Warningf("Failed to unregister generator before stop: generator_id=%d name=%s error=%v", generator.ID, generator.Name, err)
+	}
 	_, err := task.EnqueueStopGeneratorTask(generator)
 	if err != nil {
 		log.Logger.Warningf("Failed to enqueue stop generator task: generator_id=%d name=%s challenge_id=%d error=%v", generator.ID, generator.Name, generator.ChallengeID, err)
-		_ = repo.Update(generator.ID, db.UpdateGeneratorOptions{
-			Status: new(model.RunningGeneratorStatus),
-		})
+		runningStatus := model.RunningGeneratorStatus
+		_ = repo.Update(generator.ID, db.UpdateGeneratorOptions{Status: &runningStatus})
+		generator.Status = model.RunningGeneratorStatus
+		if registerErr := registerGenerator(generator); registerErr != nil {
+			log.Logger.Warningf("Failed to re-register generator after stop enqueue failure: generator_id=%d name=%s error=%v", generator.ID, generator.Name, registerErr)
+		}
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	log.Logger.Infof("Stop generator queued: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
@@ -130,6 +135,9 @@ func stopGeneratorResources(tx *gorm.DB, options db.GetOptions) model.RetVal {
 		case model.WaitingGeneratorStatus, model.StoppedGeneratorStatus:
 			continue
 		}
+		if err := unregisterGenerator(generator); err != nil {
+			log.Logger.Warningf("Failed to unregister generator before resource deletion: generator_id=%d name=%s error=%v", generator.ID, generator.Name, err)
+		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		ret = k8s.StopGenerator(ctx, generator)
 		cancel()
@@ -141,23 +149,52 @@ func stopGeneratorResources(tx *gorm.DB, options db.GetOptions) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model.Generator, model.RetVal) {
-	options := db.GetOptions{Conditions: map[string]any{
-		"challenge_id": challenge.ID,
-		"status":       model.RunningGeneratorStatus,
-	}}
-	if contestID > 0 {
-		options.Conditions["contest_id"] = contestID
+func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model.Generator, string, model.RetVal) {
+	generator, lockToken, err := redis.LockAvailableGenerator(context.Background(), contestID, challenge.ID)
+	if err == nil {
+		return generator, lockToken, model.SuccessRetVal()
 	}
-	generators, _, ret := db.InitGeneratorRepo(tx).List(-1, -1, options)
-	if !ret.OK {
-		return model.Generator{}, ret
+	if errors.Is(err, redis.ErrGeneratorPoolEmpty) {
+		options := db.GetOptions{Conditions: map[string]any{
+			"challenge_id": challenge.ID,
+			"status":       model.RunningGeneratorStatus,
+		}}
+		if contestID > 0 {
+			options.Conditions["contest_id"] = contestID
+		}
+		generators, _, ret := db.InitGeneratorRepo(tx).List(-1, -1, options)
+		if !ret.OK {
+			return model.Generator{}, "", ret
+		}
+		if len(generators) == 0 {
+			return model.Generator{}, "", model.RetVal{Msg: i18n.Model.Generator.NotAvailable}
+		}
+		for _, generator := range generators {
+			if err := registerGenerator(generator); err != nil {
+				return model.Generator{}, "", model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+			}
+		}
+		generator, lockToken, err = redis.LockAvailableGenerator(context.Background(), contestID, challenge.ID)
+		if err == nil {
+			return generator, lockToken, model.SuccessRetVal()
+		}
 	}
-	if len(generators) == 0 {
-		return model.Generator{}, model.RetVal{Msg: i18n.Model.Generator.NotAvailable}
+	if errors.Is(err, redis.ErrGeneratorPoolEmpty) || errors.Is(err, redis.ErrNoAvailableGenerator) {
+		return model.Generator{}, "", model.RetVal{Msg: i18n.Model.Generator.NotAvailable}
 	}
-	index, _ := rand.Int(rand.Reader, big.NewInt(int64(len(generators))))
-	return generators[index.Int64()], model.SuccessRetVal()
+	return model.Generator{}, "", model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+}
+
+func registerGenerator(generator model.Generator) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	return redis.RegisterGenerator(ctx, generator)
+}
+
+func unregisterGenerator(generator model.Generator) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	return redis.UnregisterGenerator(ctx, generator)
 }
 
 func ListGenerators(tx *gorm.DB, contest model.Contest, form dto.ListGeneratorsForm) ([]model.Generator, int64, model.RetVal) {
