@@ -185,6 +185,43 @@ func GetVictimPodLogs(ctx *gin.Context) {
 
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+	podList, ret := k8s.ListPods(ctxTimeout, k8s.VictimLabels(victim))
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	podFound := false
+	containerFound := false
+	for _, pod := range podList.Items {
+		if pod.Name != form.PodName {
+			continue
+		}
+		podFound = true
+		for _, c := range pod.Spec.InitContainers {
+			if c.Name == form.Container && c.Name != k8s.CaptureContainerName {
+				containerFound = true
+				break
+			}
+		}
+		if containerFound {
+			break
+		}
+		for _, c := range pod.Spec.Containers {
+			if c.Name == form.Container && c.Name != k8s.CaptureContainerName {
+				containerFound = true
+				break
+			}
+		}
+		break
+	}
+	if !podFound {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": "pod does not belong to victim"}})
+		return
+	}
+	if !containerFound {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": "container does not belong to victim"}})
+		return
+	}
 	logs, ret := k8s.GetPodLogs(ctxTimeout, form.PodName, form.Container, form.Lines)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
