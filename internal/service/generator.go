@@ -57,6 +57,9 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 			if _, err := task.EnqueueStartGeneratorTask(challenge, generator); err != nil {
 				failedEnqueue++
 				log.Logger.Warningf("Failed to enqueue start generator task: generator_id=%d name=%s challenge_id=%d error=%v", generator.ID, generator.Name, challenge.ID, err)
+				if ret := generatorRepo.Delete(generator.ID); !ret.OK {
+					log.Logger.Warningf("Failed to delete generator after enqueue failure: generator_id=%d name=%s challenge_id=%d reason=%s", generator.ID, generator.Name, challenge.ID, ret.Msg)
+				}
 				continue
 			}
 			queued++
