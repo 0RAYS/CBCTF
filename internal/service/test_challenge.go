@@ -34,7 +34,7 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	ret = k8s.GenAttachment(ctx, challenge, generator, 0, flags)
 	cancel()
 	generatorRepo := db.InitGeneratorRepo(tx)
-	_ = generatorRepo.UpdateStatus(generator.ID, ret.OK, time.Now())
+	generatorRepo.UpdateStatus(generator.ID, ret.OK, time.Now())
 	if !ret.OK && (ret.Msg == i18n.Model.NotFound || ret.Msg == i18n.K8S.NotFound) {
 		if deleteRet := generatorRepo.Delete(generator.ID); !deleteRet.OK {
 			return deleteRet
