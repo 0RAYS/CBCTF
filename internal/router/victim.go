@@ -80,7 +80,11 @@ func GetVictims(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	victims, count, total, _ := service.GetVictims(db.DB, contest, form)
+	victims, running, total, ret := service.GetVictims(db.DB, contest, form)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
 	data := make([]gin.H, 0)
 	for _, victim := range victims {
 		info := resp.GetVictimResp(victim)
@@ -91,7 +95,7 @@ func GetVictims(ctx *gin.Context) {
 		info["challenge"] = victim.ContestChallenge.Name
 		data = append(data, info)
 	}
-	resp.JSON(ctx, model.SuccessRetVal(gin.H{"victims": data, "count": total, "running": count}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"victims": data, "count": total, "running": running}))
 }
 
 func StartVictims(ctx *gin.Context) {

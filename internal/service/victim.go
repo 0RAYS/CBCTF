@@ -458,15 +458,12 @@ func GetVictims(tx *gorm.DB, contest model.Contest, form dto.GetVictimsForm) ([]
 	if !ret.OK {
 		return nil, 0, 0, ret
 	}
-	countOptions := db.CountOptions{Deleted: true}
-	if contest.ID != 0 {
-		countOptions.Conditions = map[string]any{"contest_id": contest.ID}
-	}
-	total, ret := db.InitVictimRepo(db.DB).Count(countOptions)
+	options.Conditions["status"] = model.RunningVictimStatus
+	running, ret := db.InitVictimRepo(tx).Count(db.CountOptions{Conditions: options.Conditions})
 	if !ret.OK {
-		total = count
+		return nil, 0, 0, ret
 	}
-	return victims, count, total, ret
+	return victims, running, count, ret
 }
 
 func ListVictimHistories(tx *gorm.DB, team model.Team, form dto.ListModelsForm) ([]model.Victim, int64, model.RetVal) {
