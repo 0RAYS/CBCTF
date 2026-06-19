@@ -45,6 +45,31 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	victim := payload.Victim
 	log.Logger.Debugf("Start victim task received: victim_id=%d user_id=%d team_id=%d challenge_id=%d pods=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods))
 	cleanupQueued := false
+	cleanupFailedStart := func(reason error) error {
+		victimRepo := db.InitVictimRepo(db.DB)
+		victim.Status = model.TerminatingVictimStatus
+		if ret := victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.TerminatingVictimStatus)}); !ret.OK {
+			log.Logger.Warningf("Failed to mark victim terminating after start failure: victim_id=%d reason=%s", victim.ID, ret.Msg)
+		}
+		if _, enqueueErr := EnqueueStopVictimTask(victim); enqueueErr == nil {
+			cleanupQueued = true
+			return reason
+		} else {
+			log.Logger.Warningf("Failed to enqueue victim cleanup after start failure: victim_id=%d error=%v", victim.ID, enqueueErr)
+		}
+
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		ret := k8s.StopVictim(cleanupCtx, victim)
+		cancel()
+		if !ret.OK {
+			return fmt.Errorf("%w; cleanup enqueue failed and synchronous cleanup failed: %s", reason, ret.Msg)
+		}
+		if ret = victimRepo.Delete(victim.ID); !ret.OK {
+			return fmt.Errorf("%w; synchronous cleanup deleted k8s resources but failed to delete victim: %s", reason, ret.Msg)
+		}
+		cleanupQueued = true
+		return reason
+	}
 	err := func() error {
 		podRepo := db.InitPodRepo(db.DB)
 		victimRepo := db.InitVictimRepo(db.DB)
@@ -96,9 +121,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			Status:           new(model.RunningVictimStatus),
 		})
 		if !ret.OK {
-			_, err := EnqueueStopVictimTask(victim)
-			cleanupQueued = err == nil
-			return err
+			return fmt.Errorf("update victim after start failed: %s", ret.Msg)
 		}
 		log.Logger.Infof(
 			"Victim is running: victim_id=%d user_id=%d team_id=%d challenge_id=%d endpoints=%d exposed_endpoints=%d",
@@ -107,9 +130,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 		return nil
 	}()
 	if err != nil && !cleanupQueued {
-		if _, enqueueErr := EnqueueStopVictimTask(victim); enqueueErr != nil {
-			log.Logger.Warningf("Failed to enqueue victim cleanup after start failure: victim_id=%d error=%v", victim.ID, enqueueErr)
-		}
+		err = cleanupFailedStart(err)
 	}
 	return err
 }
