@@ -13,7 +13,6 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"fmt"
-	"hash/fnv"
 	"math/big"
 	"slices"
 	"strings"
@@ -44,16 +43,6 @@ func needVPC(pods []model.ChallengePodTemplate) bool {
 		}
 	}
 	return false
-}
-
-func lockVictimStart(tx *gorm.DB, teamID, challengeID uint) model.RetVal {
-	h := fnv.New64a()
-	_, _ = fmt.Fprintf(h, "victim:%d:%d", teamID, challengeID)
-	if res := tx.Exec("SELECT pg_advisory_xact_lock(?)", int64(h.Sum64())); res.Error != nil {
-		log.Logger.Warningf("Failed to lock victim start: team_id=%d challenge_id=%d error=%s", teamID, challengeID, res.Error)
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return model.SuccessRetVal()
 }
 
 func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge) (model.VictimSpec, model.RetVal) {
@@ -285,13 +274,6 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	ret = db.WithTransactionDB(tx, func(tx2 *db.Tx) model.RetVal {
 		victimRepo := db.InitVictimRepo(tx2)
 		podRepo := db.InitPodRepo(tx2)
-		if lockRet := lockVictimStart(tx2, teamID, challengeID); !lockRet.OK {
-			return lockRet
-		}
-		if _, aliveRet := victimRepo.HasAliveVictim(teamID, challengeID); aliveRet.OK {
-			log.Logger.Debugf("Start victim rejected after lock: team_id=%d challenge_id=%d already has alive victim", teamID, challengeID)
-			return model.RetVal{Msg: i18n.Model.Victim.NotStartable}
-		}
 		created, createRet := victimRepo.Create(model.Victim{
 			UserID:             userID,
 			TeamID:             sql.Null[uint]{V: teamID, Valid: teamID > 0},
