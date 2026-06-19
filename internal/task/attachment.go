@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
+	"CBCTF/internal/redis"
 	"context"
 	"fmt"
 	"time"
@@ -14,7 +15,18 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-const genAttachmentTaskType = "tasks:attachment"
+const (
+	genAttachmentTaskType    = "tasks:attachment"
+	genAttachmentLockTTL     = 3 * time.Minute
+	genAttachmentLockWaitGap = 500 * time.Millisecond
+)
+
+const unlockGenAttachmentLockScript = `
+if redis.call('GET', KEYS[1]) == ARGV[1] then
+    return redis.call('DEL', KEYS[1])
+end
+return 0
+`
 
 type GenAttachmentPayload struct {
 	UserID    uint
@@ -34,7 +46,7 @@ func EnqueueGenAttachmentTask(userID uint, generator model.Generator, challenge 
 		return nil, err
 	}
 	task := asynq.NewTask(genAttachmentTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(genAttachmentTaskType), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	info, err := client.Enqueue(task, asynq.Queue(genAttachmentTaskType), asynq.MaxRetry(0), asynq.Timeout(5*time.Minute))
 	if err == nil {
 		prometheus.RecordTaskEnqueued(genAttachmentTaskType)
 	}
@@ -47,6 +59,12 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	log.Logger.Infof("Generating attachment: user_id=%d team_id=%d challenge_id=%d generator_id=%d", payload.UserID, payload.TeamID, payload.Challenge.ID, payload.Generator.ID)
+	unlock, err := lockGeneratorAttachment(ctx, payload.Generator.ID)
+	if err != nil {
+		db.InitGeneratorRepo(db.DB).UpdateStatus(payload.Generator.ID, false, time.Now())
+		return err
+	}
+	defer unlock()
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	ret := k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags)
 	cancel()
@@ -56,4 +74,33 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	}
 	log.Logger.Infof("Attachment generated: user_id=%d team_id=%d challenge_id=%d generator_id=%d", payload.UserID, payload.TeamID, payload.Challenge.ID, payload.Generator.ID)
 	return nil
+}
+
+func lockGeneratorAttachment(ctx context.Context, generatorID uint) (func(), error) {
+	key := fmt.Sprintf("generator:%d:attachment", generatorID)
+	token := fmt.Sprintf("%d:%d", generatorID, time.Now().UnixNano())
+	ticker := time.NewTicker(genAttachmentLockWaitGap)
+	defer ticker.Stop()
+
+	for {
+		ok, err := redis.RDB.SetNX(ctx, key, token, genAttachmentLockTTL).Result()
+		if err != nil {
+			return nil, fmt.Errorf("lock generator attachment failed: %w", err)
+		}
+		if ok {
+			return func() {
+				unlockCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				if _, err := redis.RDB.Eval(unlockCtx, unlockGenAttachmentLockScript, []string{key}, token).Result(); err != nil {
+					log.Logger.Warningf("Failed to unlock generator attachment: generator_id=%d error=%v", generatorID, err)
+				}
+			}, nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("lock generator attachment timed out: %w", ctx.Err())
+		case <-ticker.C:
+		}
+	}
 }
