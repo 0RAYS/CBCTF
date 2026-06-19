@@ -4,14 +4,17 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
+	"context"
 	"crypto/rand"
 	"database/sql"
 	"fmt"
 	"math/big"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -114,6 +117,27 @@ func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	log.Logger.Infof("Stop generator queued: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
+	return model.SuccessRetVal()
+}
+
+func stopGeneratorResources(tx *gorm.DB, options db.GetOptions) model.RetVal {
+	generators, _, ret := db.InitGeneratorRepo(tx).List(-1, -1, options)
+	if !ret.OK {
+		return ret
+	}
+	for _, generator := range generators {
+		switch generator.Status {
+		case model.WaitingGeneratorStatus, model.StoppedGeneratorStatus:
+			continue
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		ret = k8s.StopGenerator(ctx, generator)
+		cancel()
+		if !ret.OK {
+			return ret
+		}
+		log.Logger.Infof("Stopped generator resources before model deletion: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
+	}
 	return model.SuccessRetVal()
 }
 

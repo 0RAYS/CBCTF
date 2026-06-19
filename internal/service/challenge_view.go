@@ -107,6 +107,9 @@ func UpdateChallengeWithTransaction(tx *gorm.DB, challenge model.Challenge, form
 }
 
 func DeleteChallenge(tx *gorm.DB, challenge model.Challenge) model.RetVal {
+	if ret := stopGeneratorResources(tx, db.GetOptions{Conditions: map[string]any{"challenge_id": challenge.ID}}); !ret.OK {
+		return ret
+	}
 	return db.InitChallengeRepo(tx).Delete(challenge.RandID)
 }
 
