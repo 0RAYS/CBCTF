@@ -35,6 +35,16 @@ var (
 	}
 )
 
+type cronLogger struct{}
+
+func (cronLogger) Info(msg string, keysAndValues ...any) {
+	log.Logger.WithField("Values", keysAndValues).Info(msg)
+}
+
+func (cronLogger) Error(err error, msg string, keysAndValues ...any) {
+	log.Logger.WithField("Values", keysAndValues).Warningf("%s: %s", msg, err)
+}
+
 func exec(name string, task func() model.RetVal) func() {
 	return func() {
 		start := time.Now()
@@ -58,7 +68,8 @@ func exec(name string, task func() model.RetVal) func() {
 }
 
 func Init() {
-	c = cron.New(cron.WithSeconds())
+	logger := cronLogger{}
+	c = cron.New(cron.WithSeconds(), cron.WithChain(cron.Recover(logger), cron.SkipIfStillRunning(logger)))
 }
 
 func Start() {
