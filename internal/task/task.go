@@ -22,8 +22,7 @@ var (
 )
 
 func enqueueTask(taskType string, t *asynq.Task, options ...asynq.Option) (*asynq.TaskInfo, error) {
-	enqueueOptions := []asynq.Option{asynq.Queue(taskType)}
-	enqueueOptions = append(enqueueOptions, options...)
+	enqueueOptions := append([]asynq.Option{asynq.Queue(taskType)}, options...)
 	info, err := client.Enqueue(t, enqueueOptions...)
 	if err == nil {
 		prometheus.RecordTaskEnqueued(taskType)
