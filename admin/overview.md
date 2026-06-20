@@ -37,24 +37,24 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 
 **系统后台**
 
-| 页面         | 说明                      |
-| ---------- | ----------------------- |
-| Dashboard  | 查看系统状态                  |
-| Contests   | 创建和管理比赛                 |
-| RBAC       | 管理用户、分组、角色和权限           |
-| Challenges | 管理题库、附件、Flag、动态附件和容器题测试 |
-| Victims    | 查看和停止运行中的靶机，查看流量        |
-| Generators | 查看和控制动态附件生成器            |
-| Images     | 预热题目镜像                  |
-| OAuth      | 管理 OAuth/OIDC 登录提供商     |
-| SMTP       | 管理邮件发送配置和邮件记录           |
-| CronJobs   | 查看和更新后台 Cron 任务         |
-| Webhook    | 管理出站 Webhook 和历史记录      |
-| Branding   | 配置站点名称、Logo、首页文案等品牌信息   |
-| Files      | 查看、下载、删除平台文件            |
-| Tasks      | 查看后台任务和实时任务状态           |
-| System     | 查看和更新系统配置，触发重启          |
-| Logs       | 查看平台日志                  |
+| 页面         | 说明                         |
+| ---------- | -------------------------- |
+| Dashboard  | 查看系统状态                     |
+| Contests   | 创建和管理比赛                    |
+| RBAC       | 管理用户、分组、角色和权限              |
+| Challenges | 管理题库、附件、Flag、动态附件和容器题测试    |
+| Victims    | 查看和停止运行中的靶机，查看流量           |
+| Generators | 查看和控制动态附件生成器               |
+| Images     | 预热题目镜像                     |
+| OAuth      | 管理 OAuth/OIDC 登录提供商        |
+| SMTP       | 管理邮件发送配置和邮件记录              |
+| CronJobs   | 查看和更新后台 Cron 任务            |
+| Webhook    | 管理出站 Webhook 和历史记录         |
+| Branding   | 配置站点名称、Logo、首页文案等品牌信息      |
+| Files      | 查看、下载、删除平台文件               |
+| Tasks      | 查看后台任务和实时任务状态              |
+| System     | 更新系统配置，上传 GeoIP 数据库，重启重载配置 |
+| Logs       | 查看平台日志                     |
 
 
 **比赛管理**
