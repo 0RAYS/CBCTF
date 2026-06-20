@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"context"
 	"fmt"
@@ -32,11 +31,7 @@ func EnqueueStartGeneratorTask(challenge model.Challenge, generator model.Genera
 		return nil, err
 	}
 	task := asynq.NewTask(startGeneratorTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(startGeneratorTaskType), asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
-	if err == nil {
-		prometheus.RecordTaskEnqueued(startGeneratorTaskType)
-	}
-	return info, err
+	return enqueueTask(startGeneratorTaskType, task, asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
 }
 
 func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
@@ -109,11 +104,7 @@ func EnqueueStopGeneratorTask(generator model.Generator) (*asynq.TaskInfo, error
 		return nil, err
 	}
 	task := asynq.NewTask(stopGeneratorTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(stopGeneratorTaskType), asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
-	if err == nil {
-		prometheus.RecordTaskEnqueued(stopGeneratorTaskType)
-	}
-	return info, err
+	return enqueueTask(stopGeneratorTaskType, task, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
 }
 
 func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {

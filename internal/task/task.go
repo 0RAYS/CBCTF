@@ -21,6 +21,18 @@ var (
 	servers []*asynq.Server
 )
 
+const taskUniqueTTL = 10 * time.Minute
+
+func enqueueTask(taskType string, t *asynq.Task, options ...asynq.Option) (*asynq.TaskInfo, error) {
+	enqueueOptions := []asynq.Option{asynq.Queue(taskType), asynq.Unique(taskUniqueTTL)}
+	enqueueOptions = append(enqueueOptions, options...)
+	info, err := client.Enqueue(t, enqueueOptions...)
+	if err == nil {
+		prometheus.RecordTaskEnqueued(taskType)
+	}
+	return info, err
+}
+
 func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 	return func(ctx context.Context, t *asynq.Task) error {
 		start := time.Now()

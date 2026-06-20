@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"context"
 	"fmt"
 	"time"
@@ -30,11 +29,7 @@ func EnqueueStartVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 		return nil, err
 	}
 	task := asynq.NewTask(startVictimTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(startVictimTaskType), asynq.MaxRetry(0), asynq.Timeout(4*time.Minute))
-	if err == nil {
-		prometheus.RecordTaskEnqueued(startVictimTaskType)
-	}
-	return info, err
+	return enqueueTask(startVictimTaskType, task, asynq.MaxRetry(0), asynq.Timeout(4*time.Minute))
 }
 
 func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
@@ -145,11 +140,7 @@ func EnqueueStopVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 		return nil, err
 	}
 	task := asynq.NewTask(stopVictimTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(stopVictimTaskType), asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
-	if err == nil {
-		prometheus.RecordTaskEnqueued(stopVictimTaskType)
-	}
-	return info, err
+	return enqueueTask(stopVictimTaskType, task, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
 }
 
 func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
