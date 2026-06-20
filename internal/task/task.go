@@ -108,6 +108,18 @@ func Stop() {
 		}()
 	}
 	wg.Wait()
+	if inspector != nil {
+		if err := inspector.Close(); err != nil {
+			log.Logger.Warningf("Failed to close task inspector: %s", err)
+		}
+		inspector = nil
+	}
+	if client != nil {
+		if err := client.Close(); err != nil {
+			log.Logger.Warningf("Failed to close task client: %s", err)
+		}
+		client = nil
+	}
 }
 
 func newServerConfig(queue string, concurrency int) asynq.Config {
