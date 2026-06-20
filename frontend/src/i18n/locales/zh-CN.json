@@ -2237,13 +2237,13 @@
       "update": {
         "title": "更新配置确认",
         "prompt": "即将更新系统配置, 是否继续？",
-        "warning": "配置错误可能导致服务异常, 请确认后继续",
+        "warning": "这些配置会立即保存到数据库并影响运行时策略, 请确认后继续",
         "confirm": "继续更新",
         "cancel": "取消"
       },
       "restart": {
         "manualTitle": "重启系统确认",
-        "manualPrompt": "系统即将重启, 是否继续？",
+        "manualPrompt": "系统即将重启以重载配置, 是否继续？",
         "warning": "重启期间系统将短暂不可用, 请确认后继续",
         "confirm": "立即重启",
         "cancel": "暂不重启",
@@ -2291,11 +2291,10 @@
         "dbSSLMode": "SSL 模式",
         "dbIdle": "最大空闲连接",
         "dbOpen": "最大打开连接",
-        "dbLogLevel": "日志级别",
+        "dbLogLevel": "数据库日志级别",
         "redisHost": "主机地址",
         "redisPort": "端口",
         "redisPassword": "密码",
-        "k8sConfig": "Kubeconfig 文件路径",
         "k8sNamespace": "命名空间",
         "k8sCapture": "流量捕获容器镜像",
         "frpOn": "是否启用 Frp 暴露靶机",
@@ -2316,12 +2315,6 @@
         "uploadGeoCityDB": "文件将固定保存到数据目录下的 GeoLite2-City.mmdb。"
       },
       "k8s": {
-        "frp": "Frp",
-        "nginx": "Nginx",
-        "enabled": "启用",
-        "host": "主机",
-        "port": "端口",
-        "token": "令牌",
         "allowedPorts": "允许端口"
       }
     },

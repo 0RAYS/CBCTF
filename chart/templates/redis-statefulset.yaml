@@ -44,10 +44,7 @@ spec:
               value: {{ .Values.timezone | quote }}
             {{- end }}
             - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "cbctf.redis.fullname" . }}
-                  key: redis-password
+              value: {{ .Values.redis.auth.password | quote }}
           livenessProbe:
             exec:
               command:

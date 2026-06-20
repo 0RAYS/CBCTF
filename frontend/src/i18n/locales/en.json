@@ -2237,13 +2237,13 @@
       "update": {
         "title": "Confirm Update",
         "prompt": "You are about to update system configuration. Continue?",
-        "warning": "Incorrect settings may disrupt service. Confirm before continuing.",
+        "warning": "These settings are saved to the database and affect runtime policy immediately. Confirm before continuing.",
         "confirm": "Update",
         "cancel": "Cancel"
       },
       "restart": {
         "manualTitle": "Confirm Restart",
-        "manualPrompt": "The system will restart now. Continue?",
+        "manualPrompt": "The system will restart to reload configuration. Continue?",
         "warning": "The system will be briefly unavailable. Confirm before continuing.",
         "confirm": "Restart Now",
         "cancel": "Restart Later",
@@ -2295,7 +2295,6 @@
         "redisHost": "Redis Host",
         "redisPort": "Redis Port",
         "redisPassword": "Password",
-        "k8sConfig": "Kubeconfig Path",
         "k8sNamespace": "Namespace",
         "k8sCapture": "Capture Image",
         "frpOn": "Use Frp to Expose Victims",
@@ -2316,12 +2315,6 @@
         "uploadGeoCityDB": "The file is always saved as GeoLite2-City.mmdb under the data path."
       },
       "k8s": {
-        "frp": "Frp",
-        "nginx": "Nginx",
-        "enabled": "Enabled",
-        "host": "Host",
-        "port": "Port",
-        "token": "Token",
         "allowedPorts": "Allowed Ports"
       }
     },

@@ -1,75 +1,29 @@
 /**
  * Normalizes incoming config from backend to nested structure
- * Handles both flat keys (gorm_postgres_host) and nested objects (gorm.postgres.host)
+ * Handles both flat keys and nested objects for DB-managed runtime settings.
  */
 
 const fallback = (value, defaultValue) => (value !== undefined && value !== null ? value : defaultValue);
-
-const normalizeSecret = (value) => {
-  if (!value || value === '******') {
-    return '';
-  }
-  return value;
-};
-
-const normalizeFrps = (frps) => {
-  if (!Array.isArray(frps)) {
-    return [];
-  }
-  return frps.map((server) => ({
-    ...server,
-    allowed: Array.isArray(server?.allowed)
-      ? server.allowed.map((allowed) => ({
-          ...allowed,
-          exclude: Array.isArray(allowed?.exclude) ? allowed.exclude : [],
-        }))
-      : [],
-  }));
-};
 
 export function normalizeConfig(source) {
   if (!source) {
     return null;
   }
-  const asyncqLogLevel = fallback(source?.asyncq_log_level, fallback(source?.asynq?.log?.level, ''));
-  const asyncqVictimConcurrency = fallback(
-    source?.asyncq_victim_concurrency,
-    fallback(source?.asynq?.queues?.victim, 0)
-  );
-  const asyncqTrafficConcurrency = fallback(
-    source?.asyncq_traffic_concurrency,
-    fallback(source?.asynq?.queues?.traffic, 0)
-  );
-  const asyncqGeneratorConcurrency = fallback(
-    source?.asyncq_generator_concurrency,
-    fallback(source?.asynq?.queues?.generator, 0)
-  );
-  const asyncqAttachmentConcurrency = fallback(
-    source?.asyncq_attachment_concurrency,
-    fallback(source?.asynq?.queues?.attachment, 0)
-  );
-  const asyncqEmailConcurrency = fallback(source?.asyncq_email_concurrency, fallback(source?.asynq?.queues?.email, 0));
-  const asyncqWebhookConcurrency = fallback(
-    source?.asyncq_webhook_concurrency,
-    fallback(source?.asynq?.queues?.webhook, 0)
-  );
-  const asyncqImageConcurrency = fallback(source?.asyncq_image_concurrency, fallback(source?.asynq?.queues?.image, 0));
-
   return {
     host: fallback(source?.host, ''),
     path: fallback(source?.path, ''),
     asyncq: {
       log: {
-        level: asyncqLogLevel,
+        level: fallback(source?.asyncq_log_level, fallback(source?.asynq?.log?.level, '')),
       },
       queues: {
-        victim: asyncqVictimConcurrency,
-        traffic: asyncqTrafficConcurrency,
-        generator: asyncqGeneratorConcurrency,
-        attachment: asyncqAttachmentConcurrency,
-        email: asyncqEmailConcurrency,
-        webhook: asyncqWebhookConcurrency,
-        image: asyncqImageConcurrency,
+        victim: fallback(source?.asyncq_victim_concurrency, fallback(source?.asynq?.queues?.victim, 0)),
+        traffic: fallback(source?.asyncq_traffic_concurrency, fallback(source?.asynq?.queues?.traffic, 0)),
+        generator: fallback(source?.asyncq_generator_concurrency, fallback(source?.asynq?.queues?.generator, 0)),
+        attachment: fallback(source?.asyncq_attachment_concurrency, fallback(source?.asynq?.queues?.attachment, 0)),
+        email: fallback(source?.asyncq_email_concurrency, fallback(source?.asynq?.queues?.email, 0)),
+        webhook: fallback(source?.asyncq_webhook_concurrency, fallback(source?.asynq?.queues?.webhook, 0)),
+        image: fallback(source?.asyncq_image_concurrency, fallback(source?.asynq?.queues?.image, 0)),
       },
     },
     gin: {
@@ -106,26 +60,25 @@ export function normalizeConfig(source) {
         port: fallback(source?.gorm_postgres_port, fallback(source?.gorm?.postgres?.port, 0)),
         db: fallback(source?.gorm_postgres_db, fallback(source?.gorm?.postgres?.db, '')),
         user: fallback(source?.gorm_postgres_user, fallback(source?.gorm?.postgres?.user, '')),
+        pwd: fallback(source?.gorm_postgres_pwd, fallback(source?.gorm?.postgres?.pwd, '')),
         sslmode: fallback(source?.gorm_postgres_sslmode, fallback(source?.gorm?.postgres?.sslmode, false)),
-        mxidle: fallback(source?.gorm_postgres_mxidle, fallback(source?.gorm?.postgres?.mxidle, 0)),
         mxopen: fallback(source?.gorm_postgres_mxopen, fallback(source?.gorm?.postgres?.mxopen, 0)),
-        pwd: normalizeSecret(fallback(source?.gorm_postgres_pwd, fallback(source?.gorm?.postgres?.pwd, ''))),
+        mxidle: fallback(source?.gorm_postgres_mxidle, fallback(source?.gorm?.postgres?.mxidle, 0)),
       },
     },
     redis: {
       host: fallback(source?.redis_host, fallback(source?.redis?.host, '')),
       port: fallback(source?.redis_port, fallback(source?.redis?.port, 0)),
-      pwd: normalizeSecret(fallback(source?.redis_pwd, fallback(source?.redis?.pwd, ''))),
+      pwd: fallback(source?.redis_pwd, fallback(source?.redis?.pwd, '')),
     },
     k8s: {
-      config: fallback(source?.k8s_config, fallback(source?.k8s?.config, '')),
       namespace: fallback(source?.k8s_namespace, fallback(source?.k8s?.namespace, '')),
       capture: fallback(source?.k8s_capture, fallback(source?.k8s?.capture, '')),
       frp: {
         frpc: fallback(source?.k8s_frp_frpc, fallback(source?.k8s?.frp?.frpc, '')),
         nginx: fallback(source?.k8s_frp_nginx, fallback(source?.k8s?.frp?.nginx, '')),
         on: fallback(source?.k8s_frp_on, fallback(source?.k8s?.frp?.on, false)),
-        frps: normalizeFrps(fallback(source?.k8s_frp_frps, fallback(source?.k8s?.frp?.frps, []))),
+        frps: fallback(source?.k8s_frp_frps, fallback(source?.k8s?.frp?.frps, [])),
       },
     },
     cheat: {

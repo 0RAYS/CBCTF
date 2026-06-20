@@ -110,8 +110,8 @@ cbctf:
         - "/platform/*filepath"
         - "/admin/system/status"
     jwt:
-      # Leave empty to auto-generate a random secret on first install.
-      secret: ""
+      # Change before production use.
+      secret: "change-me-long-random-secret"
     metrics:
       # IPs allowed to hit /metrics — include Prometheus pod CIDR or exact IPs
       whitelist:
@@ -185,7 +185,7 @@ postgres:
   auth:
     database: "cbctf"
     username: "cbctf"
-    password: ""      # auto-generated if empty
+    password: "change-me-postgres-password"
   persistence:
     enabled: true
     storageClass: ""
@@ -216,7 +216,7 @@ redis:
     tag: "7-alpine"
     pullPolicy: IfNotPresent
   auth:
-    password: ""  # auto-generated if empty
+    password: "change-me-redis-password"
   persistence:
     enabled: true
     storageClass: ""

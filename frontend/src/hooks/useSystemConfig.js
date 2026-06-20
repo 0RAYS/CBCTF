@@ -91,7 +91,6 @@ export function useSystemConfig(initialConfig, t) {
     [t]
   );
 
-  // Restart system
   const handleRestartSystem = useCallback(async () => {
     setIsRestarting(true);
     setError(null);

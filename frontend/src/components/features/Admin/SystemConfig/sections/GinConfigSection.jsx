@@ -17,15 +17,8 @@ export function GinConfigSection({ config, updateConfig }) {
 
   return (
     <ConfigSection title={t('admin.system.sections.gin')} icon={IconServer}>
-      <ConfigField
-        label={t('admin.system.labels.ginHost')}
-        value={config.gin.host}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.gin.host = value;
-          })
-        }
-      />
+      <ConfigField label={t('admin.system.labels.ginHost')} value={config.gin.host} disabled />
+      <ConfigField label={t('admin.system.labels.ginPort')} type="number" value={config.gin.port} disabled />
       <ConfigField
         label={t('admin.system.labels.ginMode')}
         type="select"
@@ -34,16 +27,6 @@ export function GinConfigSection({ config, updateConfig }) {
         onChange={(value) =>
           updateConfig((draft) => {
             draft.gin.mode = value;
-          })
-        }
-      />
-      <ConfigField
-        label={t('admin.system.labels.ginPort')}
-        type="number"
-        value={config.gin.port}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.gin.port = sanitizeNumber(value, config.gin.port);
           })
         }
       />

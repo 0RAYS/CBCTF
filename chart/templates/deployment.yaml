@@ -17,7 +17,6 @@ spec:
       annotations:
         # Restart pod when config changes
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -27,8 +26,6 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      # Prevent Kubernetes service env vars (e.g. CBCTF_REDIS_PORT=tcp://...)
-      # from conflicting with Viper's AutomaticEnv (prefix=CBCTF).
       enableServiceLinks: false
       {{- with include "cbctf.imagePullSecrets" . }}
       {{- . | nindent 6 }}
@@ -52,31 +49,11 @@ spec:
               containerPort: {{ .Values.cbctf.gin.port }}
               protocol: TCP
 
-          # ── Environment variables (secrets injected via env vars) ──────────
+          {{- if .Values.timezone }}
           env:
-            {{- if .Values.timezone }}
             - name: TZ
               value: {{ .Values.timezone | quote }}
-            {{- end }}
-            - name: CBCTF_GIN_JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "cbctf.fullname" . }}
-                  key: jwt-secret
-            {{- if .Values.postgres.enabled }}
-            - name: CBCTF_GORM_POSTGRES_PWD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "cbctf.postgres.fullname" . }}
-                  key: postgres-password
-            {{- end }}
-            {{- if .Values.redis.enabled }}
-            - name: CBCTF_REDIS_PWD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "cbctf.redis.fullname" . }}
-                  key: redis-password
-            {{- end }}
+          {{- end }}
 
           # ── Liveness / Readiness probes ────────────────────────────────────
           livenessProbe:

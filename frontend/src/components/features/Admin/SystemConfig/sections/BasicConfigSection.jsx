@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { IconServer, IconUpload } from '@tabler/icons-react';
+import { IconDatabase, IconUpload } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../../common';
 import { ConfigSection } from '../fields/ConfigSection';
@@ -26,7 +26,7 @@ export function BasicConfigSection({ config, updateConfig, onUploadGeoCityDB, is
   };
 
   return (
-    <ConfigSection title={t('admin.system.sections.basic')} icon={IconServer}>
+    <ConfigSection title={t('admin.system.sections.basic')} icon={IconDatabase}>
       <ConfigField
         label={t('admin.system.labels.host')}
         value={config.host}
@@ -36,15 +36,50 @@ export function BasicConfigSection({ config, updateConfig, onUploadGeoCityDB, is
           })
         }
       />
+      <ConfigField label={t('admin.system.labels.path')} value={config.path} disabled />
       <ConfigField
-        label={t('admin.system.labels.path')}
-        value={config.path}
+        label={t('admin.system.labels.workerLog')}
+        type="select"
+        value={config.asyncq.log.level}
+        options={['DEBUG', 'INFO', 'WARNING', 'ERROR']}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.path = value;
+            draft.asyncq.log.level = value;
           })
         }
       />
+      <ConfigField
+        label={t('admin.system.labels.dbLogLevel')}
+        type="select"
+        value={config.gorm.log.level}
+        options={['SILENT', 'INFO', 'WARNING', 'ERROR']}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.gorm.log.level = value;
+          })
+        }
+      />
+      {[
+        ['victim', 'victimConcurrency'],
+        ['traffic', 'trafficConcurrency'],
+        ['generator', 'generatorConcurrency'],
+        ['attachment', 'attachmentConcurrency'],
+        ['email', 'emailConcurrency'],
+        ['webhook', 'webhookConcurrency'],
+        ['image', 'imageConcurrency'],
+      ].map(([queue, label]) => (
+        <ConfigField
+          key={queue}
+          label={t(`admin.system.labels.${label}`)}
+          type="number"
+          value={config.asyncq.queues[queue]}
+          onChange={(value) =>
+            updateConfig((draft) => {
+              draft.asyncq.queues[queue] = sanitizeNumber(value, config.asyncq.queues[queue]);
+            })
+          }
+        />
+      ))}
       <div className="space-y-2">
         <ConfigField label={t('admin.system.labels.geocity_db')} value={config.geocity_db} />
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -61,87 +96,6 @@ export function BasicConfigSection({ config, updateConfig, onUploadGeoCityDB, is
           <span className="text-xs text-neutral-500">{t('admin.system.hints.uploadGeoCityDB')}</span>
         </div>
       </div>
-      <ConfigField
-        label={t('admin.system.labels.workerLog')}
-        type="select"
-        value={config.asyncq.log.level}
-        options={['DEBUG', 'INFO', 'WARNING', 'ERROR']}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.asyncq.log.level = value;
-          })
-        }
-      />
-      <ConfigField
-        label={t('admin.system.labels.victimConcurrency')}
-        type="number"
-        value={config.asyncq.queues.victim}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.asyncq.queues.victim = sanitizeNumber(value, config.asyncq.queues.victim);
-          })
-        }
-      />
-      <ConfigField
-        label={t('admin.system.labels.trafficConcurrency')}
-        type="number"
-        value={config.asyncq.queues.traffic}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.asyncq.queues.traffic = sanitizeNumber(value, config.asyncq.queues.traffic);
-          })
-        }
-      />
-      <ConfigField
-        label={t('admin.system.labels.generatorConcurrency')}
-        type="number"
-        value={config.asyncq.queues.generator}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.asyncq.queues.generator = sanitizeNumber(value, config.asyncq.queues.generator);
-          })
-        }
-      />
-      <ConfigField
-        label={t('admin.system.labels.attachmentConcurrency')}
-        type="number"
-        value={config.asyncq.queues.attachment}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.asyncq.queues.attachment = sanitizeNumber(value, config.asyncq.queues.attachment);
-          })
-        }
-      />
-      <ConfigField
-        label={t('admin.system.labels.emailConcurrency')}
-        type="number"
-        value={config.asyncq.queues.email}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.asyncq.queues.email = sanitizeNumber(value, config.asyncq.queues.email);
-          })
-        }
-      />
-      <ConfigField
-        label={t('admin.system.labels.webhookConcurrency')}
-        type="number"
-        value={config.asyncq.queues.webhook}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.asyncq.queues.webhook = sanitizeNumber(value, config.asyncq.queues.webhook);
-          })
-        }
-      />
-      <ConfigField
-        label={t('admin.system.labels.imageConcurrency')}
-        type="number"
-        value={config.asyncq.queues.image}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.asyncq.queues.image = sanitizeNumber(value, config.asyncq.queues.image);
-          })
-        }
-      />
     </ConfigSection>
   );
 }

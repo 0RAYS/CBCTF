@@ -93,7 +93,6 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 	}
 	kv := map[string]any{
 		model.HostSettingKey: form.Host,
-		model.PathSettingKey: form.Path,
 
 		model.AsyncQLogLevelSettingKey:       form.AsyncQLogLevel,
 		model.AsyncQVictimConcurrencyKey:     form.AsyncQVictimConcurrency,
@@ -105,8 +104,6 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.AsyncQImageConcurrencyKey:      form.AsyncQImageConcurrency,
 
 		model.GinModeSettingKey:               form.GinMode,
-		model.GinHostSettingKey:               form.GinHost,
-		model.GinPortSettingKey:               form.GinPort,
 		model.GinUploadPictureSettingKey:      form.GinUploadPicture,
 		model.GinUploadChallengeSettingKey:    form.GinUploadChallenge,
 		model.GinUploadWriteupSettingKey:      form.GinUploadWriteup,
@@ -118,21 +115,8 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.GinJWTSecretSettingKey:          form.GinJWTSecret,
 		model.GinMetricsWhitelistSettingKey:   form.GinMetricsWhitelist,
 
-		model.GormPostgresHostSettingKey:    form.GormPostgresHost,
-		model.GormPostgresPortSettingKey:    form.GormPostgresPort,
-		model.GormPostgresUserSettingKey:    form.GormPostgresUser,
-		model.GormPostgresPwdSettingKey:     form.GormPostgresPwd,
-		model.GormPostgresDBSettingKey:      form.GormPostgresDB,
-		model.GormPostgresSSLModeSettingKey: form.GormPostgresSSLMode,
-		model.GormPostgresMXOpenSettingKey:  form.GormPostgresMXOpen,
-		model.GormPostgresMXIdleSettingKey:  form.GormPostgresMXIdle,
-		model.GormLogLevelSettingKey:        form.GormLogLevel,
+		model.GormLogLevelSettingKey: form.GormLogLevel,
 
-		model.RedisHostSettingKey: form.RedisHost,
-		model.RedisPortSettingKey: form.RedisPort,
-		model.RedisPwdSettingKey:  form.RedisPwd,
-
-		model.K8SConfigSettingKey:        form.K8SConfig,
 		model.K8SNamespaceSettingKey:     form.K8SNamespace,
 		model.K8SCaptureImageSettingKey:  form.K8SCaptureImage,
 		model.K8SFrpOnSettingKey:         form.K8SFrpOn,
@@ -140,9 +124,8 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.K8SFrpNginxImageSettingKey: form.K8SFrpNginxImage,
 		model.K8SFrpFrpsSettingKey:       form.K8SFrpFrps,
 
-		model.CheatIPWhitelistSettingKey: form.CheatIPWhitelist,
-		model.WebhookWhitelistSettingKey: form.WebhookWhitelist,
-
+		model.CheatIPWhitelistSettingKey:         form.CheatIPWhitelist,
+		model.WebhookWhitelistSettingKey:         form.WebhookWhitelist,
 		model.RegistrationEnabledSettingKey:      form.RegistrationEnabled,
 		model.RegistrationDefaultGroupSettingKey: form.RegistrationDefaultGroup,
 	}

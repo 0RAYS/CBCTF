@@ -4,10 +4,8 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"fmt"
-	"os"
 
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 
 	netattclient "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
 	ovnclient "github.com/kubeovn/kube-ovn/pkg/client/clientset/versioned"
@@ -50,13 +48,7 @@ func initClients() {
 	var err error
 	kubeConfig, err = rest.InClusterConfig()
 	if err != nil {
-		if _, err = os.Stat(config.Env.K8S.Config); err != nil {
-			log.Logger.Fatalf("Invalid config.k8s.config.admin: %s", err)
-		}
-		kubeConfig, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config)
-		if err != nil {
-			log.Logger.Fatalf("Failed to create client config: %s", err)
-		}
+		log.Logger.Fatalf("Failed to create in-cluster Kubernetes config: %s", err)
 	}
 	kubeConfig.QPS = 100
 	kubeConfig.Burst = 150

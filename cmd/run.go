@@ -86,9 +86,6 @@ func stop() {
 	if err := server.Shutdown(context.TODO()); err != nil {
 		log.Logger.Warningf("Failed to shutdown server: %s", err)
 	}
-	if err := config.Save(); err != nil {
-		log.Logger.Warningf("Failed to save config: %s", err)
-	}
 	time.Sleep(time.Second)
 	cron.Stop()
 	task.Stop()

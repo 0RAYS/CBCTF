@@ -54,8 +54,7 @@ data:
           - {{ . | quote }}
           {{- end }}
       jwt:
-        # Value overridden by CBCTF_GIN_JWT_SECRET env var from Secret
-        secret: ""
+        secret: {{ .Values.cbctf.gin.jwt.secret | quote }}
       metrics:
         whitelist:
           {{- range .Values.cbctf.gin.metrics.whitelist }}
@@ -67,8 +66,7 @@ data:
         host: {{ printf "%s.%s" (include "cbctf.postgres.host" .) .Release.Namespace | quote }}
         port: {{ .Values.postgres.service.port }}
         user: {{ .Values.postgres.auth.username | quote }}
-        # Value overridden by CBCTF_GORM_POSTGRES_PWD env var from Secret
-        pwd: ""
+        pwd: {{ .Values.postgres.auth.password | quote }}
         db: {{ .Values.postgres.auth.database | quote }}
         sslmode: {{ .Values.cbctf.gorm.postgres.sslmode }}
         mxopen: 100
@@ -79,12 +77,9 @@ data:
     redis:
       host: {{ printf "%s.%s" (include "cbctf.redis.host" .) .Release.Namespace | quote }}
       port: {{ .Values.redis.service.port }}
-      # Value overridden by CBCTF_REDIS_PWD env var from Secret
-      pwd: ""
+      pwd: {{ .Values.redis.auth.password | quote }}
 
     k8s:
-      # Kubeconfig generated at startup by init container using ServiceAccount token
-      config: /admin/admin.yaml
       namespace: {{ .Release.Namespace | quote }}
       capture: {{ .Values.cbctf.k8s.capture | quote }}
       frp:
