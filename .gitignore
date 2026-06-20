@@ -16,6 +16,8 @@ volumes
 *.db
 CLAUDE.md
 AGENTS.md
+!docs/AGENTS.md
+!frontend/AGENTS.md
 .gocache
 /.claude
 /admin.yaml
