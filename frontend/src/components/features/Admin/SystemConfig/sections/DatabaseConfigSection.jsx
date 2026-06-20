@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ConfigSection } from '../fields/ConfigSection';
 import { ConfigField } from '../fields/ConfigField';
 
-export function DatabaseConfigSection({ config }) {
+export function DatabaseConfigSection({ config, updateConfig }) {
   const { t } = useTranslation();
   const postgres = config.gorm.postgres;
 
@@ -17,6 +17,17 @@ export function DatabaseConfigSection({ config }) {
       <ConfigField label={t('admin.system.labels.dbSSLMode')} value={postgres.sslmode ? 'true' : 'false'} disabled />
       <ConfigField label={t('admin.system.labels.dbOpen')} type="number" value={postgres.mxopen} disabled />
       <ConfigField label={t('admin.system.labels.dbIdle')} type="number" value={postgres.mxidle} disabled />
+      <ConfigField
+        label={t('admin.system.labels.dbLogLevel')}
+        type="select"
+        value={config.gorm.log.level}
+        options={['SILENT', 'INFO', 'WARNING', 'ERROR']}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.gorm.log.level = value;
+          })
+        }
+      />
     </ConfigSection>
   );
 }

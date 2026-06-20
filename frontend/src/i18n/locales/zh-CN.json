@@ -2315,6 +2315,12 @@
         "uploadGeoCityDB": "文件将固定保存到数据目录下的 GeoLite2-City.mmdb。"
       },
       "k8s": {
+        "frp": "Frp",
+        "nginx": "Nginx",
+        "enabled": "启用",
+        "host": "主机",
+        "port": "端口",
+        "token": "令牌",
         "allowedPorts": "允许端口"
       }
     },
