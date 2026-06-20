@@ -69,8 +69,8 @@ data:
         pwd: {{ .Values.postgres.auth.password | quote }}
         db: {{ .Values.postgres.auth.database | quote }}
         sslmode: {{ .Values.cbctf.gorm.postgres.sslmode }}
-        mxopen: 100
-        mxidle: 10
+        mxopen: {{ .Values.cbctf.gorm.postgres.mxopen }}
+        mxidle: {{ .Values.cbctf.gorm.postgres.mxidle }}
       log:
         level: {{ .Values.cbctf.gorm.log.level | quote }}
 
