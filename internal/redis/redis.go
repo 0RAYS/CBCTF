@@ -27,8 +27,7 @@ func Init() {
 	defer cancel()
 	_, err := RDB.Ping(ctx).Result()
 	if err != nil {
-		log.Logger.Warningf("Failed to connect to Redis: %s", err)
-		return
+		log.Logger.Fatalf("Failed to connect to Redis: %s", err)
 	}
 	log.Logger.Infof("Connected to Redis: %s", addr)
 	// Mirror all logs to Redis list after a successful connection
