@@ -42,7 +42,7 @@ func (s *SettingRepo) Get(key string, optionsL ...GetOptions) (model.Setting, mo
 func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.RetVal {
 	var count uint
 	data := options.Convert2Map()
-	if value, ok := data["value"]; !ok || value == nil || isNil(value.(model.SettingValue).V) {
+	if value, ok := data["value"]; !ok || value == nil || reflect.ValueOf(value.(model.SettingValue).V).IsNil() {
 		return model.SuccessRetVal()
 	}
 	for {
@@ -66,19 +66,6 @@ func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.Ret
 		break
 	}
 	return model.SuccessRetVal()
-}
-
-func isNil(value any) bool {
-	if value == nil {
-		return true
-	}
-	v := reflect.ValueOf(value)
-	switch v.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
-		return v.IsNil()
-	default:
-		return false
-	}
 }
 
 func (s *SettingRepo) InitSettings() model.RetVal {
@@ -106,6 +93,8 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.GinJWTSecretSettingKey, Value: model.SettingValue{V: config.Env.Gin.JWT.Secret}},
 		{Key: model.GinMetricsWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Metrics.Whitelist}},
 
+		{Key: model.GormPostgresMXOpenSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.MaxOpenConns}},
+		{Key: model.GormPostgresMXIdleSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.MaxIdleConns}},
 		{Key: model.GormLogLevelSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Log.Level}},
 
 		{Key: model.K8SNamespaceSettingKey, Value: model.SettingValue{V: config.Env.K8S.Namespace}},
@@ -196,6 +185,12 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 
+	if config.Env.Gorm.Postgres.MaxOpenConns, ret = GetValue[int](s, model.GormPostgresMXOpenSettingKey); !ret.OK {
+		return ret
+	}
+	if config.Env.Gorm.Postgres.MaxIdleConns, ret = GetValue[int](s, model.GormPostgresMXIdleSettingKey); !ret.OK {
+		return ret
+	}
 	if config.Env.Gorm.Log.Level, ret = GetValue[string](s, model.GormLogLevelSettingKey); !ret.OK {
 		return ret
 	}

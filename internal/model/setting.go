@@ -31,7 +31,9 @@ const (
 	GinJWTSecretSettingKey          = "gin.jwt.secret"
 	GinMetricsWhitelistSettingKey   = "gin.metrics.whitelist"
 
-	GormLogLevelSettingKey = "gorm.log.level"
+	GormPostgresMXOpenSettingKey = "gorm.postgres.mxopen"
+	GormPostgresMXIdleSettingKey = "gorm.postgres.mxidle"
+	GormLogLevelSettingKey       = "gorm.log.level"
 
 	K8SNamespaceSettingKey     = "k8s.namespace"
 	K8SCaptureImageSettingKey  = "k8s.capture"
