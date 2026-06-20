@@ -18,7 +18,6 @@ export function GinConfigSection({ config, updateConfig }) {
   return (
     <ConfigSection title={t('admin.system.sections.gin')} icon={IconServer}>
       <ConfigField label={t('admin.system.labels.ginHost')} value={config.gin.host} disabled />
-      <ConfigField label={t('admin.system.labels.ginPort')} type="number" value={config.gin.port} disabled />
       <ConfigField
         label={t('admin.system.labels.ginMode')}
         type="select"
@@ -30,6 +29,7 @@ export function GinConfigSection({ config, updateConfig }) {
           })
         }
       />
+      <ConfigField label={t('admin.system.labels.ginPort')} type="number" value={config.gin.port} disabled />
       <ConfigField
         label={t('admin.system.labels.ginUploadPicture')}
         type="number"

@@ -1,9 +1,6 @@
-import { IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconPlus, IconX } from '@tabler/icons-react';
+import { Input, Button } from '../../../../common';
 import { useTranslation } from 'react-i18next';
-import { Button, Input } from '../../../../common';
-
-const emptyServer = () => ({ host: '', port: 7000, token: '', allowed: [] });
-const emptyAllowed = () => ({ from: 10000, to: 30000, exclude: [] });
 
 const sanitizeNumber = (value, fallbackValue = 0) => {
   if (value === '' || value === null || value === undefined) {
@@ -13,152 +10,217 @@ const sanitizeNumber = (value, fallbackValue = 0) => {
   return Number.isNaN(numeric) ? fallbackValue : numeric;
 };
 
-const parseExclude = (value) =>
-  value
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .map(Number)
-    .filter((item) => !Number.isNaN(item));
-
-export function FrpServerField({ config, updateConfig }) {
+export function FrpServerField({ frpsList = [], updateConfig }) {
   const { t } = useTranslation();
-  const servers = config.k8s.frp.frps || [];
+
+  const addFrpsServer = () => {
+    updateConfig((draft) => {
+      if (!Array.isArray(draft.k8s.frp.frps)) {
+        draft.k8s.frp.frps = [];
+      }
+      draft.k8s.frp.frps.push({ host: '', port: 0, token: '', allowed: [] });
+    });
+  };
+
+  const removeFrpsServer = (frpsIndex) => {
+    updateConfig((draft) => {
+      draft.k8s.frp.frps.splice(frpsIndex, 1);
+    });
+  };
+
+  const updateFrpsField = (frpsIndex, field, value) => {
+    updateConfig((draft) => {
+      draft.k8s.frp.frps[frpsIndex][field] = value;
+    });
+  };
+
+  const addAllowedRange = (frpsIndex) => {
+    updateConfig((draft) => {
+      if (!Array.isArray(draft.k8s.frp.frps[frpsIndex].allowed)) {
+        draft.k8s.frp.frps[frpsIndex].allowed = [];
+      }
+      draft.k8s.frp.frps[frpsIndex].allowed.push({ from: 0, to: 0, exclude: [] });
+    });
+  };
+
+  const removeAllowedRange = (frpsIndex, allowedIndex) => {
+    updateConfig((draft) => {
+      draft.k8s.frp.frps[frpsIndex].allowed.splice(allowedIndex, 1);
+    });
+  };
+
+  const updateAllowedField = (frpsIndex, allowedIndex, field, value) => {
+    updateConfig((draft) => {
+      draft.k8s.frp.frps[frpsIndex].allowed[allowedIndex][field] = value;
+    });
+  };
+
+  const addExcludePort = (frpsIndex, allowedIndex) => {
+    updateConfig((draft) => {
+      if (!Array.isArray(draft.k8s.frp.frps[frpsIndex].allowed[allowedIndex].exclude)) {
+        draft.k8s.frp.frps[frpsIndex].allowed[allowedIndex].exclude = [];
+      }
+      draft.k8s.frp.frps[frpsIndex].allowed[allowedIndex].exclude.push(0);
+    });
+  };
+
+  const removeExcludePort = (frpsIndex, allowedIndex, excludeIndex) => {
+    updateConfig((draft) => {
+      draft.k8s.frp.frps[frpsIndex].allowed[allowedIndex].exclude.splice(excludeIndex, 1);
+    });
+  };
+
+  const updateExcludePort = (frpsIndex, allowedIndex, excludeIndex, value) => {
+    updateConfig((draft) => {
+      draft.k8s.frp.frps[frpsIndex].allowed[allowedIndex].exclude[excludeIndex] = value;
+    });
+  };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span className="text-xs font-mono text-neutral-400">{t('admin.system.labels.frps')}</span>
-        <Button
-          variant="outline"
-          size="xs"
-          icon={<IconPlus size={14} />}
-          onClick={() =>
-            updateConfig((draft) => {
-              draft.k8s.frp.frps.push(emptyServer());
-            })
-          }
-        >
-          {t('common.add')}
+        <Button size="icon" variant="ghost" aria-label={t('common.add')} onClick={addFrpsServer}>
+          <IconPlus size={14} />
         </Button>
       </div>
-      <div className="space-y-3">
-        {servers.map((server, serverIndex) => (
-          <div key={serverIndex} className="rounded-lg border border-neutral-800 bg-neutral-950/60 p-3 space-y-3">
-            <div className="grid gap-2 md:grid-cols-4">
+      <div className="space-y-2">
+        {frpsList.map((frps, frpsIndex) => (
+          <div key={`frps-${frpsIndex}`} className="space-y-1 border border-neutral-300/10 rounded p-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono text-neutral-400">
+                {t('admin.system.k8s.host')} #{frpsIndex + 1} {t('admin.system.labels.frpsHostname')}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label={t('common.remove')}
+                onClick={() => removeFrpsServer(frpsIndex)}
+              >
+                <IconX size={14} />
+              </Button>
+            </div>
+            <div className="grid gap-2">
               <Input
                 size="sm"
-                value={server.host || ''}
-                placeholder={t('admin.system.labels.frpsHostname')}
-                onChange={(event) =>
-                  updateConfig((draft) => {
-                    draft.k8s.frp.frps[serverIndex].host = event.target.value;
-                  })
-                }
+                value={frps.host || ''}
+                placeholder={t('admin.system.k8s.host')}
+                onChange={(event) => updateFrpsField(frpsIndex, 'host', event.target.value)}
               />
+              <span className="text-xs font-mono text-neutral-400">{t('admin.system.labels.frpsPort')}</span>
               <Input
                 size="sm"
                 type="number"
-                value={server.port ?? 0}
-                placeholder={t('admin.system.labels.frpsPort')}
+                value={frps.port || 0}
+                placeholder={t('admin.system.k8s.port')}
                 onChange={(event) =>
-                  updateConfig((draft) => {
-                    draft.k8s.frp.frps[serverIndex].port = sanitizeNumber(event.target.value, server.port);
-                  })
+                  updateFrpsField(frpsIndex, 'port', sanitizeNumber(event.target.value, frps.port || 0))
                 }
               />
+              <span className="text-xs font-mono text-neutral-400">{t('admin.system.labels.frpsToken')}</span>
               <Input
                 size="sm"
-                type="password"
-                value={server.token || ''}
-                placeholder={t('admin.system.labels.frpsToken')}
-                onChange={(event) =>
-                  updateConfig((draft) => {
-                    draft.k8s.frp.frps[serverIndex].token = event.target.value;
-                  })
-                }
+                value={frps.token || ''}
+                placeholder={t('common.leaveBlankToKeep')}
+                onChange={(event) => updateFrpsField(frpsIndex, 'token', event.target.value)}
               />
-              <Button
-                variant="danger"
-                size="sm"
-                icon={<IconTrash size={14} />}
-                onClick={() =>
-                  updateConfig((draft) => {
-                    draft.k8s.frp.frps.splice(serverIndex, 1);
-                  })
-                }
-              >
-                {t('common.delete')}
-              </Button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-neutral-500">{t('admin.system.k8s.allowedPorts')}</span>
+                <span className="text-xs font-mono text-neutral-400">{t('admin.system.k8s.allowedPorts')}</span>
                 <Button
-                  variant="outline"
-                  size="xs"
-                  icon={<IconPlus size={14} />}
-                  onClick={() =>
-                    updateConfig((draft) => {
-                      draft.k8s.frp.frps[serverIndex].allowed.push(emptyAllowed());
-                    })
-                  }
+                  size="icon"
+                  variant="ghost"
+                  aria-label={t('common.add')}
+                  onClick={() => addAllowedRange(frpsIndex)}
                 >
-                  {t('common.add')}
+                  <IconPlus size={14} />
                 </Button>
               </div>
-              {(server.allowed || []).map((allowed, allowedIndex) => (
-                <div key={allowedIndex} className="grid gap-2 md:grid-cols-[1fr_1fr_2fr_auto]">
-                  <Input
-                    size="sm"
-                    type="number"
-                    value={allowed.from ?? 0}
-                    onChange={(event) =>
-                      updateConfig((draft) => {
-                        draft.k8s.frp.frps[serverIndex].allowed[allowedIndex].from = sanitizeNumber(
-                          event.target.value,
-                          allowed.from
-                        );
-                      })
-                    }
-                  />
-                  <Input
-                    size="sm"
-                    type="number"
-                    value={allowed.to ?? 0}
-                    onChange={(event) =>
-                      updateConfig((draft) => {
-                        draft.k8s.frp.frps[serverIndex].allowed[allowedIndex].to = sanitizeNumber(
-                          event.target.value,
-                          allowed.to
-                        );
-                      })
-                    }
-                  />
-                  <Input
-                    size="sm"
-                    value={(allowed.exclude || []).join(',')}
-                    placeholder="20000,20001"
-                    onChange={(event) =>
-                      updateConfig((draft) => {
-                        draft.k8s.frp.frps[serverIndex].allowed[allowedIndex].exclude = parseExclude(
-                          event.target.value
-                        );
-                      })
-                    }
-                  />
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    icon={<IconTrash size={14} />}
-                    onClick={() =>
-                      updateConfig((draft) => {
-                        draft.k8s.frp.frps[serverIndex].allowed.splice(allowedIndex, 1);
-                      })
-                    }
-                  />
-                </div>
-              ))}
+              <div className="space-y-1">
+                {(frps.allowed || []).map((allowed, allowedIndex) => (
+                  <div key={`allowed-${frpsIndex}-${allowedIndex}`} className="flex flex-col gap-2">
+                    <span className="text-xs font-mono text-neutral-400">From → To</span>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        size="sm"
+                        type="number"
+                        value={allowed.from ?? 0}
+                        placeholder="from"
+                        onChange={(event) =>
+                          updateAllowedField(
+                            frpsIndex,
+                            allowedIndex,
+                            'from',
+                            sanitizeNumber(event.target.value, allowed.from ?? 0)
+                          )
+                        }
+                      />
+                      <Input
+                        size="sm"
+                        type="number"
+                        value={allowed.to ?? 0}
+                        placeholder="to"
+                        onChange={(event) =>
+                          updateAllowedField(
+                            frpsIndex,
+                            allowedIndex,
+                            'to',
+                            sanitizeNumber(event.target.value, allowed.to ?? 0)
+                          )
+                        }
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label={t('common.remove')}
+                        onClick={() => removeAllowedRange(frpsIndex, allowedIndex)}
+                      >
+                        <IconX size={14} />
+                      </Button>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono text-neutral-400">Exclude</span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label={t('common.add')}
+                          onClick={() => addExcludePort(frpsIndex, allowedIndex)}
+                        >
+                          <IconPlus size={14} />
+                        </Button>
+                      </div>
+                      {(allowed.exclude || []).map((excludeItem, excludeIndex) => (
+                        <div key={`exclude-${excludeIndex}`} className="flex items-center gap-2">
+                          <Input
+                            size="sm"
+                            type="number"
+                            value={excludeItem ?? 0}
+                            onChange={(event) =>
+                              updateExcludePort(
+                                frpsIndex,
+                                allowedIndex,
+                                excludeIndex,
+                                sanitizeNumber(event.target.value, excludeItem ?? 0)
+                              )
+                            }
+                          />
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label={t('common.remove')}
+                            onClick={() => removeExcludePort(frpsIndex, allowedIndex, excludeIndex)}
+                          >
+                            <IconX size={14} />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="border-b border-neutral-300/20" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         ))}

@@ -2315,6 +2315,12 @@
         "uploadGeoCityDB": "The file is always saved as GeoLite2-City.mmdb under the data path."
       },
       "k8s": {
+        "frp": "Frp",
+        "nginx": "Nginx",
+        "enabled": "Enabled",
+        "host": "Host",
+        "port": "Port",
+        "token": "Token",
         "allowedPorts": "Allowed Ports"
       }
     },
