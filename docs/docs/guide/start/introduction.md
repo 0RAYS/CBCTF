@@ -1,3 +1,8 @@
+---
+title: 介绍
+description: 了解 CBCTF 的平台定位、核心能力、构建方式和动态容器工作模式。
+---
+
 # 介绍
 
 CBCTF 是由 [0RAYS](https://github.com/0rays) 维护的 CTF 竞赛平台，基于 Go 语言构建，原生支持 Kubernetes

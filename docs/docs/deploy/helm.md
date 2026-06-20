@@ -1,3 +1,8 @@
+---
+title: Helm 部署
+description: 通过 Helm Chart 安装 CBCTF，并配置镜像、Ingress、存储、数据库和 Redis。
+---
+
 # Helm 部署
 
 CBCTF Chart 位于仓库根目录的 `chart/`。默认会创建应用 Deployment、Service、Ingress、ServiceAccount、ClusterRole、共享 PVC，以及内置

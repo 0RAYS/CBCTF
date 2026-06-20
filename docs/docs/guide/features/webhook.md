@@ -1,3 +1,8 @@
+---
+title: Webhook
+description: 配置 CBCTF 比赛事件 Webhook，向外部系统推送提交、解题和公告等事件。
+---
+
 # Webhook
 
 Webhook 允许平台在特定事件发生时，向外部系统（Slack、Discord、自动化脚本等）发送 HTTP 通知。

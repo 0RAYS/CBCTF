@@ -1,3 +1,8 @@
+---
+title: 监控与日志
+description: 使用 CBCTF 的 Prometheus 指标、Grafana 仪表盘、日志和系统状态接口排查问题。
+---
+
 # 监控与日志
 
 ## 系统状态
