@@ -87,7 +87,9 @@ func Start() {
 
 func Stop() {
 	if c != nil {
-		c.Stop()
+		ctx := c.Stop()
+		<-ctx.Done()
+		c = nil
 	}
 }
 

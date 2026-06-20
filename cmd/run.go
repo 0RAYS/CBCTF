@@ -90,8 +90,8 @@ func stop() {
 		log.Logger.Warningf("Failed to save config: %s", err)
 	}
 	time.Sleep(time.Second)
-	task.Stop()
 	cron.Stop()
+	task.Stop()
 	redis.Stop()
 	db.Stop()
 }
