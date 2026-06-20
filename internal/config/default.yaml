@@ -63,8 +63,6 @@ redis:
   port: 6379
   pwd: password
 k8s:
-  # Kubeconfig path
-  config: ./admin.yaml
   # Also as prefix of resources
   namespace: cbctf
   # Docker image

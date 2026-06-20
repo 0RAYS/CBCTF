@@ -119,23 +119,18 @@ func SystemConfig(ctx *gin.Context) {
 		"redis_port": config.Env.Redis.Port,
 		"redis_pwd":  "******",
 
-		"k8s_config":    config.Env.K8S.Config,
 		"k8s_namespace": config.Env.K8S.Namespace,
 		"k8s_capture":   config.Env.K8S.CaptureImage,
-
 		"k8s_frp_on":    config.Env.K8S.Frp.On,
 		"k8s_frp_frpc":  config.Env.K8S.Frp.FrpcImage,
 		"k8s_frp_nginx": config.Env.K8S.Frp.NginxImage,
 		"k8s_frp_frps":  maskedFrps,
 
-		"cheat_ip_whitelist": config.Env.Cheat.IP.Whitelist,
-
-		"webhook_whitelist": config.Env.Webhook.Whitelist,
-
+		"cheat_ip_whitelist":         config.Env.Cheat.IP.Whitelist,
+		"webhook_whitelist":          config.Env.Webhook.Whitelist,
 		"registration_enabled":       config.Env.Registration.Enabled,
 		"registration_default_group": config.Env.Registration.DefaultGroup,
-
-		"geocity_db": geocityDBPath,
+		"geocity_db":                 geocityDBPath,
 	}
 	resp.JSON(ctx, model.SuccessRetVal(data))
 }

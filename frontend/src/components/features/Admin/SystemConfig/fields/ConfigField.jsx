@@ -9,10 +9,18 @@ import { Input, Select } from '../../../../common';
  * @param {Array} options - Options for select type (array of {value, label} or strings)
  * @param {string} placeholder - Input placeholder
  */
-export function ConfigField({ label, value, onChange, type = 'text', options = [], placeholder = '' }) {
+export function ConfigField({
+  label,
+  value,
+  onChange,
+  type = 'text',
+  options = [],
+  placeholder = '',
+  disabled = false,
+}) {
   const handleChange = (event) => {
     const newValue = event.target.value;
-    onChange(newValue);
+    onChange?.(newValue);
   };
 
   return (
@@ -22,14 +30,22 @@ export function ConfigField({ label, value, onChange, type = 'text', options = [
         <Select
           size="sm"
           value={type === 'boolean' ? (value ? 'true' : 'false') : value}
+          disabled={disabled}
           onChange={(event) => {
             const val = event.target.value;
-            onChange(type === 'boolean' ? val === 'true' : val);
+            onChange?.(type === 'boolean' ? val === 'true' : val);
           }}
           options={options.map((opt) => (typeof opt === 'string' ? { value: opt, label: opt } : opt))}
         />
       ) : (
-        <Input size="sm" type={type} value={value ?? ''} onChange={handleChange} placeholder={placeholder} />
+        <Input
+          size="sm"
+          type={type}
+          value={value ?? ''}
+          onChange={handleChange}
+          placeholder={placeholder}
+          disabled={disabled}
+        />
       )}
     </div>
   );

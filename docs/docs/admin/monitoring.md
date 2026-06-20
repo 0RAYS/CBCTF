@@ -80,9 +80,9 @@ gin:
 
 支持在线下载（`admin:file:read`）和删除（`admin:file:delete`）。
 
-## 系统配置在线更新
+## 系统运行时设置
 
-无需重启服务器即可更新配置：
+可通过接口更新系统配置，并在需要时重启重载：
 
 ```bash
 # 读取当前配置
@@ -91,10 +91,12 @@ GET /admin/system/config    # 需 admin:system:read
 # 更新配置
 PUT /admin/system/config    # 需 admin:system:update
 
-# 应用配置（热重启）
+# 重载配置
 POST /admin/system/restart  # 需 admin:system:restart
 ```
 
+PostgreSQL/Redis 连接、数据目录、Gin 监听地址和监听端口在页面中只读，只能通过部署配置修改。
+
 :::warning
-热重启会短暂中断服务（通常 1-2 秒）。正式比赛期间谨慎使用。
+重启会短暂中断服务。正式比赛期间谨慎使用。
 :::

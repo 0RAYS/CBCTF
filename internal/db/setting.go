@@ -42,7 +42,7 @@ func (s *SettingRepo) Get(key string, optionsL ...GetOptions) (model.Setting, mo
 func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.RetVal {
 	var count uint
 	data := options.Convert2Map()
-	if value, ok := data["value"]; !ok || value == nil || reflect.ValueOf(value.(model.SettingValue).V).IsNil() {
+	if value, ok := data["value"]; !ok || value == nil || isNil(value.(model.SettingValue).V) {
 		return model.SuccessRetVal()
 	}
 	for {
@@ -68,10 +68,22 @@ func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.Ret
 	return model.SuccessRetVal()
 }
 
+func isNil(value any) bool {
+	if value == nil {
+		return true
+	}
+	v := reflect.ValueOf(value)
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
+		return v.IsNil()
+	default:
+		return false
+	}
+}
+
 func (s *SettingRepo) InitSettings() model.RetVal {
 	for _, setting := range []model.Setting{
 		{Key: model.HostSettingKey, Value: model.SettingValue{V: config.Env.Host}},
-		{Key: model.PathSettingKey, Value: model.SettingValue{V: config.Env.Path}},
 
 		{Key: model.AsyncQLogLevelSettingKey, Value: model.SettingValue{V: config.Env.AsyncQ.Log.Level}},
 		{Key: model.AsyncQVictimConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Victim}},
@@ -83,8 +95,6 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.AsyncQImageConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Image}},
 
 		{Key: model.GinModeSettingKey, Value: model.SettingValue{V: config.Env.Gin.Mode}},
-		{Key: model.GinHostSettingKey, Value: model.SettingValue{V: config.Env.Gin.Host}},
-		{Key: model.GinPortSettingKey, Value: model.SettingValue{V: config.Env.Gin.Port}},
 		{Key: model.GinUploadPictureSettingKey, Value: model.SettingValue{V: config.Env.Gin.Upload.Picture}},
 		{Key: model.GinUploadChallengeSettingKey, Value: model.SettingValue{V: config.Env.Gin.Upload.Challenge}},
 		{Key: model.GinUploadWriteupSettingKey, Value: model.SettingValue{V: config.Env.Gin.Upload.Writeup}},
@@ -96,21 +106,8 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.GinJWTSecretSettingKey, Value: model.SettingValue{V: config.Env.Gin.JWT.Secret}},
 		{Key: model.GinMetricsWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Metrics.Whitelist}},
 
-		{Key: model.GormPostgresHostSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.Host}},
-		{Key: model.GormPostgresPortSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.Port}},
-		{Key: model.GormPostgresUserSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.User}},
-		{Key: model.GormPostgresPwdSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.Pwd}},
-		{Key: model.GormPostgresDBSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.DB}},
-		{Key: model.GormPostgresSSLModeSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.SSLMode}},
-		{Key: model.GormPostgresMXOpenSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.MaxOpenConns}},
-		{Key: model.GormPostgresMXIdleSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.MaxIdleConns}},
 		{Key: model.GormLogLevelSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Log.Level}},
 
-		{Key: model.RedisHostSettingKey, Value: model.SettingValue{V: config.Env.Redis.Host}},
-		{Key: model.RedisPortSettingKey, Value: model.SettingValue{V: config.Env.Redis.Port}},
-		{Key: model.RedisPwdSettingKey, Value: model.SettingValue{V: config.Env.Redis.Pwd}},
-
-		{Key: model.K8SConfigSettingKey, Value: model.SettingValue{V: config.Env.K8S.Config}},
 		{Key: model.K8SNamespaceSettingKey, Value: model.SettingValue{V: config.Env.K8S.Namespace}},
 		{Key: model.K8SCaptureImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.CaptureImage}},
 		{Key: model.K8SFrpOnSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.On}},
@@ -119,9 +116,7 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.K8SFrpFrpsSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.Frps}},
 
 		{Key: model.CheatIPWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Cheat.IP.Whitelist}},
-
 		{Key: model.WebhookWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Webhook.Whitelist}},
-
 		{Key: model.RegistrationEnabledSettingKey, Value: model.SettingValue{V: config.Env.Registration.Enabled}},
 		{Key: model.RegistrationDefaultGroupSettingKey, Value: model.SettingValue{V: config.Env.Registration.DefaultGroup}},
 	} {
@@ -139,9 +134,6 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	var ret model.RetVal
 
 	if config.Env.Host, ret = GetValue[string](s, model.HostSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Path, ret = GetValue[string](s, model.PathSettingKey); !ret.OK {
 		return ret
 	}
 
@@ -171,12 +163,6 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	}
 
 	if config.Env.Gin.Mode, ret = GetValue[string](s, model.GinModeSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.Host, ret = GetValue[string](s, model.GinHostSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.Port, ret = GetValue[uint](s, model.GinPortSettingKey); !ret.OK {
 		return ret
 	}
 	if config.Env.Gin.Upload.Picture, ret = GetValue[int](s, model.GinUploadPictureSettingKey); !ret.OK {
@@ -210,47 +196,10 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 
-	if config.Env.Gorm.Postgres.Host, ret = GetValue[string](s, model.GormPostgresHostSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gorm.Postgres.Port, ret = GetValue[uint](s, model.GormPostgresPortSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gorm.Postgres.User, ret = GetValue[string](s, model.GormPostgresUserSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gorm.Postgres.Pwd, ret = GetValue[string](s, model.GormPostgresPwdSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gorm.Postgres.DB, ret = GetValue[string](s, model.GormPostgresDBSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gorm.Postgres.SSLMode, ret = GetValue[bool](s, model.GormPostgresSSLModeSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gorm.Postgres.MaxOpenConns, ret = GetValue[int](s, model.GormPostgresMXOpenSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gorm.Postgres.MaxIdleConns, ret = GetValue[int](s, model.GormPostgresMXIdleSettingKey); !ret.OK {
-		return ret
-	}
 	if config.Env.Gorm.Log.Level, ret = GetValue[string](s, model.GormLogLevelSettingKey); !ret.OK {
 		return ret
 	}
 
-	if config.Env.Redis.Host, ret = GetValue[string](s, model.RedisHostSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Redis.Port, ret = GetValue[uint](s, model.RedisPortSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Redis.Pwd, ret = GetValue[string](s, model.RedisPwdSettingKey); !ret.OK {
-		return ret
-	}
-
-	if config.Env.K8S.Config, ret = GetValue[string](s, model.K8SConfigSettingKey); !ret.OK {
-		return ret
-	}
 	if config.Env.K8S.Namespace, ret = GetValue[string](s, model.K8SNamespaceSettingKey); !ret.OK {
 		return ret
 	}
@@ -283,10 +232,6 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	}
 	if config.Env.Registration.DefaultGroup, ret = GetValue[uint](s, model.RegistrationDefaultGroupSettingKey); !ret.OK {
 		return ret
-	}
-
-	if err := config.Save(); err != nil {
-		log.Logger.Warningf("Failed to save config: %s, but it's not important, all config will be read from database", err.Error())
 	}
 
 	return model.SuccessRetVal()

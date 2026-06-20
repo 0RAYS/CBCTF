@@ -9,7 +9,6 @@ import (
 
 const (
 	HostSettingKey = "host"
-	PathSettingKey = "path"
 
 	AsyncQLogLevelSettingKey       = "asynq.log.level"
 	AsyncQVictimConcurrencyKey     = "asynq.queues.victim"
@@ -21,8 +20,6 @@ const (
 	AsyncQImageConcurrencyKey      = "asynq.queues.image"
 
 	GinModeSettingKey               = "gin.mode"
-	GinHostSettingKey               = "gin.host"
-	GinPortSettingKey               = "gin.port"
 	GinUploadPictureSettingKey      = "gin.upload.picture"
 	GinUploadChallengeSettingKey    = "gin.upload.challenge"
 	GinUploadWriteupSettingKey      = "gin.upload.writeup"
@@ -34,21 +31,8 @@ const (
 	GinJWTSecretSettingKey          = "gin.jwt.secret"
 	GinMetricsWhitelistSettingKey   = "gin.metrics.whitelist"
 
-	GormPostgresHostSettingKey    = "gorm.postgres.host"
-	GormPostgresPortSettingKey    = "gorm.postgres.port"
-	GormPostgresUserSettingKey    = "gorm.postgres.user"
-	GormPostgresPwdSettingKey     = "gorm.postgres.pwd"
-	GormPostgresDBSettingKey      = "gorm.postgres.db"
-	GormPostgresSSLModeSettingKey = "gorm.postgres.sslmode"
-	GormPostgresMXOpenSettingKey  = "gorm.postgres.mxopen"
-	GormPostgresMXIdleSettingKey  = "gorm.postgres.mxidle"
-	GormLogLevelSettingKey        = "gorm.log.level"
+	GormLogLevelSettingKey = "gorm.log.level"
 
-	RedisHostSettingKey = "redis.host"
-	RedisPortSettingKey = "redis.port"
-	RedisPwdSettingKey  = "redis.pwd"
-
-	K8SConfigSettingKey        = "k8s.config"
 	K8SNamespaceSettingKey     = "k8s.namespace"
 	K8SCaptureImageSettingKey  = "k8s.capture"
 	K8SFrpOnSettingKey         = "k8s.frp.on"
@@ -56,10 +40,8 @@ const (
 	K8SFrpNginxImageSettingKey = "k8s.frp.nginx"
 	K8SFrpFrpsSettingKey       = "k8s.frp.frps"
 
-	CheatIPWhitelistSettingKey = "cheat.ip.whitelist"
-
-	WebhookWhitelistSettingKey = "webhook.whitelist"
-
+	CheatIPWhitelistSettingKey         = "cheat.ip.whitelist"
+	WebhookWhitelistSettingKey         = "webhook.whitelist"
 	RegistrationEnabledSettingKey      = "registration.enabled"
 	RegistrationDefaultGroupSettingKey = "registration.default_group"
 )
