@@ -69,12 +69,12 @@ func (c *CronJobRepo) InitCronJob() model.RetVal {
 	for _, cronJob := range model.CronJobs {
 		cronJob.DefaultSchedule = cronJob.Schedule
 		var existing model.CronJob
-		res := c.DB.Where("name = ?", cronJob.Name).First(&existing)
+		res := c.DB.Model(&model.CronJob{}).Where("name = ?", cronJob.Name).First(&existing)
 		if res.Error != nil {
 			if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
 				return model.RetVal{Msg: i18n.Model.CronJob.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 			}
-			if err := c.DB.Create(&cronJob).Error; err != nil {
+			if err := c.DB.Model(&model.CronJob{}).Create(&cronJob).Error; err != nil {
 				return model.RetVal{Msg: i18n.Model.CronJob.GetError, Attr: map[string]any{"Error": err.Error()}}
 			}
 			continue
