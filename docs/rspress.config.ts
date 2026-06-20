@@ -1,6 +1,22 @@
 import * as path from 'node:path';
 import { defineConfig } from '@rspress/core';
 
+function sanitizeMdxStyleAttributes() {
+  return (tree: any) => {
+    const visit = (node: any) => {
+      if (node?.properties && 'style' in node.properties) {
+        delete node.properties.style;
+      }
+
+      if (Array.isArray(node?.children)) {
+        node.children.forEach(visit);
+      }
+    };
+
+    visit(tree);
+  };
+}
+
 export default defineConfig({
   root: path.join(__dirname, 'docs'),
   lang: 'zh',
@@ -10,6 +26,9 @@ export default defineConfig({
   logo: {
     light: '/logo.png',
     dark: '/logo.png',
+  },
+  markdown: {
+    rehypePlugins: [sanitizeMdxStyleAttributes],
   },
   themeConfig: {
     socialLinks: [
