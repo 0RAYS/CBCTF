@@ -1,0 +1,25 @@
+:where(:root) {
+  --rp-c-brand: #597ef7;
+  --rp-c-brand-light: #85a5ff;
+  --rp-c-brand-lighter: #d6e4ff;
+  --rp-c-brand-dark: #2f54eb;
+  --rp-c-brand-darker: #1d39c4;
+  --rp-c-brand-tint: rgba(89, 126, 247, 0.16);
+}
+
+:where(html.rp-dark) {
+  --rp-c-bg: #0b1020;
+  --rp-c-bg-soft: #11182c;
+  --rp-c-bg-mute: #18213a;
+  --rp-c-bg-alt: #080c18;
+  --rp-c-link: var(--rp-c-brand-light);
+  --rp-home-hero-secondary-color: #85a5ff;
+  --rp-home-background-bg:
+    radial-gradient(45% 55% at 100% 0%, rgba(89, 126, 247, 0.26) 0%, rgba(11, 16, 32, 0) 100%),
+    radial-gradient(55% 65% at 0% 0%, rgba(47, 84, 235, 0.18) 0%, rgba(11, 16, 32, 0) 100%),
+    #0b1020;
+}
+
+:where(.rspress-home-feature-card) {
+  border: 1px solid rgba(89, 126, 247, 0.18);
+}

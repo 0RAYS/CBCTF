@@ -1,3 +1,8 @@
+---
+title: 邮件配置
+description: 配置 CBCTF SMTP 发信、邮箱验证、密码找回和邮件模板相关设置。
+---
+
 # 邮件配置
 
 CBCTF 通过 SMTP 发送邮件（目前用于邮箱验证功能）。

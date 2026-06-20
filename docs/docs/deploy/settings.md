@@ -1,3 +1,8 @@
+---
+title: 配置说明
+description: 说明 CBCTF 配置文件、环境变量、系统配置热加载和常见配置项。
+---
+
 # 配置说明
 
 CBCTF 使用 `config.yaml` 作为主配置文件。源码运行时，如果文件不存在，程序会从内置默认配置生成 `config.yaml`

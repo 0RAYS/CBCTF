@@ -1,3 +1,8 @@
+---
+title: 认证与 OAuth
+description: 配置 CBCTF 本地认证、邮箱验证、OAuth/OIDC 登录和用户组自动分配。
+---
+
 # 认证与 OAuth
 
 ## 本地认证

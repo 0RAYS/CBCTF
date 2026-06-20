@@ -1,12 +1,13 @@
 {
-  "name": "rspress-doc-template",
+  "name": "cbctf-docs",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "rspress build",
     "dev": "rspress dev",
-    "preview": "rspress preview"
+    "preview": "rspress preview",
+    "inspect": "rspress inspect"
   },
   "dependencies": {
     "@rspress/core": "^2.0.14"

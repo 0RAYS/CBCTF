@@ -1,4 +1,6 @@
 ---
+title: CBCTF 文档
+description: CBCTF 平台文档首页，提供快速上手、部署、功能和管理指南入口。
 pageType: home
 
 hero:
