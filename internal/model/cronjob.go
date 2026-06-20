@@ -33,12 +33,13 @@ var CronJobs = []CronJob{
 }
 
 type CronJob struct {
-	Name        string        `gorm:"size:50;not null;uniqueIndex" json:"name"`
-	Description string        `json:"description"`
-	Schedule    time.Duration `gorm:"not null" json:"schedule"`
-	Success     int64         `gorm:"default:0" json:"success"`
-	SuccessLast time.Time     `gorm:"default:null" json:"success_last"`
-	Failure     int64         `gorm:"default:0" json:"failure"`
-	FailureLast time.Time     `gorm:"default:null" json:"failure_last"`
+	Name            string        `gorm:"size:50;not null;uniqueIndex" json:"name"`
+	Description     string        `json:"description"`
+	Schedule        time.Duration `gorm:"not null" json:"schedule"`
+	DefaultSchedule time.Duration `gorm:"not null;default:0" json:"default_schedule"`
+	Success         int64         `gorm:"default:0" json:"success"`
+	SuccessLast     time.Time     `gorm:"default:null" json:"success_last"`
+	Failure         int64         `gorm:"default:0" json:"failure"`
+	FailureLast     time.Time     `gorm:"default:null" json:"failure_last"`
 	BaseModel
 }

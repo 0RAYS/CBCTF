@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -66,9 +67,28 @@ func InitCronJobRepo(tx *gorm.DB) *CronJobRepo {
 
 func (c *CronJobRepo) InitCronJob() model.RetVal {
 	for _, cronJob := range model.CronJobs {
-		res := c.DB.Model(&model.CronJob{}).FirstOrCreate(&cronJob, model.CronJob{Name: cronJob.Name})
+		cronJob.DefaultSchedule = cronJob.Schedule
+		var existing model.CronJob
+		res := c.DB.Where("name = ?", cronJob.Name).First(&existing)
 		if res.Error != nil {
-			return model.RetVal{Msg: i18n.Model.CronJob.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+			if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
+				return model.RetVal{Msg: i18n.Model.CronJob.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+			}
+			if err := c.DB.Create(&cronJob).Error; err != nil {
+				return model.RetVal{Msg: i18n.Model.CronJob.GetError, Attr: map[string]any{"Error": err.Error()}}
+			}
+			continue
+		}
+
+		updates := map[string]any{
+			"description":      cronJob.Description,
+			"default_schedule": cronJob.DefaultSchedule,
+		}
+		if existing.Schedule <= 0 || existing.Schedule == existing.DefaultSchedule {
+			updates["schedule"] = cronJob.Schedule
+		}
+		if err := c.DB.Model(&existing).Updates(updates).Error; err != nil {
+			return model.RetVal{Msg: i18n.Model.CronJob.GetError, Attr: map[string]any{"Error": err.Error()}}
 		}
 	}
 	return model.SuccessRetVal()
