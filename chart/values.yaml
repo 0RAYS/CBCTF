@@ -137,6 +137,8 @@ cbctf:
     postgres:
       # false -> sslmode=disable, true -> sslmode=require
       sslmode: false
+      mxopen: 100
+      mxidle: 10
     log:
       level: warning   # INFO / WARNING / ERROR / SILENT
 
