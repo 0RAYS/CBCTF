@@ -55,6 +55,7 @@ func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 }
 
 func Init() {
+	// redis connection is shared so the Inspector can't be closed through asynq
 	client = asynq.NewClientFromRedisClient(redis.RDB)
 	inspector = asynq.NewInspectorFromRedisClient(redis.RDB)
 	mux = asynq.NewServeMux()
@@ -105,18 +106,6 @@ func Stop() {
 		}()
 	}
 	wg.Wait()
-	if inspector != nil {
-		if err := inspector.Close(); err != nil {
-			log.Logger.Warningf("Failed to close task inspector: %s", err)
-		}
-		inspector = nil
-	}
-	if client != nil {
-		if err := client.Close(); err != nil {
-			log.Logger.Warningf("Failed to close task client: %s", err)
-		}
-		client = nil
-	}
 }
 
 func newServerConfig(queue string, concurrency int) asynq.Config {
