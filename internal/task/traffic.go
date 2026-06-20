@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
 	"context"
 	"fmt"
@@ -29,11 +28,7 @@ func EnqueueLoadTrafficTask(victim model.Victim) (*asynq.TaskInfo, error) {
 		return nil, err
 	}
 	task := asynq.NewTask(loadTrafficTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(loadTrafficTaskType), asynq.MaxRetry(3), asynq.Timeout(5*time.Minute))
-	if err == nil {
-		prometheus.RecordTaskEnqueued(loadTrafficTaskType)
-	}
-	return info, err
+	return enqueueTask(loadTrafficTaskType, task, asynq.MaxRetry(3), asynq.Timeout(5*time.Minute))
 }
 
 func HandleLoadTrafficTask(ctx context.Context, t *asynq.Task) error {

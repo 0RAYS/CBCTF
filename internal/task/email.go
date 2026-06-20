@@ -35,11 +35,7 @@ func enqueueEmailTask(payload SendEmailPayload) (*asynq.TaskInfo, error) {
 		return nil, err
 	}
 	task := asynq.NewTask(sendEmailTaskType, data)
-	info, err := client.Enqueue(task, asynq.Queue(sendEmailTaskType), asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
-	if err == nil {
-		prometheus.RecordTaskEnqueued(sendEmailTaskType)
-	}
-	return info, err
+	return enqueueTask(sendEmailTaskType, task, asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
 }
 
 func EnqueueSendEmailTask(to, token, id string) (*asynq.TaskInfo, error) {
@@ -77,4 +73,3 @@ func HandleSendEmailTask(_ context.Context, t *asynq.Task) error {
 	prometheus.RecordEmailSent(true)
 	return nil
 }
-

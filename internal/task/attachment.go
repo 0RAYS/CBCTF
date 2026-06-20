@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"context"
 	"fmt"
@@ -45,10 +44,8 @@ func EnqueueGenAttachmentTask(userID uint, generator model.Generator, lockToken 
 		return nil, err
 	}
 	task := asynq.NewTask(genAttachmentTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(genAttachmentTaskType), asynq.MaxRetry(0), asynq.Timeout(5*time.Minute))
-	if err == nil {
-		prometheus.RecordTaskEnqueued(genAttachmentTaskType)
-	} else {
+	info, err := enqueueTask(genAttachmentTaskType, task, asynq.MaxRetry(0), asynq.Timeout(5*time.Minute))
+	if err != nil {
 		unlockGeneratorAttachment(generator.ID, lockToken)
 	}
 	return info, err

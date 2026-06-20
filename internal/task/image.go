@@ -2,7 +2,6 @@ package task
 
 import (
 	"CBCTF/internal/log"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
 	"context"
 	"fmt"
@@ -26,11 +25,7 @@ func EnqueueResizeImageTask(path string, width, height int) (*asynq.TaskInfo, er
 		return nil, err
 	}
 	task := asynq.NewTask(resizeImageTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(resizeImageTaskType), asynq.MaxRetry(3), asynq.Timeout(time.Minute))
-	if err == nil {
-		prometheus.RecordTaskEnqueued(resizeImageTaskType)
-	}
-	return info, err
+	return enqueueTask(resizeImageTaskType, task, asynq.MaxRetry(3), asynq.Timeout(time.Minute))
 }
 
 func HandleResizeImageTask(_ context.Context, task *asynq.Task) error {
