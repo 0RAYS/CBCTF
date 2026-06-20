@@ -21,10 +21,8 @@ var (
 	servers []*asynq.Server
 )
 
-const taskUniqueTTL = 10 * time.Minute
-
 func enqueueTask(taskType string, t *asynq.Task, options ...asynq.Option) (*asynq.TaskInfo, error) {
-	enqueueOptions := []asynq.Option{asynq.Queue(taskType), asynq.Unique(taskUniqueTTL)}
+	enqueueOptions := []asynq.Option{asynq.Queue(taskType)}
 	enqueueOptions = append(enqueueOptions, options...)
 	info, err := client.Enqueue(t, enqueueOptions...)
 	if err == nil {
