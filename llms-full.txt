@@ -1,0 +1,2731 @@
+---
+url: /guide/start/introduction.md
+---
+
+# 介绍
+
+CBCTF 是由 [0RAYS](https://github.com/0rays) 维护的 CTF 竞赛平台，基于 Go 语言构建，原生支持 Kubernetes
+编排。平台支持动态附件生成、动态容器分发、容器与虚拟机混合部署、网络渗透场景构建等特性。
+
+<img src="/img/homepage.png" width="100%" alt="首页" />
+
+## 功能特性
+
+### 题目类型
+
+| 类型                | 说明                                  |
+| ----------------- | ----------------------------------- |
+| **静态题目**          | 所有队伍共用附件，flag 相同                    |
+| **动态附件**          | 容器为每个队伍独立生成附件，flag 各不相同             |
+| **动态容器 · Pod 模式** | 多容器共享同一 Pod 网络，容器间通过 `localhost` 通信 |
+| **动态容器 · VPC 模式** | 每个容器独立 Pod，须分配静态 IP，适合渗透场景          |
+
+每道题目均可配置多个 flag，每个 flag 独立计分。
+
+<img src="/img/challenges.png" width="100%" alt="题目列表" />
+
+### Flag 类型
+
+flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
+
+| 类型       | 原始值                      | 实际 Flag                                       |
+| -------- | ------------------------ | --------------------------------------------- |
+| `static` | `static{this_is_a_flag}` | `CBCTF{this_is_a_flag}`                       |
+| `leet`   | `leet{this_is_a_flag}`   | `CBCTF{ThiS-ls_4-fIaG}`                       |
+| `uuid`   | `uuid{}`                 | `CBCTF{1301ea62-ccd2-4543-b663-993f87b6d44a}` |
+
+### 平台能力
+
+- **动态分值** — 一二三血额外获得题目分值的 5% / 3% / 1%
+- **Frp 内网穿透** — 容器端口转发，保留原始客户端 IP
+- **SMTP 邮件验证** — 注册验证与密码找回
+- **Writeup 管理** — 支持收集与批量下载
+- **OAuth / OIDC** — 第三方认证，支持用户组自动分配
+- **平台品牌化** — Logo、名称、主题色等全局配置
+- **热重载配置** — 所有系统配置修改即时生效，无需重启
+- **Webhook** — GET / POST
+- **国际化（i18n）** — 多语言界面支持
+- **Prometheus 监控** — 完整的运行时指标暴露
+- **Redis 缓存 / 任务队列** + **PostgreSQL 数据存储** + **NFS 网络存储**
+
+<img src="/img/dashboard.png" width="100%" alt="管理后台" />
+
+<img src="/img/contest.png" width="100%" alt="比赛详情" />
+
+<img src="/img/scoreboard-1.png" width="100%" alt="排行榜" />
+
+<img src="/img/scoreboard-2.png" width="100%" alt="排行榜（图表）" />
+
+<img src="/img/contest-settings.png" width="100%" alt="比赛设置" />
+
+<img src="/img/settings.png" width="100%" alt="系统设置" />
+
+<img src="/img/branding.png" width="100%" alt="品牌化配置" />
+
+<img src="/img/log.png" width="100%" alt="日志" />
+
+## 构建
+
+```bash
+# 1. 构建前端（静态文件会被嵌入二进制）
+cd frontend && pnpm install && pnpm run build && cd ..
+
+# 2. 构建后端（流量抓取功能依赖 libpcap，需启用 CGO）
+CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
+```
+
+也可直接使用 Docker 完成两阶段构建：
+
+```bash
+docker build -t cbctf .
+```
+
+## 动态容器
+
+### 网络模式
+
+后端通过 `docker-compose` 配置自动识别网络模式：
+
+| 模式      | 判断条件              | 说明                              |
+| ------- | ----------------- | ------------------------------- |
+| **Pod** | 未配置 `networks` 字段 | 使用默认网络，容器间可直接通信                 |
+| **VPC** | 配置了 `networks` 字段 | 基于 Kube-OVN 的 VPC 网络隔离，需手动指定 IP |
+
+### 配置示例
+
+**Pod 模式**
+
+```yaml
+version: '3'
+services:
+  web:
+    image: nginx:alpine
+    x-kubevirt: false
+    ports:
+      - "80:80"
+```
+
+> 完整示例：[example/pods/pod/docker-compose.yaml][pod-compose]
+
+**VPC 模式（含 KubeVirt 虚拟机）**
+
+```yaml
+version: '3'
+services:
+  web:
+    image: nginx:alpine
+    x-kubevirt: true
+    x-boot:
+      bootloader: efi
+      secure_boot: false
+    x-cloudinit:
+      users:
+        - name: root
+    networks:
+      vpc:
+        ipv4_address: 192.168.1.10
+        mac_address: "00:00:00:00:01:01"
+networks:
+  vpc:
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+          gateway: 192.168.1.1
+```
+
+> 完整示例：[example/pods/vpc/docker-compose.yaml][vpc-compose]
+
+<img src="/img/docker-compose.png" width="100%" alt="容器配置" />
+
+<img src="/img/vm.png" width="100%" alt="虚拟机" />
+
+<img src="/img/victims-1.png" width="100%" alt="靶机列表" />
+
+<img src="/img/victims-2.png" width="100%" alt="靶机详情" />
+
+<img src="/img/victims-3.png" width="100%" alt="靶机终端" />
+
+## 动态附件
+
+基于 Kubernetes 容器化生成，支持上传 Python 脚本，在隔离环境中为每个队伍生成唯一附件。
+
+**生成器合约：**
+
+- 容器必须包含 `sleep` 和 `unzip`
+- 脚本路径固定为 `/root/run.sh <team_id> <base64_encoded_flags>`
+- 产物须写入 `/root/mnt/attachments/{id}.zip`
+- 禁止使用 `latest` 镜像标签
+
+> 完整示例：[example/dynamic/README.md](https://github.com/0RAYS/CBCTF/blob/main/example/dynamic/README.md)
+
+## Kubernetes 依赖
+
+动态容器与动态附件功能依赖以下组件：
+
+| 组件                                                               | 用途       |
+| ---------------------------------------------------------------- | -------- |
+| [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离 |
+| [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) | 多网络接口    |
+| [KubeVirt](https://kubevirt.io/)                                 | 虚拟机调度    |
+
+## 许可证
+
+本项目采用 [GNU Affero General Public License v3.0](https://github.com/0RAYS/CBCTF?tab=AGPL-3.0-1-ov-file) 开源协议。
+
+[pod-compose]: https://github.com/0RAYS/CBCTF/blob/main/example/pods/pod/docker-compose.yaml
+
+[vpc-compose]: https://github.com/0RAYS/CBCTF/blob/main/example/pods/vpc/docker-compose.yaml
+
+
+
+---
+url: /guide/start/quick-start.md
+---
+
+# 快速上手
+
+推荐使用 Helm 将 CBCTF 部署到 Kubernetes。
+
+:::tip
+须提前安装好所需的 k8s 组件，参考[部署](/deploy/cluster.md)
+
+| 组件                                                               | 用途       |
+| ---------------------------------------------------------------- | -------- |
+| [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离 |
+| [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) | 多网络接口    |
+| [KubeVirt](https://kubevirt.io/)                                 | 虚拟机调度    |
+
+:::
+
+## Helm 快速部署
+
+:::warning
+没有快速部署，必炸，请仔细阅读[部署](/deploy/cluster.md)
+:::
+
+## 初始管理员
+
+应用启动时会自动迁移数据库。首次启动且管理员组中没有用户时，会自动创建 `admin` 用户，并把初始密码打印到日志：
+
+```text
+Init Admin: Admin{ name: admin, password: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, email: admin@0rays.club}
+```
+
+查看日志：
+
+```bash
+kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
+```
+
+首次登录后请立即修改管理员密码。管理后台为 `/platform/#/admin`。
+
+## 本地开发运行
+
+本地运行需要先准备 PostgreSQL 和 Redis。
+
+
+### 构建前端
+```bash
+cd frontend
+pnpm install
+pnpm run build
+```
+### 启动后端
+```bash
+cd ..
+go run .
+```
+
+首次运行如果没有 `config.yaml`，程序会生成默认配置并退出。修改数据库、Redis、监听地址和 JWT
+密钥后再次启动。当系统初次正常运行之后，本地配置文件仅作为数据库初次连接和配置文件预览使用，将会被数据库中的配置内容覆盖
+
+后端构建命令：
+
+```bash
+CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
+```
+
+:::tip
+流量捕获能力依赖 CGO 和 libpcap；如果只做文档或前端调试，可优先使用 Helm 或已有镜像。
+
+可通过修改 `frontend/src/api/config.js` 快速在本地实现前端调试开发
+
+```javascript
+export const API_CONFIG = {
+    // 已部署服务
+    BASE_URL: 'https://ctf.example.com',
+};
+```
+
+需要在系统配置中添加对应的 `CORS` 白名单配置
+:::
+
+
+
+---
+url: /deploy/cluster.md
+---
+
+# K8s 集群搭建
+
+本文介绍如何搭建支持 CBCTF 动态附件题和容器题的 Kubernetes 集群。
+
+## 硬件要求
+
+准备多台运行高版本内核的 Linux 服务器，下文以一台 master 与 两台 worker 组成的 [K3S](https://docs.k3s.io/) 集群为例。
+
+本教程主要关注平台所需的集群依赖，对于 `KubeVirt` / `Kube-OVN` / `Multus` 的具体使用和细节不在文档内容中涉及，更多内容请参考各自官方文档。
+
+### KubeVirt 节点要求
+
+VM 靶机依赖 KubeVirt。集群节点需要支持硬件虚拟化或可用的嵌套虚拟化能力，或是由 `KubeVirt` 实现**软件嵌套虚拟化**，但会影响其性能。
+
+检查节点虚拟化能力：
+
+```bash
+egrep -c '(vmx|svm)' /proc/cpuinfo
+```
+
+返回值大于 `0` 通常表示节点 CPU 暴露了虚拟化能力。若运行在云厂商或虚拟化平台中，还需要确认该环境允许嵌套虚拟化。
+
+### 安装 NFS 客户端
+
+动态附件与题目文件共享依赖 RWX 存储。所有节点需要安装 NFS 客户端：
+
+```bash
+sudo apt update
+sudo apt install -y nfs-common
+```
+
+## 安装 [Helm](https://helm.sh/zh/docs/intro/install/)
+
+```bash
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
+chmod 700 get_helm.sh
+./get_helm.sh
+```
+
+## 安装 [K3S](https://docs.k3s.io/)
+
+### Master 节点
+
+```bash
+curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn sh -
+```
+
+安装完成后：
+
+- kubeconfig 位于 `/etc/rancher/k3s/k3s.yaml`
+- 节点 Token 位于 `/var/lib/rancher/k3s/server/node-token`
+
+### Worker 节点
+
+```bash
+curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | \
+  INSTALL_K3S_MIRROR=cn \
+  K3S_URL=https://myserver:6443 \
+  K3S_TOKEN=mynodetoken \
+  sh
+```
+
+## 安装 [Kube-OVN](https://kubeovn.github.io/docs/stable/)
+
+提供 VPC 网络隔离功能。
+
+为节点打上 Label，参考 [Helm chart for Kube-OVN](https://kubeovn.github.io/kube-ovn/)
+
+```bash
+kubectl label node -lbeta.kubernetes.io/os=linux kubernetes.io/os=linux --overwrite
+kubectl label node -lnode-role.kubernetes.io/control-plane kube-ovn/role=master --overwrite
+
+# 以下 label 用于 dpdk 镜像的安装，非 dpdk 情况，可以忽略
+kubectl label node -lovn.kubernetes.io/ovs_dp_type!=userspace ovn.kubernetes.io/ovs_dp_type=kernel --overwrite
+```
+
+添加 Helm Repo
+
+```bash
+helm repo add kube-ovn https://kubeovn.github.io/kube-ovn/
+```
+
+根据集群网络规划，可以把 Kube-OVN 安装为主 CNI，也可以安装为副 CNI。
+
+
+**作为 主 CNI 安装**
+
+主 CNI 模式由 Kube-OVN 接管集群默认 Pod 网络，适合新建集群或计划完全使用 Kube-OVN 作为主网络插件的环境。
+:::warning
+主 CNI 安装会影响集群默认网络。已有生产集群切换主 CNI 风险较高，建议仅在新集群中使用。
+:::
+如果使用 K3S 并希望 Kube-OVN 作为主 CNI，安装 K3S 时应禁用默认 flannel 和 network-policy：
+```bash
+curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | \
+  INSTALL_K3S_MIRROR=cn sh - --flannel-backend=none --disable-network-policy
+```
+使用 kube-ovn-v2 chart
+values.yaml
+```yaml
+# master ip
+masterNodes:
+    - 192.168.3.1
+```
+安装
+```bash
+helm install kube-ovn kube-ovn/kube-ovn-v2 --namespace kube-system -f values.yaml
+```
+
+
+**作为 副 CNI 安装**
+
+副 CNI 模式保留集群原有主 CNI，只通过 Multus 为 CBCTF 靶机额外挂载 Kube-OVN 网络。这个模式更适合已有集群。
+:::tip
+如果集群已经有稳定主 CNI，优先考虑副 CNI 模式。它对现有业务网络影响更小，也更符合多网络靶机场景。
+:::
+使用 kube-ovn-v2 chart
+values.yaml
+```yaml
+cni:
+    configPriority: "10"
+    nonPrimaryCNI: true
+# master ip
+masterNodes:
+    - 192.168.3.1
+```
+安装
+```bash
+helm install kube-ovn kube-ovn/kube-ovn-v2 --namespace kube-system -f values.yaml
+```
+
+
+## 安装 [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni)
+
+为 VPC 网络模式靶机提供多网卡支持：
+
+```bash
+kubectl apply \
+  -f https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/master/deployments/multus-daemonset-thick.yml
+```
+
+## 安装 [KubeVirt](https://kubevirt.io/)
+
+为 VM 靶机提供 `VirtualMachine` 资源和运行时能力。建议按 KubeVirt 官方文档安装稳定版本，并确认 `kubevirt` 命名空间中的组件 Ready。
+
+```bash
+export RELEASE=$(curl https://storage.googleapis.com/kubevirt-prow/release/kubevirt/kubevirt/stable.txt)
+kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/${RELEASE}/kubevirt-operator.yaml
+kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/${RELEASE}/kubevirt-cr.yaml
+
+# 可选，当前项目未使用 DV
+export TAG=$(curl -s -w %{redirect_url} https://github.com/kubevirt/containerized-data-importer/releases/latest)
+export VERSION=$(echo ${TAG##*/})
+kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-operator.yaml
+kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-cr.yaml
+```
+
+:::info
+CBCTF 只会创建和删除 `VirtualMachine` 资源，不会自动安装 KubeVirt。VM 题目镜像需要由出题人制作成 KubeVirt 可启动的 `containerDisk` 镜像。
+:::
+
+## 配置 StorageClass
+
+动态附件依赖支持 `ReadWriteMany` 的 PVC。K3S 默认 `local-path` 不支持 RWX，需改用 NFS 等共享存储方案。
+
+建议流程：
+
+1. 取消 `local-path` 的默认 StorageClass 标记
+2. 安装支持 RWX 的 StorageClass
+3. 将 RWX 存储类设为默认，或在 Helm `persistence.storageClass` 中显式指定
+
+以安装 `nfs-subdir-external-provisioner` 为例
+
+添加 Helm Repo
+
+```bash
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+```
+
+values.yaml
+
+```yaml
+nfs:
+    # 共享存储路径
+    path: /volume1/kubernetes
+    server: 192.168.8.1
+replicaCount: 3
+storageClass:
+    defaultClass: true
+    reclaimPolicy: Retain
+```
+
+安装
+
+```
+helm install nfs-provisioner \
+  nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+  --namespace kube-system \
+  -f values.yaml
+```
+
+
+
+---
+url: /deploy/helm.md
+---
+
+# Helm 部署
+
+CBCTF Chart 位于仓库根目录的 `chart/`。默认会创建应用 Deployment、Service、Ingress、ServiceAccount、ClusterRole、共享 PVC，以及内置
+PostgreSQL 和 Redis。
+
+## 前置要求
+
+- Kubernetes 集群可用
+- Helm 可用
+- 集群可以拉取 `ghcr.io/0rays/cbctf`、PostgreSQL、Redis 以及题目镜像
+- 如启用持久化，集群需要可用 StorageClass
+- 动态附件建议使用支持 `ReadWriteMany` 的共享存储
+- VPC 靶机需要提前安装 Kube-OVN 和 Multus CNI
+- KubeVirt VM 靶机需要提前安装 KubeVirt，并确认节点支持虚拟化
+
+## 安装
+
+添加 Helm Repo
+
+```bash
+helm repo add cbctf https://cbctf.0rays.club
+```
+
+**须使用自定义 values**
+
+初次安装后，系统配置将以数据库中内容为准，**尽可能一次性配置正确**，不再从 values 中读取**（但在连接数据库时会使用 values 中地址）**：
+
+```bash
+helm show values cbctf/cbctf > values.yaml
+helm install cbctf cbctf/cbctf -n cbctf --create-namespace -f values.yaml
+```
+
+## 升级和卸载
+
+```bash
+helm upgrade cbctf cbctf/cbctf -n cbctf -f values.yaml
+helm uninstall cbctf -n cbctf
+```
+
+共享 PVC 默认带有保留策略，卸载不会删除 `/app/data` 中的数据。PostgreSQL 和 Redis 的 PVC 也应在确认备份后再手动清理。
+
+## 常用 Values
+
+| 配置项                         | 说明                          | 示例                    |
+| --------------------------- | --------------------------- | --------------------- |
+| `image.repository`          | 应用镜像仓库                      | `ghcr.io/0rays/cbctf` |
+| `image.tag`                 | 应用镜像标签                      | `latest`              |
+| `imagePullSecrets`          | 私有镜像拉取 Secret               | `[{name: regcred}]`   |
+| `imageCredentials.*`        | Chart 自动创建镜像仓库 Secret 的内联凭据 | `registry: ghcr.io`   |
+| `timezone`                  | 容器时区                        | `Asia/Shanghai`       |
+| `service.type`              | Service 类型                  | `ClusterIP`           |
+| `service.port`              | Service 端口                  | `8000`                |
+| `ingress.enabled`           | 是否启用 Ingress                | `true`                |
+| `ingress.className`         | IngressClass                | `nginx`               |
+| `ingress.hosts`             | 域名和路径                       | `ctf.example.com`     |
+| `ingress.tls`               | TLS Secret 配置               | `cbctf-tls`           |
+| `resources`                 | 应用 Pod 资源限制                 | `requests.cpu: 500m`  |
+| `persistence.enabled`       | 是否创建共享 PVC                  | `true`                |
+| `persistence.storageClass`  | 共享 PVC 的 StorageClass       | `nfs-client`          |
+| `persistence.accessMode`    | 访问模式                        | `ReadWriteMany`       |
+| `persistence.size`          | 共享 PVC 容量                   | `20Gi`                |
+| `persistence.existingClaim` | 复用已有 PVC                    | `cbctf-data`          |
+
+## 应用配置
+
+上传大小限制已拆分为 `cbctf.gin.upload.picture`、`cbctf.gin.upload.challenge`、`cbctf.gin.upload.writeup`。旧的 `cbctf.gin.upload.max` 不再生效。
+
+| 配置项                                | 说明                          | 示例                        |
+| ---------------------------------- | --------------------------- | ------------------------- |
+| `cbctf.host`                       | 平台公开访问地址，不要带尾部 `/`          | `https://ctf.example.com` |
+| `cbctf.log.level`                  | 应用日志级别                      | `info`                    |
+| `cbctf.log.save`                   | 是否持久化日志                     | `false`                   |
+| `cbctf.gin.mode`                   | Gin 运行模式                    | `release`                 |
+| `cbctf.gin.host`                   | 容器内监听地址                     | `0.0.0.0`                 |
+| `cbctf.gin.port`                   | 容器内监听端口                     | `8000`                    |
+| `cbctf.gin.upload.picture`         | 图片上传大小限制，单位 MiB             | `8`                       |
+| `cbctf.gin.upload.challenge`       | 题目附件上传大小限制，单位 MiB           | `8`                       |
+| `cbctf.gin.upload.writeup`         | 题解上传大小限制，单位 MiB             | `8`                       |
+| `cbctf.gin.proxies`                | 可信代理 IP 或 CIDR              | `10.244.0.0/16`           |
+| `cbctf.gin.cors`                   | CORS 允许来源                   | `https://ctf.example.com` |
+| `cbctf.gin.ratelimit.global`       | 全局限流                        | `100`                     |
+| `cbctf.gin.jwt.secret`             | JWT 签名密钥，留空时 Chart 自动生成并复用  | `change-me-long-random`   |
+| `cbctf.gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR | `10.0.0.0/8`              |
+| `cbctf.asynq.queues.traffic`       | 靶机流量解析任务并发                  | `2`                       |
+| `cbctf.registration.enabled`       | 是否允许公开注册                    | `true`                    |
+| `cbctf.registration.default_group` | 新用户默认分组 ID，`0` 表示不指定        | `0`                       |
+| `cbctf.cheat.ip.whitelist`         | 作弊检测 IP 白名单                 | `10.0.0.0/8`              |
+| `cbctf.webhook.whitelist`          | Webhook 目标白名单               | `example.com`             |
+
+Chart 会把 JWT 密钥写入 Secret，并通过 `CBCTF_GIN_JWT_SECRET` 注入容器。数据库和 Redis 密码也通过 Secret 注入。
+
+## PostgreSQL 和 Redis
+
+| 配置项                            | 说明                        | 示例                          |
+| ------------------------------ | ------------------------- | --------------------------- |
+| `postgres.enabled`             | 是否部署内置 PostgreSQL         | `true`                      |
+| `postgres.auth.database`       | 数据库名                      | `cbctf`                     |
+| `postgres.auth.username`       | 用户名                       | `cbctf`                     |
+| `postgres.auth.password`       | 密码，留空时自动生成并复用             | `example-postgres-password` |
+| `postgres.persistence.enabled` | PostgreSQL 数据持久化          | `true`                      |
+| `postgres.persistence.size`    | PostgreSQL PVC 容量         | `5Gi`                       |
+| `postgres.extraConfig`         | 追加到 `postgresql.conf` 的配置 | `max_connections = 500`     |
+| `redis.enabled`                | 是否部署内置 Redis              | `true`                      |
+| `redis.auth.password`          | Redis 密码，留空时自动生成并复用       | `example-redis-password`    |
+| `redis.persistence.enabled`    | Redis 数据持久化               | `true`                      |
+| `redis.persistence.size`       | Redis PVC 容量              | `1Gi`                       |
+
+:::info
+当前 Chart values 中没有外部 PostgreSQL 或外部 Redis 的 `externalHost` 配置项。如果需要使用外部数据库，需要同步调整 Chart
+模板或用等价的 Service 名称接入。
+:::
+
+## Kubernetes 靶机配置
+
+| 配置项                     | 说明                    | 示例                                |
+| ----------------------- | --------------------- | --------------------------------- |
+| `serviceAccount.create` | 是否创建应用 ServiceAccount | `true`                            |
+| `cbctf.k8s.capture`     | 流量捕获镜像                | `ghcr.io/domcyrus/rustnet:latest` |
+| `cbctf.k8s.frp.on`      | 是否启用 FRP 端口暴露         | `false`                           |
+| `cbctf.k8s.frp.frpc`    | FRP client 镜像         | `ghcr.io/fatedier/frpc:v0.69.0`   |
+| `cbctf.k8s.frp.nginx`   | FRP 转发辅助 Nginx 镜像     | `nginx:latest`                    |
+| `cbctf.k8s.frp.frps`    | FRPS 服务端、token 和端口池   | `host: frps.example.com`          |
+
+Chart 创建的 ClusterRole 包含 Pod、Service、Job、NetworkPolicy、EndpointSlice、Multus NAD、KubeVirt VirtualMachine、Kube-OVN
+Subnet/VPC/IP 等资源权限。Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
+
+## Ingress 示例
+
+```yaml
+cbctf:
+  host: "https://ctf.example.com"
+  gin:
+    cors:
+      - "https://ctf.example.com"
+    proxies:
+      - "10.244.0.0/16"
+    jwt:
+      secret: "change-me-long-random-secret"
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: ctf.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: cbctf-tls
+      hosts:
+        - ctf.example.com
+```
+
+## 安装后检查
+
+```bash
+kubectl get pods -n cbctf
+kubectl logs -n cbctf deployment/cbctf
+kubectl get pvc -n cbctf
+kubectl get ingress -n cbctf
+```
+
+检查初始管理员密码：
+
+```bash
+kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
+```
+
+如果 Pod 反复重启，优先检查日志中的数据库、Redis、RBAC、PVC、KubeVirt、Kube-OVN/Multus 相关错误。
+
+## 启动时资源检查与创建
+
+Helm 安装后，应用启动时会检查或创建以下资源：
+
+- 命名空间：`{namespace}`
+- 共享存储 PVC：`{namespace}-shared-volume`
+
+:::warning
+PVC 缺失会导致动态附件不可用。KubeVirt 资源不会在启动时创建，只有启动包含 `x-kubevirt: true` 的 VM 靶机时才会创建对应
+`VirtualMachine`。
+:::
+
+
+
+---
+url: /deploy/settings.md
+---
+
+# 配置说明
+
+CBCTF 使用 `config.yaml` 作为主配置文件。源码运行时，如果文件不存在，程序会从内置默认配置生成 `config.yaml`
+并退出；修改后再次启动即可。Helm 部署时，Chart 会把 values 渲染成容器内 `/app/config.yaml`，并通过环境变量注入敏感配置。
+
+环境变量支持 `CBCTF_` 前缀覆盖配置，点号转换为下划线。例如 `gorm.postgres.pwd` 对应 `CBCTF_GORM_POSTGRES_PWD`。
+
+上传大小限制已拆分为 `gin.upload.picture`、`gin.upload.challenge`、`gin.upload.writeup`。旧的 `gin.upload.max` 不再生效。
+
+## 常用配置项
+
+| 配置项                          | 说明                                         | 示例                          |
+| ---------------------------- | ------------------------------------------ | --------------------------- |
+| `host`                       | 平台对外访问地址，用于根路径跳转、邮件链接、OAuth 回调等，不要带尾部 `/`  | `https://ctf.example.com`   |
+| `path`                       | 数据根目录，存放附件、动态附件、流量文件、GeoIP 数据库等            | `./data`                    |
+| `log.level`                  | 应用日志级别                                     | `info`                      |
+| `log.save`                   | 是否将日志写入文件                                  | `false`                     |
+| `gin.mode`                   | Gin 模式                                     | `release`                   |
+| `gin.host`                   | HTTP 监听地址                                  | `0.0.0.0`                   |
+| `gin.port`                   | HTTP 监听端口                                  | `8000`                      |
+| `gin.proxies`                | 可信代理 IP 或 CIDR                             | `10.244.0.0/16`             |
+| `gin.upload.picture`         | 图片上传大小限制，单位 MiB                            | `8`                         |
+| `gin.upload.challenge`       | 题目附件上传大小限制，单位 MiB                          | `8`                         |
+| `gin.upload.writeup`         | 题解上传大小限制，单位 MiB                            | `8`                         |
+| `gin.ratelimit.global`       | 全局每分钟限流                                    | `100`                       |
+| `gin.ratelimit.whitelist`    | 跳过限流的 IP 或 CIDR                            | `127.0.0.1`                 |
+| `gin.cors`                   | 允许跨域来源                                     | `https://ctf.example.com`   |
+| `gin.jwt.secret`             | JWT 签名密钥，生产环境必须替换默认值                       | `change-me-long-random`     |
+| `gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR                | `10.0.0.0/8`                |
+| `gorm.postgres.host`         | PostgreSQL 地址                              | `postgres.cbctf.svc`        |
+| `gorm.postgres.port`         | PostgreSQL 端口                              | `5432`                      |
+| `gorm.postgres.user`         | PostgreSQL 用户名                             | `cbctf`                     |
+| `gorm.postgres.pwd`          | PostgreSQL 密码                              | `example-postgres-password` |
+| `gorm.postgres.db`           | PostgreSQL 数据库名                            | `cbctf`                     |
+| `gorm.postgres.sslmode`      | 布尔值，`false` 为 `disable`，`true` 为 `require` | `false`                     |
+| `redis.host`                 | Redis 地址                                   | `redis.cbctf.svc`           |
+| `redis.port`                 | Redis 端口                                   | `6379`                      |
+| `redis.pwd`                  | Redis 密码                                   | `example-redis-password`    |
+| `registration.enabled`       | 是否允许公开注册                                   | `true`                      |
+| `registration.default_group` | 新用户默认分组 ID，`0` 表示不指定                       | `0`                         |
+| `geocity_db`                 | GeoLite2-City 数据库路径                        | `./data/GeoLite2-City.mmdb` |
+
+## 异步任务配置
+
+Redis 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务并发：
+
+| 配置项                       | 说明            | 示例        |
+| ------------------------- | ------------- | --------- |
+| `asynq.log.level`         | Asynq 日志级别    | `warning` |
+| `asynq.queues.victim`     | 靶机启停任务并发      | `2`       |
+| `asynq.queues.traffic`    | 靶机流量解析任务并发    | `2`       |
+| `asynq.queues.generator`  | 动态附件生成器启停任务并发 | `3`       |
+| `asynq.queues.attachment` | 附件生成任务并发      | `10`      |
+| `asynq.queues.email`      | 邮件任务并发        | `10`      |
+| `asynq.queues.webhook`    | Webhook 任务并发  | `15`      |
+| `asynq.queues.image`      | 图片处理任务并发      | `10`      |
+
+当靶机启动、附件生成或邮件发送堆积时，先检查 Redis 状态和任务日志，再根据资源情况调整对应队列并发。
+
+## Kubernetes 配置
+
+| 配置项             | 说明                                          | 示例                                |
+| --------------- | ------------------------------------------- | --------------------------------- |
+| `k8s.config`    | kubeconfig 路径；Helm 部署时为 `/admin/admin.yaml` | `./admin.yaml`                    |
+| `k8s.namespace` | 靶机、生成器等资源所在命名空间                             | `cbctf`                           |
+| `k8s.capture`   | 流量捕获 sidecar 镜像                             | `ghcr.io/domcyrus/rustnet:latest` |
+| `k8s.frp.on`    | 是否启用 FRP 暴露靶机端口                             | `false`                           |
+| `k8s.frp.frpc`  | FRP client 镜像                               | `ghcr.io/fatedier/frpc:v0.69.0`   |
+| `k8s.frp.nginx` | FRP 辅助 Nginx 镜像                             | `nginx:latest`                    |
+| `k8s.frp.frps`  | FRPS 地址、端口、token、端口池                        | `host: frps.example.com`          |
+
+## Helm 与配置文件的关系
+
+Helm Chart 会把以下敏感值放入 Secret，并用环境变量覆盖配置文件中的空值：
+
+| 环境变量                      | 来源                | 说明       |
+| ------------------------- | ----------------- | -------- |
+| `CBCTF_GIN_JWT_SECRET`    | 应用 Secret         | JWT 签名密钥 |
+| `CBCTF_GORM_POSTGRES_PWD` | PostgreSQL Secret | 数据库密码    |
+| `CBCTF_REDIS_PWD`         | Redis Secret      | Redis 密码 |
+
+如果 `cbctf.gin.jwt.secret`、`postgres.auth.password` 或 `redis.auth.password` 留空，Chart 会在首次安装时生成随机值，并在升级时复用已有
+Secret。
+
+## 首次启动行为
+
+- 连接 PostgreSQL，创建 `pg_trgm` 扩展（失败只记录警告）
+- 自动迁移数据表
+- 初始化系统设置、品牌配置、权限、默认角色、默认分组、Cron 任务和 OAuth 默认项
+- 如果管理员组中没有用户，创建 `admin` 用户并将初始密码打印到日志
+
+## 在线配置
+
+管理后台提供系统配置页面，可查看和更新部分运行配置，也可以触发服务重启。生产环境仍建议将关键部署参数固化在 Helm
+values、Secret 或配置管理系统中，避免 Pod 重建后配置漂移。
+
+## 安全配置建议
+
+:::warning
+
+- 生产环境不要使用默认 `gin.jwt.secret`
+- 数据库、Redis、SMTP、OAuth、FRP token 使用强密码或随机密钥
+- `host`、`gin.cors`、Ingress 域名应保持一致
+- 部署在反向代理后时正确设置 `gin.proxies`
+- `/metrics` 只允许 Prometheus 或可信来源访问
+- 只将必要的目标加入 `webhook.whitelist`
+  :::
+
+
+
+---
+url: /deploy/separation.md
+---
+
+# 前后端分离
+
+CBCTF 默认将前端静态资源嵌入 Go 二进制，通过同一个服务地址提供 `/platform`。如果需要把前端单独托管到
+CDN、静态站点或其他域名，可以采用前后端分离方式。
+
+## 适用场景
+
+- 需要 CDN 加速前端资源
+- 前端需部署到独立域名
+- 希望前后端分别发布
+
+## 前端构建
+
+```bash
+git clone https://github.com/0RAYS/CBCTF.git
+cd CBCTF/frontend
+pnpm install
+```
+
+修改 `frontend/src/api/config.js`：
+
+```javascript
+export const API_CONFIG = {
+    BASE_URL: 'https://api.ctf.example.com',
+};
+```
+
+然后构建：
+
+```bash
+pnpm build
+```
+
+构建完成后，将 `frontend/dist/` 部署到任意静态托管环境。
+
+## 后端配置
+
+`config.yaml` 示例：
+
+```yaml
+host: https://api.ctf.example.com
+
+gin:
+  cors:
+    - https://ctf.example.com
+```
+
+- `host` 必须填写后端真实对外地址，OAuth 回调与邮件链接都会使用它
+- `gin.cors` 需要包含前端独立域名
+
+## OAuth 注意事项
+
+前后端分离时，OAuth 回调链路为：
+
+1. 第三方回调到后端 `https://api.ctf.example.com/oauth/{uri}/callback`
+2. 后端完成登录后重定向到 `https://api.ctf.example.com/platform/#/oauth/callback?...`
+
+:::warning
+当前代码默认仍依赖后端提供 `/platform` 下的前端回调页。若完全拆离前端托管位置，需要同步调整 OAuth 回调后的前端跳转逻辑。
+:::
+
+## Helm 场景
+
+若后端仍通过 Helm 部署，只需在 `values.yaml` 中设置：
+
+```yaml
+cbctf:
+  host: "https://api.ctf.example.com"
+  gin:
+    cors:
+      - "https://ctf.example.com"
+```
+
+
+
+---
+url: /deploy/troubleshooting.md
+---
+
+# 常见问题
+
+## 服务启动失败
+
+排查顺序：
+
+1. 查看应用日志：`kubectl logs -n cbctf deployment/cbctf`
+2. 检查 PostgreSQL 和 Redis Pod 是否 Ready
+3. 检查 Secret 中的数据库、Redis、JWT 配置是否正确
+4. 检查应用 ServiceAccount 是否绑定了 Chart 创建的 ClusterRole
+5. 如果使用 VPC 网络，检查 Kube-OVN 和 Multus
+6. 如果使用 VM 靶机，检查 KubeVirt 组件、CRD 和节点虚拟化能力
+
+## 数据库连接失败
+
+常见原因：
+
+- PostgreSQL Pod 未启动或 Service 名称不可解析
+- `postgres.auth.password` 与 Secret 中的密码不一致
+- 数据库 PVC 损坏、容量不足或权限异常
+- 外部数据库要求 SSL，但 `gorm.postgres.sslmode` 未设置为 `true`
+
+应用启动时会自动迁移数据库。如果迁移失败，服务会退出，需要先修复数据库连接或权限问题。
+
+## Redis 连接失败
+
+Redis 用于缓存和 Asynq 任务队列。连接失败会影响登录状态、限流、后台任务、邮件、Webhook、动态附件和靶机操作。
+
+排查方向：
+
+- Redis Pod、Service、Secret 是否正常
+- `redis.auth.password` 是否与运行中 Redis 一致
+- 网络策略或命名空间 DNS 是否阻断访问
+- Redis PVC 是否容量不足
+
+## 前端页面无法访问
+
+平台页面默认在 `/platform/` 下，根路径 `/` 会重定向到 `/platform`。前端使用 HashRouter，登录页路径是 `/platform/#/login`。
+
+排查方向：
+
+- 访问路径是否包含 `/platform/`
+- Ingress 是否把 `/` 路径转发到应用 Service
+- `cbctf.host` 是否为实际外部地址，且没有尾部 `/`
+- 浏览器控制台是否有 CORS 或资源加载错误
+
+## Helm 部署后无法访问
+
+排查方向：
+
+- `kubectl get ingress -n cbctf` 查看 Ingress 是否生成
+- 检查 IngressClass、域名解析、TLS Secret 和负载均衡地址
+- 检查 Service 端口是否为 `8000`，应用容器端口是否为 `cbctf.gin.port`
+- 使用 `kubectl port-forward -n cbctf svc/cbctf 8000:8000` 判断应用本身是否正常
+
+## 登录或 OAuth 跳转异常
+
+排查方向：
+
+- `cbctf.host` 必须是用户浏览器可访问的外部地址
+- OAuth 提供商回调地址应指向后端的 `/oauth/{provider}/callback`
+- 如果前后端分离，当前 OAuth 登录完成后仍默认跳回后端 `/platform/#/oauth/callback` 页面
+- 检查 `gin.cors` 是否包含前端来源
+
+## 上传失败
+
+排查方向：
+
+- `gin.upload` 是否小于上传文件大小
+- Ingress 或反向代理是否有更小的 body size 限制
+- `/app/data` PVC 是否可写、容量是否充足
+- 管理员或用户是否具备对应上传权限
+
+## 靶机无法启动
+
+排查方向：
+
+- 应用日志和任务日志是否有 Kubernetes API 错误
+- ServiceAccount 是否有创建 Pod、Service、NetworkPolicy、Job、Multus、KubeVirt、Kube-OVN 资源的权限
+- 题目镜像是否存在、tag 是否正确、节点是否能拉取
+- 集群 CPU、内存、存储或配额是否不足
+- 题目端口、资源、环境变量和 Flag 注入配置是否正确
+- VPC 模式是否安装 Kube-OVN/Multus，并配置节点标签
+- VM 模式是否安装 KubeVirt，service 是否配置 `x-kubevirt: true`、`mem_limit`、VPC 网络、静态 IP 和 MAC 地址
+- FRP 模式是否配置可用 FRPS、token 和端口池
+
+## KubeVirt VM 启动失败
+
+排查方向：
+
+- `kubectl get vm -n cbctf` 查看 `VirtualMachine` 是否创建
+- `kubectl describe vm <name> -n cbctf` 和 `kubectl describe vmi <name> -n cbctf` 查看 KubeVirt 事件
+- 检查 `kubevirt.io/virtualmachines` RBAC 是否包含 `create`、`get`、`deletecollection`
+- 检查 VM 镜像是否是可启动的 KubeVirt `containerDisk` 镜像
+- 检查节点是否支持虚拟化，KubeVirt 组件和 `virt-launcher` Pod 是否正常
+- 检查 compose 是否使用 VPC 网络，并为每张 VM 网卡配置合法的 `ipv4_address` 和 `mac_address`
+- 如果 cloud-init 未生效，检查镜像内是否安装并启用 cloud-init，`x-cloudinit.write_files` 路径和权限是否正确
+
+## 镜像拉取失败
+
+排查方向：
+
+- 镜像仓库地址、tag、平台架构是否正确
+- 私有仓库是否配置 `imagePullSecrets` 或 `imageCredentials`
+- 节点是否可以访问镜像仓库
+- 是否达到镜像仓库限流
+
+## 邮件发送失败
+
+排查方向：
+
+- 后台 SMTP 配置是否正确
+- Redis 和 Asynq 邮件队列是否正常
+- SMTP 服务是否允许集群出口访问
+- 发件账号、密码、TLS/端口设置是否符合服务商要求
+
+## Webhook 失败
+
+排查方向：
+
+- Webhook 目标是否在 `webhook.whitelist` 允许范围内
+- 集群是否能访问目标地址
+- 目标服务是否返回非 2xx 状态
+- 查看后台 Webhook 历史记录和任务日志
+
+## 安全建议
+
+:::warning
+
+- 首次登录后立即修改 `admin` 密码
+- 生产环境设置固定、足够长的 `gin.jwt.secret`
+- 数据库、Redis、SMTP、OAuth、FRP 使用强密码或随机密钥
+- 使用 HTTPS，并正确配置 Ingress TLS
+- 限制管理后台访问来源，按角色授予最小权限
+- Kubernetes RBAC 不要授予超过平台运行所需的权限
+- 为题目容器设置 CPU、内存、网络和命名空间隔离
+- 定期备份 PostgreSQL 和 `/app/data`
+- 不要公开 `config.yaml`、kubeconfig、Secret、私有镜像凭据和含敏感信息的日志
+  :::
+
+
+
+---
+url: /guide/features/challenge.md
+---
+
+# 题目类型
+
+CBCTF 支持三种题目类型，覆盖从传统静态题到复杂网络靶机的完整场景。
+
+## 类型概览
+
+| 特性            |    静态题   |   动态附件题   |   容器题  |
+| ------------- | :------: | :-------: | :----: |
+| 类型标识          | `static` | `dynamic` | `pods` |
+| 静态附件          |     ✓    |     —     |    ✓   |
+| 动态附件          |     —    |     ✓     |    —   |
+| 静态 Flag       |     ✓    |     ✓     |    ✓   |
+| 动态 Flag       |     —    |     ✓     |    ✓   |
+| UUID Flag     |     —    |     ✓     |    ✓   |
+| 容器靶机          |     —    |     —     |    ✓   |
+| 需要 Kubernetes |     —    |     ✓     |    ✓   |
+
+## 静态题（static）
+
+静态题为最简单的 CTF 传统题型，题目附件和 flag 对所有队伍相同。
+
+- 上传静态附件，所有队伍共享下载
+- flag 使用 `static{}` 类型（所有队伍相同），也支持 `leet{}` 和 `uuid{}`（每队不同，但无法通过附件向选手传达个人 flag）
+- 不需要 Kubernetes
+
+## 动态附件题（dynamic）
+
+动态附件题为每支队伍独立生成附件，通常配合动态 flag 使用，防止抄答案。
+
+- 需要出题人编写生成器 Docker 镜像，平台在 Kubernetes 中运行生成器容器
+- 附件按队伍独立生成，每支队伍下载不同的 zip
+- flag 类型支持 `static{}`、`leet{}`、`uuid{}`
+- 需要 Kubernetes 集群
+
+详见[动态附件生成](/guide/features/attachment.md)。
+
+## 容器题（pods）
+
+容器题为每支队伍部署独立的靶机容器，由出题人编写 `docker-compose.yaml` 配置。
+
+- 每队拥有独立的容器实例，互不干扰
+- 支持 Pod 网络模式（简单多容器）、VPC 网络模式（复杂网络拓扑）和 KubeVirt VM 模式
+- `docker-compose.yaml` 支持 service 级扩展字段 `x-kubevirt: true`，用于标记该 service 按 KubeVirt VM 配置处理；可配合
+  `x-boot` 和 `x-cloudinit` 传递启动与 cloud-init 字段配置
+- flag 通过环境变量或文件 volume 注入容器
+- 需要 Kubernetes 集群（VPC 模式还需要 Kube-OVN + Multus，VM 模式还需要 KubeVirt）
+
+详见[动态靶机](/guide/features/container.md)。
+
+## 题目测试模式
+
+管理员可在将题目加入比赛之前，通过题目测试模式启动/停止容器靶机进行验证，无需创建队伍。
+
+详见[题目管理 - 题目测试模式](/admin/challenges.md#题目测试模式)。
+
+
+
+---
+url: /guide/features/flag.md
+---
+
+***
+
+title: Flag 规则
+description: 说明 CBCTF 的 static、leet 和 uuid Flag 类型及多队伍动态 Flag 行为。
+-----------------------------------------------------------------
+
+# Flag 规则
+
+CBCTF 支持三种 flag 类型，每道题可配置多个 flag，每个 flag 独立计分。
+
+## Flag 类型
+
+| 类型   | 配置格式              | 生成结果（前缀 `CBCTF`）                              | 特点              |
+| ---- | ----------------- | --------------------------------------------- | --------------- |
+| 静态   | `static{content}` | `CBCTF{content}`                              | 所有队伍相同          |
+| 动态   | `leet{template}`  | `CBCTF{ThiliS-iS-4_Dyn4MIC_FLaG}`             | 每队不同，**长度可变**   |
+| UUID | `uuid{}`          | `CBCTF{550e8400-e29b-41d4-a716-446655440000}` | 每队不同，标准 UUID 格式 |
+
+:::info
+flag 的实际前缀由比赛配置中的 `prefix` 字段决定，而非固定为 `CBCTF`。
+:::
+
+## 静态 Flag
+
+```text
+配置: static{this_is_a_static_flag}
+生成: CBCTF{this_is_a_static_flag}
+```
+
+所有队伍的 flag 内容相同。适用于所有题目类型。
+
+## 动态 Flag
+
+```text
+配置: leet{this_is_a_leet_flag}
+生成: CBCTF{ThiliS-iS-4_Dyn4MIC_FLaG}
+```
+
+基于模板随机替换字符，保持可读性。**生成结果的长度可能与模板长度不同**，题目设计中不得依赖 flag 长度。
+
+## UUID Flag
+
+```text
+配置: uuid{}
+生成: CBCTF{550e8400-e29b-41d4-a716-446655440000}
+```
+
+标准 UUID v4 格式，长度固定，每队不同。
+
+## Flag 注入方式
+
+
+**动态附件题**
+
+### 动态附件题
+平台自动调用生成器容器中的 `/root/run.sh` 脚本，将 flag 作为参数传入：
+```bash
+/root/run.sh {team_id} {base64(base64(flag1),base64(flag2),...)}
+```
+示例（team\_id=1，两个 flag）：
+```bash
+/root/run.sh 1 UTBKRFZFWjdabXhoWnpGOSxRMEpEVkVaN1pteGhaejo5
+```
+其中第二个参数为 `base64(base64("CBCTF{flag1}") + "," + base64("CBCTF{flag2}"))` 的结果。
+
+
+**容器题：环境变量**
+
+### 容器题：环境变量注入
+环境变量名必须以 `FLAG_` 为前缀，平台在启动容器时替换 flag 值：
+```yaml
+services:
+  web:
+    image: nginx:latest
+    environment:
+      - FLAG_1=leet{this_is_a_dynamic_flag}
+      - FLAG_2=static{this_is_a_static_flag}
+      - FLAG_3=uuid{}
+    ports:
+      - "80:80"
+```
+
+
+**容器题：文件**
+
+### 容器题：文件注入
+通过 service 下的 `x-volumes` 扩展字段配置，平台将文件内容写入容器内的指定路径（通过 Kubernetes ConfigMap +
+VolumeMount 实现）。`content` 中可嵌入任意数量的 flag 模板，也可包含其他非 flag 内容：
+```yaml
+services:
+  web:
+    image: nginx:1.25
+    x-kubevirt: false
+    x-volumes:
+      - path: /flag
+        content: uuid{}
+      - path: /etc/app/config.env
+        content: |
+          APP_MODE=prod
+          SECRET_KEY=static{shared_secret}
+          FLAG=leet{another_flag}
+      - path: /home/ctf/readme.txt
+        content: |
+          Welcome to the challenge!
+          The flag is hidden somewhere on this machine.
+    ports:
+      - "80:80"
+```
+每个 `x-volumes` 条目对应容器内一个文件。`content` 中出现的 `static{}`、`leet{}` 或 `uuid{}` 会被识别为 flag
+模板并在启动时替换为实际 flag 值，其余内容原样写入文件。
+
+
+## Flag 生成时机
+
+队伍的 flag **仅在初始化（init）或重置（reset）时生成**，容器重启不重新生成 flag。
+
+- 选手重启容器不会改变 flag
+- 选手执行「重置题目」时会生成新 flag，旧 flag 失效
+- 题目测试模式（admin）不产生真实 flag 记录
+
+## 多 Flag 配置
+
+每道题可配置多个 flag，每个 flag 独立计分。选手提交其中任一 flag 即可获得对应分数，提交所有 flag 可获得该题目的全部分数。
+
+Flag 前缀由所在比赛的 `prefix` 字段配置，不同比赛可以使用不同前缀（如 `flag`、`CTF`、`CBCTF`）。
+
+
+
+---
+url: /guide/features/scoring.md
+---
+
+***
+
+title: 计分系统
+description: 说明 CBCTF 的静态、线性、对数计分方式，以及一血、二血、三血奖励。
+-------------------------------------------------
+
+# 计分系统
+
+CBCTF 支持三种计分类型，可在比赛中对每个 flag 独立配置。
+
+## 计分类型概览
+
+| 类型   | 特点                       |
+| ---- | ------------------------ |
+| 静态分数 | 固定分值，不随解题人数变化            |
+| 线性分数 | 每多一人解题，分数线性递减至下限         |
+| 对数分数 | 前期降分快，后期趋于平稳，最真实的 CTF 体验 |
+
+## 参数说明
+
+| 参数         | 默认值    | 说明                 |
+| ---------- | ------ | ------------------ |
+| `Score`    | `1000` | 初始分值（第 0 人解题时的分数）  |
+| `MinScore` | `100`  | 分数下限，解题人数再多也不低于此值  |
+| `Decay`    | `50`   | 衰减控制参数（含义因类型而异，见下） |
+
+## 计分类型
+
+
+**静态分数**
+
+### 静态分数
+```
+score = Score
+```
+分数固定不变，不受解题人数影响。
+**示例**：Score=500，无论多少人解题，每人得 500 分。
+适用场景：难度固定的题目，或不希望使用动态计分的比赛。
+
+
+**线性分数**
+
+### 线性分数
+```
+score = max(Score - Decay × solvers, MinScore)
+```
+其中 `solvers` 为解题人数，`Decay` 为每多一人解题扣除的分数。
+**示例**（Score=1000, MinScore=100, Decay=20）：
+| 解题人数 |      分数 |
+| ---: | ------: |
+|    0 |    1000 |
+|   10 |     800 |
+|   20 |     600 |
+|   40 |     200 |
+|  50+ | 100（下限） |
+适用场景：竞争性较强、参赛人数较少的比赛。
+
+
+**对数分数**
+
+### 对数分数
+```
+score = (Score - MinScore) × exp(-5/Decay × solvers) + MinScore
+```
+`Decay` 控制衰减速率，值越大衰减越慢。`k = 5 / Decay`。
+**示例**（Score=1000, MinScore=100, Decay=50）：
+| 解题人数 | 分数（近似） |
+| ---: | -----: |
+|    0 |   1000 |
+|   10 |    835 |
+|   25 |    669 |
+|   50 |    451 |
+|  100 |    202 |
+|  200 |    102 |
+前期降分较快，后期趋于平稳。适用场景：大型 CTF 比赛，题目难度分布合理。
+
+
+## 三血奖励（Blood Bonus）
+
+当比赛的 `blood` 字段启用时，首血、二血、三血额外获得初始分的奖励：
+
+| 名次 | 奖励比例 | 示例（Score=1000） |
+| -- | :--: | -------------: |
+| 首血 |  +5% |          +50 分 |
+| 二血 |  +3% |          +30 分 |
+| 三血 |  +1% |          +10 分 |
+
+奖励基于 `Score`（初始分值），与当前实际得分无关。
+
+## 多 Flag 题目
+
+每道题可配置多个 flag，每个 flag 独立设置计分类型和参数，每个 flag 独立计分。
+
+选手每次提交，平台定时重算该 flag 的分数并更新排行榜。
+
+## 分数重算
+
+平台通过定时任务进行分数重算，可在定时任务管理处进行配置频率
+
+
+
+---
+url: /guide/features/attachment.md
+---
+
+# 动态附件生成
+
+## 附件类型
+
+| 类型   | 适用题型    | 说明                   |
+| ---- | ------- | -------------------- |
+| 静态附件 | 静态题、容器题 | 上传一次，所有队伍共享          |
+| 动态附件 | 动态附件题   | 每队单独生成，依赖 Kubernetes |
+
+## 工作流程
+
+动态附件不会根据配置自动常驻启动生成器池。当前实现是：
+
+
+### 管理员先在后台启动生成器 Pod
+### 队伍初始化或重置题目时，平台从可用生成器中随机选择一个
+### 平台在容器内执行 `./run.sh {team_id} {flags}`
+### 等待输出文件写入共享卷
+### 将 `{team_id}.zip` 提供给队伍下载
+
+:::warning
+如果没有提前启动生成器，动态附件题会因"无可用生成器"而无法初始化。
+:::
+
+## 生成器要求
+
+### 容器启动方式
+
+平台会以 `sleep infinity` 覆盖镜像入口，保持生成器容器常驻。因此镜像内**必须存在 `sleep` 命令**。
+
+### 可选上传 `generator.zip`
+
+若题目上传了 `generator.zip`，平台会在容器内执行：
+
+```bash
+unzip /root/mnt/generator.zip -d /root
+```
+
+因此镜像还**必须包含 `unzip`**。
+
+### 执行入口
+
+平台执行命令：
+
+```bash
+./run.sh {team_id} {base64(base64(flag1),base64(flag2),...)}
+```
+
+参数说明：
+
+- `$1`：队伍 ID
+- `$2`：多 Flag 的二次 Base64 编码结果
+
+### 输出路径
+
+生成结果必须写入：
+
+```text
+/root/mnt/attachments/{team_id}.zip
+```
+
+平台只会读取这个固定路径。
+
+## 示例脚本
+
+```bash
+#!/bin/bash
+TEAM_ID=$1
+FLAGS_B64=$2
+
+FLAGS=$(echo "$FLAGS_B64" | base64 -d | tr ',' '\n' | while read f; do echo "$f" | base64 -d; done)
+FLAG1=$(echo "$FLAGS" | head -1)
+
+mkdir -p /tmp/challenge
+echo "$FLAG1" > /tmp/challenge/flag.txt
+
+mkdir -p /root/mnt/attachments
+zip -j /root/mnt/attachments/${TEAM_ID}.zip /tmp/challenge/*
+```
+
+## 注意事项
+
+1. 镜像必须包含 `sleep` 与 `unzip`
+2. 脚本入口固定为 `/root/run.sh` 或当前工作目录下的 `./run.sh`
+3. 输出文件必须是 `/root/mnt/attachments/{team_id}.zip`
+4. 动态 Flag 的实际结果可能与模板字符表现不同，题目逻辑不要依赖固定字符形态
+5. 共享存储不可用时，动态附件无法生成
+
+## 管理入口
+
+生成器支持两种管理方式：
+
+- **全局生成器**：`/admin/generators`，仅用于全局管理和测试附件生成，此处启动的生成器无法被赛事用于生成附件
+- **比赛专用生成器**：`/admin/contests/{contestID}/generators`，可被全局管理关闭和查看
+
+须在比赛开始前，通过赛事专用生成器管理启动动态附件题所需的生成器实例。
+
+
+
+---
+url: /guide/features/container.md
+---
+
+# 动态靶机
+
+容器题类型为 `pods`。选手启动题目后，平台会为队伍创建独立的 Kubernetes 资源，并在页面返回可访问端点。管理员可以在后台查看、预热、停止靶机，并下载流量文件。
+
+## 基础要求
+
+| 要求         | 说明                                                                                          |
+| ---------- | ------------------------------------------------------------------------------------------- |
+| Kubernetes | 动态靶机由 Kubernetes 调度                                                                         |
+| 命名空间       | `k8s.namespace` 必须存在，Helm 部署时为 Release namespace                                            |
+| RBAC       | 应用需要创建/删除 Pod、Service、NetworkPolicy、Job、Multus、Kube-OVN 和 KubeVirt `VirtualMachine` 相关资源的权限 |
+| 镜像拉取       | 集群节点必须能拉取题目镜像、流量捕获镜像和 FRP 镜像                                                                |
+| 存储         | 题目附件、流量文件、动态附件依赖 `/app/data` 数据卷                                                            |
+| 可选网络组件     | VPC 模式需要 Kube-OVN 和 Multus CNI，VM 模式额外需要 KubeVirt                                           |
+
+## Pod 网络模式
+
+Pod 模式适合单 Pod 内多容器共享网络命名空间的题目。所有容器在同一个 Kubernetes Pod 中运行，容器之间通过 `localhost:port`
+通信。
+
+适用场景：
+
+- 简单 Web、Pwn、Misc 服务
+- 多个辅助容器需要共享本地网络
+- 不需要为每个容器配置静态 IP
+
+:::tip
+容器间不应依赖 Docker Compose 的服务名访问，应使用 `localhost`。
+:::
+
+## VPC 网络模式
+
+VPC 模式适合需要多子网、静态 IP、网络隔离或模拟内网拓扑的题目。平台会基于 Kube-OVN 和 Multus 为队伍创建独立网络资源。
+
+使用 VPC 模式前需要：
+
+- 安装 Kube-OVN
+- 安装 Multus CNI
+
+:::tip
+须为每个容器配置静态 IP，容器间通信通过配置的 IP 进行访问
+:::
+
+## KubeVirt VM 模式
+
+KubeVirt VM 模式用于把某个 `docker-compose.yaml` service 按 KubeVirt `VirtualMachine` 创建，而不是创建普通 Kubernetes
+Pod。
+
+在 compose 中为 service 设置 `x-kubevirt: true` 即可启用 VM 模式。代码会额外校验以下字段：
+
+| 字段                        | 要求                                   |
+| ------------------------- | ------------------------------------ |
+| `networks`                | 必须选择自定义 VPC 网络，不能只使用默认网络             |
+| `networks.*.ipv4_address` | 必填，且必须在对应网络 `subnet` 范围内             |
+| `networks.*.mac_address`  | VM 模式必填，格式必须是合法 MAC 地址               |
+| `mem_limit`               | VM 模式必填，会映射到 VM 内存限制                 |
+| `cpus`                    | 可选，会换算为 CPU milli limit              |
+| `x-boot.bootloader`       | 可选，只支持 `bios` 或 `efi`                |
+| `x-boot.secure_boot`      | 可选，仅 `bootloader: efi` 时有意义          |
+| `x-cloudinit`             | 可选，会渲染为 `CloudInitNoCloud` user data |
+
+最小示例：
+
+```yaml
+services:
+  vm1:
+    image: registry.example.com/challenges/vm-web:latest
+    cpus: 0.5
+    mem_limit: 512m
+    x-kubevirt: true
+    x-boot:
+      bootloader: efi
+      secure_boot: false
+    x-cloudinit:
+      users:
+        - name: ctf
+          groups:
+            - sudo
+          sudo:
+            - ALL=(ALL) NOPASSWD:ALL
+          shell: /bin/bash
+          plain_text_passwd: changeme
+      write_files:
+        - path: /etc/motd
+          content: |
+            Welcome to CBCTF VM.
+    networks:
+      network1:
+        ipv4_address: 192.168.0.2
+        mac_address: "00:00:00:00:01:01"
+
+networks:
+  network1:
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+          gateway: 192.168.0.1
+```
+
+:::warning\{title="VM 模式注意事项"}
+`command`、`working_dir`、普通环境变量和 `x-volumes` 不会被注入到 KubeVirt VM，请使用 `x-cloudinit.write_files` 写入文件和
+Flag
+
+`x-cloudinit.write_files[*].content` 中出现的 `static{}`、`leet{}` 或 `uuid{}` 会被识别为 flag 模板并在启动时替换为实际值
+
+`ports` 不被使用，虚拟机不可直接暴露端口，访问路径需按题目设计单独设计
+
+VM 必须接入至少一个 VPC 网络
+:::
+
+## 端口暴露
+
+| 模式         | 说明                                                         |
+| ---------- | ---------------------------------------------------------- |
+| 默认暴露       | 普通 Pod service 创建 Kubernetes Service，并返回可访问端点              |
+| FRP 暴露     | 当 `k8s.frp.on` 为 `true` 时，通过 FRPS 服务端和分配端口暴露普通 Pod service |
+| VM service | 不创建 Service、NodePort、FRP 转发或访问端点                           |
+
+## 流量捕获
+
+容器题可使用 `k8s.capture` 配置的镜像进行流量捕获。管理员可在靶机或队伍详情中查看并下载 pcap 文件。
+
+## 常见问题
+
+| 问题          | 排查方向                                                              |
+| ----------- | ----------------------------------------------------------------- |
+| 靶机启动失败      | 查看应用日志、任务日志和对应 Kubernetes Pod/Event                               |
+| 提示权限不足      | 检查 ServiceAccount、ClusterRole、ClusterRoleBinding 是否存在             |
+| 镜像拉取失败      | 检查镜像名、tag、架构、网络、私有仓库凭据和 `imagePullSecrets`                        |
+| Pod Pending | 检查节点资源、调度约束、PVC、镜像拉取和资源限制                                         |
+| VM 创建失败     | 检查 KubeVirt 是否安装、`virtualmachines` RBAC、节点虚拟化能力和 containerDisk 镜像 |
+| 页面没有访问地址    | 普通 Pod 题检查暴露端口、Service、FRP 配置；VM 题不会由 `ports` 自动生成访问地址            |
+| VPC/VM 模式失败 | 检查 Kube-OVN、Multus、KubeVirt、静态 IP 和 MAC 地址                        |
+
+## 运维建议
+
+- 为题目容器设置合理 CPU 和内存，避免单个队伍耗尽集群资源
+- 为 VM 题设置更保守的资源限制，并在比赛前压测节点可承载的 VM 数量
+- 比赛前预热镜像和关键靶机，确认普通 Pod 端口、VPC 网络和 KubeVirt VM 启动正常
+- 比赛期间监控 Pod Pending、ImagePullBackOff、OOMKilled 和任务队列积压
+- 比赛结束后清理靶机、检查 PVC 容量并备份必要文件
+
+
+
+---
+url: /guide/features/contest.md
+---
+
+# 比赛配置
+
+比赛（Contest）是 CBCTF 的核心组织单元，每场比赛包含独立的题目集、队伍、排行榜和作弊检测记录。
+
+## 比赛状态
+
+| 状态        | 条件                                   | 说明                    |
+| --------- | ------------------------------------ | --------------------- |
+| `coming`  | 当前时间 \< `start`                      | 比赛未开始，参赛者可加入队伍但无法看到题目 |
+| `running` | `start` ≤ 当前时间 \< `start + duration` | 比赛进行中，题目可见（非隐藏比赛）     |
+| `over`    | 当前时间 ≥ `start + duration`            | 比赛已结束，不再接受提交          |
+
+## 字段参考
+
+| 字段              | 类型        | 说明                                                               |
+| --------------- | --------- | ---------------------------------------------------------------- |
+| `name`          | string    | 比赛名称                                                             |
+| `description`   | string    | 比赛介绍（支持 Markdown）                                                |
+| `prefix`        | string    | Flag 前缀，替换 `static{}/leet{}/uuid{}` 的输出前缀，如 `flag`、`CTF`、`CBCTF` |
+| `size`          | int       | 最大队伍人数                                                           |
+| `start`         | datetime  | 比赛开始时间                                                           |
+| `duration`      | int       | 比赛持续时长（秒）                                                        |
+| `blood`         | bool      | 是否启用三血奖励                                                         |
+| `hidden`        | bool      | 隐藏比赛（不出现在公开列表，仅邀请制）                                              |
+| `captcha`       | bool      | 加入队伍时是否需要验证码                                                     |
+| `victims_count` | int       | 每队最大同时运行靶机数                                                      |
+| `rules`         | string    | 比赛规则（支持 Markdown）                                                |
+| `prizes`        | \[]object | 奖励配置，`[{amount, description}]`                                   |
+| `timelines`     | \[]object | 时间线，`[{date, title, description}]`                               |
+
+## Flag 前缀
+
+`prefix` 字段决定比赛中所有 flag 的实际输出格式：
+
+```
+static{content}  →  {prefix}{content}
+leet{content}    →  {prefix}{随机内容}
+uuid{}           →  {prefix}{uuid}
+```
+
+例如，`prefix: "flag"` 则选手提交 `flag{...}`；`prefix: "CBCTF"` 则提交 `CBCTF{...}`。
+
+## 公告系统
+
+管理员可发布公告，参赛者可在比赛公告页面实时查看。
+
+## 奖励配置
+
+```json
+[
+  {
+    "amount": "一等奖",
+    "description": "¥5000"
+  },
+  {
+    "amount": "二等奖",
+    "description": "¥3000"
+  }
+]
+```
+
+## 时间线
+
+```json
+[
+  {
+    "date": "2025-01-01T09:00:00Z",
+    "title": "比赛开始",
+    "description": ""
+  },
+  {
+    "date": "2025-01-01T12:00:00Z",
+    "title": "线上破题截止",
+    "description": ""
+  }
+]
+```
+
+## 排行榜
+
+比赛提供三种视图：
+
+- **总分排名**：实时总分排序，支持队伍搜索
+- **时间线视图**：各队分数随时间变化的折线图
+- **计分板（Scoreboard）**：横轴为队伍，纵轴为题目，展示每道题的完成情况
+
+## Writeup 管理
+
+比赛结束后，参赛队伍可上传 Writeup（PDF 或 ZIP 格式）。管理员可从后台按队下载 Writeup。
+
+## 题目管理
+
+在比赛中，可从全局题库添加题目。添加时可覆盖以下字段（仅对本场比赛生效，不修改全局题库）：
+
+| 字段              | 说明                |
+| --------------- | ----------------- |
+| `name`          | 比赛中显示的题目名称        |
+| `description`   | 比赛中显示的题目描述        |
+| `category`      | 题目分类              |
+| `tags`          | 题目标签              |
+| `hints`         | 提示内容              |
+| `hidden`        | 是否在比赛中隐藏该题目       |
+| `attempt_limit` | 提交尝试次数限制（0 表示无限制） |
+
+每个 flag 的计分参数（`score_type`、`Score`、`MinScore`、`Decay`）也在比赛层级独立配置。
+
+
+
+---
+url: /guide/features/auth.md
+---
+
+# 认证与 OAuth
+
+## 本地认证
+
+CBCTF 默认使用用户名 + 密码登录。
+
+### JWT 配置
+
+| 配置项              | 说明               |
+| ---------------- | ---------------- |
+| `gin.jwt.secret` | JWT 签名密钥，必须替换默认值 |
+
+### 设备绑定
+
+前端会使用 FingerprintJS 生成设备标识，并通过请求头 `X-M` 发送给后端。JWT 中也会绑定该标识；若同一账号从不同设备使用，可能触发
+`token_magic` 作弊检测。
+
+### 邮箱验证
+
+需要先配置 SMTP，并为用户分配 `self:activate` 权限。用户调用 `POST /me/activate` 后，平台发送验证邮件；用户访问邮件中的
+`/verify` 链接后，账号会被标记为已验证。
+
+## OAuth / OIDC
+
+平台支持配置多个 OAuth / OIDC 提供商。公开入口为：
+
+- `GET /oauth`
+- `GET /oauth/{uri}`
+- `GET /oauth/{uri}/callback`
+- `GET /oauth/token`
+
+后端完成第三方回调后，会跳转到前端 `#/oauth/callback` 页面继续登录流程。
+
+### OAuth 配置字段
+
+| 字段                  | 说明                       |
+| ------------------- | ------------------------ |
+| `provider`          | 提供商名称                    |
+| `auth_url`          | 授权端点                     |
+| `token_url`         | Token 端点                 |
+| `user_info_url`     | 用户信息端点                   |
+| `callback_url`      | 第三方回调地址                  |
+| `client_id`         | 客户端 ID                   |
+| `client_secret`     | 客户端密钥                    |
+| `uri`               | 平台路由标识，对应 `/oauth/{uri}` |
+| `id_claim`          | 用户 ID 提取表达式              |
+| `name_claim`        | 用户名提取表达式                 |
+| `email_claim`       | 邮箱提取表达式                  |
+| `picture_claim`     | 头像提取表达式                  |
+| `description_claim` | 简介提取表达式                  |
+| `groups_claim`      | 用户组字段                    |
+| `admin_group`       | 命中后自动加入 `admin` 用户组的组名   |
+| `default_group`     | 首次登录后自动加入的默认分组           |
+| `on`                | 是否启用该提供商                 |
+
+### GitHub 示例
+
+GitHub OAuth App 回调地址示例：`https://your.domain.com/oauth/github/callback`
+
+```json
+{
+  "provider": "Github",
+  "auth_url": "https://github.com/login/oauth/authorize",
+  "token_url": "https://github.com/login/oauth/access_token",
+  "user_info_url": "https://api.github.com/user",
+  "callback_url": "https://your.domain.com/oauth/github/callback",
+  "client_id": "your-client-id",
+  "client_secret": "your-client-secret",
+  "uri": "github",
+  "id_claim": "{id}",
+  "name_claim": "{name}",
+  "email_claim": "{email}",
+  "picture_claim": "{picture_url}",
+  "description_claim": "{bio}"
+}
+```
+
+## 注册控制
+
+| 配置                            | 说明               |
+| ----------------------------- | ---------------- |
+| `registration.enabled: true`  | 开放公开注册           |
+| `registration.enabled: false` | 禁止自助注册，仅管理员可创建用户 |
+| `registration.default_group`  | 注册用户自动加入的分组 ID   |
+
+## 多提供商并存
+
+平台可同时启用本地登录和多个 OAuth 提供商。登录页会展示所有启用的提供商入口。
+
+
+
+---
+url: /guide/features/webhook.md
+---
+
+# Webhook
+
+Webhook 允许平台在特定事件发生时，向外部系统（Slack、Discord、自动化脚本等）发送 HTTP 通知。
+
+## Webhook 字段
+
+| 字段        | 类型        | 说明                                                 |
+| --------- | --------- | -------------------------------------------------- |
+| `name`    | string    | Webhook 名称（仅用于标识）                                  |
+| `url`     | string    | 目标 URL                                             |
+| `method`  | string    | HTTP 方法（`POST`、`GET` 等）                            |
+| `headers` | object    | 自定义 HTTP 请求头，如 `{"Authorization": "Bearer token"}` |
+| `timeout` | int       | 请求超时（毫秒）                                           |
+| `retry`   | int       | 失败后重试次数                                            |
+| `on`      | bool      | 是否启用此 Webhook                                      |
+| `events`  | \[]string | 订阅的事件类型列表                                          |
+
+## 触发事件
+
+Webhook 支持订阅平台的多种事件，主要包括：
+
+**用户事件**
+
+- 用户注册、登录、修改信息
+
+**比赛事件**
+
+- 比赛创建、开始、结束
+
+**队伍事件**
+
+- 队伍创建、加入、退出
+
+**题目事件**
+
+- 题目初始化、重置、靶机启停
+
+**Flag 事件**
+
+- Flag 提交成功（`flag_correct`）
+- Flag 提交错误（`flag_wrong`）
+- 首血、二血、三血事件
+
+## 投递历史
+
+每个 Webhook 都维护投递历史记录，包含：
+
+- `success`：累计成功投递次数
+- `failure`：累计失败投递次数
+- 最后成功/失败时间
+- 详细历史日志（包含完整请求和响应内容）
+
+通过 `GET /admin/webhook/:webhookID/history` 查看。
+
+## 安全配置
+
+在 `config.yaml` 中配置 Webhook 目标 URL 白名单：
+
+```yaml
+webhook:
+  whitelist:
+    - "https://hooks.slack.com/"
+    - "https://discord.com/api/webhooks/"
+```
+
+配置后，平台仅允许向匹配前缀的 URL 发送 Webhook 请求，防止 SSRF 攻击。留空 `[]` 表示不限制。
+
+## 自定义认证
+
+通过 `headers` 字段添加认证信息：
+
+```json
+{
+  "Authorization": "Bearer your-token",
+  "X-Secret": "your-secret"
+}
+```
+
+## 重试机制
+
+Webhook 投递通过 Asynq 异步队列处理。若请求失败（超时、非 2xx 响应），按 `retry` 配置的次数自动重试，重试间隔指数递增。
+
+## 示例：Slack 通知
+
+```json
+{
+  "name": "Slack Flag 通知",
+  "url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "timeout": 5000,
+  "retry": 3,
+  "on": true,
+  "events": [
+    "flag_correct",
+    "first_blood",
+    "second_blood",
+    "third_blood"
+  ]
+}
+```
+
+
+
+---
+url: /admin/overview.md
+---
+
+# 管理后台概览
+
+管理后台入口为 `/platform/#/admin`。用户需要拥有管理员角色，或通过 RBAC 获得相应管理接口权限后才能访问对应页面。
+
+## 初始管理员
+
+平台首次启动且管理员组中没有用户时，会自动创建 `admin` 用户，并把初始密码打印到日志：
+
+```text
+Init Admin: Admin{ name: admin, password: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, email: admin@0rays.club}
+```
+
+Helm 部署查看方式：
+
+```bash
+kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
+```
+
+:::warning
+首次登录后请立即修改密码。
+:::
+
+## 常用管理流程
+
+
+### 登录后台，先在系统状态页确认数据库、Redis、任务队列和运行状态正常
+### 在用户、分组、角色权限中创建管理员、主办方或普通用户，并按需分配权限
+### 在题目管理中创建题目，配置附件、Flag、动态生成器或容器靶机
+### 对容器题使用测试启动，确认镜像、端口、Flag 注入和访问地址正常
+### 在比赛管理中创建比赛，设置时间、队伍人数、规则、奖项、公告和题目
+### 比赛前按需预热镜像、生成器或靶机
+### 比赛期间查看队伍、提交、排行榜、公告、作弊记录、任务和运行中的靶机
+### 比赛结束后下载 Writeup、流量文件或附件，并清理不再需要的靶机和文件
+
+## 后台页面
+
+
+**系统后台**
+
+| 页面         | 说明                      |
+| ---------- | ----------------------- |
+| Dashboard  | 查看系统状态                  |
+| Contests   | 创建和管理比赛                 |
+| RBAC       | 管理用户、分组、角色和权限           |
+| Challenges | 管理题库、附件、Flag、动态附件和容器题测试 |
+| Victims    | 查看和停止运行中的靶机，查看流量        |
+| Generators | 查看和控制动态附件生成器            |
+| Images     | 预热题目镜像                  |
+| OAuth      | 管理 OAuth/OIDC 登录提供商     |
+| SMTP       | 管理邮件发送配置和邮件记录           |
+| CronJobs   | 查看和更新后台 Cron 任务         |
+| Webhook    | 管理出站 Webhook 和历史记录      |
+| Branding   | 配置站点名称、Logo、首页文案等品牌信息   |
+| Files      | 查看、下载、删除平台文件            |
+| Tasks      | 查看后台任务和实时任务状态           |
+| System     | 查看和更新系统配置，触发重启          |
+| Logs       | 查看平台日志                  |
+
+
+**比赛管理**
+
+| 页面         | 说明                         |
+| ---------- | -------------------------- |
+| Settings   | 比赛基础信息、时间、规则、奖项等           |
+| Notices    | 比赛公告                       |
+| Challenges | 比赛题目和比赛内 Flag              |
+| Scoreboard | 排行榜和排名时间线                  |
+| Teams      | 队伍、成员、提交、Flag、Writeup、靶机历史 |
+| Images     | 比赛题目镜像预热                   |
+| Victims    | 比赛内靶机预热、查看和停止              |
+| Generators | 比赛内动态附件生成器管理               |
+| Cheats     | 作弊检测记录                     |
+
+
+## 角色和权限
+
+系统初始化默认角色：
+
+| 角色          | 说明                                  |
+| ----------- | ----------------------------------- |
+| `admin`     | 系统管理员，拥有全部权限                        |
+| `organizer` | 赛事主办方，拥有比赛、题目、队伍、公告、作弊、比赛内靶机等管理权限   |
+| `user`      | 普通选手，拥有参赛、队伍、题目、提交、靶机控制和 Writeup 权限 |
+
+:::tip
+后台导航会根据当前用户可访问接口过滤。授权后如果页面仍不可见，重新登录或检查 `/me/permissions` 返回的权限列表。
+:::
+
+
+
+---
+url: /admin/rbac.md
+---
+
+# 权限与角色
+
+## RBAC 模型
+
+CBCTF 使用基于角色的访问控制（RBAC）：
+
+```
+权限（Permission）→ 角色（Role）→ 用户（User）
+```
+
+- **权限**：对特定 API 路由的访问授权，由系统内置，不可自定义
+- **角色**：权限的集合，可自定义创建
+- **用户**：可分配多个角色，权限取所有角色权限的并集
+
+## 内置角色
+
+| 角色          | 说明                          |
+| ----------- | --------------------------- |
+| `admin`     | 拥有所有权限，超级管理员                |
+| `organizer` | 默认无权限，需管理员手动配置权限子集          |
+| `user`      | 默认参赛用户权限（`self:*`、`user:*`） |
+
+## 完整权限清单
+
+### self — 用户自身
+
+| 权限              | 说明                   |
+| --------------- | -------------------- |
+| `self:read`     | 查看自身信息（登录必须，撤销后无法登录） |
+| `self:update`   | 更新自身信息（修改密码、头像等）     |
+| `self:delete`   | 删除自身账号               |
+| `self:activate` | 发送激活邮件（触发邮箱验证）       |
+
+### user:contest — 比赛（用户视角）
+
+| 权限                  | 说明         |
+| ------------------- | ---------- |
+| `user:contest:read` | 查看比赛详情     |
+| `user:contest:rank` | 查看比赛排名和计分板 |
+
+### user:team — 队伍操作
+
+| 权限                 | 说明     |
+| ------------------ | ------ |
+| `user:team:create` | 创建队伍   |
+| `user:team:join`   | 加入队伍   |
+| `user:team:read`   | 查看队伍信息 |
+| `user:team:update` | 更新队伍信息 |
+| `user:team:delete` | 解散队伍   |
+
+### user:challenge — 题目操作
+
+| 权限                      | 说明              |
+| ----------------------- | --------------- |
+| `user:challenge:list`   | 查看题目列表          |
+| `user:challenge:read`   | 查看题目详情和下载附件     |
+| `user:challenge:init`   | 初始化动态附件或容器靶机    |
+| `user:challenge:reset`  | 重置题目（重新生成 flag） |
+| `user:challenge:submit` | 提交 flag         |
+
+### user:victim — 靶机控制
+
+| 权限                    | 说明         |
+| --------------------- | ---------- |
+| `user:victim:control` | 启动、延长、停止靶机 |
+
+### user:writeup — Writeup
+
+| 权限                    | 说明            |
+| --------------------- | ------------- |
+| `user:writeup:upload` | 上传 Writeup    |
+| `user:writeup:list`   | 查看 Writeup 列表 |
+
+### admin:system — 系统管理
+
+| 权限                     | 说明       |
+| ---------------------- | -------- |
+| `admin:system:status`  | 查看系统健康状态 |
+| `admin:system:read`    | 读取系统配置   |
+| `admin:system:update`  | 更新系统配置   |
+| `admin:system:restart` | 重启系统     |
+
+### admin:branding — 品牌化管理
+
+| 权限                      | 说明                   |
+| ----------------------- | -------------------- |
+| `admin:branding:read`   | 查看品牌化配置（站点名称、Logo 等） |
+| `admin:branding:update` | 更新品牌化配置（含上传 Logo）    |
+
+### admin:role — 角色管理
+
+| 权限                  | 说明      |
+| ------------------- | ------- |
+| `admin:role:create` | 创建角色    |
+| `admin:role:read`   | 查看角色详情  |
+| `admin:role:update` | 更新角色    |
+| `admin:role:delete` | 删除角色    |
+| `admin:role:list`   | 查看角色列表  |
+| `admin:role:assign` | 为角色分配权限 |
+| `admin:role:revoke` | 撤销角色权限  |
+
+### admin:group — 用户组管理
+
+| 权限                   | 说明      |
+| -------------------- | ------- |
+| `admin:group:create` | 创建用户组   |
+| `admin:group:read`   | 查看用户组详情 |
+| `admin:group:update` | 更新用户组   |
+| `admin:group:delete` | 删除用户组   |
+| `admin:group:list`   | 查看用户组列表 |
+
+### admin:user — 用户管理
+
+| 权限                  | 说明            |
+| ------------------- | ------------- |
+| `admin:user:create` | 手动创建用户        |
+| `admin:user:read`   | 查看用户详情        |
+| `admin:user:update` | 修改用户信息（含重置密码） |
+| `admin:user:delete` | 删除用户          |
+| `admin:user:list`   | 查看用户列表        |
+| `admin:user:assign` | 将用户加入分组       |
+| `admin:user:revoke` | 将用户移出分组       |
+
+### admin:challenge — 题目管理
+
+| 权限                       | 说明          |
+| ------------------------ | ----------- |
+| `admin:challenge:create` | 创建题目        |
+| `admin:challenge:read`   | 查看题目详情      |
+| `admin:challenge:update` | 更新题目（含上传附件） |
+| `admin:challenge:delete` | 删除题目        |
+| `admin:challenge:list`   | 查看题目列表      |
+| `admin:challenge:test`   | 测试模式启停靶机    |
+
+### admin:contest — 比赛管理
+
+| 权限                     | 说明        |
+| ---------------------- | --------- |
+| `admin:contest:create` | 创建比赛      |
+| `admin:contest:read`   | 查看比赛详情    |
+| `admin:contest:update` | 更新比赛配置    |
+| `admin:contest:delete` | 删除比赛      |
+| `admin:contest:list`   | 查看比赛列表    |
+| `admin:contest:rank`   | 查看管理视角排行榜 |
+
+### admin:team — 队伍管理（管理视角）
+
+| 权限                  | 说明                     |
+| ------------------- | ---------------------- |
+| `admin:team:read`   | 查看队伍详情、Flag 记录、流量 pcap |
+| `admin:team:update` | 修改队伍信息                 |
+| `admin:team:delete` | 删除队伍                   |
+| `admin:team:list`   | 查看队伍列表                 |
+
+### admin:cheat — 作弊记录
+
+| 权限                   | 说明               |
+| -------------------- | ---------------- |
+| `admin:cheat:create` | 手动创建作弊记录（重新运行检测） |
+| `admin:cheat:update` | 更新作弊记录状态         |
+| `admin:cheat:delete` | 删除作弊记录           |
+| `admin:cheat:list`   | 查看作弊记录列表         |
+
+### admin:victim — 靶机控制（管理视角）
+
+| 权限                             | 说明             |
+| ------------------------------ | -------------- |
+| `admin:victim:control`         | 管理员全局批量启停靶机    |
+| `admin:contest_victim:control` | 管理员批量启停特定比赛的靶机 |
+
+### admin:traffic — 流量查看
+
+| 权限                           | 说明                  |
+| ---------------------------- | ------------------- |
+| `admin:traffic:read`         | 查看全局靶机流量（下载 pcap）   |
+| `admin:contest_traffic:read` | 查看特定比赛靶机流量（下载 pcap） |
+
+### 其他管理权限
+
+| 权限                                             | 说明                 |
+| ---------------------------------------------- | ------------------ |
+| `admin:oauth:create/read/update/delete/list`   | OAuth 提供商的 CRUD 操作 |
+| `admin:smtp:create/read/update/delete/list`    | SMTP 服务器的 CRUD 操作  |
+| `admin:webhook:create/read/update/delete/list` | Webhook 的 CRUD 操作  |
+| `admin:notice:create/update/delete/list`       | 公告管理               |
+| `admin:file:list/read/delete`                  | 文件管理               |
+| `admin:log:read`                               | 查看系统日志             |
+| `admin:task:read`                              | 查看后台任务队列状态         |
+| `admin:image:pull`                             | 触发全局镜像预热           |
+| `admin:contest_image:pull`                     | 触发特定比赛的镜像预热        |
+| `admin:generator:control`                      | 控制全局附件生成器          |
+| `admin:contest_generator:control`              | 控制特定比赛的附件生成器       |
+
+## 自定义 organizer 角色示例
+
+创建一个只能管理比赛和题目的 organizer 角色：
+
+```
+admin:contest:create/read/update/list
+admin:challenge:read/update/list
+admin:contest_challenge:create/read/update/delete/list
+admin:contest_challenge_flag:list/read/update
+admin:team:read/list
+admin:team_writeup:list/read
+admin:notice:create/update/delete/list
+admin:cheat:list/update
+admin:contest_image:pull
+admin:contest_victim:control
+admin:contest_generator:control
+admin:contest_traffic:read
+```
+
+:::warning
+撤销 `self:read` 权限将导致该用户**无法登录**，操作前请确认。
+:::
+
+
+
+---
+url: /admin/users.md
+---
+
+# 用户与分组
+
+## 用户字段
+
+| 字段            | 说明            |
+| ------------- | ------------- |
+| `name`        | 用户名           |
+| `email`       | 邮箱（用于登录和邮件通知） |
+| `verified`    | 邮箱是否已验证       |
+| `picture`     | 头像 URL        |
+| `description` | 个人简介          |
+
+## 手动创建用户
+
+当 `registration.enabled: false` 时，管理员可通过 `POST /admin/users`（需 `admin:user:create`）手动创建用户，绕过注册限制。
+
+## 查找用户
+
+- **列表**：`GET /admin/users`，支持分页和筛选
+- **全局搜索**：`GET /admin/models` + `GET /admin/search`（`admin:models:search`）
+
+## 用户分组（Groups）
+
+分组用于批量管理参赛者，常见用途：按班级/院校/队伍组织用户、控制默认分配、赛前批量导入用户。
+
+### 创建分组
+
+`POST /admin/groups`（需 `admin:group:create`）
+
+### 自动分配
+
+在 `registration.default_group` 中配置分组 ID，新注册用户自动加入该分组。也可在 OAuth 配置的 `default_group` 字段中为
+OAuth 登录用户单独设置默认分组。
+
+### 手动添加/移除用户
+
+- 添加用户到分组：`POST /admin/groups/:groupID/users`（`admin:user:assign`）
+- 移除用户：`DELETE /admin/groups/:groupID/users`（`admin:user:revoke`）
+
+## GeoIP 地理信息
+
+若配置了 `geocity_db`（MaxMind GeoLite2-City），用户列表中会显示最近登录 IP 的地理位置（国家/城市）。
+
+## IP 登录历史
+
+通过 `GET /admin/ip`（`admin:ip:search`）搜索特定 IP 的登录历史，包含登录时间、地理位置、关联用户等信息，用于作弊调查。
+
+## 邮箱验证流程
+
+1. 确保已配置 SMTP 服务器（见[邮件配置](/admin/smtp.md)）
+2. 为 `user` 角色分配 `self:activate` 权限
+3. 用户调用 `POST /me/activate` 触发发送激活邮件
+4. 用户点击邮件中的链接，`verified` 字段变为 `true`
+
+## 重置用户密码
+
+管理员通过 `PUT /admin/users/:userID`（`admin:user:update`）可直接修改用户密码，无需原密码验证。
+
+
+
+---
+url: /admin/challenges.md
+---
+
+# 题目管理
+
+## 题库与比赛题目
+
+CBCTF 采用两层题目管理：
+
+| 层级                         | 说明                 |
+| -------------------------- | ------------------ |
+| **全局题库**                   | 题目模板，不直接对选手可见      |
+| **比赛题目（ContestChallenge）** | 将全局题目关联到比赛，可覆盖部分字段 |
+
+对全局题库的修改（如更新附件）会影响所有使用该题目的比赛。对比赛题目的覆盖配置（name、description 等）仅影响该场比赛。
+
+## 创建题目
+
+必填字段：`name`（题目名称）、`type`（题目类型）、`category`（分类）。
+
+可选字段：
+
+- `description`：题目描述（Markdown）
+- `generator_image`：动态附件题的生成器容器镜像
+- `network_policies`：Kubernetes NetworkPolicy 配置（JSON）
+
+## 上传附件
+
+- **静态/容器题**：上传 `attachment.zip`，所有队伍共享下载
+- **动态附件题**：上传 `generator.zip`，平台在生成时上传到生成器容器的 `/root` 目录（可选）
+
+## 题目测试模式
+
+需要 `admin:challenge:test` 权限。管理员可在题目加入比赛前，通过测试模式验证容器靶机配置：
+
+1. 访问题目详情，点击「测试」
+2. 平台以管理员身份启动靶机容器或 KubeVirt VM（不绑定任何队伍）
+3. 普通 Pod 题验证端口连通性和访问地址；VM 题验证 VM 启动、网络接入、Flag 注入和 cloud-init 写入
+4. 测试完成后停止靶机
+
+:::info
+测试模式下不产生实际的 flag 和队伍记录。如果题目使用 `x-kubevirt: true`，测试前应确认集群已安装 KubeVirt，题目使用 VPC
+网络并配置了每张网卡的 `ipv4_address` 和 `mac_address`。VM 模式的 `ports` 不会生成平台访问地址；普通环境变量和 `x-volumes`
+不会注入到虚拟机，需改用 `x-cloudinit.write_files` 注入文件和 Flag。
+:::
+
+## 加入比赛
+
+通过 `POST /admin/contests/:contestID/challenges`（`admin:contest_challenge:create`）将题目加入比赛。
+
+加入时可覆盖以下字段（仅对本场比赛生效）：
+
+| 字段              | 说明              |
+| --------------- | --------------- |
+| `name`          | 比赛中显示的题目名称      |
+| `description`   | 比赛中显示的题目描述      |
+| `category`      | 分类              |
+| `tags`          | 标签              |
+| `hints`         | 提示列表（选手可查看）     |
+| `hidden`        | 是否在比赛中隐藏该题目     |
+| `attempt_limit` | 提交次数限制（0 表示无限制） |
+
+## 管理比赛 Flag 分数
+
+通过 `PUT /admin/contests/:contestID/challenges/:challengeID/flags/:flagID`（`admin:contest_challenge_flag:update`）为每个
+flag 独立配置计分：
+
+```json
+{
+  "score_type": 2,
+  "score": 1000,
+  "min_score": 100,
+  "decay": 50
+}
+```
+
+详见[计分系统](/guide/features/scoring.md)。
+
+## NetworkPolicy
+
+在题目的 `network_policies` 字段中配置 Kubernetes NetworkPolicy（JSON 格式），对该题目的所有靶机生效。
+
+示例：禁止靶机出站访问互联网：
+
+```json
+[
+  {
+    "policyTypes": [
+      "Egress"
+    ],
+    "egress": [
+      {
+        "to": [
+          {
+            "ipBlock": {
+              "cidr": "10.0.0.0/8"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+## 文件管理
+
+通过 `GET /admin/files`（`admin:file:list`）查看所有已上传的题目附件，支持下载和删除。流量 pcap 文件和 Writeup 文件也在此处统一管理。
+
+
+
+---
+url: /admin/contests.md
+---
+
+# 比赛管理
+
+## 比赛生命周期
+
+```
+创建 → 配置题目 → 参赛者注册 → 比赛进行中 → 结束后处理
+```
+
+1. **创建比赛**：配置名称、时间、flag 前缀、队伍规模等基础信息
+2. **添加题目**：从全局题库选择并加入比赛，可覆盖比赛特定参数
+3. **配置计分**：为每个 flag 设置计分类型和参数
+4. **镜像预热**：比赛开始前 30-60 分钟拉取镜像到所有节点
+5. **参赛管理**：比赛中管理队伍、发布公告、处理作弊
+6. **赛后处理**：收集 Writeup、导出数据
+
+## 比赛状态切换
+
+平台根据 `start` 和 `duration` 字段自动切换状态，无需手动操作：
+
+| 时间条件                             | 状态        |
+| -------------------------------- | --------- |
+| 当前时间 \< start                    | `coming`  |
+| start ≤ 当前时间 \< start + duration | `running` |
+| 当前时间 ≥ start + duration          | `over`    |
+
+## 队伍管理
+
+通过 `GET /admin/contests/:contestID/teams`（`admin:team:list`）查看所有队伍。
+
+| 操作      | API                        | 权限                  |
+| ------- | -------------------------- | ------------------- |
+| 查看队伍详情  | `GET .../teams/:teamID`    | `admin:team:read`   |
+| 查看队伍成员  | `GET .../users`            | `admin:team:read`   |
+| 修改队伍信息  | `PUT .../teams/:teamID`    | `admin:team:update` |
+| 踢出成员    | `POST .../kick`            | `admin:team:update` |
+| 删除队伍    | `DELETE .../teams/:teamID` | `admin:team:delete` |
+| 查看提交记录  | `GET .../submissions`      | `admin:team:read`   |
+| 查看 Flag | `GET .../flags`            | `admin:team:read`   |
+
+## 批量靶机控制
+
+通过 `POST /admin/contests/:contestID/victims` 和 `DELETE /admin/contests/:contestID/victims`（`admin:victim:control`
+）批量启动/停止该比赛的所有靶机。
+
+## 流量捕获
+
+管理员可为指定队伍的靶机下载流量捕获文件：
+
+```
+GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download
+```
+
+需要 `admin:contest_traffic:read` 权限。下载的 pcap 文件可用 Wireshark 分析。
+
+## 公告发布
+
+通过 `POST /admin/contests/:contestID/notices`（`admin:notice:create`）发布公告，参赛者可在比赛公告页面实时查看。
+
+## 镜像预热
+
+通过 `POST /admin/contests/:contestID/images`（`admin:image:pull`）触发将该比赛所有题目的容器镜像预拉取到各 Kubernetes
+节点，避免比赛开始时因拉取镜像导致延迟。
+
+:::tip
+建议在比赛开始前 30-60 分钟执行镜像预热。
+:::
+
+## Writeup 收集
+
+选手上传 Writeup 后，管理员可通过以下方式访问：
+
+```
+GET /admin/contests/:contestID/teams/:teamID/writeups          # 列表（admin:team_writeup:list）
+GET /admin/contests/:contestID/teams/:teamID/writeups/:fileID  # 下载（admin:team_writeup:read）
+```
+
+## 作弊检测
+
+详见[作弊检测](/admin/cheat.md)。通过 `POST /admin/contests/:contestID/cheats` 可手动重新运行一次全量作弊检测。
+
+## 排行榜
+
+管理员视角排行榜通过 `GET /admin/contests/:contestID/rank` 查看（`admin:contest:rank`），功能与选手视图相同但不受隐藏比赛限制。
+
+
+
+---
+url: /admin/cheat.md
+---
+
+# 作弊检测
+
+CBCTF 内置多维度自动作弊检测，管理员可查看、确认或驳回检测结果。
+
+## 检测机制
+
+### 1. `token_magic` — 设备指纹不匹配
+
+同一账号的 JWT 中绑定的设备指纹（FingerprintJS 生成）与当前请求的设备指纹不一致，说明该账号在不同设备上使用，可能存在账号共享行为。
+
+### 2. `same_device` — 多账号共用设备
+
+多个不同账号（跨队伍）使用相同的设备指纹，说明可能是同一台设备用多个账号参赛。
+
+### 3. `same_web_ip` — 多队伍共用 Web IP
+
+多支队伍的 Web 请求（登录、提交等）来自同一公网 IP，可能存在同场地协作或账号共享。
+
+### 4. `same_victim_ip` — 多队伍共用靶机访问 IP
+
+多支队伍访问靶机的 IP 相同（capture 捕获），强烈暗示存在跨队协作。
+
+### 5. `wrong_flag` — 跨队 flag 提交
+
+队伍提交了属于另一支队伍的动态 flag，表明存在 flag 共享行为。
+
+## 作弊记录字段
+
+| 字段            | 类型       | 说明                                                                                      |
+| ------------- | -------- | --------------------------------------------------------------------------------------- |
+| `type`        | string   | 处理状态（`suspicious` / `cheater` / `pass`）                                                 |
+| `reason`      | string   | 详细原因描述                                                                                  |
+| `reason_type` | string   | 检测规则类型（`same_device` / `same_web_ip` / `same_victim_ip` / `wrong_flag` / `token_magic`） |
+| `magic`       | string   | 涉及的设备指纹（仅设备类检测）                                                                         |
+| `ip`          | string   | 涉及的 IP 地址                                                                               |
+| `time`        | datetime | 检测时间                                                                                    |
+| `checked`     | bool     | 管理员是否已审核                                                                                |
+| `comment`     | string   | 管理员备注                                                                                   |
+
+## 作弊状态
+
+| 状态           | 说明           |
+| ------------ | ------------ |
+| `suspicious` | 系统自动检测，待人工确认 |
+| `cheater`    | 确认为作弊        |
+| `pass`       | 确认为误报        |
+
+## 管理员处理流程
+
+1. 访问比赛的作弊记录列表（`admin:cheat:list`）
+2. 查看各条记录的 `type`、`reason`、相关队伍信息
+3. 结合 IP 历史（`admin:ip:search`）和流量捕获进行综合判断
+4. 更新 `type` 为 `cheater` 或 `pass`（`admin:cheat:update`）
+5. 在 `comment` 中填写处置说明
+6. 标记 `checked: true`
+
+## 重新运行检测
+
+```bash
+POST /admin/contests/:contestID/cheats
+```
+
+需要 `admin:cheat:create` 权限。对当前比赛所有数据重新运行全量作弊检测，适用于比赛结束后的全面审查。
+
+## 批量删除
+
+```bash
+DELETE /admin/contests/:contestID/cheats
+```
+
+需要 `admin:cheat:delete` 权限。删除该比赛的所有作弊记录（谨慎使用）。
+
+## IP 白名单
+
+在 `config.yaml` 中配置 IP 白名单，白名单内的 IP 不触发 IP 类作弊检测：
+
+```yaml
+cheat:
+  ip:
+    whitelist:
+      - 127.0.0.1
+      - ::1
+      - 10.0.0.0/8
+      - 192.168.0.0/16
+      - 172.16.0.0/12
+      - 100.64.0.0/10
+```
+
+## 误报场景说明
+
+以下场景可能导致误报，管理员应结合实际情况判断：
+
+| 场景              | 可能误报的类型                        |
+| --------------- | ------------------------------ |
+| 大学/公司内网（NAT）    | `same_web_ip`、`same_victim_ip` |
+| 商业 VPN 服务       | `same_web_ip`                  |
+| 参赛者使用多个浏览器或无痕模式 | `token_magic`                  |
+| 比赛现场同一 WiFi     | `same_web_ip`                  |
+
+:::tip
+建议将竞赛现场的出口 IP 加入白名单，或在 Helm values 中配置 `cbctf.cheat.ip.whitelist`。
+:::
+
+
+
+---
+url: /admin/smtp.md
+---
+
+# 邮件配置
+
+CBCTF 通过 SMTP 发送邮件（目前用于邮箱验证功能）。
+
+## SMTP 字段
+
+| 字段        | 类型     | 说明                               |
+| --------- | ------ | -------------------------------- |
+| `address` | string | 发件人邮箱地址（如 `noreply@example.com`） |
+| `host`    | string | SMTP 服务器地址                       |
+| `port`    | int    | SMTP 端口（通常 25/465/587）           |
+| `pwd`     | string | SMTP 账号密码或授权码                    |
+| `on`      | bool   | 是否启用该 SMTP 服务器                   |
+
+## 添加 SMTP 服务器
+
+通过 `POST /admin/smtp`（`admin:smtp:create`）创建：
+
+```json
+{
+  "address": "noreply@example.com",
+  "host": "smtp.example.com",
+  "port": 587,
+  "pwd": "your-smtp-password",
+  "on": true
+}
+```
+
+## 多 SMTP 服务器
+
+可以配置多个 SMTP 服务器，平台发送邮件时会从启用的服务器列表中随机选择一个。适用于负载均衡或备用 SMTP 场景。
+
+## 邮件使用场景
+
+目前 CBCTF 使用邮件的场景：
+
+- **邮箱验证**：用户调用 `POST /me/activate` 后，平台发送含激活链接的验证邮件
+
+## 启用邮箱验证的前置条件
+
+1. 配置至少一个启用状态的 SMTP 服务器
+2. 为 `user` 角色（或相关角色）分配 `self:activate` 权限，用户才能触发发送激活邮件
+
+## 发送统计
+
+通过 `GET /admin/smtp/:smtpID/email`（`admin:smtp:list`）查看该 SMTP 服务器的邮件发送历史，包含成功/失败次数和详细日志。
+
+
+
+---
+url: /admin/monitoring.md
+---
+
+# 监控与日志
+
+## 系统状态
+
+通过 `GET /admin/system/status`（`admin:system:status`）查看各服务的健康状态，包括 PostgreSQL、Redis、Asynq 等组件的连接状态。
+
+## 任务队列
+
+通过 `GET /admin/tasks` 和 `GET /admin/tasks/live`（`admin:task:read`）查看 Asynq 后台任务的执行状态，包括各队列积压量、正在处理的任务、历史执行记录等。
+
+## Prometheus 指标
+
+平台在 `/metrics` 端点暴露 Prometheus 格式的指标数据。
+
+### 访问控制
+
+通过 `gin.metrics.whitelist` 配置允许访问的 IP：
+
+```yaml
+gin:
+  metrics:
+    whitelist:
+      - 127.0.0.1
+      - 10.0.0.0/8    # Prometheus 所在网段
+```
+
+未在白名单内的 IP 访问 `/metrics` 会返回 `403 Forbidden`。
+
+### 指标内容
+
+- HTTP 请求数和延迟（按路由、方法、状态码分类）
+- Asynq 任务队列深度和处理速率
+- 作弊检测计数
+- 活跃靶机数量
+
+## 日志系统
+
+平台使用 Logrus 记录日志，支持文件轮转。
+
+### 日志级别
+
+通过 `log.level` 配置，支持 `DEBUG` `INFO` `WARNING` `ERROR`。
+
+### 日志持久化
+
+设置 `log.save: true` 后，日志持久化到 `{path}/logs/` 目录下，自动按日期轮转。
+
+### 在线查看日志
+
+通过 `GET /admin/logs`（`admin:log:read`）在管理后台查看日志内容，无需登录服务器。
+
+## 访问日志
+
+Gin 框架记录每个 HTTP 请求的访问日志，包含请求方法、路径、状态码、耗时等。
+
+### 排除噪声路径
+
+通过 `gin.log.whitelist` 排除不需要记录的路径：
+
+```yaml
+gin:
+  log:
+    whitelist:
+      - /metrics
+      - /platform/*filepath
+```
+
+## 文件管理
+
+通过 `GET /admin/files`（`admin:file:list`）查看和管理平台上所有已上传的文件，包括：
+
+- 题目附件（`attachment.zip`、`generator.zip`）
+- 流量捕获文件（`.pcap`）
+- 选手 Writeup（PDF/ZIP）
+
+支持在线下载（`admin:file:read`）和删除（`admin:file:delete`）。
+
+## 系统配置在线更新
+
+无需重启服务器即可更新配置：
+
+```bash
+# 读取当前配置
+GET /admin/system/config    # 需 admin:system:read
+
+# 更新配置
+PUT /admin/system/config    # 需 admin:system:update
+
+# 应用配置（热重启）
+POST /admin/system/restart  # 需 admin:system:restart
+```
+
+:::warning
+热重启会短暂中断服务（通常 1-2 秒）。正式比赛期间谨慎使用。
+:::
+
+
+
+---
+url: /index.md
+---
+
+# CBCTF
+
+基于 Kubernetes 的现代化 CTF 竞赛平台
+
+> 动态容器 · 虚拟机靶机 · 动态附件 · 网络渗透场景构建
+
+[快速上手](/guide/start/quick-start) | [查看介绍](/guide/start/introduction)
+
+## Features
+
+- [🐳 **动态容器与虚拟机**](/guide/features/container): 支持 Pod、VPC 网络隔离模式以及 KubeVirt VM 靶机，覆盖 Web、Pwn、渗透等各类场景。
+- [📦 **动态附件生成**](/guide/features/attachment): 每支队伍独立生成含唯一 Flag 的附件，防止抄答案，支持 Python 自定义生成逻辑。
+- [🔍 **多维度作弊检测**](/admin/cheat): 内置设备指纹、IP、跨队 Flag 提交等五种检测机制，自动标记可疑行为。
+- [📊 **灵活计分系统**](/guide/features/scoring): 静态、线性、对数三种计分类型，支持三血奖励和多 Flag 独立计分。
+- [⚡ **Helm 一键部署**](/deploy/helm): Chart 内置 PostgreSQL 和 Redis，支持 PVC 持久化、Ingress TLS 和镜像拉取凭据。
+- [🔐 **OAuth / OIDC 认证**](/guide/features/auth): 支持多个第三方认证提供商，可配置用户组自动分配，兼容 GitHub 等标准 OAuth 流程。
+
+

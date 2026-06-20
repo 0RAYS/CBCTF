@@ -1,0 +1,38 @@
+# CBCTF
+
+> CBCTF 平台部署、运维与功能使用文档
+
+## 开始
+
+- [介绍](/guide/start/introduction.md): 了解 CBCTF 的平台定位、核心能力、构建方式和动态容器工作模式。
+- [快速上手](/guide/start/quick-start.md): 使用 Helm 或本地环境启动 CBCTF，并获取首次启动生成的初始管理员账号。
+
+## 部署
+
+- [K8s 集群搭建](/deploy/cluster.md): 搭建满足 CBCTF 动态附件、动态容器和 KubeVirt 靶机要求的 Kubernetes 集群。
+- [Helm 部署](/deploy/helm.md): 通过 Helm Chart 安装 CBCTF，并配置镜像、Ingress、存储、数据库和 Redis。
+- [配置说明](/deploy/settings.md): 说明 CBCTF 配置文件、环境变量、系统配置热加载和常见配置项。
+- [前后端分离](/deploy/separation.md): 配置 CBCTF 前后端分离部署、反向代理、静态资源和 API 地址。
+- [常见问题](/deploy/troubleshooting.md): 排查 CBCTF 部署、集群组件、容器靶机、动态附件和网络访问问题。
+
+## 功能
+
+- [题目类型](/guide/features/challenge.md): 介绍 CBCTF 静态题、动态附件题、动态容器题和多 Flag 题目的配置方式。
+- [Flag 规则](/guide/features/flag.md)
+- [计分系统](/guide/features/scoring.md)
+- [动态附件生成](/guide/features/attachment.md): 配置动态附件生成器容器、执行入口、Flag 参数和附件输出路径。
+- [动态靶机](/guide/features/container.md): 说明 CBCTF 动态容器、Pod 模式、VPC 模式、端口转发和 KubeVirt VM 靶机。
+- [比赛配置](/guide/features/contest.md): 创建和配置 CBCTF 比赛时间、队伍、题目、公告、奖项和排行榜规则。
+- [认证与 OAuth](/guide/features/auth.md): 配置 CBCTF 本地认证、邮箱验证、OAuth/OIDC 登录和用户组自动分配。
+- [Webhook](/guide/features/webhook.md): 配置 CBCTF 比赛事件 Webhook，向外部系统推送提交、解题和公告等事件。
+
+## 管理员
+
+- [管理后台概览](/admin/overview.md): 了解 CBCTF 管理后台入口、初始管理员、常用管理流程和后台页面分工。
+- [权限与角色](/admin/rbac.md): 管理 CBCTF 用户组、角色、权限点和后台访问控制策略。
+- [用户与分组](/admin/users.md): 管理 CBCTF 用户账号、队伍、分组、注册审核和账号状态。
+- [题目管理](/admin/challenges.md): 在管理后台维护题目、附件、Flag、动态生成器和容器靶机测试。
+- [比赛管理](/admin/contests.md): 在管理后台创建、发布和维护 CBCTF 比赛、队伍、题目、公告和奖项。
+- [作弊检测](/admin/cheat.md): 查看和处理 CBCTF 设备指纹、IP、跨队 Flag、共享账号和异常提交记录。
+- [邮件配置](/admin/smtp.md): 配置 CBCTF SMTP 发信、邮箱验证、密码找回和邮件模板相关设置。
+- [监控与日志](/admin/monitoring.md): 使用 CBCTF 的 Prometheus 指标、Grafana 仪表盘、日志和系统状态接口排查问题。
