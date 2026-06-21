@@ -14,10 +14,15 @@ import (
 var SolvedMutex sync.Map
 
 func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge, form dto.SubmitFlagForm, ip string) (model.Submission, model.RetVal) {
-	if contestChallenge.Attempt != 0 && contestChallenge.Attempt <= CountAttempts(tx, team, contestChallenge) {
-		return model.Submission{}, model.RetVal{Msg: i18n.Model.Submission.NotAllowed}
-	}
 	submissionRepo := db.InitSubmissionRepo(tx)
+	if contestChallenge.Attempt != 0 {
+		if ret := submissionRepo.LockAttemptScope(team.ID, contestChallenge.ID); !ret.OK {
+			return model.Submission{}, ret
+		}
+		if contestChallenge.Attempt <= CountAttempts(tx, team, contestChallenge) {
+			return model.Submission{}, model.RetVal{Msg: i18n.Model.Submission.NotAllowed}
+		}
+	}
 	solved, contestFlag, teamFlag, ret := VerifyFlag(tx, team, contestChallenge, form.Flag)
 	if !ret.OK {
 		return model.Submission{}, ret
