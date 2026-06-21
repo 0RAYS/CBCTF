@@ -142,8 +142,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 		// 对于 TCP 协议, 启用 proxy_protocol
 		if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
 			addFrpcProxy(&frpc, protocol, "127.0.0.1", endpoint.Port, exposedPort, true)
-			name := utils.RandHexStr(10)
-			nginx.Streams = append(nginx.Streams, nginxStream{Name: name, TargetIP: endpoint.IP, TargetPort: endpoint.Port, ListenPort: endpoint.Port})
+			nginx.Streams = append(nginx.Streams, nginxStream{Name: utils.RandHexStr(10), TargetIP: endpoint.IP, TargetPort: endpoint.Port, ListenPort: endpoint.Port})
 		} else {
 			addFrpcProxy(&frpc, protocol, endpoint.IP, endpoint.Port, exposedPort, false)
 		}
