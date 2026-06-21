@@ -36,10 +36,14 @@ func VerifyEmail(tx *gorm.DB, form dto.VerifyEmail) model.RetVal {
 	if err != nil || !utils.CompareMagic(form.ID, claims.X) {
 		return model.RetVal{Msg: i18n.Model.Email.InvalidVerifyToken}
 	}
-	if _, ret := redis.GetEmailVerifyToken(claims.UserID); !ret.OK {
+	storedID, ret := redis.GetEmailVerifyToken(claims.UserID)
+	if !ret.OK {
 		return ret
 	}
-	if ret := redis.DelEmailVerifyToken(claims.UserID); !ret.OK {
+	if storedID != form.ID {
+		return model.RetVal{Msg: i18n.Model.Email.InvalidVerifyToken}
+	}
+	if ret = redis.DelEmailVerifyToken(claims.UserID); !ret.OK {
 		return ret
 	}
 	return db.InitUserRepo(tx).Update(claims.UserID, db.UpdateUserOptions{Verified: new(true)})
@@ -58,7 +62,7 @@ func SendPasswordResetEmail(tx *gorm.DB, form dto.ForgotPasswordForm) model.RetV
 		log.Logger.Warningf("Failed to generate password reset token: %s", err)
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	if ret := redis.SetPasswordResetToken(user.ID, id); !ret.OK {
+	if ret = redis.SetPasswordResetToken(user.ID, id); !ret.OK {
 		return ret
 	}
 	if _, err = task.EnqueueSendResetPasswordEmailTask(user.Email, token, id); err != nil {
@@ -74,10 +78,14 @@ func ResetUserPassword(tx *gorm.DB, form dto.ResetPasswordForm) model.RetVal {
 	if err != nil || !utils.CompareMagic(form.ID, claims.X) {
 		return model.RetVal{Msg: i18n.Model.User.InvalidResetToken}
 	}
-	if _, ret := redis.GetPasswordResetToken(claims.UserID); !ret.OK {
+	storedID, ret := redis.GetPasswordResetToken(claims.UserID)
+	if !ret.OK {
 		return model.RetVal{Msg: i18n.Model.User.InvalidResetToken}
 	}
-	if ret := redis.DelPasswordResetToken(claims.UserID); !ret.OK {
+	if storedID != form.ID {
+		return model.RetVal{Msg: i18n.Model.User.InvalidResetToken}
+	}
+	if ret = redis.DelPasswordResetToken(claims.UserID); !ret.OK {
 		return ret
 	}
 	return db.InitUserRepo(tx).Update(claims.UserID, db.UpdateUserOptions{
