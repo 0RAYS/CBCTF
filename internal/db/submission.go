@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -41,6 +42,19 @@ func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 			DB: tx,
 		},
 	}
+}
+
+// LockAttemptScope 在当前事务内锁定队伍和赛事题目维度的提交尝试。
+// 该锁用于让尝试次数检查和提交记录创建串行化，避免同队伍同题并发错误提交绕过 Attempt 限制。
+func (s *SubmissionRepo) LockAttemptScope(teamID, contestChallengeID uint) model.RetVal {
+	teamKey := fmt.Sprintf("team:%d", teamID)
+	challengeKey := fmt.Sprintf("contest_challenge:%d", contestChallengeID)
+	res := s.DB.Exec("SELECT pg_advisory_xact_lock(hashtext(?), hashtext(?))", teamKey, challengeKey)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to lock submission attempt scope: team_id=%d contest_challenge_id=%d error=%s", teamID, contestChallengeID, res.Error)
+		return model.RetVal{Msg: i18n.Model.Submission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
 }
 
 func (s *SubmissionRepo) DeleteByUserID(userIDL ...uint) model.RetVal {
