@@ -130,8 +130,15 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					},
 				},
 				SecurityContext: &corev1.SecurityContext{
+					Privileged:               new(false),
+					AllowPrivilegeEscalation: new(false),
+					ReadOnlyRootFilesystem:   new(false),
 					Capabilities: &corev1.Capabilities{
-						Add: []corev1.Capability{"NET_RAW", "SYS_ADMIN"},
+						Drop: []corev1.Capability{"ALL"},
+						Add:  []corev1.Capability{"NET_RAW", "BPF", "PERFMON"},
+					},
+					SeccompProfile: &corev1.SeccompProfile{
+						Type: corev1.SeccompProfileTypeRuntimeDefault,
 					},
 				},
 				Stdin: true,
