@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -107,4 +108,65 @@ func UnlockFrpsPort(host string, port int32, protocol string) model.RetVal {
 		return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
 	}
 	return model.SuccessRetVal()
+}
+
+// ReconcileFrpsPorts 使用数据库中仍活跃靶机的暴露端口重建 Redis FRPS 端口锁集合。
+// expected 的结构为 host -> protocol -> ports；未出现在 expected 中的 frps:*:* 键会被删除。
+func ReconcileFrpsPorts(expected map[string]map[string][]int32) (int64, int64, model.RetVal) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	expectedKeys := make(map[string][]any)
+	for host, protocols := range expected {
+		for protocol, ports := range protocols {
+			key := fmt.Sprintf(frpsPortKey, host, protocol)
+			members := make([]any, 0, len(ports))
+			for _, port := range ports {
+				members = append(members, strconv.FormatInt(int64(port), 10))
+			}
+			expectedKeys[key] = members
+		}
+	}
+
+	var cursor uint64
+	removedKeys := int64(0)
+	for {
+		keys, next, err := RDB.Scan(ctx, cursor, "frps:*:*", 100).Result()
+		if err != nil {
+			log.Logger.Warningf("Failed to scan frps port locks: %s", err)
+			return 0, 0, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": "frps:*:*", "Error": err.Error()}}
+		}
+		for _, key := range keys {
+			if _, ok := expectedKeys[key]; ok {
+				continue
+			}
+			if err = RDB.Del(ctx, key).Err(); err != nil {
+				log.Logger.Warningf("Failed to delete stale frps port lock key %s: %s", key, err)
+				return 0, 0, model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+			}
+			removedKeys++
+		}
+		cursor = next
+		if cursor == 0 {
+			break
+		}
+	}
+
+	keptPorts := int64(0)
+	for key, members := range expectedKeys {
+		if err := RDB.Del(ctx, key).Err(); err != nil {
+			log.Logger.Warningf("Failed to reset frps port lock key %s: %s", key, err)
+			return 0, 0, model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		}
+		if len(members) == 0 {
+			continue
+		}
+		if err := RDB.SAdd(ctx, key, members...).Err(); err != nil {
+			log.Logger.Warningf("Failed to rebuild frps port lock key %s: %s", key, err)
+			return 0, 0, model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		}
+		keptPorts += int64(len(members))
+	}
+
+	return removedKeys, keptPorts, model.SuccessRetVal()
 }

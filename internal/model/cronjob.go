@@ -14,12 +14,14 @@ const (
 	ClearEmptyTeamCronJob       = "ClearEmptyTeam"
 	CloseTimeoutVictimsCronJob  = "CloseTimeoutVictims"
 	CloseUnCtrlVictimsCronJob   = "CloseUnCtrlVictims"
+	SyncFrpsPortLocksCronJob    = "SyncFrpsPortLocks"
 	ReindexPostgresCronJob      = "ReindexPostgres"
 )
 
 var CronJobs = []CronJob{
 	{Name: CloseTimeoutVictimsCronJob, Description: "关闭运行超时的靶机实例", Schedule: time.Minute},
 	{Name: CloseUnCtrlVictimsCronJob, Description: "清理数据库外仍在运行的失控靶机实例", Schedule: 10 * time.Minute},
+	{Name: SyncFrpsPortLocksCronJob, Description: "校准 FRPS 端口占用缓存", Schedule: 10 * time.Minute},
 	{Name: ClearEmptyTeamCronJob, Description: "清理没有成员的空队伍", Schedule: 5 * time.Minute},
 	{Name: UpdateFlagScoreCronJob, Description: "重算比赛题目 Flag 分数和解题人数", Schedule: 5 * time.Minute},
 	{Name: UpdateUserRankingCronJob, Description: "全量刷新用户得分和排名", Schedule: 3 * time.Hour},

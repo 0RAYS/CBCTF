@@ -22,6 +22,7 @@ var (
 	taskMap     = map[string]taskDefinition{
 		model.CloseTimeoutVictimsCronJob:  {name: model.CloseTimeoutVictimsCronJob, run: closeTimeoutVictimsTask},
 		model.CloseUnCtrlVictimsCronJob:   {name: model.CloseUnCtrlVictimsCronJob, run: closeUnCtrlVictimsTask},
+		model.SyncFrpsPortLocksCronJob:    {name: model.SyncFrpsPortLocksCronJob, run: syncFrpsPortLocksTask},
 		model.ClearEmptyTeamCronJob:       {name: model.ClearEmptyTeamCronJob, run: clearEmptyTeamTask},
 		model.UpdateFlagScoreCronJob:      {name: model.UpdateFlagScoreCronJob, run: updateFlagScoreTask},
 		model.UpdateUserRankingCronJob:    {name: model.UpdateUserRankingCronJob, run: updateUserRankingTask},
