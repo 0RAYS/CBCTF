@@ -3,14 +3,13 @@ module CBCTF
 go 1.26.4
 
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20260504142306-00d9d554030a
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20260619095050-5346161d1bf2
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260618221249-bc653b64f974
 )
 
 require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/compose-spec/compose-go/v2 v2.11.0
-	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/color v1.19.0
 	github.com/gin-contrib/cors v1.7.7
 	github.com/gin-contrib/pprof v1.5.4
@@ -21,7 +20,6 @@ require (
 	github.com/hibiken/asynq v0.26.0
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.7.7
 	github.com/kubeovn/kube-ovn v1.16.2
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/oschwald/geoip2-golang/v2 v2.2.0
 	github.com/pires/go-proxyproto v0.12.0
@@ -135,7 +133,6 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.28.0 // indirect
-	golang.org/x/image v0.43.0 // indirect
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/term v0.44.0 // indirect
