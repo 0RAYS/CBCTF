@@ -97,33 +97,19 @@ func Init() *gin.Engine {
 		contest.GET("/rank", GetTeamRanking)
 		contest.GET("/scoreboard", GetScoreboard)
 		contest.GET("/timeline", GetRankTimeline)
-		contest.POST("/teams/join",
-			middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam,
-		)
-		contest.POST("/teams/create",
-			middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam,
-		)
+		contest.POST("/teams/join", middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam)
+		contest.POST("/teams/create", middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam)
 
 		contestTeam := contest.Group("/teams/me", middleware.CheckVerified, middleware.SetTeamByUser)
 		{
 			contestTeam.GET("", GetTeam)
 			contestTeam.GET("/captcha", GetTeamCaptcha)
 			contestTeam.GET("/users", GetTeammates)
-			contestTeam.PUT("/captcha",
-				middleware.ContestIsNotOver, middleware.CheckCaptain, UpdateCaptcha,
-			)
-			contestTeam.PUT("",
-				middleware.ContestIsNotOver, middleware.CheckCaptain, UpdateTeam,
-			)
-			contestTeam.POST("/picture",
-				middleware.ContestIsNotOver, middleware.CheckCaptain, middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("team"),
-			)
-			contestTeam.DELETE("",
-				middleware.ContestIsComing, middleware.CheckCaptain, DeleteTeam,
-			)
-			contestTeam.POST("/kick",
-				middleware.ContestIsComing, middleware.CheckCaptain, KickMember,
-			)
+			contestTeam.PUT("/captcha", middleware.CheckCaptain, UpdateCaptcha)
+			contestTeam.PUT("", middleware.CheckCaptain, UpdateTeam)
+			contestTeam.POST("/picture", middleware.CheckCaptain, middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("team"))
+			contestTeam.DELETE("", middleware.ContestIsComing, middleware.CheckCaptain, DeleteTeam)
+			contestTeam.POST("/kick", middleware.ContestIsComing, middleware.CheckCaptain, KickMember)
 			contestTeam.POST("/leave", middleware.ContestIsComing, LeaveTeam)
 		}
 
