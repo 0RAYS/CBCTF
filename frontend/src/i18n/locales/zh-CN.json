@@ -2219,7 +2219,6 @@
       }
     },
     "system": {
-      "noData": "无可用配置数据",
       "actions": {
         "update": "更新配置",
         "uploadGeoCityDB": "上传 GeoCityDB",
