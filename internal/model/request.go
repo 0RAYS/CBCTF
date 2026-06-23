@@ -10,6 +10,7 @@ import (
 type Request struct {
 	IP        string         `gorm:"index:idx_requests_user_ip,priority:2;index:idx_requests_user_ip_time_active,priority:2,where:deleted_at IS NULL;index" json:"ip"`
 	Time      time.Time      `gorm:"default:null;index:idx_requests_user_ip_time_active,priority:3,where:deleted_at IS NULL" json:"time"`
+	Latency   time.Duration  `json:"latency"`
 	Method    string         `json:"method"`
 	Path      string         `json:"path"`
 	URL       string         `json:"url"`
