@@ -2,6 +2,24 @@ import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
+const getPackageName = (id) => {
+  const normalized = id.replace(/\\/g, '/');
+  const marker = '/node_modules/';
+  const index = normalized.lastIndexOf(marker);
+
+  if (index === -1) {
+    return '';
+  }
+
+  const parts = normalized.slice(index + marker.length).split('/');
+  return parts[0]?.startsWith('@') ? `${parts[0]}/${parts[1]}` : parts[0];
+};
+
+const isPnpmPackage = (id, packageName) => {
+  const normalized = id.replace(/\\/g, '/');
+  return normalized.includes(`/node_modules/.pnpm/${packageName}@`);
+};
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -16,10 +34,22 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          if (id.includes('@monaco-editor') || id.includes('monaco-editor')) {
+          const packageName = getPackageName(id);
+
+          if (
+            packageName === 'react' ||
+            packageName === 'react-dom' ||
+            packageName === 'scheduler' ||
+            isPnpmPackage(id, 'react') ||
+            isPnpmPackage(id, 'react-dom') ||
+            isPnpmPackage(id, 'scheduler')
+          ) {
+            return 'vendor-react';
+          }
+          if (packageName === 'monaco-editor') {
             return 'vendor-monaco';
           }
-          if (id.includes('echarts')) {
+          if (packageName === 'echarts' || packageName === 'zrender') {
             return 'vendor-echarts';
           }
         },

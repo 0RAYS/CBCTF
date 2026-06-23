@@ -4,5 +4,6 @@ export const getStats = () => {
   return request({
     url: '/stats',
     method: 'GET',
+    noLoading: true,
   });
 };

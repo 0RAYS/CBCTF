@@ -2,13 +2,18 @@ import axios from 'axios';
 import { toast } from '../utils/toast';
 import i18n from '../i18n';
 import { API_CONFIG } from './config.js';
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
-import { startLoading, finishLoading } from '../utils/nprogress';
 
 const NONCE_KEY = 'LXM_NONCE';
 const FINGERPRINT_KEY = 'LXM';
 
-const fpPromise = FingerprintJS.load();
+let fpPromise = null;
+
+function loadFingerprint() {
+  if (!fpPromise) {
+    fpPromise = import('@fingerprintjs/fingerprintjs').then(({ default: FingerprintJS }) => FingerprintJS.load());
+  }
+  return fpPromise;
+}
 
 // SHA-256 哈希, 带非安全上下文回退
 async function sha256Hex(input) {
@@ -41,7 +46,7 @@ function getOrCreateNonce() {
 // 混合指纹: visitorId（硬件特征）+ nonce（实例标识）→ SHA-256
 async function generateFingerprint() {
   try {
-    const fp = await fpPromise;
+    const fp = await loadFingerprint();
     const result = await fp.get();
     const nonce = getOrCreateNonce();
     return await sha256Hex(result.visitorId + ':' + nonce);
@@ -75,7 +80,22 @@ async function ensureFingerprint() {
   return fingerprintPromise;
 }
 
-ensureFingerprint();
+let nprogressPromise = null;
+
+function loadNProgress() {
+  if (!nprogressPromise) {
+    nprogressPromise = import('../utils/nprogress');
+  }
+  return nprogressPromise;
+}
+
+function startRequestLoading() {
+  loadNProgress().then(({ startLoading }) => startLoading());
+}
+
+function finishRequestLoading() {
+  loadNProgress().then(({ finishLoading }) => finishLoading());
+}
 
 // 清除设备指纹缓存（登出时调用）
 export function clearFingerprint() {
@@ -99,7 +119,7 @@ let requestCount = 0;
 
 // 更新全局loading状态
 const updateGlobalLoading = (count) => {
-  requestCount = count;
+  requestCount = Math.max(0, count);
   // 使用动态导入避免循环依赖
   import('../store').then(({ store }) => {
     import('../store/app').then(({ setGlobalLoading }) => {
@@ -113,7 +133,7 @@ request.interceptors.request.use(
   async (config) => {
     // 如果没有设置 noLoading 标识, 则执行全局 loading 逻辑
     if (!config.noLoading) {
-      startLoading();
+      startRequestLoading();
       updateGlobalLoading(requestCount + 1);
     }
     config.headers['X-M'] = await ensureFingerprint();
@@ -122,7 +142,7 @@ request.interceptors.request.use(
   },
   (error) => {
     // 请求错误时减少计数
-    finishLoading();
+    finishRequestLoading();
     updateGlobalLoading(requestCount - 1);
     return Promise.reject(error);
   }
@@ -134,7 +154,7 @@ request.interceptors.response.use(
     // 如果没有设置 noLoading 标识, 则执行全局 loading 逻辑
     const { config } = response;
     if (!config.noLoading) {
-      finishLoading();
+      finishRequestLoading();
       updateGlobalLoading(requestCount - 1);
     }
     // 处理文件下载
@@ -176,8 +196,10 @@ request.interceptors.response.use(
   },
   async (error) => {
     // 减少请求计数
-    finishLoading();
-    updateGlobalLoading(requestCount - 1);
+    if (!error.config?.noLoading) {
+      finishRequestLoading();
+      updateGlobalLoading(requestCount - 1);
+    }
 
     // 处理错误响应
     let errorMessage;

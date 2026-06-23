@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../../components/common';
+import Button from '../../common/Button';
 import { useBranding } from '../../../hooks/useBranding';
 
 function UpcomingContests({ contests = [], isLoading }) {

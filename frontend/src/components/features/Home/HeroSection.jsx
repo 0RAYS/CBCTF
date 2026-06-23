@@ -1,8 +1,6 @@
-import { motion } from 'motion/react';
-import { Button } from '../../../components/common';
+import Button from '../../common/Button';
 import { useNavigate } from 'react-router-dom';
 import { useBranding } from '../../../hooks/useBranding';
-import { EASE_T1 } from '../../../config/motion';
 
 function HeroSection() {
   const navigate = useNavigate();
@@ -13,12 +11,7 @@ function HeroSection() {
       <div className="w-full max-w-[1200px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-[5fr_3fr] gap-12 md:gap-20 items-center">
           {/* Text column */}
-          <motion.div
-            className="space-y-10"
-            initial={{ opacity: 0, y: 28 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: EASE_T1 }}
-          >
+          <div className="space-y-10">
             {/* Overline — operational status */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
@@ -57,15 +50,10 @@ function HeroSection() {
                 {home.hero.primaryAction}
               </Button>
             </div>
-          </motion.div>
+          </div>
 
           {/* Image column — larger corner brackets spanning full container */}
-          <motion.div
-            className="relative hidden md:flex items-center justify-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.7, delay: 0.3, ease: EASE_T1 }}
-          >
+          <div className="relative hidden md:flex items-center justify-center">
             <div className="relative w-[280px] h-[280px] xl:w-[340px] xl:h-[340px]">
               {/* Larger corner brackets — more dramatic framing */}
               <span className="absolute -top-3 -left-3 w-8 h-8 border-t-2 border-l-2 border-geek-400/70" />
@@ -83,7 +71,7 @@ function HeroSection() {
                 className="w-full h-full object-contain p-8 opacity-85"
               />
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>
