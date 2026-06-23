@@ -51,7 +51,7 @@ function injectClickableIps(html) {
 function AdminLogs() {
   const [logs, setLogs] = useState([]);
   const [hasMore, setHasMore] = useState(true);
-  const [level, setLevel] = useState('DEBUG');
+  const [level, setLevel] = useState('INFO');
   const pageSize = 100;
   const containerRef = useRef(null);
   const sentinelRef = useRef(null);
