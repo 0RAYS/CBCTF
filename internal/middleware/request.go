@@ -39,6 +39,11 @@ func DrainRequestsPool() []model.Request {
 
 // AccessLog 记录访问日志
 func AccessLog(ctx *gin.Context) {
+	path := ctx.FullPath()
+	if slices.Contains(config.Env.Gin.Log.Whitelist, path) {
+		ctx.Next()
+		return
+	}
 	ip := ctx.ClientIP()
 	accessTime := time.Now()
 	method := ctx.Request.Method
@@ -46,34 +51,31 @@ func AccessLog(ctx *gin.Context) {
 	userAgent := ctx.Request.UserAgent()
 	referer := ctx.Request.Referer()
 	magic := GetMagic(ctx)
-	path := ctx.FullPath()
 	ctx.Next()
 
 	statusCode := ctx.GetInt(resp.CTXStatusCodeKey)
 	selfID := GetSelf(ctx).ID
 
-	if !slices.Contains(config.Env.Gin.Log.Whitelist, path) {
-		// Truncate long headers to 255 characters to fit storage constraints
-		if len(userAgent) > 255 {
-			userAgent = userAgent[:255]
-		}
-		if len(referer) > 255 {
-			referer = referer[:255]
-		}
-		request := model.Request{
-			IP:        ip,
-			Time:      accessTime,
-			Method:    method,
-			Path:      path,
-			URL:       url,
-			UserAgent: userAgent,
-			Status:    statusCode,
-			Referer:   referer,
-			Magic:     magic,
-		}
-		if selfID > 0 {
-			request.UserID = sql.Null[uint]{V: selfID, Valid: true}
-		}
-		AppendRequest(request)
+	// Truncate long headers to 255 characters to fit storage constraints
+	if len(userAgent) > 255 {
+		userAgent = userAgent[:255]
 	}
+	if len(referer) > 255 {
+		referer = referer[:255]
+	}
+	request := model.Request{
+		IP:        ip,
+		Time:      accessTime,
+		Method:    method,
+		Path:      path,
+		URL:       url,
+		UserAgent: userAgent,
+		Status:    statusCode,
+		Referer:   referer,
+		Magic:     magic,
+	}
+	if selfID > 0 {
+		request.UserID = sql.Null[uint]{V: selfID, Valid: true}
+	}
+	AppendRequest(request)
 }

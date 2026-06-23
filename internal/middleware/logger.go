@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/resp"
+	"net/http"
 	"slices"
 	"sync"
 	"time"
@@ -17,6 +18,10 @@ var TotalRequests int
 var MU sync.Mutex
 
 func Logger(ctx *gin.Context) {
+	if slices.Contains(config.Env.Gin.Log.Whitelist, ctx.FullPath()) {
+		ctx.Next()
+		return
+	}
 	start := time.Now()
 
 	// Process request
@@ -35,9 +40,6 @@ func Logger(ctx *gin.Context) {
 	if raw != "" {
 		path = path + "?" + raw
 	}
-	if slices.Contains(config.Env.Gin.Log.Whitelist, ctx.FullPath()) {
-		return
-	}
 	statusCode := ctx.GetInt(resp.CTXStatusCodeKey)
 	if statusCode == 0 {
 		statusCode = ctx.Writer.Status()
@@ -54,9 +56,9 @@ func Logger(ctx *gin.Context) {
 
 	if ctx.Errors != nil {
 		e.Error(ctx.Errors.String())
-	} else if statusCode >= 500 {
+	} else if statusCode >= http.StatusInternalServerError {
 		e.Error()
-	} else if statusCode >= 400 {
+	} else if statusCode >= http.StatusBadRequest {
 		e.Warning()
 	} else {
 		e.Info()
