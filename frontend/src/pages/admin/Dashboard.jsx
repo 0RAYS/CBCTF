@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import ReactECharts from 'echarts-for-react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { getSystemStatus } from '../../api/admin/system';
 import AdminDashboard from '../../components/features/Admin/AdminDashboard';
 import { toast } from '../../utils/toast.js';
 import { useTranslation } from 'react-i18next';
+
+const ReactECharts = lazy(() => import('echarts-for-react'));
 
 function Dashboard() {
   const [status, setStatus] = useState(null);
@@ -136,7 +137,13 @@ function Dashboard() {
         status={status}
         chartContent={
           <div style={{ width: '100%', height: '450px' }}>
-            <ReactECharts option={getChartOption()} style={{ height: '100%', width: '100%' }} />
+            <Suspense
+              fallback={
+                <div className="flex h-full items-center justify-center text-neutral-400">{t('common.loading')}</div>
+              }
+            >
+              <ReactECharts option={getChartOption()} style={{ height: '100%', width: '100%' }} />
+            </Suspense>
           </div>
         }
       />

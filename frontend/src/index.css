@@ -1,18 +1,5 @@
-/* Maple UI */
-@font-face {
-  font-family: 'Maple UI';
-  src: url('./assets/fonts/Maple UI.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Maple UI';
-  src: url('./assets/fonts/Maple UI Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 /* Maple Mono */
 @font-face {
@@ -36,25 +23,6 @@
   font-style: normal;
   font-display: swap;
 }
-
-/* Source Han Sans SC */
-@font-face {
-  font-family: 'Source Han Sans SC';
-  src: url('./assets/fonts/SourceHanSansSC-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Source Han Sans SC';
-  src: url('./assets/fonts/SourceHanSansSC-Bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@import "tailwindcss";
-@config "../tailwind.config.js";
 
 :root {
   --scrollbar-size: 10px;

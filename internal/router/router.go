@@ -34,6 +34,12 @@ func Init() *gin.Engine {
 		router.GET("/", func(ctx *gin.Context) {
 			ctx.Redirect(http.StatusFound, fmt.Sprintf("%s/platform", config.Env.Host))
 		})
+		router.Use(func(ctx *gin.Context) {
+			if strings.HasPrefix(ctx.Request.URL.Path, "/platform") {
+				ctx.Header("Cache-Control", "public, max-age=31536000, immutable")
+			}
+			ctx.Next()
+		})
 		router.StaticFS("/platform", http.FS(frontend.SubFS))
 	}
 
