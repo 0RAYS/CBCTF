@@ -9,14 +9,12 @@ export default {
       extend: {
         fontFamily: {
           sans: [
-            '"Maple UI"',
-            '"Source Han Sans SC"',
             'ui-sans-serif', 'system-ui', 'sans-serif',
+            '"Apple LiGothic"', '"Microsoft YaHei"', '"PingFang SC"', '"Noto Sans CJK SC"',
             '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"',
           ],
           mono: [
             '"Maple Mono"',
-            '"Source Han Sans SC"',
             'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas',
             '"Liberation Mono"', '"Courier New"', 'monospace',
           ],

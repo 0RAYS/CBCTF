@@ -1,6 +1,7 @@
-import { useMemo, useRef, useCallback, useEffect } from 'react';
-import ReactECharts from 'echarts-for-react';
+import { lazy, Suspense, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+
+const ReactECharts = lazy(() => import('echarts-for-react'));
 
 /**
  * 分数曲线预览图表（支持拖拽控制点调整 decay）
@@ -289,13 +290,15 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
 
   return (
     <div className="mt-2 border border-neutral-700/50 rounded-md bg-black/30 p-2">
-      <ReactECharts
-        ref={chartRef}
-        option={option}
-        style={{ height: '180px', width: '100%' }}
-        opts={{ renderer: 'canvas' }}
-        onChartReady={onChartReady}
-      />
+      <Suspense fallback={<div className="flex h-[180px] items-center justify-center text-xs text-neutral-500" />}>
+        <ReactECharts
+          ref={chartRef}
+          option={option}
+          style={{ height: '180px', width: '100%' }}
+          opts={{ renderer: 'canvas' }}
+          onChartReady={onChartReady}
+        />
+      </Suspense>
     </div>
   );
 }
