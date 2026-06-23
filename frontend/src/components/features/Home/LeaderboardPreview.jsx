@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
-import { ScrollingText, Button } from '../../../components/common';
+import Button from '../../common/Button';
+import ScrollingText from '../../common/ScrollingText';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useBranding } from '../../../hooks/useBranding';

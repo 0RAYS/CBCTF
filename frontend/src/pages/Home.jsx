@@ -1,12 +1,13 @@
 import HeroSection from '../components/features/Home/HeroSection';
-import StatsSection from '../components/features/Home/StatsSection';
-import ChallengeTypes from '../components/features/Home/ChallengeTypes';
-import UpcomingContests from '../components/features/Home/UpcomingContests';
-import LeaderboardPreview from '../components/features/Home/LeaderboardPreview';
-import { useEffect, useState } from 'react';
+import { lazy, startTransition, Suspense, useEffect, useState } from 'react';
 import { getStats } from '../api/stats.js';
 import { toast } from '../utils/toast.js';
 import { useTranslation } from 'react-i18next';
+
+const StatsSection = lazy(() => import('../components/features/Home/StatsSection'));
+const ChallengeTypes = lazy(() => import('../components/features/Home/ChallengeTypes'));
+const UpcomingContests = lazy(() => import('../components/features/Home/UpcomingContests'));
+const LeaderboardPreview = lazy(() => import('../components/features/Home/LeaderboardPreview'));
 
 const transformUpcomingData = (contests) => {
   return contests.map((contest) => {
@@ -27,6 +28,21 @@ function Home() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [upcomingContests, setUpcomingContests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDeferredSections, setShowDeferredSections] = useState(false);
+
+  useEffect(() => {
+    const showSections = () => {
+      startTransition(() => setShowDeferredSections(true));
+    };
+
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(showSections, { timeout: 1200 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(showSections, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -52,10 +68,14 @@ function Home() {
   return (
     <div className="-mt-10">
       <HeroSection />
-      <StatsSection stats={stats} isLoading={loading} />
-      <ChallengeTypes />
-      <UpcomingContests contests={upcomingContests} isLoading={loading} />
-      <LeaderboardPreview topUsers={leaderboard} isLoading={loading} />
+      {showDeferredSections && (
+        <Suspense fallback={null}>
+          <StatsSection stats={stats} isLoading={loading} />
+          <ChallengeTypes />
+          <UpcomingContests contests={upcomingContests} isLoading={loading} />
+          <LeaderboardPreview topUsers={leaderboard} isLoading={loading} />
+        </Suspense>
+      )}
     </div>
   );
 }
