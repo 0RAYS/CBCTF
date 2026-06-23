@@ -51,6 +51,7 @@ func AccessLog(ctx *gin.Context) {
 	userAgent := ctx.Request.UserAgent()
 	referer := ctx.Request.Referer()
 	magic := GetMagic(ctx)
+	start := time.Now()
 	ctx.Next()
 
 	statusCode := ctx.GetInt(resp.CTXStatusCodeKey)
@@ -66,6 +67,7 @@ func AccessLog(ctx *gin.Context) {
 	request := model.Request{
 		IP:        ip,
 		Time:      accessTime,
+		Latency:   time.Since(start),
 		Method:    method,
 		Path:      path,
 		URL:       url,
