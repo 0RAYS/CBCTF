@@ -63,14 +63,18 @@ function Footer({ copyright, icp, links }) {
             {resolvedIcp && (
               <>
                 <div className="w-[1px] h-[12px] bg-neutral-600/60 hidden sm:block"></div>
-                <a
-                  href={resolvedIcp.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-neutral-400 text-xs tracking-wider hover:text-geek-400 transition-colors duration-200"
-                >
-                  {resolvedIcp.number}
-                </a>
+                {resolvedIcp.link ? (
+                  <a
+                    href={resolvedIcp.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-neutral-400 text-xs tracking-wider hover:text-geek-400 transition-colors duration-200"
+                  >
+                    {resolvedIcp.number}
+                  </a>
+                ) : (
+                  <span className="text-neutral-400 text-xs tracking-wider">{resolvedIcp.number}</span>
+                )}
               </>
             )}
           </div>
