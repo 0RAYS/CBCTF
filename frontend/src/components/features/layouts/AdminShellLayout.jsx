@@ -24,7 +24,7 @@ function AdminShellLayout({
 }) {
   const location = useLocation();
   const { t } = useTranslation();
-  const { footerCopyright } = useBranding();
+  const { footerCopyright, footerICPNumber, footerICPLink, footerContactEmail, footerGithubURL } = useBranding();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const activePath = location.pathname;
@@ -66,7 +66,13 @@ function AdminShellLayout({
     setSidebarOpen(false);
   };
 
-  const footerConfig = getFooterConfig(t, footerCopyright);
+  const footerConfig = getFooterConfig(t, {
+    copyright: footerCopyright,
+    icpNumber: footerICPNumber,
+    icpLink: footerICPLink,
+    contactEmail: footerContactEmail,
+    githubURL: footerGithubURL,
+  });
 
   return (
     <div className="h-screen w-screen overflow-hidden">
