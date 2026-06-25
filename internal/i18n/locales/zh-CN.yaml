@@ -129,6 +129,8 @@ model:
     samePassword: "新密码不能与旧密码相同"
     passwordWrong: "密码错误"
     namePasswordWrong: "用户名或密码错误"
+    captchaRequired: "需要进行验证码验证"
+    captchaWrong: "验证码错误或已过期"
     unverifiedEmail: "邮箱尚未验证"
     alreadyVerified: "邮箱已验证"
     inContest: "用户已参加比赛, 无法删除账户"

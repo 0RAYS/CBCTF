@@ -51,6 +51,7 @@ func Init() *gin.Engine {
 	RegisterMetricsRouter(router)
 
 	{
+		router.GET("/captcha", middleware.RateLimit("captcha", 20, time.Minute), GetCaptcha)
 		router.POST("/register", middleware.RateLimit("register", 1, time.Minute), Register)
 		router.POST("/login", middleware.RateLimit("login", 10, time.Minute), Login)
 		router.DELETE("/logout", Logout)

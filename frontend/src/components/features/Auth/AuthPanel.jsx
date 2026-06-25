@@ -3,18 +3,82 @@ import { useState, useEffect } from 'react';
 import { Button, Input, Modal } from '../../common';
 import OAuthLogin from './OAuthLogin';
 import { useTranslation } from 'react-i18next';
-import { forgotPassword } from '../../../api/auth';
+import { forgotPassword, getCaptcha } from '../../../api/auth';
+
+function CaptchaField({ captcha, value, onChange, onRefresh, error, disabled }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-3 items-end">
+        <Input
+          type="text"
+          name="captcha"
+          required
+          value={value}
+          onChange={onChange}
+          label={t('auth.captcha.label')}
+          placeholder={t('auth.captcha.placeholder')}
+          error={error}
+          autoComplete="off"
+          disabled={disabled}
+        />
+        <button
+          type="button"
+          className="h-10 w-32 shrink-0 overflow-hidden rounded-md border border-neutral-600/60 bg-neutral-900/80 transition-colors hover:border-geek-400 disabled:opacity-50"
+          onClick={onRefresh}
+          disabled={disabled}
+          aria-label={t('auth.captcha.refresh')}
+        >
+          {captcha?.image ? (
+            <img src={captcha.image} alt={t('auth.captcha.imageAlt')} className="h-full w-full object-cover" />
+          ) : (
+            <span className="text-xs text-neutral-400">{t('common.loading')}</span>
+          )}
+        </button>
+      </div>
+      <button
+        type="button"
+        className="text-xs text-neutral-500 hover:text-[#597ef7]"
+        onClick={onRefresh}
+        disabled={disabled}
+      >
+        {t('auth.captcha.refresh')}
+      </button>
+    </div>
+  );
+}
 
 function ForgotPasswordModal({ isOpen, onClose }) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [captcha, setCaptcha] = useState(null);
+  const [captchaValue, setCaptchaValue] = useState('');
+  const [captchaError, setCaptchaError] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const loadCaptcha = async () => {
+    const response = await getCaptcha();
+    if (response.code === 200) {
+      setCaptcha(response.data);
+      setCaptchaValue('');
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && !sent) {
+      loadCaptcha();
+    }
+  }, [isOpen, sent]);
 
   const handleClose = () => {
     setEmail('');
     setEmailError('');
+    setCaptcha(null);
+    setCaptchaValue('');
+    setCaptchaError('');
     setIsSending(false);
     setSent(false);
     onClose();
@@ -26,13 +90,20 @@ function ForgotPasswordModal({ isOpen, onClose }) {
       setEmailError(t('auth.validation.emailInvalid'));
       return;
     }
+    if (!captcha?.id || !captchaValue.trim()) {
+      setCaptchaError(t('auth.validation.captchaRequired'));
+      return;
+    }
     setIsSending(true);
     try {
-      await forgotPassword({ email });
+      const response = await forgotPassword({ email, captchaId: captcha.id, captcha: captchaValue });
+      if (response.code !== 200) {
+        throw new Error(response.msg);
+      }
       setSent(true);
     } catch {
-      // 即使失败也显示成功（防止枚举）
-      setSent(true);
+      setCaptchaError(t('auth.validation.captchaInvalid'));
+      await loadCaptcha();
     } finally {
       setIsSending(false);
     }
@@ -63,6 +134,17 @@ function ForgotPasswordModal({ isOpen, onClose }) {
             placeholder={t('auth.placeholders.email')}
             error={emailError}
           />
+          <CaptchaField
+            captcha={captcha}
+            value={captchaValue}
+            onChange={(e) => {
+              setCaptchaValue(e.target.value);
+              if (captchaError) setCaptchaError('');
+            }}
+            onRefresh={loadCaptcha}
+            error={captchaError}
+            disabled={isSending}
+          />
           <Button type="submit" variant="primary" fullWidth disabled={isSending}>
             {isSending ? t('auth.forgotPassword.sending') : t('auth.forgotPassword.submit')}
           </Button>
@@ -80,7 +162,9 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
     password: '',
     confirmPassword: '',
     email: '',
+    captcha: '',
   });
+  const [captcha, setCaptcha] = useState(null);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -107,6 +191,25 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
     }
   }, [errors.submit, formControls]);
 
+  const shouldShowCaptcha = true;
+
+  const loadCaptcha = async () => {
+    const response = await getCaptcha();
+    if (response.code === 200) {
+      setCaptcha(response.data);
+      setFormData((prev) => ({ ...prev, captcha: '' }));
+    }
+  };
+
+  useEffect(() => {
+    if (shouldShowCaptcha) {
+      loadCaptcha();
+    } else {
+      setCaptcha(null);
+      setFormData((prev) => ({ ...prev, captcha: '' }));
+    }
+  }, [shouldShowCaptcha]);
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -126,6 +229,10 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
       if (!/\S+@\S+\.\S+/.test(formData.email)) {
         newErrors.email = t('auth.validation.emailInvalid');
       }
+    }
+
+    if (shouldShowCaptcha && (!captcha?.id || !formData.captcha.trim())) {
+      newErrors.captcha = t('auth.validation.captchaRequired');
     }
 
     setErrors(newErrors);
@@ -149,6 +256,8 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
         data: {
           username: formData.username,
           password: formData.password,
+          captchaId: captcha?.id,
+          captcha: formData.captcha,
           ...(isLogin
             ? {}
             : {
@@ -158,6 +267,7 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
         },
       });
     } catch (error) {
+      await loadCaptcha();
       setErrors((prev) => ({
         ...prev,
         submit: error.message,
@@ -181,6 +291,11 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
         submit: '',
       }));
     }
+  };
+
+  const switchMode = (nextIsLogin) => {
+    setIsLogin(nextIsLogin);
+    setErrors({});
   };
 
   return (
@@ -211,7 +326,7 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
             variant={isLogin ? 'primary' : 'outline'}
             size="sm"
             className={registrationEnabled ? 'min-w-[100px]' : 'min-w-[220px]'}
-            onClick={() => setIsLogin(true)}
+            onClick={() => switchMode(true)}
           >
             {t('auth.login')}
           </Button>
@@ -220,7 +335,7 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
               variant={!isLogin ? 'primary' : 'outline'}
               size="sm"
               className="min-w-[100px]"
-              onClick={() => setIsLogin(false)}
+              onClick={() => switchMode(false)}
             >
               {t('auth.register')}
             </Button>
@@ -304,6 +419,24 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
                       label={t('auth.placeholders.confirmPassword')}
                       placeholder={t('auth.placeholders.confirmPassword')}
                       error={errors.confirmPassword}
+                    />
+                  </motion.div>
+                )}
+
+                {shouldShowCaptcha && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.15, ease: [0.25, 1, 0.5, 1] }}
+                  >
+                    <CaptchaField
+                      captcha={captcha}
+                      value={formData.captcha}
+                      onChange={handleChange}
+                      onRefresh={loadCaptcha}
+                      error={errors.captcha}
+                      disabled={isSubmitting}
                     />
                   </motion.div>
                 )}

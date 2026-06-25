@@ -1,5 +1,12 @@
 import request from './request';
 
+export const getCaptcha = () => {
+  return request({
+    url: '/captcha',
+    method: 'GET',
+  });
+};
+
 // 用户登录
 export const login = (data) => {
   return request({
@@ -8,6 +15,8 @@ export const login = (data) => {
     data: {
       name: data.name,
       password: data.password,
+      captcha_id: data.captchaId,
+      captcha: data.captcha,
     },
   });
 };
@@ -21,6 +30,8 @@ export const register = (data) => {
       name: data.name,
       email: data.email,
       password: data.password,
+      captcha_id: data.captchaId,
+      captcha: data.captcha,
     },
   });
 };
@@ -44,6 +55,8 @@ export const forgotPassword = (data) => {
     method: 'POST',
     data: {
       email: data.email,
+      captcha_id: data.captchaId,
+      captcha: data.captcha,
     },
   });
 };

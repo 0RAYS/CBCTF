@@ -2464,7 +2464,15 @@
       "passwordMin": "Password must be at least 6 characters",
       "passwordMismatch": "Passwords do not match",
       "emailInvalid": "Invalid email address",
-      "passwordRequired": "Password is required"
+      "passwordRequired": "Password is required",
+      "captchaRequired": "Captcha is required",
+      "captchaInvalid": "Captcha is invalid or expired"
+    },
+    "captcha": {
+      "label": "Captcha",
+      "placeholder": "Enter captcha",
+      "refresh": "Refresh captcha",
+      "imageAlt": "Captcha image"
     },
     "oauth": {
       "or": "Or sign in with",

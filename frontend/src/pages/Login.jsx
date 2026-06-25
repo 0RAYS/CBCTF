@@ -28,18 +28,24 @@ function Login() {
         response = await login({
           name: data.username,
           password: data.password,
+          captchaId: data.captchaId,
+          captcha: data.captcha,
         });
       } else {
         response = await register({
           name: data.username,
           email: data.email,
           password: data.password,
+          captchaId: data.captchaId,
+          captcha: data.captcha,
         });
       }
       if (response.code === 200) {
         await dispatch(fetchUserInfo());
         await dispatch(fetchAccessibleRoutes());
         navigate(store.getState().user.hasAdminAccess ? '/admin/dashboard' : '/games');
+      } else {
+        throw new Error(response.msg);
       }
     } catch (error) {
       toast.danger({ title: msg, description: error.message });

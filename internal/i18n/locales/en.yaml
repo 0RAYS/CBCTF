@@ -129,6 +129,8 @@ model:
     samePassword: "New password must be different"
     passwordWrong: "Incorrect password"
     namePasswordWrong: "Incorrect username or password"
+    captchaRequired: "Captcha verification is required"
+    captchaWrong: "Captcha is invalid or expired"
     unverifiedEmail: "Email is not verified"
     alreadyVerified: "Email is already verified"
     inContest: "User has joined a contest and cannot be deleted"

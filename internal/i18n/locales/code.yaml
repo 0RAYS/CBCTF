@@ -129,6 +129,8 @@ model:
     samePassword: "400"
     passwordWrong: "401"
     namePasswordWrong: "401"
+    captchaRequired: "400"
+    captchaWrong: "400"
     unverifiedEmail: "400"
     alreadyVerified: "400"
     inContest: "400"
