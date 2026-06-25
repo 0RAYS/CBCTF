@@ -12,13 +12,17 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-const oauthKey = "oauth:%s:%s"
-const oauthCodeKey = "oauth:code:%s"
+const (
+	oauthKey      = "oauth:%s:%s"
+	oauthCodeKey  = "oauth:code:%s"
+	oauthStateTTL = 10 * time.Minute
+	oauthCodeTTL  = 30 * time.Second
+)
 
 func SetOauthState(provider, state, verifier string) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if err := RDB.Set(ctx, fmt.Sprintf(oauthKey, provider, state), verifier, 10*time.Minute).Err(); err != nil {
+	if err := RDB.Set(ctx, fmt.Sprintf(oauthKey, provider, state), verifier, oauthStateTTL).Err(); err != nil {
 		log.Logger.Warningf("Failed to set oauth state for provider %s: %s", provider, err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": fmt.Sprintf(oauthKey, provider, state), "Error": err.Error()}}
 	}
@@ -52,7 +56,7 @@ func DelOauthState(provider string, state string) model.RetVal {
 func SetOauthCode(code, token string) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if err := RDB.Set(ctx, fmt.Sprintf(oauthCodeKey, code), token, 30*time.Second).Err(); err != nil {
+	if err := RDB.Set(ctx, fmt.Sprintf(oauthCodeKey, code), token, oauthCodeTTL).Err(); err != nil {
 		log.Logger.Warningf("Failed to set oauth code: %s", err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": fmt.Sprintf(oauthCodeKey, code), "Error": err.Error()}}
 	}

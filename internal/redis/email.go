@@ -12,13 +12,16 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-const emailVerifyTokenKey = "email:%d"
+const (
+	emailVerifyTokenKey = "email:%d"
+	emailVerifyTokenTTL = 30 * time.Minute
+)
 
 // SetEmailVerifyToken 设置邮箱验证 token, 时效一天
 func SetEmailVerifyToken(userID uint, token string) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if err := RDB.Set(ctx, fmt.Sprintf(emailVerifyTokenKey, userID), token, 30*time.Minute).Err(); err != nil {
+	if err := RDB.Set(ctx, fmt.Sprintf(emailVerifyTokenKey, userID), token, emailVerifyTokenTTL).Err(); err != nil {
 		log.Logger.Warningf("Failed to set email verify token: %s", err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKey, userID), "Error": err.Error()}}
 	}

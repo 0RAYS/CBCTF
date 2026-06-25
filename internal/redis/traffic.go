@@ -15,6 +15,7 @@ import (
 
 const (
 	trafficsKey = "traffics:%d"
+	trafficsTTL = 30 * time.Minute
 )
 
 // UpdateTraffics 重建靶机 pod 连接的 Redis 缓存（用于拓扑展示）。
@@ -39,9 +40,9 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 			Member: fmt.Sprintf(trafficsKey+":%d", victim.ID, i),
 		})
 		data, _ := msgpack.Marshal(&conn)
-		pipe.Set(ctx, fmt.Sprintf(trafficsKey+":%d", victim.ID, i), data, 30*time.Minute)
+		pipe.Set(ctx, fmt.Sprintf(trafficsKey+":%d", victim.ID, i), data, trafficsTTL)
 	}
-	pipe.Expire(ctx, key, 30*time.Minute)
+	pipe.Expire(ctx, key, trafficsTTL)
 	if _, err = pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to cache victim traffic: victim_id=%d error=%s", victim.ID, err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": trafficsKey, "Error": err.Error()}}
