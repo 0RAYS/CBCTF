@@ -24,13 +24,6 @@ import (
 
 var server *http.Server
 
-// log 与 db 需 Init 两次
-// 系统配置主要从数据库中读取, 但数据库连接依赖配置文件
-// 初次初始化读取数据库中配置覆盖读取配置文件的值
-func preInit() {
-	db.Init()
-}
-
 func run() {
 	db.Init()
 	redis.Init()
@@ -75,7 +68,6 @@ func run() {
 
 func reboot() {
 	stop()
-	preInit()
 	run()
 }
 
