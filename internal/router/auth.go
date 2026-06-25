@@ -37,7 +37,7 @@ func setAuthCookie(ctx *gin.Context, token string) {
 		}
 	}
 	http.SetCookie(ctx.Writer, &http.Cookie{
-		Name:     "token",
+		Name:     middleware.TokenCookieName,
 		Value:    token,
 		MaxAge:   int(time.Hour.Seconds()),
 		Path:     "/",
@@ -147,7 +147,7 @@ func Logout(ctx *gin.Context) {
 		}
 	}
 	http.SetCookie(ctx.Writer, &http.Cookie{
-		Name:     "token",
+		Name:     middleware.TokenCookieName,
 		Value:    "",
 		MaxAge:   -1,
 		Path:     "/",
