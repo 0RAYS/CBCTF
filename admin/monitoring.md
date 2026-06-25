@@ -90,7 +90,7 @@ PUT /admin/system/config    # 需 admin:system:update
 POST /admin/system/restart  # 需 admin:system:restart
 ```
 
-PostgreSQL/Redis 连接、数据目录、Gin 监听地址和监听端口在页面中只读，只能通过部署配置修改。
+PostgreSQL/GORM、Redis、数据目录、Gin 监听地址和监听端口在页面中只读，只能通过部署配置修改。
 
 :::warning
 重启会短暂中断服务。正式比赛期间谨慎使用。
