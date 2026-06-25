@@ -15,13 +15,16 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-const userRBACKey = "users:rbac:%d"
+const (
+	userRBACKey = "users:rbac:%d"
+	userRBACTTL = 5 * time.Minute
+)
 
 func SetUserRBAC(userID uint, permissions []string) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	data, _ := msgpack.Marshal(permissions)
-	if err := RDB.Set(ctx, fmt.Sprintf(userRBACKey, userID), data, 5*time.Minute).Err(); err != nil {
+	if err := RDB.Set(ctx, fmt.Sprintf(userRBACKey, userID), data, userRBACTTL).Err(); err != nil {
 		log.Logger.Warningf("Failed to set user RBAC permissions: %s", err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": userRBACKey, "Error": err.Error()}}
 	}

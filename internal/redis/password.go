@@ -12,13 +12,16 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-const passwordResetTokenKey = "password:reset:%d"
+const (
+	passwordResetTokenKey = "password:reset:%d"
+	passwordResetTokenTTL = 30 * time.Minute
+)
 
 // SetPasswordResetToken 设置密码重置 token, 时效 30 分钟
 func SetPasswordResetToken(userID uint, token string) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if err := RDB.Set(ctx, fmt.Sprintf(passwordResetTokenKey, userID), token, 30*time.Minute).Err(); err != nil {
+	if err := RDB.Set(ctx, fmt.Sprintf(passwordResetTokenKey, userID), token, passwordResetTokenTTL).Err(); err != nil {
 		log.Logger.Warningf("Failed to set password reset token: %s", err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": fmt.Sprintf(passwordResetTokenKey, userID), "Error": err.Error()}}
 	}
