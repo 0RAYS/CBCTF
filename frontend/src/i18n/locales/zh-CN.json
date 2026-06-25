@@ -2463,7 +2463,15 @@
       "passwordMin": "密码至少 6 个字符",
       "passwordMismatch": "两次密码不一致",
       "emailInvalid": "邮箱格式不正确",
-      "passwordRequired": "密码必填"
+      "passwordRequired": "密码必填",
+      "captchaRequired": "请输入验证码",
+      "captchaInvalid": "验证码错误或已过期"
+    },
+    "captcha": {
+      "label": "验证码",
+      "placeholder": "请输入验证码",
+      "refresh": "刷新验证码",
+      "imageAlt": "验证码图片"
     },
     "oauth": {
       "or": "或者使用以下方式登录",

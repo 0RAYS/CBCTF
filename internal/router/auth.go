@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
 	"CBCTF/internal/prometheus"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
@@ -46,6 +47,20 @@ func setAuthCookie(ctx *gin.Context, token string) {
 	})
 }
 
+func GetCaptcha(ctx *gin.Context) {
+	id, image, answer, err := utils.NewCaptcha().Generate()
+	if err != nil {
+		log.Logger.Warningf("Failed to generate captcha: %s", err)
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		return
+	}
+	if ret := redis.SetCaptchaAnswer(id, answer); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"id": id, "image": image}))
+}
+
 func Register(ctx *gin.Context) {
 	if !config.Env.Registration.Enabled {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.User.NotAllowedRegister})
@@ -53,6 +68,10 @@ func Register(ctx *gin.Context) {
 	}
 	var form dto.RegisterForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	if ret := redis.VerifyCaptcha(form.CaptchaID, form.Captcha); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -83,6 +102,14 @@ func Register(ctx *gin.Context) {
 func Login(ctx *gin.Context) {
 	var form dto.LoginForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	if form.CaptchaID == "" || form.Captcha == "" {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.User.CaptchaRequired})
+		return
+	}
+	if ret := redis.VerifyCaptcha(form.CaptchaID, form.Captcha); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -136,6 +163,10 @@ func Logout(ctx *gin.Context) {
 func ForgotPassword(ctx *gin.Context) {
 	var form dto.ForgotPasswordForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	if ret := redis.VerifyCaptcha(form.CaptchaID, form.Captcha); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}

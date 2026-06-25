@@ -168,6 +168,8 @@ type User struct {
 	SamePassword           string
 	PasswordWrong          string
 	NamePasswordWrong      string
+	CaptchaRequired        string
+	CaptchaWrong           string
 	UnverifiedEmail        string
 	AlreadyVerified        string
 	InContest              string
@@ -411,6 +413,8 @@ var Model = struct {
 		SamePassword:           "model.user.samePassword",
 		PasswordWrong:          "model.user.passwordWrong",
 		NamePasswordWrong:      "model.user.namePasswordWrong",
+		CaptchaRequired:        "model.user.captchaRequired",
+		CaptchaWrong:           "model.user.captchaWrong",
 		UnverifiedEmail:        "model.user.unverifiedEmail",
 		AlreadyVerified:        "model.user.alreadyVerified",
 		InContest:              "model.user.inContest",
