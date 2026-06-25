@@ -55,6 +55,9 @@ func AccessLog(ctx *gin.Context) {
 	ctx.Next()
 
 	statusCode := ctx.GetInt(resp.CTXStatusCodeKey)
+	if statusCode == 0 {
+		statusCode = ctx.Writer.Status()
+	}
 	selfID := GetSelf(ctx).ID
 
 	// Truncate long headers to 255 characters to fit storage constraints
