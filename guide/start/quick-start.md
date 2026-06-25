@@ -52,7 +52,7 @@ cd ..
 go run .
 ```
 
-如果没有 `config.yaml`，程序会使用内置默认配置。系统配置页不会修改 PostgreSQL/Redis 连接、数据目录、Gin 监听地址和监听端口。
+如果没有 `config.yaml`，程序会使用内置默认配置。系统配置页不会修改 PostgreSQL/GORM、Redis、数据目录、Gin 监听地址和监听端口。
 
 后端构建命令：
 

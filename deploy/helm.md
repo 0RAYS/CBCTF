@@ -89,7 +89,7 @@ helm uninstall cbctf -n cbctf
 
 JWT、PostgreSQL 和 Redis 密钥会写入 `/app/config.yaml`。
 
-管理后台不能修改 PostgreSQL/Redis 连接、数据目录、Gin 监听地址和监听端口。
+管理后台不能修改 PostgreSQL/GORM、Redis、数据目录、Gin 监听地址和监听端口。
 
 ## PostgreSQL 和 Redis
 
