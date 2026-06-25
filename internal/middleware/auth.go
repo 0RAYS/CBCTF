@@ -15,11 +15,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const TokenCookieName = "CBCTF_TOKEN"
+
 // CheckAuth 是否登录, 用户是否被 ban, 记录设备
 func CheckAuth(ctx *gin.Context) {
 	var token string
 	// 优先从 httpOnly Cookie 读取 token
-	if cookie, err := ctx.Cookie("token"); err == nil && cookie != "" {
+	if cookie, err := ctx.Cookie(TokenCookieName); err == nil && cookie != "" {
 		token = cookie
 	} else {
 		// 回退到 Authorization 请求头
