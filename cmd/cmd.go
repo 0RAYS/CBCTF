@@ -27,6 +27,5 @@ func Cmd() {
 	_ = fs.Parse(os.Args[1:])
 
 	config.Init(path)
-	preInit()
 	run()
 }

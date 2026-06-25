@@ -26,10 +26,6 @@ type UpdateSettingForm struct {
 	GinJWTSecret          *string   `form:"gin_jwt_secret" json:"gin_jwt_secret" binding:"omitempty,min=11"`
 	GinMetricsWhitelist   *[]string `form:"gin_metrics_whitelist" json:"gin_metrics_whitelist" binding:"omitempty,dive,ip|cidr"`
 
-	GormPostgresMXOpen *int    `form:"gorm_postgres_mxopen" json:"gorm_postgres_mxopen" binding:"omitempty,gte=1"`
-	GormPostgresMXIdle *int    `form:"gorm_postgres_mxidle" json:"gorm_postgres_mxidle" binding:"omitempty,gte=1"`
-	GormLogLevel       *string `form:"gorm_log_level" json:"gorm_log_level" binding:"omitempty,oneof=SILENT INFO WARNING ERROR silent info warning error"`
-
 	K8SNamespace     *string              `form:"k8s_namespace" json:"k8s_namespace" binding:"omitempty,min=1,alphanum"`
 	K8SCaptureImage  *string              `form:"k8s_capture" json:"k8s_capture" binding:"omitempty,min=1"`
 	K8SFrpOn         *bool                `form:"k8s_frp_on" json:"k8s_frp_on"`

@@ -93,10 +93,6 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.GinJWTSecretSettingKey, Value: model.SettingValue{V: config.Env.Gin.JWT.Secret}},
 		{Key: model.GinMetricsWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Metrics.Whitelist}},
 
-		{Key: model.GormPostgresMXOpenSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.MaxOpenConns}},
-		{Key: model.GormPostgresMXIdleSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.MaxIdleConns}},
-		{Key: model.GormLogLevelSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Log.Level}},
-
 		{Key: model.K8SNamespaceSettingKey, Value: model.SettingValue{V: config.Env.K8S.Namespace}},
 		{Key: model.K8SCaptureImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.CaptureImage}},
 		{Key: model.K8SFrpOnSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.On}},
@@ -182,16 +178,6 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 	if config.Env.Gin.Metrics.Whitelist, ret = GetValue[[]string](s, model.GinMetricsWhitelistSettingKey); !ret.OK {
-		return ret
-	}
-
-	if config.Env.Gorm.Postgres.MaxOpenConns, ret = GetValue[int](s, model.GormPostgresMXOpenSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gorm.Postgres.MaxIdleConns, ret = GetValue[int](s, model.GormPostgresMXIdleSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gorm.Log.Level, ret = GetValue[string](s, model.GormLogLevelSettingKey); !ret.OK {
 		return ret
 	}
 
