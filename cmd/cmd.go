@@ -1,21 +1,24 @@
 package cmd
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"flag"
 	"fmt"
 	"os"
 )
 
-var configPath string
+var path string
 
 func init() {
 	i18n.Init()
+	log.Init()
 }
 
 func Cmd() {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	fs.StringVar(&configPath, "c", "config.yaml", "Path to config file")
+	fs.StringVar(&path, "c", "config.yaml", "Path to config file")
 	fs.Usage = func() {
 		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s [options] [command]\n\n", os.Args[0])
 		_, _ = fmt.Fprintln(os.Stderr, "Options:")
@@ -23,6 +26,7 @@ func Cmd() {
 	}
 	_ = fs.Parse(os.Args[1:])
 
+	config.Init(path)
 	preInit()
 	run()
 }

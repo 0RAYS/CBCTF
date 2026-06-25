@@ -28,17 +28,14 @@ var server *http.Server
 // 系统配置主要从数据库中读取, 但数据库连接依赖配置文件
 // 初次初始化读取数据库中配置覆盖读取配置文件的值
 func preInit() {
-	config.Init(configPath)
-	log.Init()
 	db.Init()
 }
 
 func run() {
-	log.Init()
-	oauth.Init()
 	db.Init()
 	redis.Init()
 	k8s.Init()
+	oauth.Init()
 	email.Init()
 	webhook.Init()
 	task.Init()
