@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import transformImports from '@rolldown/plugin-transform-imports'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
@@ -23,6 +24,11 @@ const isPnpmPackage = (id, packageName) => {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    transformImports({
+      '@tabler/icons-react': {
+        transform: '@tabler/icons-react/dist/esm/icons/{{member}}.mjs',
+      },
+    }),
     tailwindcss(),
     react(),
   ],
