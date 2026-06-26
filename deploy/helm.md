@@ -77,7 +77,7 @@ helm uninstall cbctf -n cbctf
 | `cbctf.gin.upload.challenge`       | 题目附件上传大小限制，单位 MiB           | `8`                       |
 | `cbctf.gin.upload.writeup`         | 题解上传大小限制，单位 MiB             | `8`                       |
 | `cbctf.gin.proxies`                | 可信代理 IP 或 CIDR              | `10.244.0.0/16`           |
-| `cbctf.gin.cors`                   | CORS 允许来源                   | `https://ctf.example.com` |
+| `cbctf.gin.origins`                | 允许的浏览器请求 Origin             | `https://ctf.example.com` |
 | `cbctf.gin.ratelimit.global`       | 全局限流                        | `100`                     |
 | `cbctf.gin.jwt.secret`             | JWT 签名密钥                    | `change-me-long-random`   |
 | `cbctf.gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR | `10.0.0.0/8`              |
@@ -132,7 +132,7 @@ Subnet/VPC/IP 等资源权限。Chart 不会安装 KubeVirt、Kube-OVN 或 Multu
 cbctf:
   host: "https://ctf.example.com"
   gin:
-    cors:
+    origins:
       - "https://ctf.example.com"
     proxies:
       - "10.244.0.0/16"
