@@ -56,8 +56,7 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 			log.Logger.Infof("Start generator skipped: generator_id=%d is terminating", generator.ID)
 			return nil
 		}
-		pendingStatus := model.PendingGeneratorStatus
-		if ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: &pendingStatus}); !ret.OK {
+		if ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
 			return fmt.Errorf("update generator failed: %s", ret.Msg)
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
@@ -71,8 +70,7 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 			cleanupQueued = true
 			return fmt.Errorf("start generator failed: %s", ret.Msg)
 		}
-		runningStatus := model.RunningGeneratorStatus
-		ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: &runningStatus})
+		ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
 		if !ret.OK {
 			return fmt.Errorf("update generator failed: %s", ret.Msg)
 		}
