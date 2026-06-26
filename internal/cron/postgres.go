@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
+	"database/sql"
 )
 
 const reindexPostgresLockKey = "cbctf:reindex_postgres"
@@ -21,7 +22,9 @@ func reindexPostgresTask() model.RetVal {
 	if err != nil {
 		return model.RetVal{Msg: "Failed to get PostgreSQL connection", Attr: map[string]any{"Error": err.Error()}}
 	}
-	defer conn.Close()
+	defer func(conn *sql.Conn) {
+		_ = conn.Close()
+	}(conn)
 
 	var locked bool
 	if err = conn.QueryRowContext(ctx, `SELECT pg_try_advisory_lock(hashtext($1))`, reindexPostgresLockKey).Scan(&locked); err != nil {

@@ -130,7 +130,7 @@ type Endpoint struct {
 type Endpoints []Endpoint
 
 func (e Endpoints) Value() (driver.Value, error) {
-	e = slices.DeleteFunc(e, func(e Endpoint) bool {
+	return json.Marshal(slices.DeleteFunc(e, func(e Endpoint) bool {
 		if _, err := netip.ParseAddr(e.IP); err != nil {
 			return true
 		}
@@ -141,8 +141,7 @@ func (e Endpoints) Value() (driver.Value, error) {
 			return true
 		}
 		return false
-	})
-	return json.Marshal(e)
+	}))
 }
 
 func (e *Endpoints) Scan(value any) error {

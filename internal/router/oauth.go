@@ -250,14 +250,14 @@ func UpdateOauthProvider(ctx *gin.Context) {
 
 func DeleteOauthProvider(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteOauthEventType)
-	oauth := middleware.GetOauth(ctx)
-	if ret := service.DeleteOauthProvider(db.DB, oauth); !ret.OK {
+	provider := middleware.GetOauth(ctx)
+	if ret := service.DeleteOauthProvider(db.DB, provider); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	oauthProviderMapLock.Lock()
-	if _, ok := oauthProviderMap[oauth.Uri]; ok {
-		delete(oauthProviderMap, oauth.Uri)
+	if _, ok := oauthProviderMap[provider.Uri]; ok {
+		delete(oauthProviderMap, provider.Uri)
 	}
 	oauthProviderMapLock.Unlock()
 	ctx.Set(middleware.CTXEventSuccessKey, true)

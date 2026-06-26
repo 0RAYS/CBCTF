@@ -85,7 +85,7 @@ func ListContestFlags(tx *gorm.DB, contestChallenge model.ContestChallenge) ([]m
 	return flags, ret
 }
 
-func UpdateContestFlag(tx *gorm.DB, contestChallenge model.ContestChallenge, contestFlag model.ContestFlag, form dto.UpdateContestFlagForm) model.RetVal {
+func UpdateContestFlag(tx *gorm.DB, contestFlag model.ContestFlag, form dto.UpdateContestFlagForm) model.RetVal {
 	currentScore := contestFlag.CurrentScore
 	if form.Score != nil && *form.Score < currentScore {
 		currentScore = *form.Score

@@ -129,12 +129,12 @@ func (c *arithmeticCaptcha) generate() (id, question, answer string) {
 }
 
 func (c *arithmeticCaptcha) draw(question string) (imageItem, error) {
-	image := newCaptchaImageWithBackground(c.width, c.height, c.background)
-	drawInterference(image, c.dotCount)
-	if err := image.drawText(question); err != nil {
+	captcha := newCaptchaImageWithBackground(c.width, c.height, c.background)
+	drawInterference(captcha, c.dotCount)
+	if err := captcha.drawText(question); err != nil {
 		return nil, err
 	}
-	return image, nil
+	return captcha, nil
 }
 
 type captchaImage struct {
@@ -144,7 +144,7 @@ type captchaImage struct {
 
 func newCaptchaImage(width, height int, background color.RGBA) *captchaImage {
 	img := &captchaImage{width: width, height: height, nrgba: image.NewNRGBA(image.Rect(0, 0, width, height))}
-	draw.Draw(img.nrgba, img.nrgba.Bounds(), &image.Uniform{background}, image.Point{}, draw.Src)
+	draw.Draw(img.nrgba, img.nrgba.Bounds(), &image.Uniform{C: background}, image.Point{}, draw.Src)
 	return img
 }
 

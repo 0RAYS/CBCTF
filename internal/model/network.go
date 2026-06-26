@@ -28,7 +28,7 @@ type Network struct {
 type Networks []Network
 
 func (n Networks) Value() (driver.Value, error) {
-	n = slices.DeleteFunc(n, func(n Network) bool {
+	return json.Marshal(slices.DeleteFunc(n, func(n Network) bool {
 		if n.Definition.CIDR == "" || n.Definition.Gateway == "" || n.Attachment.IP == "" {
 			return true
 		}
@@ -45,8 +45,7 @@ func (n Networks) Value() (driver.Value, error) {
 			return true
 		}
 		return !cidr.Contains(ip)
-	})
-	return json.Marshal(n)
+	}))
 }
 
 func (n *Networks) Scan(value any) error {
@@ -65,10 +64,9 @@ type Expose struct {
 type Exposes []Expose
 
 func (e Exposes) Value() (driver.Value, error) {
-	e = slices.DeleteFunc(e, func(n Expose) bool {
+	return json.Marshal(slices.DeleteFunc(e, func(n Expose) bool {
 		return n.Port < 0 || n.Port > 65535
-	})
-	return json.Marshal(e)
+	}))
 }
 
 func (e *Exposes) Scan(value interface{}) error {
