@@ -10,7 +10,7 @@ import (
 // Cors 跨域中间件
 func Cors() gin.HandlerFunc {
 	conf := cors.Config{
-		AllowOrigins: config.Env.Gin.CORS,
+		AllowOrigins: config.Env.Gin.Origins,
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{
 			"Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization", "X-M", "Connection", "Upgrade",

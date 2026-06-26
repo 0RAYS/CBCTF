@@ -26,7 +26,7 @@ const (
 	GinProxiesSettingKey            = "gin.proxies"
 	GinRateLimitGlobalSettingKey    = "gin.ratelimit.global"
 	GinRateLimitWhitelistSettingKey = "gin.ratelimit.whitelist"
-	GinCORSSettingKey               = "gin.cors"
+	GinOriginsSettingKey            = "gin.origins"
 	GinLogWhitelistSettingKey       = "gin.log.whitelist"
 	GinJWTSecretSettingKey          = "gin.jwt.secret"
 	GinMetricsWhitelistSettingKey   = "gin.metrics.whitelist"

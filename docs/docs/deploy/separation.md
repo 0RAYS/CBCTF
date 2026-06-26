@@ -46,12 +46,12 @@ pnpm build
 host: https://api.ctf.example.com
 
 gin:
-  cors:
+  origins:
     - https://ctf.example.com
 ```
 
 - `host` 必须填写后端真实对外地址，OAuth 回调与邮件链接都会使用它
-- `gin.cors` 需要包含前端独立域名
+- `gin.origins` 需要包含前端独立域名对应的浏览器 `Origin`，否则跨域请求和认证 cookie 可能无法正常工作
 
 ## OAuth 注意事项
 
@@ -72,6 +72,6 @@ gin:
 cbctf:
   host: "https://api.ctf.example.com"
   gin:
-    cors:
+    origins:
       - "https://ctf.example.com"
 ```

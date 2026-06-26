@@ -101,7 +101,7 @@ func SystemConfig(ctx *gin.Context) {
 		"gin_proxies":             config.Env.Gin.Proxies,
 		"gin_ratelimit_global":    config.Env.Gin.RateLimit.Global,
 		"gin_ratelimit_whitelist": config.Env.Gin.RateLimit.Whitelist,
-		"gin_cors":                config.Env.Gin.CORS,
+		"gin_origins":             config.Env.Gin.Origins,
 		"gin_log_whitelist":       config.Env.Gin.Log.Whitelist,
 		"gin_metrics_whitelist":   config.Env.Gin.Metrics.Whitelist,
 
