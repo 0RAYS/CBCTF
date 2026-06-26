@@ -143,7 +143,10 @@ func GetVictimPods(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-
+	if podList == nil {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}})
+		return
+	}
 	pods := make([]gin.H, 0, len(podList.Items))
 	for _, pod := range podList.Items {
 		containers := make([]string, 0, len(pod.Spec.InitContainers)+len(pod.Spec.Containers))
@@ -192,6 +195,10 @@ func GetVictimPodLogs(ctx *gin.Context) {
 	podList, ret := k8s.ListPods(ctxTimeout, k8s.VictimLabels(victim))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
+		return
+	}
+	if podList == nil {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}})
 		return
 	}
 	podFound := false

@@ -42,6 +42,9 @@ func closeUnCtrlVictimsTask() model.RetVal {
 	if !ret.OK {
 		return ret
 	}
+	if pods == nil {
+		return model.SuccessRetVal()
+	}
 	idL := make([]string, 0)
 	victimRepo := db.InitVictimRepo(db.DB)
 	for _, pod := range pods.Items {

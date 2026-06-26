@@ -88,6 +88,9 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		if !ret.OK {
 			return nil, ret
 		}
+		if pod == nil {
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}}
+		}
 		if pod.Status.Phase == corev1.PodRunning {
 			break
 		}

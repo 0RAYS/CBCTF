@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	// HTTP 基础指标
+	// HttpRequestsTotal HTTP 基础指标
 	HttpRequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cbctf_http_requests_total",
@@ -39,7 +39,7 @@ var (
 		},
 	)
 
-	// CTF 业务事件指标（低基数标签）
+	// FlagSubmissionsTotal CTF 业务事件指标（低基数标签）
 	FlagSubmissionsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cbctf_flag_submissions_total",
@@ -113,7 +113,7 @@ var (
 		[]string{"reason_type"},
 	)
 
-	// Cron Job 监控
+	// CronJobDuration Cron Job 监控
 	CronJobDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "cbctf_cron_job_duration_seconds",
@@ -131,7 +131,7 @@ var (
 		[]string{"job_name", "status"},
 	)
 
-	// 异步任务监控
+	// TaskEnqueuedTotal 异步任务监控
 	TaskEnqueuedTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cbctf_task_enqueued_total",
