@@ -2280,7 +2280,7 @@
         "ginProxies": "信任上游代理列表",
         "ginLogWhitelist": "请求日志白名单路径",
         "ginRateWhitelist": "IP 速率限制白名单",
-        "ginCORS": "CORS",
+        "ginOrigins": "允许来源",
         "ginJWTSecret": "JWT Secret",
         "dbHost": "数据库地址",
         "dbPort": "数据库端口",

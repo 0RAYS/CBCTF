@@ -44,8 +44,8 @@ data:
           {{- range .Values.cbctf.gin.ratelimit.whitelist }}
           - {{ . | quote }}
           {{- end }}
-      cors:
-        {{- range .Values.cbctf.gin.cors }}
+      origins:
+        {{- range .Values.cbctf.gin.origins }}
         - {{ . | quote }}
         {{- end }}
       log:

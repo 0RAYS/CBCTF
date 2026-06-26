@@ -97,7 +97,8 @@ cbctf:
     proxies:
       - "127.0.0.1"
       - "::1"
-    cors:
+    # Browser request Origins allowed by CORS and auth cookie SameSite handling
+    origins:
       - "http://cbctf.local"
     ratelimit:
       global: 100

@@ -54,8 +54,8 @@ type Config struct {
 			Global    int      `mapstructure:"global" json:"global"`
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 		} `mapstructure:"ratelimit" json:"ratelimit"`
-		CORS []string `mapstructure:"cors" json:"cors"`
-		Log  struct {
+		Origins []string `mapstructure:"origins" json:"origins"`
+		Log     struct {
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 		} `mapstructure:"log" json:"log"`
 		JWT struct {

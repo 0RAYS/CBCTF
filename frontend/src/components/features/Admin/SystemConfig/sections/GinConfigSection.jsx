@@ -128,21 +128,21 @@ export function GinConfigSection({ config, updateConfig }) {
         }
       />
       <ConfigListField
-        label={t('admin.system.labels.ginCORS')}
-        items={config.gin.cors || []}
+        label={t('admin.system.labels.ginOrigins')}
+        items={config.gin.origins || []}
         onAdd={() =>
           updateConfig((draft) => {
-            draft.gin.cors.push('');
+            draft.gin.origins.push('');
           })
         }
         onUpdate={(index, value) =>
           updateConfig((draft) => {
-            draft.gin.cors[index] = value;
+            draft.gin.origins[index] = value;
           })
         }
         onRemove={(index) =>
           updateConfig((draft) => {
-            draft.gin.cors.splice(index, 1);
+            draft.gin.origins.splice(index, 1);
           })
         }
       />

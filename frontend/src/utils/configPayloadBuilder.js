@@ -21,7 +21,7 @@ export function buildPayload(config) {
     gin_proxies: config.gin.proxies,
     gin_ratelimit_global: config.gin.ratelimit.global,
     gin_ratelimit_whitelist: config.gin.ratelimit.whitelist,
-    gin_cors: config.gin.cors,
+    gin_origins: config.gin.origins,
     gin_log_whitelist: config.gin.log.whitelist,
     gin_jwt_secret: config.gin.jwt.secret || undefined,
     gin_metrics_whitelist: config.gin.metrics.whitelist,

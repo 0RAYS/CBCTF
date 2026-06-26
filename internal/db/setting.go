@@ -88,7 +88,7 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.GinProxiesSettingKey, Value: model.SettingValue{V: config.Env.Gin.Proxies}},
 		{Key: model.GinRateLimitGlobalSettingKey, Value: model.SettingValue{V: config.Env.Gin.RateLimit.Global}},
 		{Key: model.GinRateLimitWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.RateLimit.Whitelist}},
-		{Key: model.GinCORSSettingKey, Value: model.SettingValue{V: config.Env.Gin.CORS}},
+		{Key: model.GinOriginsSettingKey, Value: model.SettingValue{V: config.Env.Gin.Origins}},
 		{Key: model.GinLogWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Log.Whitelist}},
 		{Key: model.GinJWTSecretSettingKey, Value: model.SettingValue{V: config.Env.Gin.JWT.Secret}},
 		{Key: model.GinMetricsWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Metrics.Whitelist}},
@@ -168,7 +168,7 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	if config.Env.Gin.RateLimit.Whitelist, ret = GetValue[[]string](s, model.GinRateLimitWhitelistSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Gin.CORS, ret = GetValue[[]string](s, model.GinCORSSettingKey); !ret.OK {
+	if config.Env.Gin.Origins, ret = GetValue[[]string](s, model.GinOriginsSettingKey); !ret.OK {
 		return ret
 	}
 	if config.Env.Gin.Log.Whitelist, ret = GetValue[[]string](s, model.GinLogWhitelistSettingKey); !ret.OK {

@@ -110,7 +110,7 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.GinProxiesSettingKey:            form.GinProxies,
 		model.GinRateLimitGlobalSettingKey:    form.GinRateLimitGlobal,
 		model.GinRateLimitWhitelistSettingKey: form.GinRateLimitWhitelist,
-		model.GinCORSSettingKey:               form.GinCORS,
+		model.GinOriginsSettingKey:            form.GinOrigins,
 		model.GinLogWhitelistSettingKey:       form.GinLogWhitelist,
 		model.GinJWTSecretSettingKey:          form.GinJWTSecret,
 		model.GinMetricsWhitelistSettingKey:   form.GinMetricsWhitelist,

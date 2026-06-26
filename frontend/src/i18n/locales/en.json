@@ -2281,7 +2281,7 @@
         "ginProxies": "Trusted Proxy List",
         "ginLogWhitelist": "Request Log Filter Whitelist",
         "ginRateWhitelist": "IP Rate Limit Whitelist",
-        "ginCORS": "CORS",
+        "ginOrigins": "Allowed origins",
         "ginJWTSecret": "JWT Secret",
         "dbHost": "DB Host",
         "dbPort": "DB Port",
