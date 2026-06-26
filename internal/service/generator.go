@@ -102,8 +102,7 @@ func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	repo := db.InitGeneratorRepo(tx)
-	terminatingStatus := model.TerminatingGeneratorStatus
-	if ret := repo.Update(generator.ID, db.UpdateGeneratorOptions{Status: &terminatingStatus}); !ret.OK {
+	if ret := repo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.TerminatingGeneratorStatus)}); !ret.OK {
 		return ret
 	}
 	generator.Status = model.TerminatingGeneratorStatus
@@ -113,8 +112,7 @@ func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {
 	_, err := task.EnqueueStopGeneratorTask(generator)
 	if err != nil {
 		log.Logger.Warningf("Failed to enqueue stop generator task: generator_id=%d name=%s challenge_id=%d error=%v", generator.ID, generator.Name, generator.ChallengeID, err)
-		runningStatus := model.RunningGeneratorStatus
-		_ = repo.Update(generator.ID, db.UpdateGeneratorOptions{Status: &runningStatus})
+		_ = repo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
 		generator.Status = model.RunningGeneratorStatus
 		if registerErr := registerGenerator(generator); registerErr != nil {
 			log.Logger.Warningf("Failed to re-register generator after stop enqueue failure: generator_id=%d name=%s error=%v", generator.ID, generator.Name, registerErr)
