@@ -33,6 +33,6 @@
 - [用户与分组](/admin/users.md): 管理 CBCTF 用户账号、队伍、分组、注册审核和账号状态。
 - [题目管理](/admin/challenges.md): 在管理后台维护题目、附件、Flag、动态生成器和容器靶机测试。
 - [比赛管理](/admin/contests.md): 在管理后台创建、发布和维护 CBCTF 比赛、队伍、题目、公告和奖项。
-- [作弊检测](/admin/cheat.md): 查看和处理 CBCTF 设备指纹、IP、跨队 Flag、共享账号和异常提交记录。
+- [作弊检测](/admin/cheat.md): 查看和处理 CBCTF IP、跨队 Flag 和异常提交记录。
 - [邮件配置](/admin/smtp.md): 配置 CBCTF SMTP 发信、邮箱验证、密码找回和邮件模板相关设置。
 - [监控与日志](/admin/monitoring.md): 使用 CBCTF 的 Prometheus 指标、Grafana 仪表盘、日志和系统状态接口排查问题。
