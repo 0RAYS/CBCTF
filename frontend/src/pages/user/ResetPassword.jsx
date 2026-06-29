@@ -13,8 +13,7 @@ function ResetPassword() {
   // 从 URL 中解析参数（HashRouter 下 search 即 # 后的 query string）
   const params = new URLSearchParams(search);
   const token = params.get('token') ?? '';
-  const id = params.get('id') ?? '';
-  const paramsValid = Boolean(token && id);
+  const paramsValid = Boolean(token);
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -37,7 +36,7 @@ function ResetPassword() {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      const response = await resetPassword({ token, id, password });
+      const response = await resetPassword({ token, password });
       if (response.code === 200) {
         setSucceeded(true);
       } else {

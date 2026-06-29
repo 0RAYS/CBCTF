@@ -2498,7 +2498,7 @@
     },
     "verifyEmail": {
       "title": "验证邮箱",
-      "question": "<strong>{{name}}</strong> 是您的账号吗？",
+      "question": "是否确认验证此邮箱地址？",
       "description": "点击下方按钮验证您的邮箱并激活账号。",
       "submit": "激活账号",
       "submitting": "激活中...",

@@ -26,7 +26,6 @@ type SendEmailPayload struct {
 	Kind  EmailKind
 	To    string
 	Token string
-	ID    string
 }
 
 func enqueueEmailTask(payload SendEmailPayload) (*asynq.TaskInfo, error) {
@@ -38,12 +37,12 @@ func enqueueEmailTask(payload SendEmailPayload) (*asynq.TaskInfo, error) {
 	return enqueueTask(sendEmailTaskType, task, asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
 }
 
-func EnqueueSendEmailTask(to, token, id string) (*asynq.TaskInfo, error) {
-	return enqueueEmailTask(SendEmailPayload{Kind: EmailKindVerify, To: to, Token: token, ID: id})
+func EnqueueSendEmailTask(to, token string) (*asynq.TaskInfo, error) {
+	return enqueueEmailTask(SendEmailPayload{Kind: EmailKindVerify, To: to, Token: token})
 }
 
-func EnqueueSendResetPasswordEmailTask(to, token, id string) (*asynq.TaskInfo, error) {
-	return enqueueEmailTask(SendEmailPayload{Kind: EmailKindResetPassword, To: to, Token: token, ID: id})
+func EnqueueSendResetPasswordEmailTask(to, token string) (*asynq.TaskInfo, error) {
+	return enqueueEmailTask(SendEmailPayload{Kind: EmailKindResetPassword, To: to, Token: token})
 }
 
 func HandleSendEmailTask(_ context.Context, t *asynq.Task) error {
@@ -54,14 +53,14 @@ func HandleSendEmailTask(_ context.Context, t *asynq.Task) error {
 	var err error
 	switch payload.Kind {
 	case EmailKindVerify:
-		err = email.SendVerifyEmail(payload.To, payload.Token, payload.ID)
+		err = email.SendVerifyEmail(payload.To, payload.Token)
 		if err == nil {
-			log.Logger.Infof("Verify email sent: to=%s id=%s", payload.To, payload.ID)
+			log.Logger.Infof("Verify email sent: to=%s", payload.To)
 		}
 	case EmailKindResetPassword:
-		err = email.SendResetPasswordEmail(payload.To, payload.Token, payload.ID)
+		err = email.SendResetPasswordEmail(payload.To, payload.Token)
 		if err == nil {
-			log.Logger.Infof("Reset password email sent: to=%s id=%s", payload.To, payload.ID)
+			log.Logger.Infof("Reset password email sent: to=%s", payload.To)
 		}
 	default:
 		return fmt.Errorf("unknown email kind: %d", payload.Kind)

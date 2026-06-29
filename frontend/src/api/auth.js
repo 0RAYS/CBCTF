@@ -36,14 +36,13 @@ export const register = (data) => {
   });
 };
 
-// 验证邮箱（由前端携带 token+id 发起 POST）
+// 验证邮箱（由前端携带一次性 token 发起 POST）
 export const verifyEmail = (data) => {
   return request({
     url: '/verify',
     method: 'POST',
     data: {
       token: data.token,
-      id: data.id,
     },
   });
 };
@@ -68,7 +67,6 @@ export const resetPassword = (data) => {
     method: 'POST',
     data: {
       token: data.token,
-      id: data.id,
       password: data.password,
     },
   });
