@@ -41,7 +41,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	log.Logger.Debugf("Start victim task received: victim_id=%d user_id=%d team_id=%d challenge_id=%d pods=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods))
 	cleanupQueued := false
 	cleanupFailedStart := func(reason error) error {
-		victimRepo := db.InitVictimRepo(db.DB)
+		victimRepo := db.InitVictimRepo(db.TaskDB)
 		victim.Status = model.TerminatingVictimStatus
 		if ret := victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.TerminatingVictimStatus)}); !ret.OK {
 			log.Logger.Warningf("Failed to mark victim terminating after start failure: victim_id=%d reason=%s", victim.ID, ret.Msg)
@@ -66,8 +66,8 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 		return reason
 	}
 	err := func() error {
-		podRepo := db.InitPodRepo(db.DB)
-		victimRepo := db.InitVictimRepo(db.DB)
+		podRepo := db.InitPodRepo(db.TaskDB)
+		victimRepo := db.InitVictimRepo(db.TaskDB)
 		currentVictim, ret := victimRepo.GetByID(victim.ID, db.GetOptions{
 			Preloads: map[string]db.GetOptions{"Pods": {}},
 		})
@@ -148,7 +148,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	victimRepo := db.InitVictimRepo(db.DB)
+	victimRepo := db.InitVictimRepo(db.TaskDB)
 	victim, ret := victimRepo.GetByID(payload.Victim.ID)
 	if !ret.OK {
 		if ret.Msg == i18n.Model.NotFound {
@@ -165,7 +165,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 	if _, err := EnqueueLoadTrafficTask(victim); err != nil {
 		log.Logger.Warningf("Failed to enqueue load traffic task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err)
 	}
-	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
+	ret = db.WithTransactionDB(db.TaskDB, func(tx *db.Tx) model.RetVal {
 		if ret = db.InitVictimRepo(tx).Update(victim.ID, db.UpdateVictimOptions{
 			Duration: new(time.Now().Sub(victim.Start)),
 		}); !ret.OK {

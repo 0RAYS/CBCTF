@@ -51,11 +51,11 @@ func exec(name string, task func() model.RetVal) func() {
 		start := time.Now()
 		result := task()
 		now := time.Now()
-		cronjob, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", name)
+		cronjob, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", name)
 		if !ret.OK {
 			return
 		}
-		if ret = db.InitCronJobRepo(db.DB).UpdateStatus(cronjob.ID, result.OK, now); !ret.OK {
+		if ret = db.InitCronJobRepo(db.CronDB).UpdateStatus(cronjob.ID, result.OK, now); !ret.OK {
 			log.Logger.Warningf("Failed to update cron last runtime %s: %s", name, ret.Msg)
 		}
 		duration := time.Since(start).Seconds()
@@ -98,7 +98,7 @@ func ReloadCronJob(name string) model.RetVal {
 	if !ok {
 		return model.RetVal{Msg: "Cron job not registered", Attr: map[string]any{"Name": name}}
 	}
-	cronJob, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", name)
+	cronJob, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", name)
 	if !ret.OK {
 		return ret
 	}
@@ -106,7 +106,7 @@ func ReloadCronJob(name string) model.RetVal {
 }
 
 func reloadAll() model.RetVal {
-	cronJobs, _, ret := db.InitCronJobRepo(db.DB).List(-1, -1)
+	cronJobs, _, ret := db.InitCronJobRepo(db.CronDB).List(-1, -1)
 	if !ret.OK {
 		return ret
 	}

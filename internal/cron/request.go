@@ -11,5 +11,5 @@ func saveRequestLogTask() {
 		return
 	}
 
-	db.InitRequestRepo(db.DB).Create(requests...)
+	db.InitRequestRepo(db.CronDB).Create(requests...)
 }

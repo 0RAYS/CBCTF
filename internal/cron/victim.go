@@ -14,14 +14,14 @@ import (
 
 // closeTimeoutVictimsTask 关闭超时的靶机
 func closeTimeoutVictimsTask() model.RetVal {
-	repo := db.InitVictimRepo(db.DB)
+	repo := db.InitVictimRepo(db.CronDB)
 	victims, _, ret := repo.List(-1, -1)
 	if !ret.OK {
 		return ret
 	}
 	for _, victim := range victims {
 		if victim.Start.Add(victim.Duration).Before(time.Now()) {
-			if ret = service.ForceStopVictim(db.DB, victim); ret.OK {
+			if ret = service.ForceStopVictim(db.CronDB, victim); ret.OK {
 				log.Logger.Infof(
 					"Timeout victim stop queued: victim_id=%d team_id=%d challenge_id=%d expired_at=%s",
 					victim.ID, victim.TeamID.V, victim.ChallengeID, victim.Start.Add(victim.Duration).Format(time.RFC3339),
@@ -46,7 +46,7 @@ func closeUnCtrlVictimsTask() model.RetVal {
 		return model.SuccessRetVal()
 	}
 	idL := make([]string, 0)
-	victimRepo := db.InitVictimRepo(db.DB)
+	victimRepo := db.InitVictimRepo(db.CronDB)
 	for _, pod := range pods.Items {
 		for key := range pod.Labels {
 			if key == "victim_id" {

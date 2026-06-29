@@ -9,8 +9,8 @@ import (
 // clearSubmissionMutexTask 定时任务清理flag提交锁 service.SolvedMutex
 func clearSubmissionMutexTask() model.RetVal {
 	contests := make(map[uint]model.Contest)
-	contestRepo := db.InitContestRepo(db.DB)
-	contestFlagRepo := db.InitContestFlagRepo(db.DB)
+	contestRepo := db.InitContestRepo(db.CronDB)
+	contestFlagRepo := db.InitContestFlagRepo(db.CronDB)
 	service.SolvedMutex.Range(func(k, v any) bool {
 		contestFlag, ret := contestFlagRepo.GetByID(k.(uint))
 		if !ret.OK {
@@ -37,8 +37,8 @@ func clearSubmissionMutexTask() model.RetVal {
 // clearCheatMutexTask 定时任务清理作弊检测锁 db.CheatMutex
 func clearCheatMutexTask() model.RetVal {
 	contests := make(map[uint]model.Contest)
-	contestRepo := db.InitContestRepo(db.DB)
-	cheatRepo := db.InitCheatRepo(db.DB)
+	contestRepo := db.InitContestRepo(db.CronDB)
+	cheatRepo := db.InitCheatRepo(db.CronDB)
 	db.CheatMutex.Range(func(k, v any) bool {
 		hash := k.(string)
 		cheat, ret := cheatRepo.Get(db.GetOptions{Conditions: map[string]any{"hash": hash}})
@@ -66,8 +66,8 @@ func clearCheatMutexTask() model.RetVal {
 // clearJoinTeamMutexTask 定时任务清理加入队伍锁 service.JoinTeamMutex
 func clearJoinTeamMutexTask() model.RetVal {
 	contests := make(map[uint]model.Contest)
-	contestRepo := db.InitContestRepo(db.DB)
-	teamRepo := db.InitTeamRepo(db.DB)
+	contestRepo := db.InitContestRepo(db.CronDB)
+	teamRepo := db.InitTeamRepo(db.CronDB)
 	service.JoinTeamMutex.Range(func(k, v any) bool {
 		contestFlag, ret := teamRepo.GetByID(k.(uint))
 		if !ret.OK {

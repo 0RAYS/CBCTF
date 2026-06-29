@@ -34,7 +34,7 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 		return ret
 	}
 	contestChallengeRepo := db.InitContestChallengeRepo(tx)
-	generatorRepo := db.InitGeneratorRepo(db.DB)
+	generatorRepo := db.InitGeneratorRepo(tx)
 	queued, failedCreate, failedEnqueue := 0, 0, 0
 	for _, challenge := range challenges {
 		if contestID > 0 {

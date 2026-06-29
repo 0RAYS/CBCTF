@@ -43,7 +43,7 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 	err := func() error {
 		challenge := payload.Challenge
 		generator := payload.Generator
-		generatorRepo := db.InitGeneratorRepo(db.DB)
+		generatorRepo := db.InitGeneratorRepo(db.TaskDB)
 		currentGenerator, ret := generatorRepo.GetByID(generator.ID)
 		if !ret.OK {
 			if ret.Msg == i18n.Model.NotFound {
@@ -110,7 +110,7 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	generatorRepo := db.InitGeneratorRepo(db.DB)
+	generatorRepo := db.InitGeneratorRepo(db.TaskDB)
 	generator, ret := generatorRepo.GetByID(payload.Generator.ID)
 	if !ret.OK {
 		if ret.Msg == i18n.Model.NotFound {
@@ -131,7 +131,7 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	if !ret.OK {
 		return fmt.Errorf("stop generator failed: %s", ret.Msg)
 	}
-	ret = db.InitGeneratorRepo(db.DB).Delete(generator.ID)
+	ret = db.InitGeneratorRepo(db.TaskDB).Delete(generator.ID)
 	if !ret.OK {
 		return fmt.Errorf("delete generator failed: %s", ret.Msg)
 	}

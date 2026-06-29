@@ -41,7 +41,7 @@ func StartGenerator(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StartGeneratorEventType)
 	contest := middleware.GetContest(ctx)
-	go service.StartGenerators(db.DB, contest.ID, form)
+	go service.StartGenerators(db.TaskDB, contest.ID, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
@@ -53,7 +53,7 @@ func StopGenerator(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StopGeneratorEventType)
-	go service.StopGenerators(db.DB, form)
+	go service.StopGenerators(db.TaskDB, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
