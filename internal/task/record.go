@@ -1,23 +1,42 @@
 package task
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/hibiken/asynq"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-func recordTaskExecution(ctx context.Context, t *asynq.Task, status string, result any, err error) {
-	if db.TaskDB == nil {
-		return
+var (
+	taskRecordPool  = make([]model.Task, 0)
+	taskRecordMutex sync.Mutex
+)
+
+func appendTaskRecord(record model.Task) {
+	taskRecordMutex.Lock()
+	taskRecordPool = append(taskRecordPool, record)
+	taskRecordMutex.Unlock()
+}
+
+func DrainTaskRecordPool() []model.Task {
+	taskRecordMutex.Lock()
+	defer taskRecordMutex.Unlock()
+
+	if len(taskRecordPool) == 0 {
+		return nil
 	}
+	records := taskRecordPool
+	taskRecordPool = make([]model.Task, 0)
+	return records
+}
+
+func recordTaskExecution(ctx context.Context, t *asynq.Task, status string, result any, err error) {
 	taskID, _ := asynq.GetTaskID(ctx)
 	queue, _ := asynq.GetQueueName(ctx)
 	retryCount, _ := asynq.GetRetryCount(ctx)
@@ -32,7 +51,7 @@ func recordTaskExecution(ctx context.Context, t *asynq.Task, status string, resu
 	if err != nil {
 		errorMsg = err.Error()
 	}
-	if ret := db.InitTaskRepo(db.TaskDB).Create(model.Task{
+	appendTaskRecord(model.Task{
 		TaskID:      taskID,
 		Type:        t.Type(),
 		Queue:       queue,
@@ -43,9 +62,7 @@ func recordTaskExecution(ctx context.Context, t *asynq.Task, status string, resu
 		RetryCount:  retryCount,
 		MaxRetry:    maxRetry,
 		ProcessedAt: time.Now(),
-	}); !ret.OK {
-		log.Logger.Warningf("Failed to record task %s history: %s", t.Type(), ret.Msg)
-	}
+	})
 }
 
 func shouldRecordFailure(ctx context.Context, err error) bool {
