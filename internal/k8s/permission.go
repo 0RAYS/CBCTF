@@ -24,6 +24,7 @@ func buildPermissionChecks() []permissionCheck {
 		{Resource: "pods", Verb: "create", Namespace: ns},
 		{Resource: "pods", Verb: "get", Namespace: ns},
 		{Resource: "pods", Verb: "list", Namespace: ns},
+		{Resource: "pods", Verb: "watch", Namespace: ns},
 		{Resource: "pods", Verb: "delete", Namespace: ns},
 		{Resource: "pods", Verb: "deletecollection", Namespace: ns},
 		{Resource: "pods/exec", Verb: "create", Namespace: ns},
@@ -48,6 +49,8 @@ func buildPermissionChecks() []permissionCheck {
 		{Group: "networking.k8s.io", Resource: "networkpolicies", Verb: "deletecollection", Namespace: ns},
 		// discovery.k8s.io: EndpointSlices
 		{Group: "discovery.k8s.io", Resource: "endpointslices", Verb: "deletecollection", Namespace: ns},
+		// authorization.k8s.io: permission self-check
+		{Group: "authorization.k8s.io", Resource: "selfsubjectaccessreviews", Verb: "create"},
 		// Multus: NetworkAttachmentDefinitions
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "create", Namespace: ns},
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "get", Namespace: ns},
