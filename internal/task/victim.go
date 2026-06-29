@@ -42,8 +42,9 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	cleanupQueued := false
 	cleanupFailedStart := func(reason error) error {
 		victimRepo := db.InitVictimRepo(db.TaskDB)
+		expectedStatus := victim.Status
 		victim.Status = model.TerminatingVictimStatus
-		if ret := victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.TerminatingVictimStatus)}); !ret.OK {
+		if ret := victimRepo.UpdateIfStatus(victim.ID, expectedStatus, db.UpdateVictimOptions{Status: new(model.TerminatingVictimStatus)}); !ret.OK {
 			log.Logger.Warningf("Failed to mark victim terminating after start failure: victim_id=%d reason=%s", victim.ID, ret.Msg)
 		}
 		if _, enqueueErr := EnqueueStopVictimTask(victim); enqueueErr == nil {
@@ -78,14 +79,19 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			}
 			return fmt.Errorf("get victim failed: %s", ret.Msg)
 		}
-		if currentVictim.Status == model.TerminatingVictimStatus {
-			log.Logger.Infof("Start victim skipped: victim_id=%d is terminating", victim.ID)
+		if currentVictim.Status != model.WaitingVictimStatus {
+			log.Logger.Infof("Start victim skipped: victim_id=%d status=%s", victim.ID, currentVictim.Status)
 			return nil
 		}
 		victim = currentVictim
-		if ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
+		if ret = victimRepo.UpdateIfStatus(victim.ID, model.WaitingVictimStatus, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
+			if ret.Msg == i18n.Model.Victim.NotStartable {
+				log.Logger.Infof("Start victim skipped: victim_id=%d status changed before provisioning", victim.ID)
+				return nil
+			}
 			return fmt.Errorf("update victim failed: %s", ret.Msg)
 		}
+		victim.Status = model.PendingVictimStatus
 		log.Logger.Infof("Starting victim provisioning: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
 		victim, ret = k8s.StartVictim(ctx, victim)
 		if !ret.OK {
@@ -94,20 +100,20 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 		basePodCount := len(payload.Victim.Pods)
 		if len(victim.Pods) > basePodCount {
 			frpcPods := victim.Pods[basePodCount:]
-			persistedFrpcPods := make([]model.Pod, 0, len(frpcPods))
+			frpcPodRecords := make([]model.Pod, 0, len(frpcPods))
 			for _, frpcPod := range frpcPods {
-				p, ret := podRepo.Create(model.Pod{
+				frpcPodRecords = append(frpcPodRecords, model.Pod{
 					VictimID: victim.ID,
 					Name:     frpcPod.Name,
 				})
-				if !ret.OK {
-					return fmt.Errorf("create frpc pod failed: %s", ret.Msg)
-				}
-				persistedFrpcPods = append(persistedFrpcPods, p)
+			}
+			persistedFrpcPods, ret := podRepo.CreateBatch(frpcPodRecords)
+			if !ret.OK {
+				return fmt.Errorf("create frpc pod failed: %s", ret.Msg)
 			}
 			victim.Pods = append(append([]model.Pod(nil), victim.Pods[:basePodCount]...), persistedFrpcPods...)
 		}
-		ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
+		ret = victimRepo.UpdateIfStatus(victim.ID, model.PendingVictimStatus, db.UpdateVictimOptions{
 			Spec:             &victim.Spec,
 			Resources:        &victim.Resources,
 			Endpoints:        &victim.Endpoints,

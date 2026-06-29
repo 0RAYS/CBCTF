@@ -289,13 +289,11 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 			return createRet
 		}
 		victim = created
-		for _, options := range buildPodRecords(victim) {
-			pod, createRet := podRepo.Create(options)
-			if !createRet.OK {
-				return createRet
-			}
-			victim.Pods = append(victim.Pods, pod)
+		pods, createRet := podRepo.CreateBatch(buildPodRecords(victim))
+		if !createRet.OK {
+			return createRet
 		}
+		victim.Pods = append(victim.Pods, pods...)
 		return model.SuccessRetVal()
 	})
 	if !ret.OK {
@@ -382,18 +380,14 @@ func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	repo := db.InitVictimRepo(tx)
-	if ret := repo.Update(victim.ID, db.UpdateVictimOptions{
-		Status: new(model.TerminatingVictimStatus),
-	}); !ret.OK {
+	if ret := repo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.TerminatingVictimStatus)}); !ret.OK {
 		return ret
 	}
 	victim.Status = model.TerminatingVictimStatus
 	_, err := task.EnqueueStopVictimTask(victim)
 	if err != nil {
 		log.Logger.Warningf("Failed to enqueue stop victim task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err)
-		_ = repo.Update(victim.ID, db.UpdateVictimOptions{
-			Status: new(victim.Status),
-		})
+		_ = repo.Update(victim.ID, db.UpdateVictimOptions{Status: new(victim.Status)})
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	log.Logger.Infof("Stop victim queued: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)

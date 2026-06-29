@@ -32,7 +32,7 @@ func recordTaskExecution(ctx context.Context, t *asynq.Task, status string, resu
 	if err != nil {
 		errorMsg = err.Error()
 	}
-	if _, ret := db.InitTaskRepo(db.TaskDB).Create(model.Task{
+	if ret := db.InitTaskRepo(db.TaskDB).Create(model.Task{
 		TaskID:      taskID,
 		Type:        t.Type(),
 		Queue:       queue,
