@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
@@ -151,6 +152,7 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
+	prometheus.RecordUserLogin(provider.Provider)
 	url := fmt.Sprintf("%s/platform/#/oauth/callback?code=%s", config.Env.Host, code)
 	ctx.Redirect(http.StatusTemporaryRedirect, url)
 }

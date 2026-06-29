@@ -22,45 +22,45 @@ func RecordUserLogin(provider string) {
 	UserLoginTotal.WithLabelValues(provider).Inc()
 }
 
-func RecordFileUpload(fileType string, size int64) {
-	FileUploadTotal.WithLabelValues(fileType).Inc()
-	FileUploadSize.WithLabelValues(fileType).Observe(float64(size))
+func RecordPasswordReset(success bool) {
+	PasswordResetTotal.WithLabelValues(statusLabel(success)).Inc()
 }
 
-func RecordEmailSent(success bool) {
-	if success {
-		EmailSentTotal.WithLabelValues("success").Inc()
-	} else {
-		EmailSentTotal.WithLabelValues("failed").Inc()
-	}
+func RecordFileUpload(uploadType string, size int64) {
+	FileUploadTotal.WithLabelValues(uploadType).Inc()
+	FileUploadSize.WithLabelValues(uploadType).Observe(float64(size))
+}
+
+func RecordEmailSent(emailKind string, success bool) {
+	EmailSentTotal.WithLabelValues(emailKind, statusLabel(success)).Inc()
 }
 
 func RecordRateLimitHit(endpoint string) {
 	RateLimitHits.WithLabelValues(endpoint).Inc()
 }
 
-func RecordCheatDetection(reasonType string) {
-	CheatDetectionsTotal.WithLabelValues(reasonType).Inc()
+func RecordCheatDetection(contestID uint, reasonType string) {
+	CheatDetectionsTotal.WithLabelValues(strconv.FormatUint(uint64(contestID), 10), reasonType).Inc()
 }
 
 func RecordCronJob(jobName string, duration float64, success bool) {
 	CronJobDuration.WithLabelValues(jobName).Observe(duration)
-	if success {
-		CronJobRunsTotal.WithLabelValues(jobName, "success").Inc()
-	} else {
-		CronJobRunsTotal.WithLabelValues(jobName, "failed").Inc()
-	}
+	CronJobRunsTotal.WithLabelValues(jobName, statusLabel(success)).Inc()
 }
 
-func RecordTaskEnqueued(taskType string) {
-	TaskEnqueuedTotal.WithLabelValues(taskType).Inc()
+func RecordTaskEnqueued(taskType string, success bool) {
+	TaskEnqueuedTotal.WithLabelValues(taskType, statusLabel(success)).Inc()
 }
 
 func RecordTaskProcessed(taskType string, duration float64, success bool) {
-	TaskProcessingDuration.WithLabelValues(taskType).Observe(duration)
+	status := statusLabel(success)
+	TaskProcessingDuration.WithLabelValues(taskType, status).Observe(duration)
+	TaskProcessedTotal.WithLabelValues(taskType, status).Inc()
+}
+
+func statusLabel(success bool) string {
 	if success {
-		TaskProcessedTotal.WithLabelValues(taskType, "success").Inc()
-	} else {
-		TaskProcessedTotal.WithLabelValues(taskType, "failed").Inc()
+		return "success"
 	}
+	return "failed"
 }

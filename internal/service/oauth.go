@@ -112,7 +112,6 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		if !ret.OK {
 			return model.User{}, ret
 		}
-		prometheus.RecordUserLogin(provider.Provider)
 	}
 	return userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
 }

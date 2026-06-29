@@ -42,19 +42,20 @@ func Prometheus(ctx *gin.Context) {
 	}
 	path := ctx.FullPath()
 	if path == "" {
-		path = ctx.Request.URL.Path
+		path = "__not_found__"
 	}
+	statusClass := strconv.Itoa(status/100) + "xx"
 
 	prometheus.InFlightRequests.Dec()
 	prometheus.HttpRequestsTotal.WithLabelValues(
 		ctx.Request.Method, path, strconv.Itoa(status),
 	).Inc()
 	prometheus.HttpRequestDuration.WithLabelValues(
-		ctx.Request.Method, path,
+		ctx.Request.Method, path, statusClass,
 	).Observe(time.Since(start).Seconds())
 	if size := ctx.Writer.Size(); size > 0 {
 		prometheus.HttpResponseSize.WithLabelValues(
-			ctx.Request.Method, path,
+			ctx.Request.Method, path, statusClass,
 		).Observe(float64(size))
 	}
 }
