@@ -20,7 +20,7 @@ var (
 			Help:    "Histogram of response time for handler.",
 			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"method", "path"},
+		[]string{"method", "path", "status_class"},
 	)
 
 	HttpResponseSize = prometheus.NewHistogramVec(
@@ -29,7 +29,7 @@ var (
 			Help:    "Histogram of HTTP response body sizes.",
 			Buckets: prometheus.ExponentialBuckets(100, 2, 10),
 		},
-		[]string{"method", "path"},
+		[]string{"method", "path", "status_class"},
 	)
 
 	InFlightRequests = prometheus.NewGauge(
@@ -72,6 +72,14 @@ var (
 		[]string{"oauth_provider"},
 	)
 
+	PasswordResetTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cbctf_password_resets_total",
+			Help: "Total number of password reset attempts",
+		},
+		[]string{"status"},
+	)
+
 	FileUploadTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cbctf_file_uploads_total",
@@ -94,7 +102,7 @@ var (
 			Name: "cbctf_email_sent_total",
 			Help: "Total number of emails sent",
 		},
-		[]string{"status"},
+		[]string{"email_kind", "status"},
 	)
 
 	RateLimitHits = prometheus.NewCounterVec(
@@ -110,7 +118,7 @@ var (
 			Name: "cbctf_cheat_detections_total",
 			Help: "Total number of cheat detection events",
 		},
-		[]string{"reason_type"},
+		[]string{"contest_id", "reason_type"},
 	)
 
 	// CronJobDuration Cron Job 监控
@@ -137,7 +145,7 @@ var (
 			Name: "cbctf_task_enqueued_total",
 			Help: "Total number of enqueued async tasks",
 		},
-		[]string{"task_type"},
+		[]string{"task_type", "status"},
 	)
 
 	TaskProcessedTotal = prometheus.NewCounterVec(
@@ -154,6 +162,6 @@ var (
 			Help:    "Async task processing duration in seconds",
 			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"task_type"},
+		[]string{"task_type", "status"},
 	)
 )

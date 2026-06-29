@@ -144,7 +144,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 			Checked:    false,
 			Time:       submission.CreatedAt,
 		})
-		prometheus.RecordCheatDetection(string(model.ReasonTypeWrongFlagType))
+		prometheus.RecordCheatDetection(contest.ID, string(model.ReasonTypeWrongFlagType))
 	}
 }
 
@@ -216,7 +216,7 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 			Checked:    false,
 			Time:       earliest,
 		})
-		prometheus.RecordCheatDetection(string(model.ReasonTypeSameWebIPType))
+		prometheus.RecordCheatDetection(contest.ID, string(model.ReasonTypeSameWebIPType))
 	}
 }
 
@@ -272,6 +272,6 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 			Checked:    false,
 			Time:       earliest,
 		})
-		prometheus.RecordCheatDetection(string(model.ReasonTypeSameVictimIPType))
+		prometheus.RecordCheatDetection(contest.ID, string(model.ReasonTypeSameVictimIPType))
 	}
 }

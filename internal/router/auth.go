@@ -179,15 +179,17 @@ func ForgotPassword(ctx *gin.Context) {
 func ResetPassword(ctx *gin.Context) {
 	var form dto.ResetPasswordForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
+		prometheus.RecordPasswordReset(false)
 		resp.JSON(ctx, ret)
 		return
 	}
 	ret := service.ResetUserPassword(db.DB, form)
 	if !ret.OK {
+		prometheus.RecordPasswordReset(false)
 		resp.JSON(ctx, ret)
 		return
 	}
 	log.Logger.Info("Password reset via email token")
-	prometheus.RecordUserLogin(oauth.LocalProvider)
+	prometheus.RecordPasswordReset(true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

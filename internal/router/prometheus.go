@@ -34,6 +34,7 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.BloodTotal)
 	registerer.MustRegister(p.UserRegistrationTotal)
 	registerer.MustRegister(p.UserLoginTotal)
+	registerer.MustRegister(p.PasswordResetTotal)
 	registerer.MustRegister(p.FileUploadTotal)
 	registerer.MustRegister(p.FileUploadSize)
 	registerer.MustRegister(p.EmailSentTotal)

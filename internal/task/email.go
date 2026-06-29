@@ -51,13 +51,16 @@ func HandleSendEmailTask(_ context.Context, t *asynq.Task) error {
 		return err
 	}
 	var err error
+	emailKind := "unknown"
 	switch payload.Kind {
 	case EmailKindVerify:
+		emailKind = "verify"
 		err = email.SendVerifyEmail(payload.To, payload.Token)
 		if err == nil {
 			log.Logger.Infof("Verify email sent: to=%s", payload.To)
 		}
 	case EmailKindResetPassword:
+		emailKind = "reset_password"
 		err = email.SendResetPasswordEmail(payload.To, payload.Token)
 		if err == nil {
 			log.Logger.Infof("Reset password email sent: to=%s", payload.To)
@@ -66,9 +69,9 @@ func HandleSendEmailTask(_ context.Context, t *asynq.Task) error {
 		return fmt.Errorf("unknown email kind: %d", payload.Kind)
 	}
 	if err != nil {
-		prometheus.RecordEmailSent(false)
+		prometheus.RecordEmailSent(emailKind, false)
 		return err
 	}
-	prometheus.RecordEmailSent(true)
+	prometheus.RecordEmailSent(emailKind, true)
 	return nil
 }
