@@ -85,18 +85,6 @@ func InitContestRepo(tx *gorm.DB) *ContestRepo {
 	}
 }
 
-func (c *ContestRepo) GetIDByUserID(userID uint) ([]uint, model.RetVal) {
-	var contestIDL []uint
-	res := c.DB.Model(&model.UserContest{}).
-		Where("user_id = ?", userID).
-		Pluck("contest_id", &contestIDL)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get Contest IDs by user: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return contestIDL, model.SuccessRetVal()
-}
-
 func (c *ContestRepo) CountUsers(contestID uint) (int64, model.RetVal) {
 	var count int64
 	res := c.DB.Model(&model.UserContest{}).Where("contest_id = ?", contestID).Count(&count)
