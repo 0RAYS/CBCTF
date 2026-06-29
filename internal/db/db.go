@@ -24,10 +24,6 @@ var (
 
 type Tx = gorm.DB
 
-func WithTransaction(fn func(tx *Tx) model.RetVal) model.RetVal {
-	return WithTransactionDB(DB, fn)
-}
-
 func WithTransactionDB(root *gorm.DB, fn func(tx *Tx) model.RetVal) model.RetVal {
 	if root == nil {
 		return model.RetVal{Msg: i18n.DB.Unavailable}
