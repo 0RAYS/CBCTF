@@ -55,6 +55,7 @@ function VictimStatusBadge({ status, t }) {
 function AdminVictims() {
   const [containers, setContainers] = useState([]);
   const [runningCount, setRunningCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
   const [filters, setFilters] = useState({
@@ -115,6 +116,7 @@ function AdminVictims() {
         setRunningCount(response.data.running || 0);
         const total = response.data.count || 0;
         const running = response.data.running || 0;
+        setTotalCount(total);
         setStats({ totalContainers: total, runningContainers: running, stoppedContainers: total - running });
       }
     } catch (error) {
@@ -752,15 +754,15 @@ function AdminVictims() {
           </table>
         </div>
 
-        {runningCount > 0 && (
+        {totalCount > 0 && (
           <div className="p-4 border-t border-neutral-300/30 bg-black/20 flex justify-center">
             <Pagination
-              total={Math.ceil(runningCount / pageSize)}
+              total={Math.ceil(totalCount / pageSize)}
               current={currentPage}
               pageSize={pageSize}
               onChange={handlePageChange}
               showTotal
-              totalItems={runningCount}
+              totalItems={totalCount}
             />
           </div>
         )}

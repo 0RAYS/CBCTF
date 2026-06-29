@@ -58,6 +58,7 @@ function ContestContainers() {
   // 容器列表相关状态
   const [containers, setContainers] = useState([]);
   const [runningCount, setRunningCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     user_id: '',
@@ -148,6 +149,7 @@ function ContestContainers() {
         setRunningCount(response.data.running || 0);
         const total = response.data.count || 0;
         const running = response.data.running || 0;
+        setTotalCount(total);
         setStats({
           totalContainers: total,
           runningContainers: running,
@@ -911,6 +913,7 @@ function ContestContainers() {
           t={t}
           containers={containers}
           runningCount={runningCount}
+          totalCount={totalCount}
           selectedContainers={selectedContainers}
           refreshInterval={refreshInterval}
           showDeleted={showDeleted}

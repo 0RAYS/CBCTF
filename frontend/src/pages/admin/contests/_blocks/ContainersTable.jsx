@@ -15,6 +15,7 @@ export function ContainersTable({
   t,
   containers,
   runningCount,
+  totalCount,
   selectedContainers,
   refreshInterval,
   showDeleted,
@@ -212,15 +213,15 @@ export function ContainersTable({
         </table>
       </div>
 
-      {runningCount > 0 && (
+      {totalCount > 0 && (
         <div className="p-4 border-t border-neutral-300/30 bg-black/20 flex justify-center">
           <Pagination
-            total={Math.ceil(runningCount / pageSize)}
+            total={Math.ceil(totalCount / pageSize)}
             current={currentPage}
             pageSize={pageSize}
             onChange={onPageChange}
             showTotal
-            totalItems={runningCount}
+            totalItems={totalCount}
           />
         </div>
       )}
