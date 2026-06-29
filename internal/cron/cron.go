@@ -138,3 +138,8 @@ func registerCronJob(cronJob model.CronJob, def taskDefinition) model.RetVal {
 	log.Logger.Infof("Cron job loaded: %s (%s)", cronJob.Name, spec)
 	return model.SuccessRetVal()
 }
+
+func FlushBufferedLogs() {
+	saveRequestLogTask()
+	saveTaskLogTask()
+}

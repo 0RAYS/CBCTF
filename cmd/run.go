@@ -77,6 +77,7 @@ func stop() {
 	time.Sleep(time.Second)
 	cron.Stop()
 	task.Stop()
+	cron.FlushBufferedLogs()
 	redis.Stop()
 	db.Stop()
 }
