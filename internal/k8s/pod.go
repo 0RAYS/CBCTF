@@ -8,11 +8,12 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	apiwatch "k8s.io/apimachinery/pkg/watch"
 )
 
 type Network struct {
@@ -81,26 +82,66 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		log.Logger.Warningf("Failed to create Pod: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
-	ticker := time.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
+	checkPod := func(pod *corev1.Pod) (*corev1.Pod, bool, model.RetVal) {
+		if pod == nil {
+			return nil, true, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}}
+		}
+		if pod.Status.Phase == corev1.PodRunning {
+			return pod, true, model.SuccessRetVal()
+		}
+		if pod.Status.Phase == "" || pod.Status.Phase == corev1.PodPending {
+			return pod, false, model.SuccessRetVal()
+		}
+		log.Logger.Warningf("Failed to run Pod %s: phase=%s, reason=%s", pod.Name, pod.Status.Phase, pod.Status.Reason)
+		return nil, true, model.RetVal{Msg: i18n.K8S.PodRunError, Attr: map[string]any{"Pod": pod.Name, "Phase": pod.Status.Phase, "Reason": pod.Status.Reason}}
+	}
+	if pod, done, ret := checkPod(pod); done {
+		return pod, ret
+	}
+	selector := fields.OneTermEqualSelector("metadata.name", options.Name).String()
 	for {
+		watcher, err := kubeClient.CoreV1().Pods(globalNamespace).Watch(ctx, metav1.ListOptions{
+			FieldSelector:   selector,
+			ResourceVersion: pod.ResourceVersion,
+		})
+		if err != nil {
+			log.Logger.Warningf("Failed to watch Pod %s: %s", options.Name, err)
+			return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+		}
+		for event := range watcher.ResultChan() {
+			switch event.Type {
+			case apiwatch.Error:
+				watcher.Stop()
+				return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": apierror.FromObject(event.Object).Error()}}
+			case apiwatch.Deleted:
+				watcher.Stop()
+				return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}}
+			case apiwatch.Added, apiwatch.Modified:
+				updatedPod, ok := event.Object.(*corev1.Pod)
+				if !ok {
+					continue
+				}
+				pod = updatedPod
+				if pod, done, ret := checkPod(pod); done {
+					watcher.Stop()
+					return pod, ret
+				}
+			}
+		}
+		watcher.Stop()
+		select {
+		case <-ctx.Done():
+			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": ctx.Err().Error()}}
+		default:
+		}
 		pod, ret = GetPod(ctx, options.Name)
 		if !ret.OK {
 			return nil, ret
 		}
-		if pod == nil {
-			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}}
+		if pod, done, ret := checkPod(pod); done {
+			return pod, ret
 		}
-		if pod.Status.Phase == corev1.PodRunning {
-			break
-		}
-		if pod.Status.Phase != corev1.PodPending {
-			log.Logger.Warningf("Failed to run Pod %s: phase=%s, reason=%s", pod.Name, pod.Status.Phase, pod.Status.Reason)
-			return nil, model.RetVal{Msg: i18n.K8S.PodRunError, Attr: map[string]any{"Pod": pod.Name, "Phase": pod.Status.Phase, "Reason": pod.Status.Reason}}
-		}
-		<-ticker.C
 	}
-	return pod, model.SuccessRetVal()
 }
 
 // GetPod 依据 name 获取 Pod
