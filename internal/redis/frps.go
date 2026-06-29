@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const frpsPortKey = "frps:%s:%s"
+const frpsPortKeyTmpl = "frps:%s:%s"
 
 // 锁定端口范围中的随机可用端口
 const lockFrpsPortScript = `
@@ -65,7 +65,7 @@ func LockFrpsPort(host string, portRange []int32, protocol string) (int32, model
 	defer cancel()
 
 	protocol = strings.ToLower(protocol)
-	key := fmt.Sprintf(frpsPortKey, host, protocol)
+	key := fmt.Sprintf(frpsPortKeyTmpl, host, protocol)
 
 	portsJSON, err := json.Marshal(portRange)
 	if err != nil {
@@ -100,7 +100,7 @@ func UnlockFrpsPort(host string, port int32, protocol string) model.RetVal {
 	defer cancel()
 
 	protocol = strings.ToLower(protocol)
-	key := fmt.Sprintf(frpsPortKey, host, protocol)
+	key := fmt.Sprintf(frpsPortKeyTmpl, host, protocol)
 
 	_, err := RDB.Eval(ctx, unlockFrpsPortScript, []string{key}, port).Result()
 	if err != nil {
@@ -119,7 +119,7 @@ func ReconcileFrpsPorts(expected map[string]map[string][]int32) (int64, int64, m
 	expectedKeys := make(map[string][]any)
 	for host, protocols := range expected {
 		for protocol, ports := range protocols {
-			key := fmt.Sprintf(frpsPortKey, host, protocol)
+			key := fmt.Sprintf(frpsPortKeyTmpl, host, protocol)
 			members := make([]any, 0, len(ports))
 			for _, port := range ports {
 				members = append(members, strconv.FormatInt(int64(port), 10))

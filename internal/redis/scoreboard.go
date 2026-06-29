@@ -13,17 +13,17 @@ import (
 )
 
 const (
-	userKey        = "users:%d"
+	userKeyTmpl    = "users:%d"
 	userRankingKey = "users:rank"
 
-	teamKey        = "contests:%d:teams:%d"
-	teamRankingKey = "contests:%d:rank"
+	teamKeyTmpl        = "contests:%d:teams:%d"
+	teamRankingKeyTmpl = "contests:%d:rank"
 )
 
 func UpdateTeamRanking(contestID uint, teams []model.Team) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	key := fmt.Sprintf(teamRankingKey, contestID)
+	key := fmt.Sprintf(teamRankingKeyTmpl, contestID)
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 
@@ -32,10 +32,10 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) model.RetVal {
 		compositeScore := team.Score*1e16 + float64(1e13-timestamp)
 		pipe.ZAdd(ctx, key, redis.Z{
 			Score:  compositeScore,
-			Member: fmt.Sprintf(teamKey, contestID, team.ID),
+			Member: fmt.Sprintf(teamKeyTmpl, contestID, team.ID),
 		})
 		data, _ := msgpack.Marshal(&team)
-		pipe.Set(ctx, fmt.Sprintf(teamKey, contestID, team.ID), data, 0)
+		pipe.Set(ctx, fmt.Sprintf(teamKeyTmpl, contestID, team.ID), data, 0)
 	}
 	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to update TeamRanking: %s", err)
@@ -47,7 +47,7 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) model.RetVal {
 func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, model.RetVal) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	key := fmt.Sprintf(teamRankingKey, contestID)
+	key := fmt.Sprintf(teamRankingKeyTmpl, contestID)
 	teams := make([]model.Team, 0)
 	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()
 	if err != nil {
@@ -80,10 +80,10 @@ func UpdateUserRanking(users []model.User) model.RetVal {
 		compositeScore := user.Score*1e8 + float64(user.Solved)
 		pipe.ZAdd(ctx, userRankingKey, redis.Z{
 			Score:  compositeScore,
-			Member: fmt.Sprintf(userKey, user.ID),
+			Member: fmt.Sprintf(userKeyTmpl, user.ID),
 		})
 		data, _ := msgpack.Marshal(&user)
-		pipe.Set(ctx, fmt.Sprintf(userKey, user.ID), data, 0)
+		pipe.Set(ctx, fmt.Sprintf(userKeyTmpl, user.ID), data, 0)
 	}
 	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to update UserRanking: %s", err)

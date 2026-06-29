@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	captchaKey = "captcha:%s"
-	captchaTTL = time.Minute
+	captchaKeyTmpl = "captcha:%s"
+	captchaTTL     = time.Minute
 )
 
 var consumeCaptchaScript = redis.NewScript(`
@@ -32,7 +32,7 @@ return 0
 func SetCaptchaAnswer(id, answer string) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	key := fmt.Sprintf(captchaKey, id)
+	key := fmt.Sprintf(captchaKeyTmpl, id)
 	if err := RDB.Set(ctx, key, strings.TrimSpace(answer), captchaTTL).Err(); err != nil {
 		log.Logger.Warningf("Failed to set captcha answer: %s", err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
@@ -43,7 +43,7 @@ func SetCaptchaAnswer(id, answer string) model.RetVal {
 func VerifyCaptcha(id, answer string) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	key := fmt.Sprintf(captchaKey, id)
+	key := fmt.Sprintf(captchaKeyTmpl, id)
 	result, err := consumeCaptchaScript.Run(ctx, RDB, []string{key}, strings.TrimSpace(answer)).Int()
 	if err != nil {
 		log.Logger.Warningf("Failed to verify captcha answer: %s", err)

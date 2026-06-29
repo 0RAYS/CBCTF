@@ -16,10 +16,10 @@ var (
 )
 
 const (
-	GeneratorKey               = "generator:%d"
-	GeneratorAttachmentLockKey = "generator:%d:locked"
-	generatorContestSetKey     = "generators:contest:%d:challenge:%d"
-	generatorLockTTL           = 5 * time.Minute
+	GeneratorKeyTmpl               = "generator:%d"
+	GeneratorAttachmentLockKeyTmpl = "generator:%d:locked"
+	generatorContestSetKeyTmpl     = "generators:contest:%d:challenge:%d"
+	generatorLockTTL               = 5 * time.Minute
 )
 
 const lockAvailableGeneratorScript = `
@@ -68,7 +68,7 @@ func RegisterGenerator(ctx context.Context, generator model.Generator) error {
 		return fmt.Errorf("marshal generator failed: %w", err)
 	}
 	pipe := RDB.TxPipeline()
-	pipe.Set(ctx, fmt.Sprintf(GeneratorKey, generator.ID), data, 0)
+	pipe.Set(ctx, fmt.Sprintf(GeneratorKeyTmpl, generator.ID), data, 0)
 	pipe.SAdd(ctx, generatorSetKey(generator.ContestID.V, generator.ContestID.Valid, generator.ChallengeID), generator.ID)
 	if _, err = pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to register generator in redis: generator_id=%d err=%v", generator.ID, err)
@@ -79,8 +79,8 @@ func RegisterGenerator(ctx context.Context, generator model.Generator) error {
 
 func UnregisterGenerator(ctx context.Context, generator model.Generator) error {
 	pipe := RDB.TxPipeline()
-	pipe.Del(ctx, fmt.Sprintf(GeneratorKey, generator.ID))
-	pipe.Del(ctx, fmt.Sprintf(GeneratorAttachmentLockKey, generator.ID))
+	pipe.Del(ctx, fmt.Sprintf(GeneratorKeyTmpl, generator.ID))
+	pipe.Del(ctx, fmt.Sprintf(GeneratorAttachmentLockKeyTmpl, generator.ID))
 	pipe.SRem(ctx, generatorSetKey(generator.ContestID.V, generator.ContestID.Valid, generator.ChallengeID), generator.ID)
 	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to unregister generator in redis: generator_id=%d err=%v", generator.ID, err)
@@ -130,7 +130,7 @@ func LockAvailableGenerator(ctx context.Context, contestID, challengeID uint) (m
 }
 
 func LockGeneratorAttachment(ctx context.Context, generatorID uint) (string, error) {
-	key := fmt.Sprintf(GeneratorAttachmentLockKey, generatorID)
+	key := fmt.Sprintf(GeneratorAttachmentLockKeyTmpl, generatorID)
 	token := fmt.Sprintf("%d:%d", generatorID, time.Now().UnixNano())
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
@@ -154,7 +154,7 @@ func LockGeneratorAttachment(ctx context.Context, generatorID uint) (string, err
 }
 
 func RefreshGeneratorAttachmentLock(ctx context.Context, generatorID uint, token string) (bool, error) {
-	key := fmt.Sprintf(GeneratorAttachmentLockKey, generatorID)
+	key := fmt.Sprintf(GeneratorAttachmentLockKeyTmpl, generatorID)
 	result, err := RDB.Eval(ctx, refreshGeneratorAttachmentScript, []string{key}, token, int64(generatorLockTTL/time.Millisecond)).Int()
 	if err != nil {
 		log.Logger.Warningf("Failed to refresh generator attachment lock: key=%s err=%v", key, err)
@@ -164,7 +164,7 @@ func RefreshGeneratorAttachmentLock(ctx context.Context, generatorID uint, token
 }
 
 func UnlockGeneratorAttachment(ctx context.Context, generatorID uint, token string) error {
-	key := fmt.Sprintf(GeneratorAttachmentLockKey, generatorID)
+	key := fmt.Sprintf(GeneratorAttachmentLockKeyTmpl, generatorID)
 	if _, err := RDB.Eval(ctx, unlockGeneratorAttachmentScript, []string{key}, token).Result(); err != nil {
 		log.Logger.Warningf("Failed to unlock generator attachment: key=%s err=%v", key, err)
 		return err
@@ -176,5 +176,5 @@ func generatorSetKey(contestID uint, contestValid bool, challengeID uint) string
 	if !contestValid {
 		contestID = 0
 	}
-	return fmt.Sprintf(generatorContestSetKey, contestID, challengeID)
+	return fmt.Sprintf(generatorContestSetKeyTmpl, contestID, challengeID)
 }

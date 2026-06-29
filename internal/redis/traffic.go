@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	trafficsKey = "traffics:%d"
-	trafficsTTL = 30 * time.Minute
+	trafficsKeyTmpl = "traffics:%d"
+	trafficsTTL     = 30 * time.Minute
 )
 
 // UpdateTraffics 重建靶机 pod 连接的 Redis 缓存（用于拓扑展示）。
@@ -30,22 +30,22 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 	}
 	log.Logger.Debugf("Caching victim traffic: victim_id=%d packets=%d", victim.ID, len(result.Connections))
 
-	key := fmt.Sprintf(trafficsKey, victim.ID)
+	key := fmt.Sprintf(trafficsKeyTmpl, victim.ID)
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 
 	for i, conn := range result.Connections {
 		pipe.ZAdd(ctx, key, redis.Z{
 			Score:  float64(conn.Time.UnixNano()),
-			Member: fmt.Sprintf(trafficsKey+":%d", victim.ID, i),
+			Member: fmt.Sprintf(trafficsKeyTmpl+":%d", victim.ID, i),
 		})
 		data, _ := msgpack.Marshal(&conn)
-		pipe.Set(ctx, fmt.Sprintf(trafficsKey+":%d", victim.ID, i), data, trafficsTTL)
+		pipe.Set(ctx, fmt.Sprintf(trafficsKeyTmpl+":%d", victim.ID, i), data, trafficsTTL)
 	}
 	pipe.Expire(ctx, key, trafficsTTL)
 	if _, err = pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to cache victim traffic: victim_id=%d error=%s", victim.ID, err)
-		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": trafficsKey, "Error": err.Error()}}
+		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": trafficsKeyTmpl, "Error": err.Error()}}
 	}
 	log.Logger.Debugf("Cached victim traffic: victim_id=%d packets=%d", victim.ID, len(result.Connections))
 	return model.SuccessRetVal()
@@ -55,10 +55,10 @@ func GetTraffic(victim model.Victim) ([]utils.Connection, model.RetVal) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	connections := make([]utils.Connection, 0)
-	results, err := RDB.ZRangeWithScores(ctx, fmt.Sprintf(trafficsKey, victim.ID), 0, -1).Result()
+	results, err := RDB.ZRangeWithScores(ctx, fmt.Sprintf(trafficsKeyTmpl, victim.ID), 0, -1).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get traffic: %s", err)
-		return nil, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": trafficsKey, "Error": err.Error()}}
+		return nil, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": trafficsKeyTmpl, "Error": err.Error()}}
 	}
 	pipe := RDB.Pipeline()
 	for _, res := range results {
