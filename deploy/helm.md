@@ -126,6 +126,39 @@ JWT、PostgreSQL 和 Redis 密钥会写入 `/app/config.yaml`。
 Chart 创建的 ClusterRole 包含 Pod、Service、Job、NetworkPolicy、EndpointSlice、Multus NAD、KubeVirt VirtualMachine、Kube-OVN
 Subnet/VPC/IP 等资源权限。Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
 
+| API group              | Resources                        | Verbs                                                          | 用途                           |
+| ---------------------- | -------------------------------- | -------------------------------------------------------------- | ---------------------------- |
+| core                   | `pods`                           | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 创建靶机、生成器、FRPC Pod，并等待状态和清理   |
+| core                   | `pods/exec`                      | `create`                                                       | 在动态附件生成器 Pod 中执行命令           |
+| core                   | `pods/log`                       | `get`                                                          | 读取 Pod 日志                    |
+| core                   | `services`                       | `create`, `list`, `delete`                                     | 创建和清理 NodePort 暴露            |
+| core                   | `configmaps`                     | `create`, `deletecollection`                                   | 写入文件挂载、FRPC 和 Nginx 配置       |
+| core                   | `persistentvolumeclaims`         | `get`                                                          | 启动时检查共享 PVC                  |
+| core                   | `namespaces`                     | `get`                                                          | 启动时检查靶机命名空间                  |
+| core                   | `nodes`                          | `list`                                                         | 枚举节点镜像和预拉取目标节点               |
+| `batch`                | `jobs`                           | `create`                                                       | 创建镜像预拉取 Job                  |
+| `networking.k8s.io`    | `networkpolicies`                | `create`, `deletecollection`                                   | 创建和清理靶机网络策略                  |
+| `discovery.k8s.io`     | `endpointslices`                 | `deletecollection`                                             | 清理 Service 产生的 EndpointSlice |
+| `authorization.k8s.io` | `selfsubjectaccessreviews`       | `create`                                                       | 启动时执行权限自检                    |
+| `k8s.cni.cncf.io`      | `network-attachment-definitions` | `create`, `get`, `deletecollection`                            | VPC 模式下创建和清理 Multus NAD      |
+| `kubevirt.io`          | `virtualmachines`                | `create`, `get`, `deletecollection`                            | VM 靶机模式创建和清理 VM              |
+| `kubeovn.io`           | `subnets`                        | `create`, `get`, `deletecollection`                            | VPC 模式下创建和清理 Kube-OVN 子网     |
+| `kubeovn.io`           | `vpcs`                           | `create`, `deletecollection`                                   | VPC 模式下创建和清理 Kube-OVN VPC    |
+| `kubeovn.io`           | `ips`                            | `deletecollection`                                             | 清理 Kube-OVN IP 分配            |
+
+Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
+
+如果使用自定义 ServiceAccount 或外部 RBAC，可以用下面的命令提前检查关键权限：
+
+```bash
+kubectl auth can-i create pods -n cbctf --as=system:serviceaccount:cbctf:cbctf
+kubectl auth can-i watch pods -n cbctf --as=system:serviceaccount:cbctf:cbctf
+kubectl auth can-i create selfsubjectaccessreviews.authorization.k8s.io --as=system:serviceaccount:cbctf:cbctf
+kubectl auth can-i create network-attachment-definitions.k8s.cni.cncf.io -n cbctf --as=system:serviceaccount:cbctf:cbctf
+kubectl auth can-i create virtualmachines.kubevirt.io -n cbctf --as=system:serviceaccount:cbctf:cbctf
+kubectl auth can-i create subnets.kubeovn.io --as=system:serviceaccount:cbctf:cbctf
+```
+
 ## Ingress 示例
 
 ```yaml
@@ -176,6 +209,7 @@ Helm 安装后，应用启动时会检查或创建以下资源：
 
 - 命名空间：`{namespace}`
 - 共享存储 PVC：`{namespace}-shared-volume`
+- Kubernetes API 权限：上方 RBAC 表中的所有 verbs
 
 :::warning
 PVC 缺失会导致动态附件不可用。KubeVirt 资源不会在启动时创建，只有启动包含 `x-kubevirt: true` 的 VM 靶机时才会创建对应
