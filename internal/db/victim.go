@@ -57,6 +57,35 @@ func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 	}
 }
 
+// Create skips generic uniqueness preflight queries. Victims use a database
+// generated primary key and have no natural unique key to validate here.
+func (v *VictimRepo) Create(victim model.Victim) (model.Victim, model.RetVal) {
+	if res := v.DB.Model(&model.Victim{}).Create(&victim); res.Error != nil {
+		log.Logger.Warningf("Failed to create Victim: %s", res.Error)
+		return model.Victim{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Name(model.Victim{}), "Error": res.Error.Error()}}
+	}
+	return victim, model.SuccessRetVal()
+}
+
+// UpdateIfStatus updates startup-owned fields directly only if the victim is
+// still in the expected state. This avoids the generic read-before-write while
+// preventing startup from overwriting a concurrent stop transition.
+func (v *VictimRepo) UpdateIfStatus(id uint, expectedStatus string, options UpdateVictimOptions) model.RetVal {
+	data := options.Convert2Map()
+	if len(data) == 0 {
+		return model.SuccessRetVal()
+	}
+	res := v.DB.Model(&model.Victim{}).Where("id = ? AND status = ?", id, expectedStatus).Updates(data)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to update Victim: %s", res.Error)
+		return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": model.Name(model.Victim{}), "Error": res.Error.Error()}}
+	}
+	if res.RowsAffected == 0 {
+		return model.RetVal{Msg: i18n.Model.Victim.NotStartable, Attr: map[string]any{"Model": model.Name(model.Victim{}), "ExpectedStatus": expectedStatus}}
+	}
+	return model.SuccessRetVal()
+}
+
 func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, model.RetVal) {
 	options := GetOptions{Conditions: map[string]any{"team_id": nil, "challenge_id": challengeID}}
 	if teamID > 0 {
