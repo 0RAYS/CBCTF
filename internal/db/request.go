@@ -22,7 +22,10 @@ func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 }
 
 func (r *RequestRepo) Create(requests ...model.Request) model.RetVal {
-	if res := r.DB.CreateInBatches(requests, len(requests)); res.Error != nil {
+	if len(requests) == 0 {
+		return model.SuccessRetVal()
+	}
+	if res := r.DB.Model(&model.Request{}).CreateInBatches(requests, 200); res.Error != nil {
 		log.Logger.Warningf("Failed to create requests: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Name(model.Request{}), "Error": res.Error}}
 	}

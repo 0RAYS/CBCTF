@@ -31,6 +31,17 @@ func (t *TaskRepo) Create(task model.Task) model.RetVal {
 	return model.SuccessRetVal()
 }
 
+func (t *TaskRepo) CreateBatch(tasks ...model.Task) model.RetVal {
+	if len(tasks) == 0 {
+		return model.SuccessRetVal()
+	}
+	if res := t.DB.Model(&model.Task{}).CreateInBatches(tasks, 200); res.Error != nil {
+		log.Logger.Warningf("Failed to create Tasks: %s", res.Error)
+		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Name(model.Task{}), "Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
 func (t *TaskRepo) ListQueues() ([]string, model.RetVal) {
 	queues := make([]string, 0)
 	if err := t.DB.Model(&model.Task{}).
