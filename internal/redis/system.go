@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"context"
 	"encoding/json"
@@ -29,12 +30,16 @@ func CollectMetrics() (*SystemMetrics, error) {
 	if err != nil {
 		return nil, err
 	}
-	d, err := disk.Usage(".")
+	diskPath := config.Env.Path
+	if diskPath == "" {
+		diskPath = "."
+	}
+	d, err := disk.Usage(diskPath)
 	if err != nil {
 		return nil, err
 	}
 	return &SystemMetrics{
-		Timestamp: time.Now().Format("2006-01-02 15:04:05"),
+		Timestamp: time.Now().Format(time.RFC3339Nano),
 		CPU:       c[0],
 		Mem:       m.UsedPercent,
 		Disk:      d.UsedPercent,

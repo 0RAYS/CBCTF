@@ -45,10 +45,11 @@ func Init() *gin.Engine {
 
 	router.Use(
 		middleware.Logger, middleware.Prometheus, middleware.AccessLog, middleware.Events, middleware.Recovery,
-		middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute),
 	)
 
 	RegisterMetricsRouter(router)
+
+	router.Use(middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute))
 
 	{
 		router.GET("/captcha", middleware.RateLimit("captcha", 20, time.Minute), GetCaptcha)

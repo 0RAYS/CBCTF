@@ -50,16 +50,17 @@ func exec(name string, task func() model.RetVal) func() {
 	return func() {
 		start := time.Now()
 		result := task()
+		duration := time.Since(start).Seconds()
+		prometheus.RecordCronJob(name, duration, result.OK)
 		now := time.Now()
 		cronjob, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", name)
 		if !ret.OK {
+			log.Logger.Warningf("Failed to get cron job %s: %s", name, ret.Msg)
 			return
 		}
 		if ret = db.InitCronJobRepo(db.CronDB).UpdateStatus(cronjob.ID, result.OK, now); !ret.OK {
 			log.Logger.Warningf("Failed to update cron last runtime %s: %s", name, ret.Msg)
 		}
-		duration := time.Since(start).Seconds()
-		prometheus.RecordCronJob(name, duration, result.OK)
 		if !result.OK {
 			log.Logger.Warningf("%s failed: %s, processing time: %s", name, result.Msg, time.Duration(duration*float64(time.Second)))
 		} else if duration > time.Second.Seconds() {
