@@ -1,22 +1,9 @@
 import { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation, Trans } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/common';
 import { verifyEmail } from '../../api/auth';
-
-/**
- * 从 JWT token 中解析 payload（仅读取，不做签名验证）
- * 签名验证由后端在 POST /verify 时完成
- */
-function parseJwtPayload(token) {
-  try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(base64));
-  } catch {
-    return null;
-  }
-}
 
 function VerifyEmail() {
   const { t } = useTranslation();
@@ -24,12 +11,7 @@ function VerifyEmail() {
 
   const params = new URLSearchParams(search);
   const token = params.get('token') ?? '';
-  const id = params.get('id') ?? '';
-  const paramsValid = Boolean(token && id);
-
-  // 从 JWT payload 读取用户名（无需签名验证，仅用于展示）
-  const payload = paramsValid ? parseJwtPayload(token) : null;
-  const username = payload?.name ?? '';
+  const paramsValid = Boolean(token);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
@@ -38,7 +20,7 @@ function VerifyEmail() {
   const handleActivate = async () => {
     setIsSubmitting(true);
     try {
-      const response = await verifyEmail({ token, id });
+      const response = await verifyEmail({ token });
       if (response.code === 200) {
         setSucceeded(true);
       } else {
@@ -117,13 +99,7 @@ function VerifyEmail() {
                 <p className="text-neutral-400 text-xs font-mono uppercase tracking-widest">
                   {t('auth.verifyEmail.title')}
                 </p>
-                <p className="text-neutral-100 text-base font-mono">
-                  <Trans
-                    i18nKey="auth.verifyEmail.question"
-                    values={{ name: username }}
-                    components={{ strong: <span className="text-[#597ef7] font-semibold" /> }}
-                  />
-                </p>
+                <p className="text-neutral-100 text-base font-mono">{t('auth.verifyEmail.question')}</p>
                 <p className="text-neutral-500 text-xs leading-relaxed">{t('auth.verifyEmail.description')}</p>
               </div>
 

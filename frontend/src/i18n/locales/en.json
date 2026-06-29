@@ -2499,7 +2499,7 @@
     },
     "verifyEmail": {
       "title": "VERIFY EMAIL",
-      "question": "Is <strong>{{name}}</strong> your account?",
+      "question": "Ready to verify this email address?",
       "description": "Click the button below to verify your email address and activate your account.",
       "submit": "ACTIVATE ACCOUNT",
       "submitting": "ACTIVATING...",

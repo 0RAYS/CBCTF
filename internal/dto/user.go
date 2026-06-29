@@ -105,7 +105,6 @@ type ForgotPasswordForm struct {
 // ResetPasswordForm for completing password reset with token
 type ResetPasswordForm struct {
 	Token    string `form:"token" json:"token" binding:"required"`
-	ID       string `form:"id" json:"id" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
 }
 

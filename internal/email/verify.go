@@ -7,8 +7,8 @@ import (
 
 const VerifyEmailSubject = "Verify Your Email Address"
 
-func SendVerifyEmail(to, token, id string) error {
-	link := fmt.Sprintf("%s/platform/#/verify?token=%s&id=%s", config.Env.Host, token, id)
+func SendVerifyEmail(to, token string) error {
+	link := fmt.Sprintf("%s/platform/#/verify?token=%s", config.Env.Host, token)
 	html := buildHTML(
 		"Verify Your Email Address",
 		"Thanks for signing up. Click the button below to verify your email address and activate your account.",

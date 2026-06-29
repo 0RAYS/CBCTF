@@ -187,7 +187,7 @@ func ResetPassword(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	log.Logger.Infof("Password reset via email token id=%s", form.ID)
+	log.Logger.Info("Password reset via email token")
 	prometheus.RecordUserLogin(oauth.LocalProvider)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

@@ -7,49 +7,69 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 )
 
 const (
-	emailVerifyTokenKey = "email:%d"
-	emailVerifyTokenTTL = 30 * time.Minute
+	emailVerifyTokenKey     = "email:verify:token:%s"
+	emailVerifyUserTokenKey = "email:verify:user:%d"
+	emailVerifyTokenTTL     = 30 * time.Minute
 )
 
-// SetEmailVerifyToken 设置邮箱验证 token, 时效一天
+// SetEmailVerifyToken 设置邮箱验证 token, 时效 30 分钟
 func SetEmailVerifyToken(userID uint, token string) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if err := RDB.Set(ctx, fmt.Sprintf(emailVerifyTokenKey, userID), token, emailVerifyTokenTTL).Err(); err != nil {
+
+	userTokenKey := fmt.Sprintf(emailVerifyUserTokenKey, userID)
+	oldToken, err := RDB.Get(ctx, userTokenKey).Result()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		log.Logger.Warningf("Failed to get old email verify token: %s", err)
+		return model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": userTokenKey, "Error": err.Error()}}
+	}
+
+	pipe := RDB.TxPipeline()
+	if oldToken != "" {
+		pipe.Del(ctx, fmt.Sprintf(emailVerifyTokenKey, oldToken))
+	}
+	pipe.Set(ctx, fmt.Sprintf(emailVerifyTokenKey, token), strconv.FormatUint(uint64(userID), 10), emailVerifyTokenTTL)
+	pipe.Set(ctx, userTokenKey, token, emailVerifyTokenTTL)
+	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to set email verify token: %s", err)
-		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKey, userID), "Error": err.Error()}}
+		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKey, token), "Error": err.Error()}}
 	}
 	return model.SuccessRetVal()
 }
 
-// GetEmailVerifyToken 获取邮箱验证 token
-func GetEmailVerifyToken(userID uint) (string, model.RetVal) {
+func GetEmailVerifyUserID(token string) (uint, model.RetVal) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	token, err := RDB.Get(ctx, fmt.Sprintf(emailVerifyTokenKey, userID)).Result()
+	key := fmt.Sprintf(emailVerifyTokenKey, token)
+	value, err := RDB.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return "", model.RetVal{Msg: i18n.Redis.NotFound, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKey, userID)}}
+			return 0, model.RetVal{Msg: i18n.Redis.NotFound, Attr: map[string]any{"Key": key}}
 		}
 		log.Logger.Warningf("Failed to get email verify token: %s", err)
-		return "", model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKey, userID), "Error": err.Error()}}
+		return 0, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
 	}
-	return token, model.SuccessRetVal()
+	userID, err := strconv.ParseUint(value, 10, 64)
+	if err != nil {
+		return 0, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+	}
+	return uint(userID), model.SuccessRetVal()
 }
 
 // DelEmailVerifyToken 删除邮箱验证 token
-func DelEmailVerifyToken(userID uint) model.RetVal {
+func DelEmailVerifyToken(token string, userID uint) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if err := RDB.Del(ctx, fmt.Sprintf(emailVerifyTokenKey, userID)).Err(); err != nil {
+	if err := RDB.Del(ctx, fmt.Sprintf(emailVerifyTokenKey, token), fmt.Sprintf(emailVerifyUserTokenKey, userID)).Err(); err != nil {
 		log.Logger.Warningf("Failed to delete email verify token: %s", err)
-		return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKey, userID), "Error": err.Error()}}
+		return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKey, token), "Error": err.Error()}}
 	}
 	return model.SuccessRetVal()
 }

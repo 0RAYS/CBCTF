@@ -1,7 +1,6 @@
 package service
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -15,16 +14,11 @@ import (
 )
 
 func SendEmail(user model.User) model.RetVal {
-	id := utils.UUID()
-	token, err := utils.GenerateVerificationToken(user.ID, user.Name, id, config.Env.Gin.JWT.Secret)
-	if err != nil {
-		log.Logger.Warningf("Failed to generate token: %s", err)
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
-	}
-	if ret := redis.SetEmailVerifyToken(user.ID, id); !ret.OK {
+	token := utils.UUID()
+	if ret := redis.SetEmailVerifyToken(user.ID, token); !ret.OK {
 		return ret
 	}
-	if _, err = task.EnqueueSendEmailTask(user.Email, token, id); err != nil {
+	if _, err := task.EnqueueSendEmailTask(user.Email, token); err != nil {
 		log.Logger.Warningf("Failed to enqueue send email task: %s", err)
 		return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 	}
@@ -32,21 +26,14 @@ func SendEmail(user model.User) model.RetVal {
 }
 
 func VerifyEmail(tx *gorm.DB, form dto.VerifyEmail) model.RetVal {
-	claims, err := utils.ParseToken(form.Token, config.Env.Gin.JWT.Secret)
-	if err != nil || (!utils.CompareVerifier(form.ID, claims.Verifier) && !utils.CompareVerifier(form.ID, claims.LegacyVerifier)) {
-		return model.RetVal{Msg: i18n.Model.Email.InvalidVerifyToken}
-	}
-	storedID, ret := redis.GetEmailVerifyToken(claims.UserID)
+	userID, ret := redis.GetEmailVerifyUserID(form.Token)
 	if !ret.OK {
-		return ret
-	}
-	if storedID != form.ID {
 		return model.RetVal{Msg: i18n.Model.Email.InvalidVerifyToken}
 	}
-	if ret = redis.DelEmailVerifyToken(claims.UserID); !ret.OK {
+	if ret = redis.DelEmailVerifyToken(form.Token, userID); !ret.OK {
 		return ret
 	}
-	return db.InitUserRepo(tx).Update(claims.UserID, db.UpdateUserOptions{Verified: new(true)})
+	return db.InitUserRepo(tx).Update(userID, db.UpdateUserOptions{Verified: new(true)})
 }
 
 // SendPasswordResetEmail 向用户邮箱发送密码重置链接
@@ -56,16 +43,11 @@ func SendPasswordResetEmail(tx *gorm.DB, form dto.ForgotPasswordForm) model.RetV
 	if !ret.OK {
 		return ret
 	}
-	id := utils.UUID()
-	token, err := utils.GenerateVerificationToken(user.ID, user.Name, id, config.Env.Gin.JWT.Secret)
-	if err != nil {
-		log.Logger.Warningf("Failed to generate password reset token: %s", err)
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
-	}
-	if ret = redis.SetPasswordResetToken(user.ID, id); !ret.OK {
+	token := utils.UUID()
+	if ret = redis.SetPasswordResetToken(user.ID, token); !ret.OK {
 		return ret
 	}
-	if _, err = task.EnqueueSendResetPasswordEmailTask(user.Email, token, id); err != nil {
+	if _, err := task.EnqueueSendResetPasswordEmailTask(user.Email, token); err != nil {
 		log.Logger.Warningf("Failed to enqueue send reset password email task: %s", err)
 		return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 	}
@@ -74,21 +56,14 @@ func SendPasswordResetEmail(tx *gorm.DB, form dto.ForgotPasswordForm) model.RetV
 
 // ResetUserPassword 验证重置 token 并更新密码，同时将邮箱设为已验证
 func ResetUserPassword(tx *gorm.DB, form dto.ResetPasswordForm) model.RetVal {
-	claims, err := utils.ParseToken(form.Token, config.Env.Gin.JWT.Secret)
-	if err != nil || (!utils.CompareVerifier(form.ID, claims.Verifier) && !utils.CompareVerifier(form.ID, claims.LegacyVerifier)) {
-		return model.RetVal{Msg: i18n.Model.User.InvalidResetToken}
-	}
-	storedID, ret := redis.GetPasswordResetToken(claims.UserID)
+	userID, ret := redis.GetPasswordResetUserID(form.Token)
 	if !ret.OK {
 		return model.RetVal{Msg: i18n.Model.User.InvalidResetToken}
 	}
-	if storedID != form.ID {
-		return model.RetVal{Msg: i18n.Model.User.InvalidResetToken}
-	}
-	if ret = redis.DelPasswordResetToken(claims.UserID); !ret.OK {
+	if ret = redis.DelPasswordResetToken(form.Token, userID); !ret.OK {
 		return ret
 	}
-	return db.InitUserRepo(tx).Update(claims.UserID, db.UpdateUserOptions{
+	return db.InitUserRepo(tx).Update(userID, db.UpdateUserOptions{
 		Password: new(utils.HashPassword(form.Password)),
 		Verified: new(true),
 	})

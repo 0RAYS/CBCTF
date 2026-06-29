@@ -7,8 +7,8 @@ import (
 
 const ResetPasswordEmailSubject = "Reset Your Password"
 
-func SendResetPasswordEmail(to, token, id string) error {
-	link := fmt.Sprintf("%s/platform/#/reset-password?token=%s&id=%s", config.Env.Host, token, id)
+func SendResetPasswordEmail(to, token string) error {
+	link := fmt.Sprintf("%s/platform/#/reset-password?token=%s", config.Env.Host, token)
 	html := buildHTML(
 		"Reset Your Password",
 		"We received a request to reset the password for your account. Click the button below to choose a new password.",
