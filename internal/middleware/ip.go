@@ -4,7 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
-	"CBCTF/internal/ratelimit"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"strconv"
 	"time"
@@ -13,7 +13,7 @@ import (
 )
 
 func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFunc {
-	rule := ratelimit.Rule{
+	rule := redis.RateLimitRule{
 		Name:   name,
 		Limit:  int64(maxRequests),
 		Window: window,
@@ -23,7 +23,7 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 		if userID := GetSelf(ctx).ID; userID != 0 {
 			subject = "user:" + strconv.Itoa(int(userID))
 		}
-		decision, err := ratelimit.RateLimiter.Allow(ctx.Request.Context(), rule, ratelimit.Subject{
+		decision, err := redis.RateLimiter.Allow(ctx.Request.Context(), rule, redis.RateLimitSubject{
 			Key:      subject,
 			ClientIP: ctx.ClientIP(),
 		})
