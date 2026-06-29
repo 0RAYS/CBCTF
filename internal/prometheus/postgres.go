@@ -9,7 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-const postgresMetricPrefix = "gorm_status_"
+const postgresMetricPrefix = "postgres_"
 
 type PostgresCollector struct {
 	labels prometheus.Labels
@@ -72,8 +72,8 @@ func NewPostgresCollector() *PostgresCollector {
 			[]string{"datname"}, labels,
 		),
 		recordCountDesc: prometheus.NewDesc(
-			postgresMetricPrefix+"rows_count",
-			"Name of this table",
+			postgresMetricPrefix+"estimated_rows",
+			"Estimated number of live rows in this table",
 			[]string{"table_schema", "table_name"}, labels,
 		),
 
@@ -292,27 +292,22 @@ func (c *PostgresCollector) collectTableIOStats(ch chan<- prometheus.Metric) {
 
 func (c *PostgresCollector) collectRecordCount(ch chan<- prometheus.Metric) {
 	type row struct {
-		TableSchema string `gorm:"column:table_schema"`
-		TableName   string `gorm:"column:table_name"`
-		RowsCount   int64  `gorm:"column:rows_count"`
+		TableSchema string  `gorm:"column:table_schema"`
+		TableName   string  `gorm:"column:table_name"`
+		RowsCount   float64 `gorm:"column:rows_count"`
 	}
 	var rows []row
 	if err := db.DB.Raw(`
-		WITH tbl AS (
-			SELECT table_schema, table_name
-			FROM information_schema.tables
-			WHERE table_name NOT LIKE 'pg_%' AND table_schema IN ('public')
-		)
 		SELECT
-			table_schema,
-			table_name,
-			(xpath('/row/c/text()', query_to_xml(format('select count(*) as c from %I.%I', table_schema, table_name), false, true, '')))[1]::text::int AS rows_count
-		FROM tbl
-		ORDER BY 3 DESC`).Scan(&rows).Error; err != nil {
+			schemaname AS table_schema,
+			relname AS table_name,
+			n_live_tup AS rows_count
+		FROM pg_stat_user_tables
+		ORDER BY n_live_tup DESC`).Scan(&rows).Error; err != nil {
 		return
 	}
 	for _, row := range rows {
-		ch <- prometheus.MustNewConstMetric(c.recordCountDesc, prometheus.GaugeValue, float64(row.RowsCount), row.TableSchema, row.TableName)
+		ch <- prometheus.MustNewConstMetric(c.recordCountDesc, prometheus.GaugeValue, row.RowsCount, row.TableSchema, row.TableName)
 	}
 }
 

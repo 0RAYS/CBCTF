@@ -43,27 +43,27 @@ func NewGormCollector() *GormCollector {
 			nil, prometheus.Labels{"db_name": config.Env.Gorm.Postgres.DB},
 		),
 		waitCountDesc: prometheus.NewDesc(
-			"gorm_dbstats_wait_count",
+			"gorm_dbstats_wait_count_total",
 			"The total number of connections waited for.",
 			nil, prometheus.Labels{"db_name": config.Env.Gorm.Postgres.DB},
 		),
 		waitDurationDesc: prometheus.NewDesc(
-			"gorm_dbstats_wait_duration",
-			"The total time blocked waiting for a new connection.",
+			"gorm_dbstats_wait_duration_seconds_total",
+			"The total time in seconds blocked waiting for a new connection.",
 			nil, prometheus.Labels{"db_name": config.Env.Gorm.Postgres.DB},
 		),
 		maxIdleClosedDesc: prometheus.NewDesc(
-			"gorm_dbstats_max_idle_closed",
+			"gorm_dbstats_max_idle_closed_total",
 			"The total number of connections closed due to SetMaxIdleConns.",
 			nil, prometheus.Labels{"db_name": config.Env.Gorm.Postgres.DB},
 		),
 		maxIdleTimeClosedDesc: prometheus.NewDesc(
-			"gorm_dbstats_max_idletime_closed",
+			"gorm_dbstats_max_idletime_closed_total",
 			"The total number of connections closed due to SetConnMaxIdleTime.",
 			nil, prometheus.Labels{"db_name": config.Env.Gorm.Postgres.DB},
 		),
 		maxLifetimeClosedDesc: prometheus.NewDesc(
-			"gorm_dbstats_max_lifetime_closed",
+			"gorm_dbstats_max_lifetime_closed_total",
 			"The total number of connections closed due to SetConnMaxLifetime.",
 			nil, prometheus.Labels{"db_name": config.Env.Gorm.Postgres.DB},
 		),
@@ -96,9 +96,9 @@ func (c *GormCollector) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(c.openConnectionsDesc, prometheus.GaugeValue, float64(stats.OpenConnections))
 	ch <- prometheus.MustNewConstMetric(c.inUseConnectionsDesc, prometheus.GaugeValue, float64(stats.InUse))
 	ch <- prometheus.MustNewConstMetric(c.idleConnectionsDesc, prometheus.GaugeValue, float64(stats.Idle))
-	ch <- prometheus.MustNewConstMetric(c.waitCountDesc, prometheus.GaugeValue, float64(stats.WaitCount))
-	ch <- prometheus.MustNewConstMetric(c.waitDurationDesc, prometheus.GaugeValue, float64(stats.WaitDuration))
-	ch <- prometheus.MustNewConstMetric(c.maxIdleClosedDesc, prometheus.GaugeValue, float64(stats.MaxIdleClosed))
-	ch <- prometheus.MustNewConstMetric(c.maxIdleTimeClosedDesc, prometheus.GaugeValue, float64(stats.MaxIdleTimeClosed))
-	ch <- prometheus.MustNewConstMetric(c.maxLifetimeClosedDesc, prometheus.GaugeValue, float64(stats.MaxLifetimeClosed))
+	ch <- prometheus.MustNewConstMetric(c.waitCountDesc, prometheus.CounterValue, float64(stats.WaitCount))
+	ch <- prometheus.MustNewConstMetric(c.waitDurationDesc, prometheus.CounterValue, stats.WaitDuration.Seconds())
+	ch <- prometheus.MustNewConstMetric(c.maxIdleClosedDesc, prometheus.CounterValue, float64(stats.MaxIdleClosed))
+	ch <- prometheus.MustNewConstMetric(c.maxIdleTimeClosedDesc, prometheus.CounterValue, float64(stats.MaxIdleTimeClosed))
+	ch <- prometheus.MustNewConstMetric(c.maxLifetimeClosedDesc, prometheus.CounterValue, float64(stats.MaxLifetimeClosed))
 }
