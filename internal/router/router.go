@@ -28,7 +28,7 @@ func Init() *gin.Engine {
 		log.Logger.Warningf("Set trusted proxies failed: %s", err)
 	}
 
-	router.Use(middleware.SetTrace, middleware.SetMagic, middleware.Cors())
+	router.Use(middleware.SetTrace, middleware.Cors())
 
 	{
 		router.GET("/", func(ctx *gin.Context) {

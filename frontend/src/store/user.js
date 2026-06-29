@@ -49,8 +49,6 @@ const userSlice = createSlice({
       state.hasUserAccess = false;
       state.routes = [];
       localStorage.removeItem('userType');
-      localStorage.removeItem('LXM');
-      localStorage.removeItem('LXM_NONCE');
     },
     clearError: (state) => {
       state.error = null;
@@ -105,8 +103,7 @@ export const fetchAccessibleRoutes = () => async (dispatch) => {
  * 登出用户
  */
 export const logoutUser = () => (dispatch) => {
-  import('../api/request').then(({ clearFingerprint, default: request }) => {
-    clearFingerprint();
+  import('../api/request').then(({ default: request }) => {
     request({ url: '/logout', method: 'DELETE', noLoading: true }).catch(() => {});
   });
   dispatch(logout());

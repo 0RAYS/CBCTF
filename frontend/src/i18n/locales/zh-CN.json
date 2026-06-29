@@ -1006,7 +1006,7 @@
           "type": "类型",
           "reasonType": "检测类型",
           "reason": "原因",
-          "ipOrDevice": "IP / 设备指纹",
+          "ip": "IP",
           "status": "状态",
           "time": "时间",
           "actions": "操作"
@@ -1021,11 +1021,9 @@
           "pass": "误报"
         },
         "reasonTypes": {
-          "same_device": "相同设备",
           "same_web_ip": "相同Web IP",
           "same_victim_ip": "相同靶机IP",
-          "wrong_flag": "提交他队Flag",
-          "token_magic": "令牌不匹配"
+          "wrong_flag": "提交他队Flag"
         },
         "reasonTypeFilterLabel": "检测类型:",
         "modals": {
@@ -1062,7 +1060,6 @@
           "reason": "作弊原因",
           "status": "处理状态",
           "comment": "处理备注",
-          "device": "设备指纹",
           "hash": "Hash值"
         },
         "toast": {

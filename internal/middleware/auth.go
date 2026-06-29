@@ -5,19 +5,16 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/utils"
-	"fmt"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 const TokenCookieName = "CBCTF_TOKEN"
 
-// CheckAuth 是否登录, 用户是否被 ban, 记录设备
+// CheckAuth 是否登录, 用户是否被 ban
 func CheckAuth(ctx *gin.Context) {
 	var token string
 	// 优先从 httpOnly Cookie 读取 token
@@ -44,34 +41,6 @@ func CheckAuth(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	magic := GetMagic(ctx)
-	if !utils.CompareMagic(magic, claims.X) {
-		contestIDL, ret := db.InitContestRepo(db.DB).GetIDByUserID(user.ID)
-		if !ret.OK {
-			resp.AbortJSON(ctx, ret)
-			return
-		}
-		ip := ctx.ClientIP()
-		go func(contestIDL []uint) {
-			for _, contestID := range contestIDL {
-				db.InitCheatRepo(db.DB).Create(model.Cheat{
-					ContestID:  contestID,
-					Model:      model.CheatRefModel{model.Name(user): {user.ID}},
-					Magic:      magic,
-					IP:         ip,
-					Reason:     fmt.Sprintf(string(model.DifferentTokenMagicTmpl), magic, claims.X),
-					ReasonType: model.ReasonTypeTokenMagicType,
-					Type:       model.SuspiciousType,
-					Checked:    false,
-					Time:       time.Now(),
-				})
-			}
-			prometheus.RecordCheatDetection(string(model.ReasonTypeTokenMagicType))
-		}(contestIDL)
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
-		return
-	}
-	RecordRequestDevice(user.ID, magic, 1)
 	if user.Banned {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
 		return

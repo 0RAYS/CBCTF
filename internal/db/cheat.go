@@ -70,7 +70,7 @@ func (c *CheatRepo) Create(cheat model.Cheat) (model.Cheat, model.RetVal) {
 		}
 		hash = strings.TrimSuffix(hash, "-")
 	}
-	cheat.Hash = fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s-%s-%s-%s-%s", hash, cheat.ReasonType, cheat.Magic, cheat.IP, cheat.Comment))))
+	cheat.Hash = fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s-%s-%s-%s", hash, cheat.ReasonType, cheat.IP, cheat.Comment))))
 	mu, _ := CheatMutex.LoadOrStore(cheat.Hash, &sync.Mutex{})
 	mu.(*sync.Mutex).Lock()
 	defer mu.(*sync.Mutex).Unlock()

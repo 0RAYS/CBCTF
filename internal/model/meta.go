@@ -38,8 +38,8 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Name:         "Cheat",
 		Table:        "cheats",
 		UniqueFields: []string{"id", "hash"},
-		QueryFields:  []string{"id", "magic", "ip", "reason", "reason_type", "type", "checked", "hash", "comment", "time", "contest_id"},
-		SearchFields: []string{"magic", "ip", "reason", "reason_type", "type", "hash", "comment"},
+		QueryFields:  []string{"id", "ip", "reason", "reason_type", "type", "checked", "hash", "comment", "time", "contest_id"},
+		SearchFields: []string{"ip", "reason", "reason_type", "type", "hash", "comment"},
 	},
 	reflect.TypeFor[Contest](): {
 		Name:         "Contest",
@@ -66,13 +66,6 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Table:        "cron_jobs",
 		UniqueFields: []string{"id", "name"},
 		QueryFields:  []string{"id", "name", "description", "schedule", "success_last", "failure_last", "success", "failure"},
-	},
-	reflect.TypeFor[Device](): {
-		Name:         "Device",
-		Table:        "devices",
-		UniqueFields: []string{"id"},
-		QueryFields:  []string{"id", "user_id", "magic"},
-		SearchFields: []string{"magic"},
 	},
 	reflect.TypeFor[Email](): {
 		Name:         "Email",
@@ -137,8 +130,8 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Name:         "Request",
 		Table:        "requests",
 		UniqueFields: []string{"id"},
-		QueryFields:  []string{"id", "ip", "user_agent", "user_id", "method", "path", "status", "magic"},
-		SearchFields: []string{"ip", "user_agent", "method", "path", "magic"},
+		QueryFields:  []string{"id", "ip", "user_agent", "user_id", "method", "path", "status"},
+		SearchFields: []string{"ip", "user_agent", "method", "path"},
 	},
 	reflect.TypeFor[Role](): {
 		Name:         "Role",

@@ -49,9 +49,6 @@ model:
     getError: "Failed to get contest flag: {{.Error}}"
     deleteError: "Failed to delete contest flag: {{.Error}}"
     notFound: "Contest flag not found"
-  device:
-    createError: "Failed to create device: {{.Error}}"
-    getError: "Failed to get device: {{.Error}}"
   docker:
     invalidComposeYaml: "Invalid docker-compose.yaml: {{.Error}}"
     deleteError: "Failed to delete Docker config: {{.Error}}"

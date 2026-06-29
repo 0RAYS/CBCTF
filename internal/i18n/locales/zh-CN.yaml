@@ -49,9 +49,6 @@ model:
     getError: "获取比赛 flag 失败: {{.Error}}"
     deleteError: "删除比赛 flag 失败: {{.Error}}"
     notFound: "比赛 flag 不存在"
-  device:
-    createError: "创建设备失败: {{.Error}}"
-    getError: "获取设备失败: {{.Error}}"
   docker:
     invalidComposeYaml: "docker-compose.yaml 无效: {{.Error}}"
     deleteError: "删除 Docker 配置失败: {{.Error}}"

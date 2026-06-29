@@ -60,11 +60,6 @@ func DeleteCheat(tx *gorm.DB, cheat model.Cheat) model.RetVal {
 	return db.InitCheatRepo(tx).Delete(cheat.ID)
 }
 
-type deviceInfo struct {
-	UserID    uint
-	FirstTime time.Time
-}
-
 type ipUserInfo struct {
 	UserID uint
 	Time   time.Time
@@ -90,59 +85,6 @@ func shouldKeepUserGroup(contestID uint, userIDs []uint, teamRepo *db.TeamRepo) 
 		return missingTeam && len(userIDs) > 1
 	}
 	return len(teamSet) > 1 || missingTeam
-}
-
-func CheckSameDevice(tx *gorm.DB, contest model.Contest) {
-	rows, ret := db.InitDeviceRepo(tx).ListSharedContestDevices(contest.ID, contest.Start, contest.Start.Add(contest.Duration))
-	if !ret.OK {
-		return
-	}
-
-	deviceUserMap := make(map[string][]deviceInfo)
-	for _, row := range rows {
-		deviceUserMap[row.Magic] = append(deviceUserMap[row.Magic], deviceInfo{
-			UserID:    row.UserID,
-			FirstTime: row.FirstTime,
-		})
-	}
-
-	teamRepo := db.InitTeamRepo(tx)
-	repo := db.InitCheatRepo(tx)
-	for magic, infos := range deviceUserMap {
-		if len(infos) <= 1 {
-			continue
-		}
-
-		userIDs := make([]uint, 0, len(infos))
-		for _, info := range infos {
-			userIDs = append(userIDs, info.UserID)
-		}
-		if !shouldKeepUserGroup(contest.ID, userIDs, teamRepo) {
-			continue
-		}
-
-		var (
-			users    []string
-			earliest time.Time
-		)
-		for i, info := range infos {
-			users = append(users, strconv.Itoa(int(info.UserID)))
-			if i == 0 || info.FirstTime.Before(earliest) {
-				earliest = info.FirstTime
-			}
-		}
-
-		repo.Create(model.Cheat{
-			ContestID:  contest.ID,
-			Model:      model.CheatRefModel{model.Name(model.User{}): userIDs},
-			Magic:      magic,
-			Reason:     fmt.Sprintf(string(model.SameDeviceMagicTmpl), fmt.Sprintf("User %s", strings.Join(users, ","))),
-			ReasonType: model.ReasonTypeSameDeviceType,
-			Type:       model.SuspiciousType,
-			Time:       earliest,
-		})
-		prometheus.RecordCheatDetection(string(model.ReasonTypeSameDeviceType))
-	}
 }
 
 func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {

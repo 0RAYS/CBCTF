@@ -31,7 +31,6 @@ func Events(ctx *gin.Context) {
 		Type:    t,
 		Success: ctx.GetBool(CTXEventSuccessKey),
 		IP:      ctx.ClientIP(),
-		Magic:   GetMagic(ctx),
 		Models:  make(model.UintMap),
 	}
 	for _, m := range models {

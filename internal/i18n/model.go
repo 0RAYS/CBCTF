@@ -47,11 +47,6 @@ type ContestFlag struct {
 	NotFound    string
 }
 
-type Device struct {
-	CreateError string
-	GetError    string
-}
-
 type Docker struct {
 	// Error
 	InvalidComposeYaml string
@@ -239,7 +234,6 @@ var Model = struct {
 	ContestChallenge ContestChallenge
 	ContestFlag      ContestFlag
 	CronJob          CronJob
-	Device           Device
 	Docker           Docker
 	Email            Email
 	File             File
@@ -313,10 +307,6 @@ var Model = struct {
 		GetError:    "model.contestFlag.getError",
 		DeleteError: "model.contestFlag.deleteError",
 		NotFound:    "model.contestFlag.notFound",
-	},
-	Device: Device{
-		CreateError: "model.device.createError",
-		GetError:    "model.device.getError",
 	},
 	Docker: Docker{
 		InvalidComposeYaml: "model.docker.invalidComposeYaml",

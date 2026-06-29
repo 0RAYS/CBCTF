@@ -3,83 +3,6 @@ import { toast } from '../utils/toast';
 import i18n from '../i18n';
 import { API_CONFIG } from './config.js';
 
-const NONCE_KEY = 'LXM_NONCE';
-const FINGERPRINT_KEY = 'LXM';
-
-let fpPromise = null;
-
-function loadFingerprint() {
-  if (!fpPromise) {
-    fpPromise = import('@fingerprintjs/fingerprintjs').then(({ default: FingerprintJS }) => FingerprintJS.load());
-  }
-  return fpPromise;
-}
-
-// SHA-256 哈希, 带非安全上下文回退
-async function sha256Hex(input) {
-  if (crypto.subtle) {
-    const data = new TextEncoder().encode(input);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hashBuffer))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-  }
-  // 非 HTTPS 环境回退: 直接返回原始拼接字符串, 后端会做 double-MD5
-  return input;
-}
-
-// 获取或创建浏览器实例唯一标识
-function getOrCreateNonce() {
-  let nonce = localStorage.getItem(NONCE_KEY);
-  if (!nonce) {
-    nonce =
-      typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-            (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
-          );
-    localStorage.setItem(NONCE_KEY, nonce);
-  }
-  return nonce;
-}
-
-// 混合指纹: visitorId（硬件特征）+ nonce（实例标识）→ SHA-256
-async function generateFingerprint() {
-  try {
-    const fp = await loadFingerprint();
-    const result = await fp.get();
-    const nonce = getOrCreateNonce();
-    return await sha256Hex(result.visitorId + ':' + nonce);
-  } catch {
-    // FingerprintJS 失败时仅用 nonce, 仍保证唯一性
-    const nonce = getOrCreateNonce();
-    return await sha256Hex('fp-fallback:' + nonce);
-  }
-}
-
-let magicNum = localStorage.getItem(FINGERPRINT_KEY) || '';
-let fingerprintPromise = null;
-
-async function ensureFingerprint() {
-  if (magicNum) {
-    return magicNum;
-  }
-
-  if (!fingerprintPromise) {
-    fingerprintPromise = generateFingerprint()
-      .then((fingerprint) => {
-        magicNum = fingerprint;
-        localStorage.setItem(FINGERPRINT_KEY, fingerprint);
-        return fingerprint;
-      })
-      .finally(() => {
-        fingerprintPromise = null;
-      });
-  }
-
-  return fingerprintPromise;
-}
-
 let nprogressPromise = null;
 
 function loadNProgress() {
@@ -95,14 +18,6 @@ function startRequestLoading() {
 
 function finishRequestLoading() {
   loadNProgress().then(({ finishLoading }) => finishLoading());
-}
-
-// 清除设备指纹缓存（登出时调用）
-export function clearFingerprint() {
-  magicNum = '';
-  fingerprintPromise = null;
-  localStorage.removeItem(FINGERPRINT_KEY);
-  localStorage.removeItem(NONCE_KEY);
 }
 
 // 创建 Axios 实例
@@ -136,7 +51,6 @@ request.interceptors.request.use(
       startRequestLoading();
       updateGlobalLoading(requestCount + 1);
     }
-    config.headers['X-M'] = await ensureFingerprint();
     config.headers['Accept-Language'] = i18n.language;
     return config;
   },
@@ -186,7 +100,6 @@ request.interceptors.response.use(
     if (code === 401) {
       import('../store').then(({ store }) => {
         import('../store/user').then(({ logout }) => {
-          clearFingerprint();
           store.dispatch(logout());
         });
       });
@@ -225,7 +138,6 @@ request.interceptors.response.use(
           // 使用动态导入避免循环依赖
           import('../store').then(({ store }) => {
             import('../store/user').then(({ logout }) => {
-              clearFingerprint();
               store.dispatch(logout());
             });
           });

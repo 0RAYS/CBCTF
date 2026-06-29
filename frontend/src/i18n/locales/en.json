@@ -1006,7 +1006,7 @@
           "type": "Type",
           "reasonType": "Detection Type",
           "reason": "Reason",
-          "ipOrDevice": "IP / Device",
+          "ip": "IP",
           "status": "Status",
           "time": "Time",
           "actions": "Actions"
@@ -1021,11 +1021,9 @@
           "pass": "False positive"
         },
         "reasonTypes": {
-          "same_device": "Same Device",
           "same_web_ip": "Same Web IP",
           "same_victim_ip": "Same Victim IP",
-          "wrong_flag": "Wrong Flag",
-          "token_magic": "Token Mismatch"
+          "wrong_flag": "Wrong Flag"
         },
         "reasonTypeFilterLabel": "Detection type:",
         "modals": {
@@ -1062,7 +1060,6 @@
           "reason": "Reason",
           "status": "Status",
           "comment": "Comment",
-          "device": "Device",
           "hash": "Hash"
         },
         "toast": {
