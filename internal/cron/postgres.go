@@ -12,7 +12,7 @@ const reindexPostgresLockKey = "cbctf:reindex_postgres"
 
 // reindexPostgresTask rebuilds indexes concurrently to reduce table lock impact.
 func reindexPostgresTask() model.RetVal {
-	sqlDB, err := db.DB.DB()
+	sqlDB, err := db.CronDB.DB()
 	if err != nil {
 		return model.RetVal{Msg: "Failed to get PostgreSQL connection pool", Attr: map[string]any{"Error": err.Error()}}
 	}

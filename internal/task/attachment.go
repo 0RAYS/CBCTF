@@ -61,7 +61,7 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	if lockToken != "" {
 		valid, err := redis.RefreshGeneratorAttachmentLock(ctx, payload.Generator.ID, lockToken)
 		if err != nil {
-			db.InitGeneratorRepo(db.DB).UpdateStatus(payload.Generator.ID, false, time.Now())
+			db.InitGeneratorRepo(db.TaskDB).UpdateStatus(payload.Generator.ID, false, time.Now())
 			return err
 		}
 		if !valid {
@@ -72,7 +72,7 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 		var err error
 		lockToken, err = redis.LockGeneratorAttachment(ctx, payload.Generator.ID)
 		if err != nil {
-			db.InitGeneratorRepo(db.DB).UpdateStatus(payload.Generator.ID, false, time.Now())
+			db.InitGeneratorRepo(db.TaskDB).UpdateStatus(payload.Generator.ID, false, time.Now())
 			return err
 		}
 	}
@@ -81,7 +81,7 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	ret := k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags)
 	cancel()
-	generatorRepo := db.InitGeneratorRepo(db.DB)
+	generatorRepo := db.InitGeneratorRepo(db.TaskDB)
 	generatorRepo.UpdateStatus(payload.Generator.ID, ret.OK, time.Now())
 	if !ret.OK {
 		if ret.Msg == i18n.Model.NotFound || ret.Msg == i18n.K8S.NotFound {

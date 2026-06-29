@@ -10,11 +10,11 @@ import (
 
 // updateTeamRankingTask 全量更新 model.Team 的分数和排名
 func updateTeamRankingTask() model.RetVal {
-	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", model.UpdateTeamRankingCronJob)
+	job, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", model.UpdateTeamRankingCronJob)
 	if !ret.OK {
 		return ret
 	}
-	repo := db.InitContestRepo(db.DB)
+	repo := db.InitContestRepo(db.CronDB)
 	contests, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"hidden": false}})
 	if !ret.OK {
 		return ret
@@ -23,14 +23,14 @@ func updateTeamRankingTask() model.RetVal {
 		if time.Now().Sub(contest.Start.Add(contest.Duration)) > job.Schedule*2 {
 			continue
 		}
-		service.UpdateTeamRanking(db.DB, contest, -1, -1)
+		service.UpdateTeamRanking(db.CronDB, contest, -1, -1)
 	}
 	return model.SuccessRetVal()
 }
 
 // updateUserRankingTask 全量更新 model.User 的分数和排名
 func updateUserRankingTask() model.RetVal {
-	userRepo := db.InitUserRepo(db.DB)
+	userRepo := db.InitUserRepo(db.CronDB)
 	users, _, ret := userRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"banned": false},
 	})
@@ -42,7 +42,7 @@ func updateUserRankingTask() model.RetVal {
 		userIDs[i] = user.ID
 	}
 
-	solvedContestFlags, ret := db.InitContestFlagRepo(db.DB).GetUserSolvedContestFlags(userIDs...)
+	solvedContestFlags, ret := db.InitContestFlagRepo(db.CronDB).GetUserSolvedContestFlags(userIDs...)
 	if !ret.OK {
 		return ret
 	}
@@ -57,7 +57,7 @@ func updateUserRankingTask() model.RetVal {
 		contestFlagIDL = append(contestFlagIDL, contestFlagID)
 	}
 
-	bloodRankMap, ret := db.InitSubmissionRepo(db.DB).GetBloodRankMap(contestFlagIDL...)
+	bloodRankMap, ret := db.InitSubmissionRepo(db.CronDB).GetBloodRankMap(contestFlagIDL...)
 	if !ret.OK {
 		return ret
 	}
@@ -88,6 +88,6 @@ func updateUserRankingTask() model.RetVal {
 			Solved: new(userSolvedCount[user.ID]),
 		})
 	}
-	service.UpdateUserRanking(db.DB, -1, -1)
+	service.UpdateUserRanking(db.CronDB, -1, -1)
 	return model.SuccessRetVal()
 }

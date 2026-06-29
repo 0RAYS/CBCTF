@@ -13,7 +13,14 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var (
+	// DB is kept as the default application pool for existing call sites. It is
+	// intentionally assigned to HTTPDB so request paths keep the configured pool.
+	DB     *gorm.DB
+	HTTPDB *gorm.DB
+	TaskDB *gorm.DB
+	CronDB *gorm.DB
+)
 
 type Tx = gorm.DB
 
@@ -41,7 +48,6 @@ func WithTransactionDB(root *gorm.DB, fn func(tx *Tx) model.RetVal) model.RetVal
 }
 
 func Init() {
-	var err error
 	var level log.Level
 	switch strings.ToUpper(config.Env.Gorm.Log.Level) {
 	case "INFO":
@@ -56,41 +62,26 @@ func Init() {
 		level = log.Silent
 	}
 
-	dsn := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s connect_timeout=30 TimeZone=Asia/Shanghai",
-		config.Env.Gorm.Postgres.Host,
-		config.Env.Gorm.Postgres.Port,
-		config.Env.Gorm.Postgres.User,
-		config.Env.Gorm.Postgres.Pwd,
-		config.Env.Gorm.Postgres.DB,
-		func() string {
-			if config.Env.Gorm.Postgres.SSLMode {
-				return "require"
-			}
-			return "disable"
-		}(),
+	DB = openPostgresPool("http", config.Env.Gorm.Postgres.MaxOpenConns, config.Env.Gorm.Postgres.MaxIdleConns, level)
+	HTTPDB = DB
+	TaskDB = openPostgresPool(
+		"task",
+		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxOpenConns, 4),
+		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxIdleConns, 4),
+		level,
 	)
-	log.Logger.Infof("Connecting to PostgreSQL database: %s:%d", config.Env.Gorm.Postgres.Host, config.Env.Gorm.Postgres.Port)
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: log.NewGormLogger(level),
-	})
-	if err != nil {
-		log.Logger.Fatalf("Failed to connect database: %s", err)
-	}
-	if sql, err := DB.DB(); err != nil {
-		log.Logger.Fatalf("Failed to get database: %s", err)
-	} else {
-		sql.SetMaxIdleConns(config.Env.Gorm.Postgres.MaxIdleConns)
-		sql.SetMaxOpenConns(config.Env.Gorm.Postgres.MaxOpenConns)
-		sql.SetConnMaxIdleTime(time.Hour)
-		sql.SetConnMaxLifetime(24 * time.Hour)
-	}
+	CronDB = openPostgresPool(
+		"cron",
+		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxOpenConns, 10),
+		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxIdleConns, 10),
+		level,
+	)
 
-	if err = DB.Exec(`CREATE EXTENSION IF NOT EXISTS pg_trgm`).Error; err != nil {
+	if err := DB.Exec(`CREATE EXTENSION IF NOT EXISTS pg_trgm`).Error; err != nil {
 		log.Logger.Warningf("Failed to ensure pg_trgm extension: %s", err)
 	}
 
-	err = DB.AutoMigrate(
+	err := DB.AutoMigrate(
 		&model.Branding{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Victim{}, &model.Pod{},
 		&model.ContestChallenge{}, &model.ContestFlag{}, &model.CronJob{}, &model.Email{},
 		&model.Event{}, &model.File{}, &model.Generator{}, &model.Group{}, &model.Notice{}, &model.Oauth{},
@@ -142,13 +133,69 @@ func Init() {
 	InitOauthRepo(DB).RegisterDefault()
 }
 
-func Stop() {
-	db, err := DB.DB()
+func openPostgresPool(name string, maxOpenConns, maxIdleConns int, level log.Level) *gorm.DB {
+	dsn := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s connect_timeout=30 TimeZone=Asia/Shanghai",
+		config.Env.Gorm.Postgres.Host,
+		config.Env.Gorm.Postgres.Port,
+		config.Env.Gorm.Postgres.User,
+		config.Env.Gorm.Postgres.Pwd,
+		config.Env.Gorm.Postgres.DB,
+		func() string {
+			if config.Env.Gorm.Postgres.SSLMode {
+				return "require"
+			}
+			return "disable"
+		}(),
+	)
+	log.Logger.Infof(
+		"Connecting to PostgreSQL database pool %q: %s:%d max_open=%d max_idle=%d",
+		name, config.Env.Gorm.Postgres.Host, config.Env.Gorm.Postgres.Port, maxOpenConns, maxIdleConns,
+	)
+	pool, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: log.NewGormLogger(level),
+	})
 	if err != nil {
-		log.Logger.Warningf("Failed to stop PostgreSQL connection: %s", err)
-		return
+		log.Logger.Fatalf("Failed to connect database pool %q: %s", name, err)
 	}
-	if err = db.Close(); err != nil {
-		log.Logger.Warningf("Failed to stop PostgreSQL connection: %s", err)
+	if sql, err := pool.DB(); err != nil {
+		log.Logger.Fatalf("Failed to get database pool %q: %s", name, err)
+	} else {
+		sql.SetMaxIdleConns(maxIdleConns)
+		sql.SetMaxOpenConns(maxOpenConns)
+		sql.SetConnMaxIdleTime(time.Hour)
+		sql.SetConnMaxLifetime(24 * time.Hour)
+	}
+	return pool
+}
+
+func backgroundPoolLimit(limit, divisor int) int {
+	if limit <= 0 {
+		return limit
+	}
+	derived := limit / divisor
+	if derived < 1 {
+		return 1
+	}
+	return derived
+}
+
+func Stop() {
+	for name, pool := range map[string]*gorm.DB{
+		"cron": CronDB,
+		"task": TaskDB,
+		"http": HTTPDB,
+	} {
+		if pool == nil {
+			continue
+		}
+		sqlDB, err := pool.DB()
+		if err != nil {
+			log.Logger.Warningf("Failed to stop PostgreSQL pool %q: %s", name, err)
+			continue
+		}
+		if err = sqlDB.Close(); err != nil {
+			log.Logger.Warningf("Failed to stop PostgreSQL pool %q: %s", name, err)
+		}
 	}
 }

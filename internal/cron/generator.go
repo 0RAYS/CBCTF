@@ -21,7 +21,7 @@ func stopUnCtrlGeneratorTask() model.RetVal {
 	if pods == nil {
 		return model.SuccessRetVal()
 	}
-	generators, _, ret := db.InitGeneratorRepo(db.DB).List(-1, -1)
+	generators, _, ret := db.InitGeneratorRepo(db.CronDB).List(-1, -1)
 	if !ret.OK {
 		return ret
 	}

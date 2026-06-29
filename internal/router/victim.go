@@ -106,7 +106,7 @@ func StartVictims(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	contest := middleware.GetContest(ctx)
-	ret := service.StartVictims(db.DB, contest, form)
+	ret := service.StartVictims(db.TaskDB, contest, form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -120,7 +120,7 @@ func StopVictims(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
-	go service.StopVictims(db.DB, form)
+	go service.StopVictims(db.TaskDB, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

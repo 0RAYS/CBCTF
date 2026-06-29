@@ -15,7 +15,7 @@ import (
 )
 
 func recordTaskExecution(ctx context.Context, t *asynq.Task, status string, result any, err error) {
-	if db.DB == nil {
+	if db.TaskDB == nil {
 		return
 	}
 	taskID, _ := asynq.GetTaskID(ctx)
@@ -32,7 +32,7 @@ func recordTaskExecution(ctx context.Context, t *asynq.Task, status string, resu
 	if err != nil {
 		errorMsg = err.Error()
 	}
-	if _, ret := db.InitTaskRepo(db.DB).Create(model.Task{
+	if _, ret := db.InitTaskRepo(db.TaskDB).Create(model.Task{
 		TaskID:      taskID,
 		Type:        t.Type(),
 		Queue:       queue,

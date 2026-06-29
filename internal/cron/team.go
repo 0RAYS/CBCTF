@@ -8,11 +8,11 @@ import (
 )
 
 func clearEmptyTeamTask() model.RetVal {
-	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", model.ClearEmptyTeamCronJob)
+	job, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", model.ClearEmptyTeamCronJob)
 	if !ret.OK {
 		return ret
 	}
-	contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1)
+	contests, _, ret := db.InitContestRepo(db.CronDB).List(-1, -1)
 	if !ret.OK {
 		return ret
 	}
@@ -23,7 +23,7 @@ func clearEmptyTeamTask() model.RetVal {
 		}
 		contestIDL = append(contestIDL, contest.ID)
 	}
-	repo := db.InitTeamRepo(db.DB)
+	repo := db.InitTeamRepo(db.CronDB)
 	teams, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"contest_id": contestIDL}})
 	if !ret.OK {
 		return ret

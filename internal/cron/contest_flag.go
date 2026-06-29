@@ -12,11 +12,11 @@ import (
 // 正常情况下该定时任务无意义, 每次有新解出时即更新 current_score 和 solvers
 // 当 submissions 且 model.Submission.Solved == true 时的数据减少 (队伍解散 引发的数据删除), 该函数才有意义
 func updateFlagScoreTask() model.RetVal {
-	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", model.UpdateFlagScoreCronJob)
+	job, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", model.UpdateFlagScoreCronJob)
 	if !ret.OK {
 		return ret
 	}
-	contestRepo := db.InitContestRepo(db.DB)
+	contestRepo := db.InitContestRepo(db.CronDB)
 	contests, _, ret := contestRepo.List(-1, -1)
 	if !ret.OK {
 		return ret
@@ -25,7 +25,7 @@ func updateFlagScoreTask() model.RetVal {
 		if time.Now().Sub(contest.Start.Add(contest.Duration)) > job.Schedule*2 {
 			continue
 		}
-		contestChallengeRepo := db.InitContestChallengeRepo(db.DB)
+		contestChallengeRepo := db.InitContestChallengeRepo(db.CronDB)
 		contestChallengeL, _, ret := contestChallengeRepo.List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"contest_id": contest.ID},
 			Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
@@ -37,8 +37,8 @@ func updateFlagScoreTask() model.RetVal {
 			for _, contestFlag := range contestChallenge.ContestFlags {
 				mu, _ := service.SolvedMutex.LoadOrStore(contestFlag.ID, &sync.Mutex{})
 				mu.(*sync.Mutex).Lock()
-				contestFlagRepo := db.InitContestFlagRepo(db.DB)
-				solvers, currentScore, ret := service.CalcContestFlagState(db.DB, contestFlag)
+				contestFlagRepo := db.InitContestFlagRepo(db.CronDB)
+				solvers, currentScore, ret := service.CalcContestFlagState(db.CronDB, contestFlag)
 				if !ret.OK {
 					mu.(*sync.Mutex).Unlock()
 					continue

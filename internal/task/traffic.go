@@ -38,7 +38,7 @@ func HandleLoadTrafficTask(ctx context.Context, t *asynq.Task) error {
 	}
 	victim := payload.Victim
 	log.Logger.Infof("Loading victim traffic: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
-	ret := LoadTraffic(ctx, db.DB, victim)
+	ret := LoadTraffic(ctx, db.TaskDB, victim)
 	if !ret.OK {
 		return fmt.Errorf("load traffic failed: %s", ret.Msg)
 	}

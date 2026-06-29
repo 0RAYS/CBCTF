@@ -19,7 +19,7 @@ func syncFrpsPortLocksTask() model.RetVal {
 		return model.SuccessRetVal()
 	}
 
-	victimRepo := db.InitVictimRepo(db.DB)
+	victimRepo := db.InitVictimRepo(db.CronDB)
 	pendingVictims, _, ret := victimRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"status": model.PendingVictimStatus},
 	})
