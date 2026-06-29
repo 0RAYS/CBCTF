@@ -220,7 +220,7 @@ function AdminContestCheats() {
     { key: 'type', label: t('admin.contests.cheats.columns.type'), width: '10%' },
     { key: 'reason_type', label: t('admin.contests.cheats.columns.reasonType'), width: '12%' },
     { key: 'reason', label: t('admin.contests.cheats.columns.reason'), width: '14%' },
-    { key: 'ip', label: t('admin.contests.cheats.columns.ipOrDevice'), width: '10%' },
+    { key: 'ip', label: t('admin.contests.cheats.columns.ip'), width: '10%' },
     { key: 'checked', label: t('admin.contests.cheats.columns.status'), width: '10%' },
     { key: 'time', label: t('admin.contests.cheats.columns.time'), width: '14%' },
     { key: 'actions', label: t('admin.contests.cheats.columns.actions'), width: '10%' },
@@ -291,7 +291,7 @@ function AdminContestCheats() {
         if (item.ip && isValidIp(item.ip)) {
           return <IpAddress ip={item.ip} className="text-xs" />;
         }
-        return <span className="font-mono text-xs text-neutral-300">{item.ip || item.magic}</span>;
+        return <span className="font-mono text-xs text-neutral-300">{item.ip || '-'}</span>;
       case 'checked':
         return (
           <StatusTag
@@ -354,11 +354,9 @@ function AdminContestCheats() {
   ];
 
   const reasonTypeFilterOptions = [
-    { value: 'same_device', label: t('admin.contests.cheats.reasonTypes.same_device') },
     { value: 'same_web_ip', label: t('admin.contests.cheats.reasonTypes.same_web_ip') },
     { value: 'same_victim_ip', label: t('admin.contests.cheats.reasonTypes.same_victim_ip') },
     { value: 'wrong_flag', label: t('admin.contests.cheats.reasonTypes.wrong_flag') },
-    { value: 'token_magic', label: t('admin.contests.cheats.reasonTypes.token_magic') },
   ];
 
   return (
@@ -675,17 +673,6 @@ function AdminContestCheats() {
                   {t('admin.contests.cheats.detail.comment')}
                 </label>
                 <p className="text-neutral-300 bg-neutral-800 p-3 rounded">{selectedCheat.comment}</p>
-              </div>
-            )}
-
-            {selectedCheat.magic && (
-              <div>
-                <label className="block text-sm font-mono text-neutral-400 mb-1">
-                  {t('admin.contests.cheats.detail.device')}
-                </label>
-                <p className="text-neutral-300 font-mono text-sm bg-neutral-800 p-3 rounded break-all">
-                  {selectedCheat.magic}
-                </p>
               </div>
             )}
 

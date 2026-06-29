@@ -27,7 +27,7 @@ features:
     icon: 📦
     link: /guide/features/attachment
   - title: 多维度作弊检测
-    details: 内置设备指纹、IP、跨队 Flag 提交等五种检测机制，自动标记可疑行为。
+    details: 内置 IP、跨队 Flag 提交等检测机制，自动标记可疑行为。
     icon: 🔍
     link: /admin/cheat
   - title: 灵活计分系统

@@ -17,23 +17,18 @@ const (
 	CheaterType    CheatType = "cheater"
 	SuspiciousType CheatType = "suspicious"
 
-	DifferentTokenMagicTmpl CheatReasonTmpl = "Device magic %s is different from token magic %s"
-	SameDeviceMagicTmpl     CheatReasonTmpl = "%s has the same Device magic"
 	ReqWebSameIPTmpl        CheatReasonTmpl = "%s request web with same IP"
 	ReqVictimSameIPTmpl     CheatReasonTmpl = "%s request victim with same IP"
 	SubmitOtherTeamFlagTmpl CheatReasonTmpl = "Team %d submitted flag of %s in Contest %d"
 
-	ReasonTypeSameDeviceType   CheatReasonType = "same_device"
 	ReasonTypeSameWebIPType    CheatReasonType = "same_web_ip"
 	ReasonTypeSameVictimIPType CheatReasonType = "same_victim_ip"
 	ReasonTypeWrongFlagType    CheatReasonType = "wrong_flag"
-	ReasonTypeTokenMagicType   CheatReasonType = "token_magic"
 )
 
 type Cheat struct {
 	ContestID  uint            `gorm:"index" json:"contest_id"`
 	Model      CheatRefModel   `gorm:"default:null;type:jsonb" json:"model"`
-	Magic      string          `json:"magic"`
 	IP         string          `json:"ip"`
 	Reason     string          `json:"reason"`
 	ReasonType CheatReasonType `gorm:"index" json:"reason_type"`

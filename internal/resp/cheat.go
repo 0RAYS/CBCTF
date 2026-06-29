@@ -11,7 +11,6 @@ func GetCheatResp(cheat model.Cheat) gin.H {
 		"id":          cheat.ID,
 		"contest_id":  cheat.ContestID,
 		"model":       cheat.Model,
-		"magic":       cheat.Magic,
 		"ip":          cheat.IP,
 		"reason":      cheat.Reason,
 		"reason_type": cheat.ReasonType,

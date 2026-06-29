@@ -23,7 +23,6 @@ func checkCheatTask() model.RetVal {
 		service.CheckWebReqIP(db.DB, contest)
 		service.CheckVictimReqIP(db.DB, contest)
 		service.CheckWrongFlag(db.DB, contest)
-		service.CheckSameDevice(db.DB, contest)
 	}
 	return model.SuccessRetVal()
 }

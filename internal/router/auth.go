@@ -85,7 +85,7 @@ func Register(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	token, err := utils.GenerateToken(user.ID, user.Name, middleware.GetMagic(ctx), config.Env.Gin.JWT.Secret)
+	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
@@ -119,7 +119,7 @@ func Login(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	token, err := utils.GenerateToken(user.ID, user.Name, middleware.GetMagic(ctx), config.Env.Gin.JWT.Secret)
+	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})

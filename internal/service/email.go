@@ -16,7 +16,7 @@ import (
 
 func SendEmail(user model.User) model.RetVal {
 	id := utils.UUID()
-	token, err := utils.GenerateToken(user.ID, user.Name, id, config.Env.Gin.JWT.Secret)
+	token, err := utils.GenerateVerificationToken(user.ID, user.Name, id, config.Env.Gin.JWT.Secret)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
@@ -33,7 +33,7 @@ func SendEmail(user model.User) model.RetVal {
 
 func VerifyEmail(tx *gorm.DB, form dto.VerifyEmail) model.RetVal {
 	claims, err := utils.ParseToken(form.Token, config.Env.Gin.JWT.Secret)
-	if err != nil || !utils.CompareMagic(form.ID, claims.X) {
+	if err != nil || (!utils.CompareVerifier(form.ID, claims.Verifier) && !utils.CompareVerifier(form.ID, claims.LegacyVerifier)) {
 		return model.RetVal{Msg: i18n.Model.Email.InvalidVerifyToken}
 	}
 	storedID, ret := redis.GetEmailVerifyToken(claims.UserID)
@@ -57,7 +57,7 @@ func SendPasswordResetEmail(tx *gorm.DB, form dto.ForgotPasswordForm) model.RetV
 		return ret
 	}
 	id := utils.UUID()
-	token, err := utils.GenerateToken(user.ID, user.Name, id, config.Env.Gin.JWT.Secret)
+	token, err := utils.GenerateVerificationToken(user.ID, user.Name, id, config.Env.Gin.JWT.Secret)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate password reset token: %s", err)
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
@@ -75,7 +75,7 @@ func SendPasswordResetEmail(tx *gorm.DB, form dto.ForgotPasswordForm) model.RetV
 // ResetUserPassword 验证重置 token 并更新密码，同时将邮箱设为已验证
 func ResetUserPassword(tx *gorm.DB, form dto.ResetPasswordForm) model.RetVal {
 	claims, err := utils.ParseToken(form.Token, config.Env.Gin.JWT.Secret)
-	if err != nil || !utils.CompareMagic(form.ID, claims.X) {
+	if err != nil || (!utils.CompareVerifier(form.ID, claims.Verifier) && !utils.CompareVerifier(form.ID, claims.LegacyVerifier)) {
 		return model.RetVal{Msg: i18n.Model.User.InvalidResetToken}
 	}
 	storedID, ret := redis.GetPasswordResetToken(claims.UserID)

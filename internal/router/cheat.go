@@ -67,7 +67,6 @@ func CheckCheat(ctx *gin.Context) {
 	service.CheckWebReqIP(db.DB, contest)
 	service.CheckVictimReqIP(db.DB, contest)
 	service.CheckWrongFlag(db.DB, contest)
-	service.CheckSameDevice(db.DB, contest)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

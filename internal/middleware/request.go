@@ -50,7 +50,6 @@ func AccessLog(ctx *gin.Context) {
 	url := ctx.Request.URL.Path
 	userAgent := ctx.Request.UserAgent()
 	referer := ctx.Request.Referer()
-	magic := GetMagic(ctx)
 	start := time.Now()
 	ctx.Next()
 
@@ -77,7 +76,6 @@ func AccessLog(ctx *gin.Context) {
 		UserAgent: userAgent,
 		Status:    statusCode,
 		Referer:   referer,
-		Magic:     magic,
 	}
 	if selfID > 0 {
 		request.UserID = sql.Null[uint]{V: selfID, Valid: true}

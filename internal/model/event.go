@@ -139,7 +139,6 @@ type Event struct {
 	Type    string  `json:"type"`
 	Success bool    `json:"success"`
 	IP      string  `json:"ip"`
-	Magic   string  `json:"magic"`
 	Models  UintMap `gorm:"type:jsonb" json:"models"`
 	BaseModel
 }

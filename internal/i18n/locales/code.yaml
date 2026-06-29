@@ -49,9 +49,6 @@ model:
     getError: "500"
     deleteError: "500"
     notFound: "404"
-  device:
-    createError: "500"
-    getError: "500"
   docker:
     invalidComposeYaml: "400"
     deleteError: "500"
