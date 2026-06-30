@@ -2202,19 +2202,6 @@
         "batchDelete": "批量删除 ({{count}})"
       }
     },
-    "globalSearch": {
-      "title": "全局搜索",
-      "model": "模型",
-      "selectModel": "选择模型...",
-      "filters": "过滤字段",
-      "sort": "排序",
-      "noResults": "未找到结果",
-      "detailTitle": "{{model}} 详情",
-      "toast": {
-        "modelsFailed": "获取模型列表失败",
-        "searchFailed": "搜索失败"
-      }
-    },
     "system": {
       "actions": {
         "update": "更新配置",

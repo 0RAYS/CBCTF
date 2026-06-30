@@ -28,8 +28,7 @@ const (
 	PermUserWriteupUpload = "user:writeup:upload"
 	PermUserWriteupList   = "user:writeup:list"
 
-	PermAdminIPSearch     = "admin:ip:search"
-	PermAdminModelsSearch = "admin:models:search"
+	PermAdminIPSearch = "admin:ip:search"
 
 	PermAdminSystemStatus   = "admin:system:status"
 	PermAdminSystemRead     = "admin:system:read"
@@ -197,9 +196,7 @@ var RoutePermissions = map[string]string{
 	"GET /contests/:contestID/writeups":  PermUserWriteupList,
 
 	// /admin 基础
-	"GET /admin/ip":     PermAdminIPSearch,
-	"GET /admin/models": PermAdminModelsSearch,
-	"GET /admin/search": PermAdminModelsSearch,
+	"GET /admin/ip": PermAdminIPSearch,
 
 	// /admin/system
 	"GET /admin/system/status":      PermAdminSystemStatus,
@@ -253,14 +250,14 @@ var RoutePermissions = map[string]string{
 	"DELETE /admin/oauth/:oauthID":       PermAdminOauthDelete,
 
 	// /admin/email + /admin/smtp
-	"GET /admin/email":                PermAdminSMTPList,
-	"GET /admin/smtp":                 PermAdminSMTPList,
-	"POST /admin/smtp":                PermAdminSMTPCreate,
-	"GET /admin/smtp/:smtpID":         PermAdminSMTPRead,
-	"PUT /admin/smtp/:smtpID":         PermAdminSMTPUpdate,
-	"DELETE /admin/smtp/:smtpID":      PermAdminSMTPDelete,
-	"GET /admin/smtp/:smtpID/email":   PermAdminSMTPList,
-	"POST /admin/smtp/:smtpID/test":   PermAdminSMTPTest,
+	"GET /admin/email":              PermAdminSMTPList,
+	"GET /admin/smtp":               PermAdminSMTPList,
+	"POST /admin/smtp":              PermAdminSMTPCreate,
+	"GET /admin/smtp/:smtpID":       PermAdminSMTPRead,
+	"PUT /admin/smtp/:smtpID":       PermAdminSMTPUpdate,
+	"DELETE /admin/smtp/:smtpID":    PermAdminSMTPDelete,
+	"GET /admin/smtp/:smtpID/email": PermAdminSMTPList,
+	"POST /admin/smtp/:smtpID/test": PermAdminSMTPTest,
 
 	// /admin/cronjobs
 	"GET /admin/cronjobs":            PermAdminCronJobList,
@@ -298,10 +295,10 @@ var RoutePermissions = map[string]string{
 	"GET /admin/victims/:victimID/pods":             PermAdminVictimControl,
 	"GET /admin/victims/:victimID/pods/logs":        PermAdminVictimControl,
 
-	"GET /admin/generators":                       PermAdminGeneratorControl,
-	"POST /admin/generators":                      PermAdminGeneratorControl,
-	"DELETE /admin/generators":                    PermAdminGeneratorControl,
-	"GET /admin/generators/:generatorID/logs":     PermAdminGeneratorControl,
+	"GET /admin/generators":                   PermAdminGeneratorControl,
+	"POST /admin/generators":                  PermAdminGeneratorControl,
+	"DELETE /admin/generators":                PermAdminGeneratorControl,
+	"GET /admin/generators/:generatorID/logs": PermAdminGeneratorControl,
 
 	// /admin/images
 	"GET /admin/images":  PermAdminImagePull,
@@ -366,17 +363,17 @@ var RoutePermissions = map[string]string{
 	"POST /admin/contests/:contestID/images": PermAdminContestImagePull,
 
 	// /admin/contests/:contestID/victims
-	"GET /admin/contests/:contestID/victims":                         PermAdminContestVictimControl,
-	"POST /admin/contests/:contestID/victims":                        PermAdminContestVictimControl,
-	"DELETE /admin/contests/:contestID/victims":                      PermAdminContestVictimControl,
-	"GET /admin/contests/:contestID/victims/:victimID/pods":          PermAdminContestVictimControl,
-	"GET /admin/contests/:contestID/victims/:victimID/pods/logs":     PermAdminContestVictimControl,
+	"GET /admin/contests/:contestID/victims":                     PermAdminContestVictimControl,
+	"POST /admin/contests/:contestID/victims":                    PermAdminContestVictimControl,
+	"DELETE /admin/contests/:contestID/victims":                  PermAdminContestVictimControl,
+	"GET /admin/contests/:contestID/victims/:victimID/pods":      PermAdminContestVictimControl,
+	"GET /admin/contests/:contestID/victims/:victimID/pods/logs": PermAdminContestVictimControl,
 
 	// /admin/contests/:contestID/generators
-	"GET /admin/contests/:contestID/generators":                      PermAdminContestGeneratorControl,
-	"POST /admin/contests/:contestID/generators":                     PermAdminContestGeneratorControl,
-	"DELETE /admin/contests/:contestID/generators":                   PermAdminContestGeneratorControl,
-	"GET /admin/contests/:contestID/generators/:generatorID/logs":    PermAdminContestGeneratorControl,
+	"GET /admin/contests/:contestID/generators":                   PermAdminContestGeneratorControl,
+	"POST /admin/contests/:contestID/generators":                  PermAdminContestGeneratorControl,
+	"DELETE /admin/contests/:contestID/generators":                PermAdminContestGeneratorControl,
+	"GET /admin/contests/:contestID/generators/:generatorID/logs": PermAdminContestGeneratorControl,
 
 	// /admin/files
 	"GET /admin/files":         PermAdminFileList,
@@ -457,7 +454,6 @@ var Permissions = []Permission{
 	{Name: PermAdminBrandingUpdate, Resource: "admin:branding", Operation: "update", Description: "更新品牌设置"},
 
 	{Name: PermAdminIPSearch, Resource: "admin:ip", Operation: "search", Description: "搜索 IP"},
-	{Name: PermAdminModelsSearch, Resource: "admin:models", Operation: "search", Description: "搜索模型"},
 
 	{Name: PermAdminOauthCreate, Resource: "admin:oauth", Operation: "create", Description: "创建 OAuth 配置"},
 	{Name: PermAdminOauthRead, Resource: "admin:oauth", Operation: "read", Description: "查看 OAuth 配置详情"},

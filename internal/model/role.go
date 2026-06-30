@@ -22,7 +22,7 @@ var DefaultRolePermissionMap = map[string][]string{
 		PermUserVictimControl,
 		PermUserWriteupUpload, PermUserWriteupList,
 
-		PermAdminIPSearch, PermAdminModelsSearch,
+		PermAdminIPSearch,
 		PermAdminSystemStatus, PermAdminSystemRead, PermAdminSystemUpdate, PermAdminSystemRestart,
 		PermAdminBrandingRead, PermAdminBrandingUpdate,
 		PermAdminPermissionUpdate, PermAdminPermissionList,

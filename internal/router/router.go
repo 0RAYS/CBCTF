@@ -181,8 +181,6 @@ func Init() *gin.Engine {
 	admin := auth.Group("/admin", middleware.SetFullAccess)
 	{
 		admin.GET("/ip", SearchIP)
-		admin.GET("/models", GetAllowQueryModels)
-		admin.GET("/search", Search)
 
 		// 系统管理
 		adminSystem := admin.Group("/system")
