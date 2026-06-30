@@ -2202,19 +2202,6 @@
         "batchDelete": "Delete Selected ({{count}})"
       }
     },
-    "globalSearch": {
-      "title": "Global Search",
-      "model": "Model",
-      "selectModel": "Select a model...",
-      "filters": "Filter Fields",
-      "sort": "Sort By",
-      "noResults": "No results found",
-      "detailTitle": "{{model}} Detail",
-      "toast": {
-        "modelsFailed": "Failed to load models",
-        "searchFailed": "Search failed"
-      }
-    },
     "system": {
       "noData": "No configuration data available",
       "actions": {

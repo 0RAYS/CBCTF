@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AdminSidebar from '../Admin/AdminSidebar';
@@ -6,8 +6,6 @@ import AdminTopbar from '../Admin/AdminTopbar';
 import Footer from './Footer';
 import { getFooterConfig } from '../../../config/footer';
 import { useBranding } from '../../../hooks/useBranding';
-
-const AdminGlobalSearch = lazy(() => import('../Admin/AdminGlobalSearch'));
 
 function AdminShellLayout({
   children,
@@ -26,22 +24,8 @@ function AdminShellLayout({
   const { t } = useTranslation();
   const { footerCopyright, footerICPNumber, footerICPLink, footerContactEmail, footerGithubURL } = useBranding();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const activePath = location.pathname;
   const footerHeight = showFooter ? 60 : 0;
-
-  // Ctrl+F / Cmd+F opens global search
-  const handleKeyDown = useCallback((e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-      e.preventDefault();
-      setSearchOpen(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
 
   const activeItem = useMemo(() => {
     const items = sections.flatMap((section) => section.items || []);
@@ -109,11 +93,6 @@ function AdminShellLayout({
         <div className="relative z-10">
           <Footer {...footerConfig} />
         </div>
-      )}
-      {searchOpen && (
-        <Suspense fallback={null}>
-          <AdminGlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-        </Suspense>
       )}
     </div>
   );
