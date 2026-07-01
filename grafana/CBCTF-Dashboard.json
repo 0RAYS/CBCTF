@@ -3,7 +3,7 @@
   "kind": "Dashboard",
   "metadata": {
     "name": "cbctf-public",
-    "generation": 20,
+    "generation": 21,
     "creationTimestamp": "2026-05-07T06:36:50Z",
     "labels": {},
     "annotations": {}
@@ -4163,38 +4163,59 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "table",
+            "group": "heatmap",
             "version": "13.0.2",
             "spec": {
               "options": {
-                "cellHeight": "sm",
-                "showHeader": true
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "calculate": false,
+                "cellGap": 1,
+                "color": {
+                  "exponent": 0.5,
+                  "fill": "dark-orange",
+                  "mode": "scheme",
+                  "reverse": false,
+                  "scale": "exponential",
+                  "scheme": "Oranges",
+                  "steps": 64
+                },
+                "exemplars": {
+                  "color": "rgba(255,0,255,0.7)"
+                },
+                "filterValues": {
+                  "le": 1e-9
+                },
+                "legend": {
+                  "show": true
+                },
+                "rowsFrame": {
+                  "layout": "auto"
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "showColorScale": false,
+                  "yHistogram": false
+                },
+                "yAxis": {
+                  "axisPlacement": "left",
+                  "reverse": false
+                }
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "dateTimeAsIso",
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": 0,
-                        "color": "green"
-                      },
-                      {
-                        "value": 80,
-                        "color": "red"
-                      }
-                    ]
-                  },
                   "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                      "type": "auto"
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
                     },
-                    "footer": {
-                      "reducers": []
-                    },
-                    "inspect": false
+                    "scaleDistribution": {
+                      "type": "linear"
+                    }
                   }
                 },
                 "overrides": []
