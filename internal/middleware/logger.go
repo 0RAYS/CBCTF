@@ -9,15 +9,15 @@ import (
 	"net/http"
 	"slices"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
-var TotalDuration time.Duration
-var TotalRequests int
-var MU sync.Mutex
+var TotalDuration atomic.Int64
+var TotalRequests atomic.Int64
 
 var (
 	RequestsPool  = make([]model.Request, 0)
@@ -56,10 +56,8 @@ func Logger(ctx *gin.Context) {
 	// Stop timer
 	latency := time.Now().Sub(start)
 	if ctx.Request.Method != "OPTIONS" {
-		MU.Lock()
-		TotalDuration += latency
-		TotalRequests++
-		MU.Unlock()
+		TotalDuration.Add(latency.Milliseconds())
+		TotalRequests.Add(1)
 	}
 	path := ctx.Request.URL.Path
 	raw := ctx.Request.URL.RawQuery
