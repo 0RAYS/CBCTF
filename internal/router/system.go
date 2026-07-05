@@ -45,13 +45,11 @@ func SystemStatus(ctx *gin.Context) {
 	for key, value := range service.GetSystemStatus(db.DB) {
 		ret[key] = value
 	}
-	middleware.MU.Lock()
-	if middleware.TotalRequests == 0 {
+	if middleware.TotalRequests.Load() == 0 {
 		ret["duration"] = 0
 	} else {
-		ret["duration"] = middleware.TotalDuration.Milliseconds() / int64(middleware.TotalRequests)
+		ret["duration"] = middleware.TotalDuration.Load() / middleware.TotalRequests.Load()
 	}
-	middleware.MU.Unlock()
 	resp.JSON(ctx, model.SuccessRetVal(ret))
 }
 
