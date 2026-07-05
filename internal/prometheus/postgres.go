@@ -171,6 +171,10 @@ func (c *PostgresCollector) collectDatabaseSize(ch chan<- prometheus.Metric) {
 
 func (c *PostgresCollector) collectTableStats(ch chan<- prometheus.Metric) {
 	type row struct {
+		LastVacuum           sql.NullTime `gorm:"column:last_vacuum"`
+		LastAutovacuum       sql.NullTime `gorm:"column:last_autovacuum"`
+		LastAnalyze          sql.NullTime `gorm:"column:last_analyze"`
+		LastAutoanalyze      sql.NullTime `gorm:"column:last_autoanalyze"`
 		DatName              string       `gorm:"column:datname"`
 		SchemaName           string       `gorm:"column:schemaname"`
 		Relname              string       `gorm:"column:relname"`
@@ -185,10 +189,6 @@ func (c *PostgresCollector) collectTableStats(ch chan<- prometheus.Metric) {
 		NLiveTup             int64        `gorm:"column:n_live_tup"`
 		NDeadTup             int64        `gorm:"column:n_dead_tup"`
 		NModSinceLastAnalyze int64        `gorm:"column:n_mod_since_last_analyze"`
-		LastVacuum           sql.NullTime `gorm:"column:last_vacuum"`
-		LastAutovacuum       sql.NullTime `gorm:"column:last_autovacuum"`
-		LastAnalyze          sql.NullTime `gorm:"column:last_analyze"`
-		LastAutoanalyze      sql.NullTime `gorm:"column:last_autoanalyze"`
 		VacuumCount          int64        `gorm:"column:vacuum_count"`
 		AutovacuumCount      int64        `gorm:"column:autovacuum_count"`
 		AnalyzeCount         int64        `gorm:"column:analyze_count"`

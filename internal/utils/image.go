@@ -160,8 +160,8 @@ type resizeWeight struct {
 }
 
 type resizeFilter struct {
-	support float64
 	kernel  func(float64) float64
+	support float64
 }
 
 var lanczosFilter = resizeFilter{

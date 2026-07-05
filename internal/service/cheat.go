@@ -61,8 +61,8 @@ func DeleteCheat(tx *gorm.DB, cheat model.Cheat) model.RetVal {
 }
 
 type ipUserInfo struct {
-	UserID uint
 	Time   time.Time
+	UserID uint
 }
 
 func shouldKeepUserGroup(contestID uint, userIDs []uint, teamRepo *db.TeamRepo) bool {
@@ -94,11 +94,11 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 	}
 
 	type submissionDetail struct {
-		TeamID    uint
+		CreatedAt time.Time
 		IP        string
 		Value     string
-		CreatedAt time.Time
 		Others    []uint
+		TeamID    uint
 	}
 
 	submissionMap := make(map[uint]*submissionDetail)

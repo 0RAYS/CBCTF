@@ -46,33 +46,33 @@ func (t *TeamFlagRepo) DeleteByContestFlagID(contestFlagIDL ...uint) model.RetVa
 }
 
 type TeamFlagWithChallenge struct {
-	model.TeamFlag
 	// ContestFlag 字段
 	ContestFlagValue         string
-	ContestFlagScore         float64
-	ContestFlagCurrentScore  float64
-	ContestFlagMinScore      float64
-	ContestFlagScoreType     uint
 	ContestChallengeName     string
 	ContestChallengeCategory string
-	ContestChallengeHidden   bool
-	ChallengeID              uint
 	ChallengeRandID          string
 	ChallengeName            string
+	model.TeamFlag
+	ContestFlagScore        float64
+	ContestFlagCurrentScore float64
+	ContestFlagMinScore     float64
+	ContestFlagScoreType    uint
+	ChallengeID             uint
+	ContestChallengeHidden  bool
 }
 
 type SolvedContestFlagRow struct {
-	TeamID uint
 	model.ContestFlag
+	TeamID uint
 }
 
 type ContestWrongFlagSubmission struct {
+	CreatedAt          time.Time
+	Value              string
+	IP                 string
 	SubmissionID       uint
 	TeamID             uint
 	ContestChallengeID uint
-	Value              string
-	IP                 string
-	CreatedAt          time.Time
 	MatchedTeamID      uint
 }
 

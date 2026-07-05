@@ -39,10 +39,10 @@ type ChangePasswordForm struct {
 }
 
 type ListUsersForm struct {
-	ListModelsForm
 	Name        string `form:"name" json:"name"`
 	Email       string `form:"email" json:"email"`
 	Description string `form:"description" json:"description"`
+	ListModelsForm
 }
 
 // CreateUserForm for create user

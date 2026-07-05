@@ -8,9 +8,9 @@ import (
 )
 
 type Claims struct {
+	jwt.RegisteredClaims
 	Name   string `json:"name"`
 	UserID uint   `json:"id"`
-	jwt.RegisteredClaims
 }
 
 // GenerateToken 生成token

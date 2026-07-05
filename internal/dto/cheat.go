@@ -7,9 +7,9 @@ import (
 )
 
 type GetCheatsForm struct {
-	ListModelsForm
 	Type       model.CheatType `form:"type" json:"type" binding:"omitempty,oneof=suspicious cheater pass"`
 	ReasonType string          `form:"reason_type" json:"reason_type" binding:"omitempty,oneof=same_web_ip same_victim_ip wrong_flag"`
+	ListModelsForm
 }
 
 func (f *GetCheatsForm) Validate(ctx *gin.Context) model.RetVal {

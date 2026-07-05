@@ -12,8 +12,8 @@ import (
 )
 
 type taskDefinition struct {
-	name string
 	run  func() model.RetVal
+	name string
 }
 
 var (

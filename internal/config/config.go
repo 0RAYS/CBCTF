@@ -14,33 +14,39 @@ import (
 
 type FrpsConfig struct {
 	Host    string `json:"host" binding:"required,hostname|ip"`
-	Port    int32  `json:"port" binding:"required,gte=0,lte=65535"`
 	Token   string `json:"token"`
 	Allowed []struct {
 		From    int32   `json:"from" binding:"required,gte=0,lte=65535"`
 		To      int32   `json:"to" binding:"required,gte=0,lte=65535"`
 		Exclude []int32 `json:"exclude" binding:"dive,gte=0,lte=65535"`
 	} `json:"allowed" binding:"required,dive"`
+	Port int32 `json:"port" binding:"required,gte=0,lte=65535"`
 }
 
 type Config struct {
-	Host   string `mapstructure:"host" json:"host"`
-	Path   string `mapstructure:"path" json:"path"`
-	AsyncQ struct {
+	Gorm struct {
+		Postgres struct {
+			Host         string `mapstructure:"host" json:"host"`
+			Port         uint   `mapstructure:"port" json:"port"`
+			User         string `mapstructure:"user" json:"user"`
+			Pwd          string `mapstructure:"pwd" json:"pwd"`
+			DB           string `mapstructure:"db" json:"db"`
+			SSLMode      bool   `mapstructure:"sslmode" json:"sslmode"`
+			MaxOpenConns int    `mapstructure:"mxopen" json:"mxopen"`
+			MaxIdleConns int    `mapstructure:"mxidle" json:"mxidle"`
+		} `mapstructure:"postgres" json:"postgres"`
 		Log struct {
 			Level string `mapstructure:"level" json:"level"`
 		} `mapstructure:"log" json:"log"`
-		Queues struct {
-			Victim     int `mapstructure:"victim" json:"victim"`
-			Traffic    int `mapstructure:"traffic" json:"traffic"`
-			Generator  int `mapstructure:"generator" json:"generator"`
-			Attachment int `mapstructure:"attachment" json:"attachment"`
-			Email      int `mapstructure:"email" json:"email"`
-			Webhook    int `mapstructure:"webhook" json:"webhook"`
-			Image      int `mapstructure:"image" json:"image"`
-		} `mapstructure:"queues" json:"queues"`
-	} `mapstructure:"asynq" json:"asynq"`
-	Gin struct {
+	} `mapstructure:"gorm" json:"gorm"`
+	Redis struct {
+		Host string `mapstructure:"host" json:"host"`
+		Port uint   `mapstructure:"port" json:"port"`
+		Pwd  string `mapstructure:"pwd" json:"pwd"`
+	} `mapstructure:"redis" json:"redis"`
+	Host string `mapstructure:"host" json:"host"`
+	Path string `mapstructure:"path" json:"path"`
+	Gin  struct {
 		Mode   string `mapstructure:"mode" json:"mode"`
 		Host   string `mapstructure:"host" json:"host"`
 		Port   uint   `mapstructure:"port" json:"port"`
@@ -65,26 +71,6 @@ type Config struct {
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 		} `mapstructure:"metrics" json:"metrics"`
 	} `mapstructure:"gin" json:"gin"`
-	Gorm struct {
-		Postgres struct {
-			Host         string `mapstructure:"host" json:"host"`
-			Port         uint   `mapstructure:"port" json:"port"`
-			User         string `mapstructure:"user" json:"user"`
-			Pwd          string `mapstructure:"pwd" json:"pwd"`
-			DB           string `mapstructure:"db" json:"db"`
-			SSLMode      bool   `mapstructure:"sslmode" json:"sslmode"`
-			MaxOpenConns int    `mapstructure:"mxopen" json:"mxopen"`
-			MaxIdleConns int    `mapstructure:"mxidle" json:"mxidle"`
-		} `mapstructure:"postgres" json:"postgres"`
-		Log struct {
-			Level string `mapstructure:"level" json:"level"`
-		} `mapstructure:"log" json:"log"`
-	} `mapstructure:"gorm" json:"gorm"`
-	Redis struct {
-		Host string `mapstructure:"host" json:"host"`
-		Port uint   `mapstructure:"port" json:"port"`
-		Pwd  string `mapstructure:"pwd" json:"pwd"`
-	} `mapstructure:"redis" json:"redis"`
 	K8S struct {
 		Namespace    string `mapstructure:"namespace" json:"namespace"`
 		CaptureImage string `mapstructure:"capture" json:"capture"`
@@ -103,6 +89,20 @@ type Config struct {
 	Webhook struct {
 		Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 	} `mapstructure:"webhook" json:"webhook"`
+	AsyncQ struct {
+		Log struct {
+			Level string `mapstructure:"level" json:"level"`
+		} `mapstructure:"log" json:"log"`
+		Queues struct {
+			Victim     int `mapstructure:"victim" json:"victim"`
+			Traffic    int `mapstructure:"traffic" json:"traffic"`
+			Generator  int `mapstructure:"generator" json:"generator"`
+			Attachment int `mapstructure:"attachment" json:"attachment"`
+			Email      int `mapstructure:"email" json:"email"`
+			Webhook    int `mapstructure:"webhook" json:"webhook"`
+			Image      int `mapstructure:"image" json:"image"`
+		} `mapstructure:"queues" json:"queues"`
+	} `mapstructure:"asynq" json:"asynq"`
 	Registration struct {
 		Enabled      bool `mapstructure:"enabled" json:"enabled"`
 		DefaultGroup uint `mapstructure:"default_group" json:"default_group"`

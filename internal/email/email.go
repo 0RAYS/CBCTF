@@ -15,9 +15,9 @@ import (
 )
 
 type Sender struct {
+	CreatedAt  time.Time
 	Auth       *gomail.SendCloser
 	Smtp       model.Smtp
-	CreatedAt  time.Time
 	UpdateLock sync.Mutex
 }
 
