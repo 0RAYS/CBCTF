@@ -44,7 +44,7 @@ func Init() *gin.Engine {
 	}
 
 	router.Use(
-		middleware.Logger, middleware.Prometheus, middleware.AccessLog, middleware.Events, middleware.Recovery,
+		middleware.Logger, middleware.Prometheus, middleware.Events, middleware.Recovery,
 	)
 
 	RegisterMetricsRouter(router)
