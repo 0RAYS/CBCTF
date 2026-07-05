@@ -43,9 +43,7 @@ func Init() *gin.Engine {
 		router.StaticFS("/platform", http.FS(frontend.SubFS))
 	}
 
-	router.Use(
-		middleware.Logger, middleware.Prometheus, middleware.Events, middleware.Recovery,
-	)
+	router.Use(middleware.Logger, middleware.Prometheus, middleware.Events, middleware.Recovery)
 
 	RegisterMetricsRouter(router)
 
