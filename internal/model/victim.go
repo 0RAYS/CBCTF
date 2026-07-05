@@ -36,13 +36,13 @@ type Victim struct {
 	Pods             []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Endpoints        Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
 	ExposedEndpoints Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
+	Spec             VictimSpec       `gorm:"default:null;type:jsonb" json:"-"`
 	ContestChallenge ContestChallenge `json:"-"`
 	Team             Team             `json:"-"`
 	Contest          Contest          `json:"-"`
 	User             User             `json:"-"`
 	Challenge        Challenge        `json:"-"`
 	BaseModel
-	Spec               VictimSpec     `gorm:"default:null;type:jsonb" json:"-"`
 	ContestID          sql.Null[uint] `gorm:"index" json:"contest_id"`
 	ContestChallengeID sql.Null[uint] `gorm:"index" json:"contest_challenge_id"`
 	TeamID             sql.Null[uint] `gorm:"index" json:"team_id"`
