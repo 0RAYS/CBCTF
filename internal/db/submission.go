@@ -107,12 +107,12 @@ func (s *SubmissionRepo) GetBloodRankMap(contestFlagIDL ...uint) (map[uint]map[u
 }
 
 type FlagSolverRow struct {
-	UserID   uint
-	UserName string
-	TeamID   uint
-	TeamName string
-	Score    float64
 	SolvedAt time.Time
+	UserName string
+	TeamName string
+	UserID   uint
+	TeamID   uint
+	Score    float64
 }
 
 func (s *SubmissionRepo) ListFlagSolvers(contestFlagID uint) ([]FlagSolverRow, model.RetVal) {

@@ -24,9 +24,9 @@ import (
 
 type frpcConfig struct {
 	ServerAddr string      `toml:"serverAddr"`
-	ServerPort int32       `toml:"serverPort"`
 	Auth       frpcAuth    `toml:"auth"`
 	Proxies    []frpcProxy `toml:"proxies"`
+	ServerPort int32       `toml:"serverPort"`
 }
 
 type frpcAuth struct {
@@ -34,12 +34,12 @@ type frpcAuth struct {
 }
 
 type frpcProxy struct {
+	Transport  *frpcTransport `toml:"transport,omitempty"`
 	Name       string         `toml:"name"`
 	Type       string         `toml:"type"`
 	LocalIP    string         `toml:"localIP"`
 	LocalPort  int32          `toml:"localPort"`
 	RemotePort int32          `toml:"remotePort"`
-	Transport  *frpcTransport `toml:"transport,omitempty"`
 }
 
 type frpcTransport struct {

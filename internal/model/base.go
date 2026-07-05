@@ -9,11 +9,11 @@ import (
 )
 
 type BaseModel struct {
-	ID        uint                   `gorm:"primaryKey" json:"id"`
 	CreatedAt time.Time              `json:"-"`
 	UpdatedAt time.Time              `json:"-"`
 	DeletedAt gorm.DeletedAt         `gorm:"index" json:"-"`
 	Version   optimisticlock.Version `json:"-"`
+	ID        uint                   `gorm:"primaryKey" json:"id"`
 }
 
 type Model interface {
@@ -25,10 +25,10 @@ func (b BaseModel) GetBaseModel() BaseModel {
 }
 
 type RetVal struct {
-	OK   bool
-	Msg  string
-	Attr map[string]any
 	Data any
+	Attr map[string]any
+	Msg  string
+	OK   bool
 }
 
 func SuccessRetVal(data ...any) RetVal {

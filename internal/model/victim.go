@@ -30,25 +30,25 @@ const (
 // BelongsTo User
 // HasMany Pod
 type Victim struct {
-	ChallengeID        uint             `gorm:"index" json:"challenge_id"`
-	Challenge          Challenge        `json:"-"`
-	ContestID          sql.Null[uint]   `gorm:"index" json:"contest_id"`
-	Contest            Contest          `json:"-"`
-	ContestChallengeID sql.Null[uint]   `gorm:"index" json:"contest_challenge_id"`
-	ContestChallenge   ContestChallenge `json:"-"`
-	TeamID             sql.Null[uint]   `gorm:"index" json:"team_id"`
-	Team               Team             `json:"-"`
-	UserID             uint             `gorm:"index" json:"user_id"`
-	User               User             `json:"-"`
-	Pods               []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Start              time.Time        `gorm:"default:null" json:"start"`
-	Duration           time.Duration    `json:"duration"`
-	Spec               VictimSpec       `gorm:"default:null;type:jsonb" json:"-"`
-	Resources          VictimResources  `gorm:"default:null;type:jsonb" json:"-"`
-	Endpoints          Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
-	ExposedEndpoints   Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
-	Status             string           `gorm:"index" json:"status"`
+	Start            time.Time        `gorm:"default:null" json:"start"`
+	Status           string           `gorm:"index" json:"status"`
+	Resources        VictimResources  `gorm:"default:null;type:jsonb" json:"-"`
+	Pods             []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Endpoints        Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
+	ExposedEndpoints Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
+	ContestChallenge ContestChallenge `json:"-"`
+	Team             Team             `json:"-"`
+	Contest          Contest          `json:"-"`
+	User             User             `json:"-"`
+	Challenge        Challenge        `json:"-"`
 	BaseModel
+	Spec               VictimSpec     `gorm:"default:null;type:jsonb" json:"-"`
+	ContestID          sql.Null[uint] `gorm:"index" json:"contest_id"`
+	ContestChallengeID sql.Null[uint] `gorm:"index" json:"contest_challenge_id"`
+	TeamID             sql.Null[uint] `gorm:"index" json:"team_id"`
+	ChallengeID        uint           `gorm:"index" json:"challenge_id"`
+	UserID             uint           `gorm:"index" json:"user_id"`
+	Duration           time.Duration  `json:"duration"`
 }
 
 func (v Victim) TrafficBasePath() string {
@@ -81,12 +81,12 @@ type VPC struct {
 }
 
 type Subnet struct {
+	NetAttachDef *NetAttachDef `json:"net_attach_def"`
 	DefName      string        `json:"def_name"`
 	Name         string        `json:"name"`
 	CIDRBlock    string        `json:"cidr_block"`
 	Gateway      string        `json:"gateway"`
 	ExcludeIps   []string      `json:"exclude_ips"`
-	NetAttachDef *NetAttachDef `json:"net_attach_def"`
 }
 
 type NetAttachDef struct {
@@ -123,8 +123,8 @@ func (v *VPC) Scan(value any) error {
 type Endpoint struct {
 	Name     string `json:"name"`
 	IP       string `json:"ip"`
-	Port     int32  `json:"port"`
 	Protocol string `json:"protocol"`
+	Port     int32  `json:"port"`
 }
 
 type Endpoints []Endpoint

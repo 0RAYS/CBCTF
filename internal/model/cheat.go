@@ -27,17 +27,17 @@ const (
 )
 
 type Cheat struct {
-	ContestID  uint            `gorm:"index" json:"contest_id"`
+	Time       time.Time       `gorm:"default:null" json:"time"`
 	Model      CheatRefModel   `gorm:"default:null;type:jsonb" json:"model"`
 	IP         string          `json:"ip"`
 	Reason     string          `json:"reason"`
 	ReasonType CheatReasonType `gorm:"index" json:"reason_type"`
 	Type       CheatType       `json:"type"`
-	Checked    bool            `gorm:"index" json:"checked"`
 	Hash       string          `gorm:"type:varchar(32);uniqueIndex:idx_cheats_hash_active,where:deleted_at IS NULL;not null" json:"hash"`
 	Comment    string          `json:"comment"`
-	Time       time.Time       `gorm:"default:null" json:"time"`
 	BaseModel
+	ContestID uint `gorm:"index" json:"contest_id"`
+	Checked   bool `gorm:"index" json:"checked"`
 }
 
 type CheatRefModel map[string][]uint

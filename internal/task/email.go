@@ -23,9 +23,9 @@ const (
 )
 
 type SendEmailPayload struct {
-	Kind  EmailKind
 	To    string
 	Token string
+	Kind  EmailKind
 }
 
 func enqueueEmailTask(payload SendEmailPayload) (*asynq.TaskInfo, error) {

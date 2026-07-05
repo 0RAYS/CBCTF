@@ -66,14 +66,14 @@ func (c *ContestFlagRepo) DeleteByContestChallengeID(contestChallengeIDL ...uint
 }
 
 type UserSolvedContestFlag struct {
+	model.ContestFlag
 	UserID uint
 	TeamID uint
-	model.ContestFlag
 }
 
 type TeamSolvedContestFlag struct {
-	TeamID uint
 	model.ContestFlag
+	TeamID uint
 }
 
 func (c *ContestFlagRepo) GetUserSolvedContestFlags(userIDL ...uint) ([]UserSolvedContestFlag, model.RetVal) {

@@ -57,9 +57,9 @@ func (t *TrafficRepo) GetVictimIPs(victimID uint) ([]string, model.RetVal) {
 
 // TeamVictimIP 作弊检测查询结果
 type TeamVictimIP struct {
-	TeamID    uint
-	SrcIP     string
 	FirstTime time.Time
+	SrcIP     string
+	TeamID    uint
 }
 
 // ListSharedContestVictimIPs 返回同一比赛中出现在多支队伍靶机里的 IP。

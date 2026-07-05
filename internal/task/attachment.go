@@ -18,12 +18,12 @@ import (
 const genAttachmentTaskType = "tasks:attachment"
 
 type GenAttachmentPayload struct {
-	UserID    uint
+	LockToken string
+	Flags     []string
 	Generator model.Generator
 	Challenge model.Challenge
+	UserID    uint
 	TeamID    uint
-	Flags     []string
-	LockToken string
 }
 
 func EnqueueGenAttachmentTask(userID uint, generator model.Generator, lockToken string, challenge model.Challenge, team model.Team, teamFlags []model.TeamFlag) (*asynq.TaskInfo, error) {

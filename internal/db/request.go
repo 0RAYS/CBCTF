@@ -43,9 +43,9 @@ func (r *RequestRepo) CountIP() (int64, model.RetVal) {
 }
 
 type UserIP struct {
-	UserID    uint
-	IP        string
 	FirstTime time.Time
+	IP        string
+	UserID    uint
 }
 
 func (r *RequestRepo) ListSharedContestUserIPs(contestID uint, start, end time.Time) ([]UserIP, model.RetVal) {
