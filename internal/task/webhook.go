@@ -14,8 +14,8 @@ import (
 const webhookTaskType = "tasks:webhook"
 
 type WebhookPayload struct {
-	Event  model.Event
 	Target model.Webhook
+	Event  model.Event
 }
 
 func EnqueueWebhookTask(event model.Event, target model.Webhook) (*asynq.TaskInfo, error) {
