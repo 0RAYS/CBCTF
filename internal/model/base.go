@@ -34,9 +34,9 @@ type RetVal struct {
 func SuccessRetVal(data ...any) RetVal {
 	if len(data) > 0 {
 		if len(data) == 1 {
-			return RetVal{true, i18n.Common.Success, nil, data[0]}
+			return RetVal{OK: true, Msg: i18n.Common.Success, Attr: nil, Data: data[0]}
 		}
-		return RetVal{true, i18n.Common.Success, nil, data}
+		return RetVal{OK: true, Msg: i18n.Common.Success, Attr: nil, Data: data}
 	}
-	return RetVal{true, i18n.Common.Success, nil, nil}
+	return RetVal{OK: true, Msg: i18n.Common.Success, Attr: nil, Data: nil}
 }
