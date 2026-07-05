@@ -86,9 +86,12 @@ func (c *digitCaptcha) draw(content string) (imageItem, error) {
 }
 
 type textCaptcha struct {
-	height, width, dotCount, length int
-	source                          string
-	background                      *color.RGBA
+	height     int
+	width      int
+	dotCount   int
+	length     int
+	source     string
+	background *color.RGBA
 }
 
 func (c *textCaptcha) generate() (id, content, answer string) {
@@ -107,8 +110,10 @@ func (c *textCaptcha) draw(content string) (imageItem, error) {
 }
 
 type arithmeticCaptcha struct {
-	height, width, dotCount int
-	background              *color.RGBA
+	height     int
+	width      int
+	dotCount   int
+	background *color.RGBA
 }
 
 func (c *arithmeticCaptcha) generate() (id, question, answer string) {
@@ -138,8 +143,9 @@ func (c *arithmeticCaptcha) draw(question string) (imageItem, error) {
 }
 
 type captchaImage struct {
-	width, height int
-	nrgba         *image.NRGBA
+	width  int
+	height int
+	nrgba  *image.NRGBA
 }
 
 func newCaptchaImage(width, height int, background color.RGBA) *captchaImage {
