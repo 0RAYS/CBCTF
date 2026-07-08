@@ -45,7 +45,4 @@ jobs:
         if: steps.chart_releaser.outputs.changed_charts != ''
         env:
           GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        run: |
-          gh release edit "${{ steps.chart_releaser.outputs.chart_name }}-${{ steps.chart_releaser.outputs.chart_version }}" \
-            --prerelease \
-            --repo "$GITHUB_REPOSITORY"
+        run: gh release edit "cbctf-${{ steps.chart_releaser.outputs.chart_version }}" --prerelease --repo "$GITHUB_REPOSITORY"
