@@ -73,7 +73,7 @@ func (s *SettingValue) Scan(value any) error {
 	decoder := json.NewDecoder(bytes.NewReader(bs))
 	decoder.UseNumber()
 	var data any
-	if err := decoder.Decode(&data); err != nil {
+	if err = decoder.Decode(&data); err != nil {
 		return err
 	}
 	s.V = data
