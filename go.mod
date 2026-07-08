@@ -3,8 +3,8 @@ module CBCTF
 go 1.26.4
 
 replace (
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20260625145753-fcee12291776
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260624041617-8f3fa4921821
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20260708023648-450935be752b
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260706235625-cdb1db5517a0
 )
 
 require (
