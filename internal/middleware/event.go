@@ -24,8 +24,9 @@ func Events(ctx *gin.Context) {
 		return
 	}
 	models := []model.Model{
-		GetUser(ctx), GetContest(ctx), GetTeam(ctx), GetFile(ctx), GetNotice(ctx), GetChallenge(ctx), GetWebhook(ctx),
-		GetContestChallenge(ctx), GetContestFlag(ctx), GetVictim(ctx), GetCheat(ctx), GetOauth(ctx), GetSmtp(ctx),
+		GetRole(ctx), GetGroup(ctx), GetPermission(ctx), GetUser(ctx), GetContest(ctx), GetTeam(ctx), GetFile(ctx),
+		GetNotice(ctx), GetChallenge(ctx), GetContestChallenge(ctx), GetContestFlag(ctx), GetGenerator(ctx), GetVictim(ctx),
+		GetCheat(ctx), GetOauth(ctx), GetSmtp(ctx), GetCronJob(ctx), GetWebhook(ctx),
 	}
 	options := model.Event{
 		Type:    t,
