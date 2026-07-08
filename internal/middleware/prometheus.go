@@ -47,15 +47,9 @@ func Prometheus(ctx *gin.Context) {
 	statusClass := strconv.Itoa(status/100) + "xx"
 
 	prometheus.InFlightRequests.Dec()
-	prometheus.HttpRequestsTotal.WithLabelValues(
-		ctx.Request.Method, path, strconv.Itoa(status),
-	).Inc()
-	prometheus.HttpRequestDuration.WithLabelValues(
-		ctx.Request.Method, path, statusClass,
-	).Observe(time.Since(start).Seconds())
+	prometheus.HttpRequestsTotal.WithLabelValues(ctx.Request.Method, path, strconv.Itoa(status)).Inc()
+	prometheus.HttpRequestDuration.WithLabelValues(ctx.Request.Method, path, statusClass).Observe(time.Since(start).Seconds())
 	if size := ctx.Writer.Size(); size > 0 {
-		prometheus.HttpResponseSize.WithLabelValues(
-			ctx.Request.Method, path, statusClass,
-		).Observe(float64(size))
+		prometheus.HttpResponseSize.WithLabelValues(ctx.Request.Method, path, statusClass).Observe(float64(size))
 	}
 }
