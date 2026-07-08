@@ -126,9 +126,6 @@ func (s *RateLimitRedisStore) Allow(ctx context.Context, rule RateLimitRule, sub
 	if s.client == nil || s.client() == nil {
 		return RateLimitDecision{}, errors.New("rate limit redis client is nil")
 	}
-	if ctx == nil {
-		ctx = context.Background()
-	}
 	if s.timeout > 0 {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, s.timeout)

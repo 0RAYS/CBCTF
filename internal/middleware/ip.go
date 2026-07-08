@@ -23,7 +23,7 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 		if userID := GetSelf(ctx).ID; userID != 0 {
 			subject = "user:" + strconv.Itoa(int(userID))
 		}
-		decision, err := redis.RateLimiter.Allow(ctx.Request.Context(), rule, redis.RateLimitSubject{
+		decision, err := redis.RateLimiter.Allow(ctx, rule, redis.RateLimitSubject{
 			Key:      subject,
 			ClientIP: ctx.ClientIP(),
 		})
