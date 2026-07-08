@@ -60,6 +60,11 @@ data:
           {{- range .Values.cbctf.gin.metrics.whitelist }}
           - {{ . | quote }}
           {{- end }}
+      pprof:
+        whitelist:
+          {{- range .Values.cbctf.gin.pprof.whitelist }}
+          - {{ . | quote }}
+          {{- end }}
 
     gorm:
       postgres:

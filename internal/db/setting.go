@@ -92,6 +92,7 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.GinLogWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Log.Whitelist}},
 		{Key: model.GinJWTSecretSettingKey, Value: model.SettingValue{V: config.Env.Gin.JWT.Secret}},
 		{Key: model.GinMetricsWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Metrics.Whitelist}},
+		{Key: model.GinPProfWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.PProf.Whitelist}},
 
 		{Key: model.K8SNamespaceSettingKey, Value: model.SettingValue{V: config.Env.K8S.Namespace}},
 		{Key: model.K8SCaptureImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.CaptureImage}},
@@ -178,6 +179,9 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 	if config.Env.Gin.Metrics.Whitelist, ret = GetValue[[]string](s, model.GinMetricsWhitelistSettingKey); !ret.OK {
+		return ret
+	}
+	if config.Env.Gin.PProf.Whitelist, ret = GetValue[[]string](s, model.GinPProfWhitelistSettingKey); !ret.OK {
 		return ret
 	}
 

@@ -31,6 +31,22 @@ gin:
 
 未在白名单内的 IP 访问 `/metrics` 会返回 `403 Forbidden`。
 
+## PProf 诊断
+
+平台注册 Go `net/http/pprof` 诊断端点，路径为 `/debug/pprof/*`。这些端点可能暴露运行时栈、堆和性能信息，生产环境应只允许可信运维来源访问。
+
+通过 `gin.pprof.whitelist` 配置允许访问的 IP 或 CIDR：
+
+```yaml
+gin:
+  pprof:
+    whitelist:
+      - 127.0.0.1
+      - 10.0.0.0/8    # 运维或跳板机网段
+```
+
+未在白名单内的 IP 访问 `/debug/pprof/*` 会返回 `403 Forbidden`。
+
 ### 指标内容
 
 - HTTP 请求数和延迟（按路由、方法、状态码分类）

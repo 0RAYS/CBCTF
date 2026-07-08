@@ -25,6 +25,7 @@ export function buildPayload(config) {
     gin_log_whitelist: config.gin.log.whitelist,
     gin_jwt_secret: config.gin.jwt.secret || undefined,
     gin_metrics_whitelist: config.gin.metrics.whitelist,
+    gin_pprof_whitelist: config.gin.pprof.whitelist,
     k8s_namespace: config.k8s.namespace,
     k8s_capture: config.k8s.capture,
     k8s_frp_on: config.k8s.frp.on,

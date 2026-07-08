@@ -67,6 +67,9 @@ type Config struct {
 		JWT struct {
 			Secret string `mapstructure:"secret" json:"secret"`
 		} `mapstructure:"jwt" json:"jwt"`
+		PProf struct {
+			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
+		} `mapstructure:"pprof" json:"pprof"`
 		Metrics struct {
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 		} `mapstructure:"metrics" json:"metrics"`

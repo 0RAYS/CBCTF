@@ -101,6 +101,7 @@ func SystemConfig(ctx *gin.Context) {
 		"gin_origins":             config.Env.Gin.Origins,
 		"gin_log_whitelist":       config.Env.Gin.Log.Whitelist,
 		"gin_metrics_whitelist":   config.Env.Gin.Metrics.Whitelist,
+		"gin_pprof_whitelist":     config.Env.Gin.PProf.Whitelist,
 
 		"gorm_postgres_host":    config.Env.Gorm.Postgres.Host,
 		"gorm_postgres_port":    config.Env.Gorm.Postgres.Port,

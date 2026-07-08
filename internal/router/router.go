@@ -46,10 +46,7 @@ func Init() *gin.Engine {
 	router.Use(middleware.Logger, middleware.Prometheus, middleware.Events, middleware.Recovery)
 
 	RegisterMetricsRouter(router)
-
-	if strings.ToLower(config.Env.Gin.Mode) != gin.ReleaseMode {
-		pprof.Register(router)
-	}
+	pprof.Register(router.Group("", middleware.PProfWhitelist))
 
 	router.Use(middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute))
 
