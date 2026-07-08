@@ -25,6 +25,7 @@ type UpdateSettingForm struct {
 	GinLogWhitelist       *[]string `form:"gin_log_whitelist" json:"gin_log_whitelist" binding:"omitempty,dive,uri"`
 	GinJWTSecret          *string   `form:"gin_jwt_secret" json:"gin_jwt_secret" binding:"omitempty,min=11"`
 	GinMetricsWhitelist   *[]string `form:"gin_metrics_whitelist" json:"gin_metrics_whitelist" binding:"omitempty,dive,ip|cidr"`
+	GinPProfWhitelist     *[]string `form:"gin_pprof_whitelist" json:"gin_pprof_whitelist" binding:"omitempty,dive,ip|cidr"`
 
 	K8SNamespace     *string              `form:"k8s_namespace" json:"k8s_namespace" binding:"omitempty,min=1,alphanum"`
 	K8SCaptureImage  *string              `form:"k8s_capture" json:"k8s_capture" binding:"omitempty,min=1"`

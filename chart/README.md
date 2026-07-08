@@ -11,6 +11,8 @@ These fields are deployment-only:
 - Data path: `path`
 - Gin listen address and port: `gin.host`, `gin.port`
 
+`cbctf.gin.pprof.whitelist` controls the IP/CIDR sources allowed to access `/debug/pprof/*`. Keep it limited to loopback or trusted operator networks in production.
+
 `cbctf.gorm.postgres.sslmode` is a boolean value.
 
 - `false` maps to PostgreSQL DSN `sslmode=disable`

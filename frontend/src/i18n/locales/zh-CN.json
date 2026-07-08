@@ -2289,6 +2289,7 @@
         "frpsToken": "连接 Token",
         "cheatIpWhitelist": "作弊检测过滤 IP",
         "metricsWhitelist": "Metrics 访问 IP 白名单 (IP / CIDR)",
+        "pprofWhitelist": "PProf 访问 IP 白名单 (IP / CIDR)",
         "webhookWhitelist": "Webhook 白名单 (IP / CIDR / Hostname)",
         "registrationEnabled": "允许注册",
         "registrationDefaultGroup": "注册默认组",

@@ -114,6 +114,7 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.GinLogWhitelistSettingKey:       form.GinLogWhitelist,
 		model.GinJWTSecretSettingKey:          form.GinJWTSecret,
 		model.GinMetricsWhitelistSettingKey:   form.GinMetricsWhitelist,
+		model.GinPProfWhitelistSettingKey:     form.GinPProfWhitelist,
 
 		model.K8SNamespaceSettingKey:     form.K8SNamespace,
 		model.K8SCaptureImageSettingKey:  form.K8SCaptureImage,

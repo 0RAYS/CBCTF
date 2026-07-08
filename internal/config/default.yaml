@@ -45,6 +45,10 @@ gin:
     whitelist:
       - 127.0.0.1
       - ::1
+  pprof:
+    whitelist:
+      - 127.0.0.1
+      - ::1
 gorm:
   postgres:
     host: 127.0.0.1

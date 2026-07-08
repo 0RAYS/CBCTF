@@ -176,6 +176,25 @@ export function GinConfigSection({ config, updateConfig }) {
           })
         }
       />
+      <ConfigListField
+        label={t('admin.system.labels.pprofWhitelist')}
+        items={config.gin.pprof.whitelist || []}
+        onAdd={() =>
+          updateConfig((draft) => {
+            draft.gin.pprof.whitelist.push('');
+          })
+        }
+        onUpdate={(index, value) =>
+          updateConfig((draft) => {
+            draft.gin.pprof.whitelist[index] = value;
+          })
+        }
+        onRemove={(index) =>
+          updateConfig((draft) => {
+            draft.gin.pprof.whitelist.splice(index, 1);
+          })
+        }
+      />
     </ConfigSection>
   );
 }

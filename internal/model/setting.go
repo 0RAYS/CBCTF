@@ -30,6 +30,7 @@ const (
 	GinLogWhitelistSettingKey       = "gin.log.whitelist"
 	GinJWTSecretSettingKey          = "gin.jwt.secret"
 	GinMetricsWhitelistSettingKey   = "gin.metrics.whitelist"
+	GinPProfWhitelistSettingKey     = "gin.pprof.whitelist"
 
 	K8SNamespaceSettingKey     = "k8s.namespace"
 	K8SCaptureImageSettingKey  = "k8s.capture"

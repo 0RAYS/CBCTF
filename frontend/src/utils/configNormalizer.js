@@ -50,6 +50,9 @@ export function normalizeConfig(source) {
       metrics: {
         whitelist: fallback(source?.gin_metrics_whitelist, fallback(source?.gin?.metrics?.whitelist, [])),
       },
+      pprof: {
+        whitelist: fallback(source?.gin_pprof_whitelist, fallback(source?.gin?.pprof?.whitelist, [])),
+      },
     },
     gorm: {
       log: {

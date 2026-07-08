@@ -86,6 +86,7 @@ helm uninstall cbctf -n cbctf
 | `cbctf.gin.ratelimit.global`       | 全局限流                        | `100`                     |
 | `cbctf.gin.jwt.secret`             | JWT 签名密钥                    | `change-me-long-random`   |
 | `cbctf.gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR | `10.0.0.0/8`              |
+| `cbctf.gin.pprof.whitelist`        | 允许访问 `/debug/pprof/*` 的 IP 或 CIDR | `127.0.0.1`              |
 | `cbctf.asynq.queues.traffic`       | 靶机流量解析任务并发                  | `2`                       |
 | `cbctf.registration.enabled`       | 是否允许公开注册                    | `true`                    |
 | `cbctf.registration.default_group` | 新用户默认分组 ID，`0` 表示不指定        | `0`                       |
@@ -174,6 +175,10 @@ cbctf:
       - "https://ctf.example.com"
     proxies:
       - "10.244.0.0/16"
+    pprof:
+      whitelist:
+        - "127.0.0.1"
+        - "10.244.0.0/16"
     jwt:
       secret: "change-me-long-random-secret"
 
