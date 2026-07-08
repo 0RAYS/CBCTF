@@ -31,18 +31,10 @@ jobs:
         uses: azure/setup-helm@v4
 
       - name: Run chart-releaser
-        id: chart_releaser
         uses: helm/chart-releaser-action@v1.6.0
         with:
           charts_dir: .
           skip_existing: true
-          mark_as_latest: false
           pages_index_path: index.yaml
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
-      - name: Mark Helm release as prerelease
-        if: steps.chart_releaser.outputs.changed_charts != ''
-        env:
-          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        run: gh release edit "cbctf-${{ steps.chart_releaser.outputs.chart_version }}" --prerelease --repo "$GITHUB_REPOSITORY"
