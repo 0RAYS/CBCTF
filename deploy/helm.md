@@ -65,27 +65,28 @@ helm uninstall cbctf -n cbctf
 
 上传大小限制已拆分为 `cbctf.gin.upload.picture`、`cbctf.gin.upload.challenge`、`cbctf.gin.upload.writeup`。旧的 `cbctf.gin.upload.max` 不再生效。
 
-| 配置项                                | 说明                          | 示例                        |
-| ---------------------------------- | --------------------------- | ------------------------- |
-| `cbctf.host`                       | 平台公开访问地址，不要带尾部 `/`          | `https://ctf.example.com` |
-| `cbctf.log.level`                  | 应用日志级别                      | `info`                    |
-| `cbctf.log.save`                   | 是否持久化日志                     | `false`                   |
-| `cbctf.gin.mode`                   | Gin 运行模式                    | `release`                 |
-| `cbctf.gin.host`                   | 容器内监听地址                     | `0.0.0.0`                 |
-| `cbctf.gin.port`                   | 容器内监听端口                     | `8000`                    |
-| `cbctf.gin.upload.picture`         | 图片上传大小限制，单位 MiB             | `8`                       |
-| `cbctf.gin.upload.challenge`       | 题目附件上传大小限制，单位 MiB           | `8`                       |
-| `cbctf.gin.upload.writeup`         | 题解上传大小限制，单位 MiB             | `8`                       |
-| `cbctf.gin.proxies`                | 可信代理 IP 或 CIDR              | `10.244.0.0/16`           |
-| `cbctf.gin.origins`                | 允许的浏览器请求 Origin             | `https://ctf.example.com` |
-| `cbctf.gin.ratelimit.global`       | 全局限流                        | `100`                     |
-| `cbctf.gin.jwt.secret`             | JWT 签名密钥                    | `change-me-long-random`   |
-| `cbctf.gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR | `10.0.0.0/8`              |
-| `cbctf.asynq.queues.traffic`       | 靶机流量解析任务并发                  | `2`                       |
-| `cbctf.registration.enabled`       | 是否允许公开注册                    | `true`                    |
-| `cbctf.registration.default_group` | 新用户默认分组 ID，`0` 表示不指定        | `0`                       |
-| `cbctf.cheat.ip.whitelist`         | 作弊检测 IP 白名单                 | `10.0.0.0/8`              |
-| `cbctf.webhook.whitelist`          | Webhook 目标白名单               | `example.com`             |
+| 配置项                                | 说明                                | 示例                        |
+| ---------------------------------- | --------------------------------- | ------------------------- |
+| `cbctf.host`                       | 平台公开访问地址，不要带尾部 `/`                | `https://ctf.example.com` |
+| `cbctf.log.level`                  | 应用日志级别                            | `info`                    |
+| `cbctf.log.save`                   | 是否持久化日志                           | `false`                   |
+| `cbctf.gin.mode`                   | Gin 运行模式                          | `release`                 |
+| `cbctf.gin.host`                   | 容器内监听地址                           | `0.0.0.0`                 |
+| `cbctf.gin.port`                   | 容器内监听端口                           | `8000`                    |
+| `cbctf.gin.upload.picture`         | 图片上传大小限制，单位 MiB                   | `8`                       |
+| `cbctf.gin.upload.challenge`       | 题目附件上传大小限制，单位 MiB                 | `8`                       |
+| `cbctf.gin.upload.writeup`         | 题解上传大小限制，单位 MiB                   | `8`                       |
+| `cbctf.gin.proxies`                | 可信代理 IP 或 CIDR                    | `10.244.0.0/16`           |
+| `cbctf.gin.origins`                | 允许的浏览器请求 Origin                   | `https://ctf.example.com` |
+| `cbctf.gin.ratelimit.global`       | 全局限流                              | `100`                     |
+| `cbctf.gin.jwt.secret`             | JWT 签名密钥                          | `change-me-long-random`   |
+| `cbctf.gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR       | `10.0.0.0/8`              |
+| `cbctf.gin.pprof.whitelist`        | 允许访问 `/debug/pprof/*` 的 IP 或 CIDR | `127.0.0.1`               |
+| `cbctf.asynq.queues.traffic`       | 靶机流量解析任务并发                        | `2`                       |
+| `cbctf.registration.enabled`       | 是否允许公开注册                          | `true`                    |
+| `cbctf.registration.default_group` | 新用户默认分组 ID，`0` 表示不指定              | `0`                       |
+| `cbctf.cheat.ip.whitelist`         | 作弊检测 IP 白名单                       | `10.0.0.0/8`              |
+| `cbctf.webhook.whitelist`          | Webhook 目标白名单                     | `example.com`             |
 
 JWT、PostgreSQL 和 Redis 密钥会写入 `/app/config.yaml`。
 
@@ -169,6 +170,10 @@ cbctf:
       - "https://ctf.example.com"
     proxies:
       - "10.244.0.0/16"
+    pprof:
+      whitelist:
+        - "127.0.0.1"
+        - "10.244.0.0/16"
     jwt:
       secret: "change-me-long-random-secret"
 
