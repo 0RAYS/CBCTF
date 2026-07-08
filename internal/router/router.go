@@ -47,6 +47,10 @@ func Init() *gin.Engine {
 
 	RegisterMetricsRouter(router)
 
+	if strings.ToLower(config.Env.Gin.Mode) != gin.ReleaseMode {
+		pprof.Register(router)
+	}
+
 	router.Use(middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute))
 
 	{
@@ -76,10 +80,6 @@ func Init() *gin.Engine {
 		router.GET("/branding", GetBranding)
 		router.GET("/stats", HomePage)
 		router.GET("/contests", GetContests)
-	}
-
-	if strings.ToLower(config.Env.Gin.Mode) != gin.ReleaseMode {
-		pprof.Register(router)
 	}
 
 	auth := router.Group("", middleware.CheckAuth, middleware.CheckPermission)
