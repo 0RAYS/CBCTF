@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	oauthKeyTmpl     = "oauth:%s:%s"
+	oauthKeyTmpl     = "oauth:provider:%s:%s"
 	oauthCodeKeyTmpl = "oauth:code:%s"
 	oauthStateTTL    = 10 * time.Minute
 	oauthCodeTTL     = 30 * time.Second

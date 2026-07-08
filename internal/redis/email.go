@@ -17,8 +17,8 @@ const (
 	emailVerifyTokenKeyTmpl       = "email:verify:token:%s"
 	emailVerifyUserTokenKeyTmpl   = "email:verify:user:%d"
 	emailVerifyTokenTTL           = 30 * time.Minute
-	passwordResetTokenKeyTmpl     = "password:reset:token:%s"
-	passwordResetUserTokenKeyTmpl = "password:reset:user:%d"
+	passwordResetTokenKeyTmpl     = "email:password:reset:token:%s"
+	passwordResetUserTokenKeyTmpl = "email:password:reset:user:%d"
 	passwordResetTokenTTL         = 30 * time.Minute
 )
 

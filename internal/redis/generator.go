@@ -16,8 +16,8 @@ var (
 )
 
 const (
-	GeneratorKeyTmpl               = "generator:%d"
-	GeneratorAttachmentLockKeyTmpl = "generator:%d:locked"
+	GeneratorKeyTmpl               = "generators:%d"
+	GeneratorAttachmentLockKeyTmpl = "generators:locked:%d"
 	generatorContestSetKeyTmpl     = "generators:contest:%d:challenge:%d"
 	generatorLockTTL               = 5 * time.Minute
 )
