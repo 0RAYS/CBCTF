@@ -1,11 +1,11 @@
 package config
 
 import (
+	"CBCTF/internal/log"
 	"CBCTF/internal/utils"
 	"bytes"
 	_ "embed"
 	"errors"
-	"log"
 	"path/filepath"
 	"strings"
 
@@ -121,17 +121,17 @@ func Init(path string) {
 	v := viper.New()
 	v.SetConfigType("yaml")
 	if err := v.ReadConfig(bytes.NewReader(defaultConf)); err != nil {
-		log.Fatalf("Failed to read default config: %s", err)
+		log.Logger.Fatalf("Failed to read default config: %s", err)
 	}
 	if path != "" {
 		v.SetConfigFile(path)
 		var notFound viper.ConfigFileNotFoundError
 		if err := v.MergeInConfig(); err != nil && !errors.As(err, &notFound) {
-			log.Fatalf("Failed to read config: %s", err)
+			log.Logger.Fatalf("Failed to read config: %s", err)
 		}
 	}
 	if err := v.Unmarshal(&Env); err != nil {
-		log.Fatalf("error unmarshalling config: %s", err)
+		log.Logger.Fatalf("error unmarshalling config: %s", err)
 	}
 	tidy()
 }
