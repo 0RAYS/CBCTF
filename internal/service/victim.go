@@ -521,11 +521,15 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 	return model.SuccessRetVal()
 }
 
-func StopVictims(tx *gorm.DB, form dto.StopVictimsForm) model.RetVal {
+func StopVictims(tx *gorm.DB, contestID uint, form dto.StopVictimsForm) model.RetVal {
 	if len(form.Victims) == 0 {
 		return model.SuccessRetVal()
 	}
-	victims, _, ret := db.InitVictimRepo(tx).List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": form.Victims}})
+	options := db.GetOptions{Conditions: map[string]any{"id": form.Victims}}
+	if contestID > 0 {
+		options.Conditions["contest_id"] = contestID
+	}
+	victims, _, ret := db.InitVictimRepo(tx).List(-1, -1, options)
 	if !ret.OK {
 		return ret
 	}

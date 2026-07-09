@@ -75,13 +75,15 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 	return model.SuccessRetVal()
 }
 
-func StopGenerators(tx *gorm.DB, form dto.StopGeneratorsForm) model.RetVal {
+func StopGenerators(tx *gorm.DB, contestID uint, form dto.StopGeneratorsForm) model.RetVal {
 	if len(form.Generators) == 0 {
 		return model.SuccessRetVal()
 	}
-	generators, _, ret := db.InitGeneratorRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"id": form.Generators},
-	})
+	options := db.GetOptions{Conditions: map[string]any{"id": form.Generators}}
+	if contestID > 0 {
+		options.Conditions["contest_id"] = contestID
+	}
+	generators, _, ret := db.InitGeneratorRepo(tx).List(-1, -1, options)
 	if !ret.OK {
 		return ret
 	}
