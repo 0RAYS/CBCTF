@@ -53,7 +53,7 @@ func StopGenerator(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StopGeneratorEventType)
-	go service.StopGenerators(db.TaskDB, form)
+	go service.StopGenerators(db.TaskDB, middleware.GetContest(ctx).ID, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
