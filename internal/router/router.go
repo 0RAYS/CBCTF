@@ -303,19 +303,19 @@ func Init() *gin.Engine {
 			}
 		}
 
-		adminVictim := admin.Group("/victims")
+		adminVictims := admin.Group("/victims")
 		{
-			adminVictim.GET("", GetVictims)
-			adminVictim.DELETE("", StopVictims)
-			adminSingleVictim := adminVictim.Group("/:victimID", middleware.SetVictim)
+			adminVictims.GET("", GetVictims)
+			adminVictims.DELETE("", StopVictims)
+			adminVictim := adminVictims.Group("/:victimID", middleware.SetVictim)
 			{
-				adminTraffic := adminSingleVictim.Group("/traffic")
+				adminTraffic := adminVictim.Group("/traffic")
 				{
 					adminTraffic.GET("/download", middleware.SetTrafficFile, DownloadFile(model.DownloadTrafficEventType))
 					adminTraffic.GET("", GetTraffics)
 				}
-				adminSingleVictim.GET("/pods", GetVictimPods)
-				adminSingleVictim.GET("/pods/logs", GetVictimPodLogs)
+				adminVictim.GET("/pods", GetVictimPods)
+				adminVictim.GET("/pods/logs", GetVictimPodLogs)
 			}
 		}
 
@@ -419,15 +419,15 @@ func Init() *gin.Engine {
 				adminContestImages.POST("", middleware.RateLimit("warmup_images", 1, time.Minute), PullImages)
 			}
 
-			adminContestVictim := adminContest.Group("/victims")
+			adminContestVictims := adminContest.Group("/victims")
 			{
-				adminContestVictim.GET("", GetVictims)
-				adminContestVictim.POST("", middleware.RateLimit("warmup_victims", 1, time.Minute), StartVictims)
-				adminContestVictim.DELETE("", StopVictims)
-				adminContestSingleVictim := adminContestVictim.Group("/:victimID", middleware.SetVictim)
+				adminContestVictims.GET("", GetVictims)
+				adminContestVictims.POST("", middleware.RateLimit("warmup_victims", 1, time.Minute), StartVictims)
+				adminContestVictims.DELETE("", StopVictims)
+				adminContestVictim := adminContestVictims.Group("/:victimID", middleware.SetVictim)
 				{
-					adminContestSingleVictim.GET("/pods", GetVictimPods)
-					adminContestSingleVictim.GET("/pods/logs", GetVictimPodLogs)
+					adminContestVictim.GET("/pods", GetVictimPods)
+					adminContestVictim.GET("/pods/logs", GetVictimPodLogs)
 				}
 			}
 
