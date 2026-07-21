@@ -1,6 +1,6 @@
 module CBCTF
 
-go 1.26.4
+go 1.26.5
 
 replace (
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20260708023648-450935be752b
