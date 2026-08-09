@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/cheat.md.
+
 # 作弊检测
 
 CBCTF 内置多维度自动作弊检测，管理员可查看、确认或驳回检测结果。

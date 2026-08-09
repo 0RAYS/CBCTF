@@ -2,6 +2,8 @@
 url: /guide/start/introduction.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/start/introduction.md.
+
 # 介绍
 
 CBCTF 是由 [0RAYS](https://github.com/0rays) 维护的 CTF 竞赛平台，基于 Go 语言构建，原生支持 Kubernetes
@@ -182,6 +184,8 @@ networks:
 url: /guide/start/quick-start.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/start/quick-start.md.
+
 # 快速上手
 
 推荐使用 Helm 将 CBCTF 部署到 Kubernetes。
@@ -264,6 +268,8 @@ export const API_CONFIG = {
 ---
 url: /deploy/cluster.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/cluster.md.
 
 # K8s 集群搭建
 
@@ -470,6 +476,8 @@ helm install nfs-provisioner \
 ---
 url: /deploy/helm.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/helm.md.
 
 # Helm 部署
 
@@ -700,6 +708,8 @@ PVC 缺失会导致动态附件不可用。KubeVirt 资源不会在启动时创�
 url: /deploy/settings.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/settings.md.
+
 # 配置说明
 
 CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲染成 `/app/config.yaml`，优先级高于内置默认值。
@@ -819,6 +829,8 @@ GeoLite2-City 数据库可通过管理后台上传，保存到 `{path}/GeoLite2-
 url: /deploy/separation.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/separation.md.
+
 # 前后端分离
 
 CBCTF 默认将前端静态资源嵌入 Go 二进制，通过同一个服务地址提供 `/platform`。如果需要把前端单独托管到
@@ -897,6 +909,8 @@ cbctf:
 ---
 url: /deploy/troubleshooting.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/troubleshooting.md.
 
 # 常见问题
 
@@ -1056,6 +1070,8 @@ Redis 用于缓存和 Asynq 任务队列。连接失败会影响登录状态、�
 url: /guide/features/challenge.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/challenge.md.
+
 # 题目类型
 
 CBCTF 支持三种题目类型，覆盖从传统静态题到复杂网络靶机的完整场景。
@@ -1116,6 +1132,8 @@ CBCTF 支持三种题目类型，覆盖从传统静态题到复杂网络靶机�
 ---
 url: /guide/features/flag.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/flag.md.
 
 ***
 
@@ -1249,6 +1267,8 @@ Flag 前缀由所在比赛的 `prefix` 字段配置，不同比赛可以使用�
 url: /guide/features/scoring.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/scoring.md.
+
 ***
 
 title: 计分系统
@@ -1354,6 +1374,8 @@ score = (Score - MinScore) × exp(-5/Decay × solvers) + MinScore
 url: /guide/features/attachment.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/attachment.md.
+
 # 动态附件生成
 
 ## 附件类型
@@ -1456,6 +1478,8 @@ zip -j /root/mnt/attachments/${TEAM_ID}.zip /tmp/challenge/*
 ---
 url: /guide/features/container.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/container.md.
 
 # 动态靶机
 
@@ -1605,6 +1629,8 @@ VM 必须接入至少一个 VPC 网络
 url: /guide/features/contest.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/contest.md.
+
 # 比赛配置
 
 比赛（Contest）是 CBCTF 的核心组织单元，每场比赛包含独立的题目集、队伍、排行榜和作弊检测记录。
@@ -1717,6 +1743,8 @@ uuid{}           →  {prefix}{uuid}
 url: /guide/features/auth.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/auth.md.
+
 # 认证与 OAuth
 
 ## 本地认证
@@ -1806,6 +1834,8 @@ GitHub OAuth App 回调地址示例：`https://your.domain.com/oauth/github/call
 ---
 url: /guide/features/webhook.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/webhook.md.
 
 # Webhook
 
@@ -1917,6 +1947,8 @@ Webhook 投递通过 Asynq 异步队列处理。若请求失败（超时、非 2
 url: /admin/overview.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/overview.md.
+
 # 管理后台概览
 
 管理后台入口为 `/platform/#/admin`。用户需要拥有管理员角色，或通过 RBAC 获得相应管理接口权限后才能访问对应页面。
@@ -2010,6 +2042,8 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 ---
 url: /admin/rbac.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/rbac.md.
 
 # 权限与角色
 
@@ -2233,6 +2267,8 @@ admin:contest_traffic:read
 url: /admin/users.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/users.md.
+
 # 用户与分组
 
 ## 用户字段
@@ -2295,6 +2331,8 @@ OAuth 登录用户单独设置默认分组。
 ---
 url: /admin/challenges.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/challenges.md.
 
 # 题目管理
 
@@ -2408,6 +2446,8 @@ flag 独立配置计分：
 url: /admin/contests.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/contests.md.
+
 # 比赛管理
 
 ## 比赛生命周期
@@ -2497,6 +2537,8 @@ GET /admin/contests/:contestID/teams/:teamID/writeups/:fileID  # 下载（admin:
 ---
 url: /admin/cheat.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/cheat.md.
 
 # 作弊检测
 
@@ -2597,6 +2639,8 @@ cheat:
 url: /admin/smtp.md
 ---
 
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/smtp.md.
+
 # 邮件配置
 
 CBCTF 通过 SMTP 发送邮件（目前用于邮箱验证功能）。
@@ -2649,6 +2693,8 @@ CBCTF 通过 SMTP 发送邮件（目前用于邮箱验证功能）。
 ---
 url: /admin/monitoring.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/monitoring.md.
 
 # 监控与日志
 
@@ -2769,6 +2815,8 @@ PostgreSQL/GORM、Redis、数据目录、Gin 监听地址和监听端口在页�
 ---
 url: /index.md
 ---
+
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /index.md.
 
 # CBCTF
 

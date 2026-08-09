@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/cluster.md.
+
 # K8s 集群搭建
 
 本文介绍如何搭建支持 CBCTF 动态附件题和容器题的 Kubernetes 集群。

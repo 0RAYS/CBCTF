@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/start/quick-start.md.
+
 # 快速上手
 
 推荐使用 Helm 将 CBCTF 部署到 Kubernetes。

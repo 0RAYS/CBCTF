@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/contest.md.
+
 # 比赛配置
 
 比赛（Contest）是 CBCTF 的核心组织单元，每场比赛包含独立的题目集、队伍、排行榜和作弊检测记录。
