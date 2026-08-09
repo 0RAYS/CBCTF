@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/webhook.md.
+
 # Webhook
 
 Webhook 允许平台在特定事件发生时，向外部系统（Slack、Discord、自动化脚本等）发送 HTTP 通知。

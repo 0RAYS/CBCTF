@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/smtp.md.
+
 # 邮件配置
 
 CBCTF 通过 SMTP 发送邮件（目前用于邮箱验证功能）。

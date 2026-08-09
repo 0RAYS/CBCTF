@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/overview.md.
+
 # 管理后台概览
 
 管理后台入口为 `/platform/#/admin`。用户需要拥有管理员角色，或通过 RBAC 获得相应管理接口权限后才能访问对应页面。

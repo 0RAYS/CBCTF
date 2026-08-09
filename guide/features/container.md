@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/container.md.
+
 # 动态靶机
 
 容器题类型为 `pods`。选手启动题目后，平台会为队伍创建独立的 Kubernetes 资源，并在页面返回可访问端点。管理员可以在后台查看、预热、停止靶机，并下载流量文件。

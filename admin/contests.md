@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/contests.md.
+
 # 比赛管理
 
 ## 比赛生命周期

@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/challenge.md.
+
 # 题目类型
 
 CBCTF 支持三种题目类型，覆盖从传统静态题到复杂网络靶机的完整场景。

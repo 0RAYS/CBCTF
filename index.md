@@ -1,3 +1,5 @@
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /index.md.
+
 # CBCTF
 
 基于 Kubernetes 的现代化 CTF 竞赛平台
