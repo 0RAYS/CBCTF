@@ -1,4 +1,4 @@
-package oauth
+package oa
 
 import (
 	"CBCTF/internal/config"
@@ -17,7 +17,7 @@ import (
 var (
 	//go:embed logo/github-mark.png
 	githubMarkFile embed.FS
-	GithubMark, _  = githubMarkFile.ReadFile("logo/github-mark.png")
+	GithubLogo, _  = githubMarkFile.ReadFile("logo/github-mark.png")
 )
 
 func GetDefaultGithubOauth() model.Oauth {

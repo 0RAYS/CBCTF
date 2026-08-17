@@ -2108,6 +2108,7 @@
         "logo": "Logo",
         "provider": "Provider",
         "uri": "URI",
+        "protocol": "Protocol",
         "status": "Enabled",
         "callback": "Callback URL",
         "actions": "Actions",
@@ -2132,6 +2133,9 @@
         "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "form": {
+        "protocolLabel": "Protocol",
+        "protocolOAuth2": "OAuth 2.0 / OIDC",
+        "protocolCAS": "CAS",
         "providerLabel": "Provider name *",
         "providerPlaceholder": "e.g. GitHub",
         "uriLabel": "URI *",

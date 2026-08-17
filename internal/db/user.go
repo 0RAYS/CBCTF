@@ -4,7 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/oauth"
+	"CBCTF/internal/oa"
 	"CBCTF/internal/utils"
 
 	"gorm.io/gorm"
@@ -93,7 +93,7 @@ func (u *UserRepo) InitAdmin() model.RetVal {
 			Verified:       true,
 			Hidden:         true,
 			Banned:         false,
-			Provider:       oauth.LocalProvider,
+			Provider:       oa.LocalProvider,
 			ProviderUserID: utils.UUID(),
 			OauthRaw:       "{}",
 		})

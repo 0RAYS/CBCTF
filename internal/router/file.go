@@ -8,7 +8,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/oauth"
+	"CBCTF/internal/oa"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/task"
@@ -24,8 +24,9 @@ import (
 )
 
 var DefaultPicture = map[string][]byte{
-	"github":  oauth.GithubMark,
-	"hduhelp": oauth.HDUHelpPicture,
+	"github":  oa.GithubLogo,
+	"hduhelp": oa.HDUHelpLogo,
+	"hdu":     oa.HDULogo,
 }
 
 func DefaultAssets(ctx *gin.Context) {

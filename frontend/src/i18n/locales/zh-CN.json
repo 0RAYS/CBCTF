@@ -2108,6 +2108,7 @@
         "logo": "Logo",
         "provider": "服务商",
         "uri": "URI",
+        "protocol": "协议",
         "status": "启用",
         "callback": "回调URL",
         "actions": "操作",
@@ -2132,6 +2133,9 @@
         "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "form": {
+        "protocolLabel": "协议",
+        "protocolOAuth2": "OAuth 2.0 / OIDC",
+        "protocolCAS": "CAS",
         "providerLabel": "提供商名称 *",
         "providerPlaceholder": "例如: GitHub",
         "uriLabel": "URI *",

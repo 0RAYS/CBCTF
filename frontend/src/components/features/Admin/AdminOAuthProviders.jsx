@@ -37,9 +37,10 @@ function AdminOAuthProviders({
   const columns = [
     { key: 'picture', label: t('admin.oauthProviders.columns.logo'), width: '5%' },
     { key: 'provider', label: t('admin.oauthProviders.columns.provider'), width: '10%' },
-    { key: 'uri', label: t('admin.oauthProviders.columns.uri'), width: '12%' },
+    { key: 'uri', label: t('admin.oauthProviders.columns.uri'), width: '10%' },
+    { key: 'protocol', label: t('admin.oauthProviders.columns.protocol'), width: '10%' },
     { key: 'status', label: t('admin.oauthProviders.columns.status'), width: '8%' },
-    { key: 'callback_url', label: t('admin.oauthProviders.columns.callback'), width: '30%' },
+    { key: 'callback_url', label: t('admin.oauthProviders.columns.callback'), width: '25%' },
     { key: 'actions', label: t('admin.oauthProviders.columns.actions'), width: '5%' },
   ];
 
@@ -75,6 +76,15 @@ function AdminOAuthProviders({
 
       case 'uri':
         return <span className="text-neutral-300 font-mono text-sm">{provider.uri}</span>;
+
+      case 'protocol':
+        return (
+          <span className="text-neutral-300 font-mono text-sm">
+            {provider.protocol === 'cas'
+              ? t('admin.oauthProviders.form.protocolCAS')
+              : t('admin.oauthProviders.form.protocolOAuth2')}
+          </span>
+        );
 
       case 'status':
         return (

@@ -35,6 +35,7 @@ function OAuthProvidersManagement() {
   const [editForm, setEditForm] = useState({
     provider: '',
     uri: '',
+    protocol: 'oauth2',
     scopes: '',
     auth_url: '',
     token_url: '',
@@ -88,6 +89,7 @@ function OAuthProvidersManagement() {
     setEditForm({
       provider: '',
       uri: '',
+      protocol: 'oauth2',
       scopes: '',
       auth_url: '',
       token_url: '',
@@ -115,6 +117,7 @@ function OAuthProvidersManagement() {
     setEditForm({
       provider: provider.provider,
       uri: provider.uri,
+      protocol: provider.protocol || 'oauth2',
       scopes: formatScopes(provider.scopes),
       auth_url: provider.auth_url,
       token_url: provider.token_url,
@@ -258,6 +261,19 @@ function OAuthProvidersManagement() {
           </div>
           <div className="col-span-2">
             <label className="block text-neutral-300 text-sm font-medium mb-2">
+              {t('admin.oauthProviders.form.protocolLabel')}
+            </label>
+            <select
+              value={editForm.protocol}
+              onChange={(e) => setEditForm({ ...editForm, protocol: e.target.value })}
+              className="w-full bg-neutral-800 border border-neutral-600 text-neutral-200 text-sm rounded px-3 py-2 focus:outline-none focus:border-neutral-400"
+            >
+              <option value="oauth2">{t('admin.oauthProviders.form.protocolOAuth2')}</option>
+              <option value="cas">{t('admin.oauthProviders.form.protocolCAS')}</option>
+            </select>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-neutral-300 text-sm font-medium mb-2">
               {t('admin.oauthProviders.form.scopesLabel')}
             </label>
             <Input
@@ -295,7 +311,7 @@ function OAuthProvidersManagement() {
               onChange={(e) => setEditForm({ ...editForm, token_url: e.target.value })}
               placeholder={t('admin.oauthProviders.form.tokenUrlPlaceholder')}
               fullWidth
-              required={mode === 'create'}
+              required={mode === 'create' && editForm.protocol === 'oauth2'}
             />
           </div>
           <div>
@@ -338,7 +354,7 @@ function OAuthProvidersManagement() {
               onChange={(e) => setEditForm({ ...editForm, client_id: e.target.value })}
               placeholder={t('admin.oauthProviders.form.clientIdPlaceholder')}
               fullWidth
-              required={mode === 'create'}
+              required={mode === 'create' && editForm.protocol === 'oauth2'}
             />
           </div>
           <div>
@@ -353,7 +369,7 @@ function OAuthProvidersManagement() {
                 mode === 'edit' ? t('common.leaveBlankToKeep') : t('admin.oauthProviders.form.clientSecretPlaceholder')
               }
               fullWidth
-              required={mode === 'create'}
+              required={mode === 'create' && editForm.protocol === 'oauth2'}
             />
           </div>
         </div>

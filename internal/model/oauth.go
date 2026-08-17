@@ -1,8 +1,12 @@
 package model
 
-import "golang.org/x/oauth2"
+const (
+	OauthProtocolOAuth2 = "oauth2"
+	OauthProtocolCAS    = "cas"
+)
 
 type Oauth struct {
+	Protocol         string     `gorm:"type:varchar(32);not null;default:'oauth2'" json:"protocol"`
 	AuthURL          string     `json:"auth_url"`
 	TokenURL         string     `json:"token_url"`
 	UserInfoURL      string     `json:"user_info_url"`
@@ -23,20 +27,4 @@ type Oauth struct {
 	On               bool       `json:"on"`
 	Picture          FileURL    `json:"picture"`
 	BaseModel
-}
-
-func (o *Oauth) Config() *oauth2.Config {
-	config := &oauth2.Config{
-		ClientID:     o.ClientID,
-		ClientSecret: o.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  o.AuthURL,
-			TokenURL: o.TokenURL,
-		},
-		RedirectURL: o.CallbackURL,
-	}
-	if len(o.Scopes) > 0 {
-		config.Scopes = append([]string(nil), o.Scopes...)
-	}
-	return config
 }

@@ -7,7 +7,7 @@ import (
 	"CBCTF/internal/email"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
-	"CBCTF/internal/oauth"
+	"CBCTF/internal/oa"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/router"
 	"CBCTF/internal/sys"
@@ -27,7 +27,7 @@ func run() {
 	db.Init()
 	redis.Init()
 	k8s.Init()
-	oauth.Init()
+	oa.Init()
 	email.Init()
 	webhook.Init()
 	task.Init()

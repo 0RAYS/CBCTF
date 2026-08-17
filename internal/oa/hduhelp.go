@@ -1,4 +1,4 @@
-package oauth
+package oa
 
 import (
 	"CBCTF/internal/config"
@@ -9,8 +9,8 @@ import (
 
 var (
 	//go:embed logo/hduhelp.png
-	hduhelpFile       embed.FS
-	HDUHelpPicture, _ = hduhelpFile.ReadFile("logo/hduhelp.png")
+	hduhelpFile    embed.FS
+	HDUHelpLogo, _ = hduhelpFile.ReadFile("logo/hduhelp.png")
 )
 
 func GetDefaultHDUHelpOauth() model.Oauth {

@@ -8,22 +8,17 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/oauth"
+	"CBCTF/internal/oa"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"strings"
 	"sync"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/oauth2"
 )
 
 var (
@@ -49,9 +44,10 @@ func ListOauth(ctx *gin.Context) {
 	oauthProviderMapLock.RLock()
 	for _, provider := range oauthProviderMap {
 		data = append(data, gin.H{
-			"url":     fmt.Sprintf("%s/oauth/%s", config.Env.Host, provider.Uri),
-			"name":    provider.Provider,
-			"picture": provider.Picture,
+			"url":      fmt.Sprintf("%s/oauth/%s", config.Env.Host, provider.Uri),
+			"name":     provider.Provider,
+			"protocol": provider.Protocol,
+			"picture":  provider.Picture,
 		})
 	}
 	oauthProviderMapLock.RUnlock()
@@ -67,14 +63,17 @@ func Oauth(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
-	state := utils.UUID()
-	verifier := oauth2.GenerateVerifier()
-	if ret := redis.SetOauthState(provider.Provider, state, verifier); !ret.OK {
+	protocol, ok := oa.GetProtocol(provider.Protocol)
+	if !ok {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		return
+	}
+	loginURL, ret := protocol.LoginURL(provider)
+	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	url := provider.Config().AuthCodeURL(state, oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier))
-	ctx.Redirect(http.StatusTemporaryRedirect, url)
+	ctx.Redirect(http.StatusTemporaryRedirect, loginURL)
 }
 
 func OauthCallback(ctx *gin.Context) {
@@ -86,53 +85,16 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
-	var form dto.OauthCallbackForm
-	if ret := dto.Bind(ctx, &form); !ret.OK {
-		resp.JSON(ctx, ret)
+	protocol, ok := oa.GetProtocol(provider.Protocol)
+	if !ok {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
-	oauthConfig := provider.Config()
 	ctx.Set(middleware.CTXEventTypeKey, model.OauthLoginEventType)
-	defer redis.DelOauthState(provider.Provider, form.State)
-	verifier, ret := redis.GetOauthVerifier(provider.Provider, form.State)
+	result, ret := protocol.Exchange(ctx, provider)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
-	}
-	tok, err := oauthConfig.Exchange(ctx, form.Code, oauth2.VerifierOption(verifier))
-	if err != nil {
-		log.Logger.Warningf("Failed to get token for provider %s: %s", provider.Provider, err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
-		return
-	}
-	client := oauthConfig.Client(ctx, tok)
-	client.Timeout = time.Second * 10
-	response, err := client.Get(provider.UserInfoURL)
-	if err != nil {
-		log.Logger.Warningf("Failed to get User info by provider %s: %s", provider.Provider, err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
-		return
-	}
-	defer func(Body io.ReadCloser) {
-		if err = Body.Close(); err != nil {
-			log.Logger.Warningf("Failed to close response body for provider %s: %s", provider.Provider, err)
-		}
-	}(response.Body)
-	var result map[string]any
-	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
-		body, _ := io.ReadAll(io.LimitReader(response.Body, 4096))
-		err = fmt.Errorf("unexpected status %d: %s", response.StatusCode, strings.TrimSpace(string(body)))
-		log.Logger.Warningf("Failed to get User info by provider %s: %s", provider.Provider, err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
-		return
-	}
-	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
-		log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
-		return
-	}
-	if err = oauth.ApplyUserInfoCallback(provider, client, result); err != nil {
-		log.Logger.Warningf("Failed to apply oauth callback for provider %s: %s", provider.Provider, err)
 	}
 	user, ret := service.OauthLoginWithTransaction(db.DB, provider, result)
 	if !ret.OK {
