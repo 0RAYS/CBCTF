@@ -149,12 +149,40 @@ function OAuthProvidersManagement() {
     handleEditClick(provider);
   };
 
+  // 按协议组装请求体, 仅携带该协议所需的字段, 协议标识通过 query 参数传递
+  const buildPayload = () => {
+    const isCAS = editForm.protocol === 'cas';
+    const payload = {
+      protocol: editForm.protocol,
+      auth_url: editForm.auth_url,
+      user_info_url: editForm.user_info_url,
+      callback_url: editForm.callback_url,
+      provider: editForm.provider,
+      uri: editForm.uri,
+      id_claim: editForm.id_claim,
+      name_claim: editForm.name_claim,
+      email_claim: editForm.email_claim,
+      picture_claim: editForm.picture_claim,
+      description_claim: editForm.description_claim,
+      groups_claim: editForm.groups_claim,
+      admin_group: editForm.admin_group,
+      default_group: editForm.default_group,
+      on: editForm.on,
+      picture: editForm.picture,
+    };
+    if (isCAS) {
+      return payload;
+    }
+    payload.token_url = editForm.token_url;
+    payload.client_id = editForm.client_id;
+    payload.client_secret = editForm.client_secret || undefined;
+    payload.scopes = parseScopes(editForm.scopes);
+    return payload;
+  };
+
   const handleCreateProvider = async () => {
     try {
-      const response = await createOAuthProvider({
-        ...editForm,
-        scopes: parseScopes(editForm.scopes),
-      });
+      const response = await createOAuthProvider(buildPayload());
       if (response.code === 200) {
         toast.success({ description: t('admin.oauthProviders.toast.createSuccess') });
         setIsModalOpen(false);
@@ -167,11 +195,7 @@ function OAuthProvidersManagement() {
 
   const handleUpdateProvider = async () => {
     try {
-      const response = await updateOAuthProvider(selectedProvider.id, {
-        ...editForm,
-        scopes: parseScopes(editForm.scopes),
-        client_secret: editForm.client_secret || undefined,
-      });
+      const response = await updateOAuthProvider(selectedProvider.id, buildPayload());
       if (response.code === 200) {
         toast.success({ description: t('admin.oauthProviders.toast.updateSuccess') });
         setIsModalOpen(false);
@@ -272,18 +296,20 @@ function OAuthProvidersManagement() {
               <option value="cas">{t('admin.oauthProviders.form.protocolCAS')}</option>
             </select>
           </div>
-          <div className="col-span-2">
-            <label className="block text-neutral-300 text-sm font-medium mb-2">
-              {t('admin.oauthProviders.form.scopesLabel')}
-            </label>
-            <Input
-              type="text"
-              value={editForm.scopes}
-              onChange={(e) => setEditForm({ ...editForm, scopes: e.target.value })}
-              placeholder={t('admin.oauthProviders.form.scopesPlaceholder')}
-              fullWidth
-            />
-          </div>
+          {editForm.protocol === 'oauth2' && (
+            <div className="col-span-2">
+              <label className="block text-neutral-300 text-sm font-medium mb-2">
+                {t('admin.oauthProviders.form.scopesLabel')}
+              </label>
+              <Input
+                type="text"
+                value={editForm.scopes}
+                onChange={(e) => setEditForm({ ...editForm, scopes: e.target.value })}
+                placeholder={t('admin.oauthProviders.form.scopesPlaceholder')}
+                fullWidth
+              />
+            </div>
+          )}
         </div>
 
         {/* URL配置 */}
@@ -301,19 +327,21 @@ function OAuthProvidersManagement() {
               required={mode === 'create'}
             />
           </div>
-          <div>
-            <label className="block text-neutral-300 text-sm font-medium mb-2">
-              {t('admin.oauthProviders.form.tokenUrlLabel')}
-            </label>
-            <Input
-              type="text"
-              value={editForm.token_url}
-              onChange={(e) => setEditForm({ ...editForm, token_url: e.target.value })}
-              placeholder={t('admin.oauthProviders.form.tokenUrlPlaceholder')}
-              fullWidth
-              required={mode === 'create' && editForm.protocol === 'oauth2'}
-            />
-          </div>
+          {editForm.protocol === 'oauth2' && (
+            <div>
+              <label className="block text-neutral-300 text-sm font-medium mb-2">
+                {t('admin.oauthProviders.form.tokenUrlLabel')}
+              </label>
+              <Input
+                type="text"
+                value={editForm.token_url}
+                onChange={(e) => setEditForm({ ...editForm, token_url: e.target.value })}
+                placeholder={t('admin.oauthProviders.form.tokenUrlPlaceholder')}
+                fullWidth
+                required={mode === 'create'}
+              />
+            </div>
+          )}
           <div>
             <label className="block text-neutral-300 text-sm font-medium mb-2">
               {t('admin.oauthProviders.form.userInfoUrlLabel')}
@@ -343,36 +371,40 @@ function OAuthProvidersManagement() {
         </div>
 
         {/* 客户端配置 */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-neutral-300 text-sm font-medium mb-2">
-              {t('admin.oauthProviders.form.clientIdLabel')}
-            </label>
-            <Input
-              type="text"
-              value={editForm.client_id}
-              onChange={(e) => setEditForm({ ...editForm, client_id: e.target.value })}
-              placeholder={t('admin.oauthProviders.form.clientIdPlaceholder')}
-              fullWidth
-              required={mode === 'create' && editForm.protocol === 'oauth2'}
-            />
+        {editForm.protocol === 'oauth2' && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-neutral-300 text-sm font-medium mb-2">
+                {t('admin.oauthProviders.form.clientIdLabel')}
+              </label>
+              <Input
+                type="text"
+                value={editForm.client_id}
+                onChange={(e) => setEditForm({ ...editForm, client_id: e.target.value })}
+                placeholder={t('admin.oauthProviders.form.clientIdPlaceholder')}
+                fullWidth
+                required={mode === 'create'}
+              />
+            </div>
+            <div>
+              <label className="block text-neutral-300 text-sm font-medium mb-2">
+                {t('admin.oauthProviders.form.clientSecretLabel')}
+              </label>
+              <Input
+                type="password"
+                value={editForm.client_secret}
+                onChange={(e) => setEditForm({ ...editForm, client_secret: e.target.value })}
+                placeholder={
+                  mode === 'edit'
+                    ? t('common.leaveBlankToKeep')
+                    : t('admin.oauthProviders.form.clientSecretPlaceholder')
+                }
+                fullWidth
+                required={mode === 'create'}
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-neutral-300 text-sm font-medium mb-2">
-              {t('admin.oauthProviders.form.clientSecretLabel')}
-            </label>
-            <Input
-              type="password"
-              value={editForm.client_secret}
-              onChange={(e) => setEditForm({ ...editForm, client_secret: e.target.value })}
-              placeholder={
-                mode === 'edit' ? t('common.leaveBlankToKeep') : t('admin.oauthProviders.form.clientSecretPlaceholder')
-              }
-              fullWidth
-              required={mode === 'create' && editForm.protocol === 'oauth2'}
-            />
-          </div>
-        </div>
+        )}
 
         {/* 字段映射 */}
         <div className="space-y-3">

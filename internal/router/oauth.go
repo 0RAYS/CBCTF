@@ -171,13 +171,24 @@ func GetOauthProvider(ctx *gin.Context) {
 }
 
 func CreateOauthProvider(ctx *gin.Context) {
-	var form dto.CreateOauthProviderForm
-	if ret := dto.Bind(ctx, &form); !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateOauthEventType)
-	provider, ret := service.CreateOauthProvider(db.DB, form)
+	var provider model.Oauth
+	var ret model.RetVal
+	if ctx.Query("protocol") == model.OauthProtocolCAS {
+		var form dto.CreateCASProviderForm
+		if ret = dto.Bind(ctx, &form); !ret.OK {
+			resp.JSON(ctx, ret)
+			return
+		}
+		provider, ret = service.CreateCASProvider(db.DB, form)
+	} else {
+		var form dto.CreateOauthProviderForm
+		if ret = dto.Bind(ctx, &form); !ret.OK {
+			resp.JSON(ctx, ret)
+			return
+		}
+		provider, ret = service.CreateOauthProvider(db.DB, form)
+	}
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -187,14 +198,25 @@ func CreateOauthProvider(ctx *gin.Context) {
 }
 
 func UpdateOauthProvider(ctx *gin.Context) {
-	var form dto.UpdateOauthProviderForm
-	if ret := dto.Bind(ctx, &form); !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
 	oldOauth := middleware.GetOauth(ctx)
-	newOauth, ret := service.UpdateOauthProvider(db.DB, oldOauth, form)
+	var newOauth model.Oauth
+	var ret model.RetVal
+	if ctx.Query("protocol") == model.OauthProtocolCAS {
+		var form dto.UpdateCASProviderForm
+		if ret = dto.Bind(ctx, &form); !ret.OK {
+			resp.JSON(ctx, ret)
+			return
+		}
+		newOauth, ret = service.UpdateCASProvider(db.DB, oldOauth, form)
+	} else {
+		var form dto.UpdateOauthProviderForm
+		if ret = dto.Bind(ctx, &form); !ret.OK {
+			resp.JSON(ctx, ret)
+			return
+		}
+		newOauth, ret = service.UpdateOauthProvider(db.DB, oldOauth, form)
+	}
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

@@ -138,15 +138,8 @@ func ListOauthProviders(tx *gorm.DB, form dto.ListModelsForm) ([]model.Oauth, in
 }
 
 func CreateOauthProvider(tx *gorm.DB, form dto.CreateOauthProviderForm) (model.Oauth, model.RetVal) {
-	protocol := form.Protocol
-	if protocol == "" {
-		protocol = model.OauthProtocolOAuth2
-	}
-	if protocol == model.OauthProtocolOAuth2 && (form.TokenURL == "" || form.ClientID == "" || form.ClientSecret == "") {
-		return model.Oauth{}, model.RetVal{Msg: i18n.Response.BadRequest}
-	}
 	return db.InitOauthRepo(tx).Create(model.Oauth{
-		Protocol:         protocol,
+		Protocol:         model.OauthProtocolOAuth2,
 		AuthURL:          form.AuthURL,
 		TokenURL:         form.TokenURL,
 		UserInfoURL:      form.UserInfoURL,
@@ -168,32 +161,28 @@ func CreateOauthProvider(tx *gorm.DB, form dto.CreateOauthProviderForm) (model.O
 	})
 }
 
+func CreateCASProvider(tx *gorm.DB, form dto.CreateCASProviderForm) (model.Oauth, model.RetVal) {
+	return db.InitOauthRepo(tx).Create(model.Oauth{
+		Protocol:         model.OauthProtocolCAS,
+		AuthURL:          form.AuthURL,
+		UserInfoURL:      form.UserInfoURL,
+		CallbackURL:      form.CallbackURL,
+		Provider:         form.Provider,
+		Uri:              form.Uri,
+		IDClaim:          form.IDClaim,
+		NameClaim:        form.NameClaim,
+		EmailClaim:       form.EmailClaim,
+		PictureClaim:     form.PictureClaim,
+		DescriptionClaim: form.DescriptionClaim,
+		GroupsClaim:      form.GroupsClaim,
+		AdminGroup:       form.AdminGroup,
+		DefaultGroup:     form.DefaultGroup,
+		On:               false,
+	})
+}
+
 func UpdateOauthProvider(tx *gorm.DB, oldOauth model.Oauth, form dto.UpdateOauthProviderForm) (model.Oauth, model.RetVal) {
-	protocol := oldOauth.Protocol
-	if form.Protocol != nil {
-		protocol = *form.Protocol
-	}
-	tokenURL := oldOauth.TokenURL
-	if form.TokenURL != nil {
-		tokenURL = *form.TokenURL
-	}
-	clientID := oldOauth.ClientID
-	if form.ClientID != nil {
-		clientID = *form.ClientID
-	}
-	clientSecret := oldOauth.ClientSecret
-	if form.ClientSecret != nil {
-		clientSecret = *form.ClientSecret
-	}
-	on := oldOauth.On
-	if form.On != nil {
-		on = *form.On
-	}
-	if on && protocol == model.OauthProtocolOAuth2 && (tokenURL == "" || clientID == "" || clientSecret == "") {
-		return model.Oauth{}, model.RetVal{Msg: i18n.Response.BadRequest}
-	}
 	if ret := db.InitOauthRepo(tx).Update(oldOauth.ID, db.UpdateOauthOptions{
-		Protocol:         form.Protocol,
 		AuthURL:          form.AuthURL,
 		TokenURL:         form.TokenURL,
 		UserInfoURL:      form.UserInfoURL,
@@ -203,6 +192,29 @@ func UpdateOauthProvider(tx *gorm.DB, oldOauth model.Oauth, form dto.UpdateOauth
 		Provider:         form.Provider,
 		Uri:              form.Uri,
 		Scopes:           form.Scopes,
+		IDClaim:          form.IDClaim,
+		NameClaim:        form.NameClaim,
+		EmailClaim:       form.EmailClaim,
+		PictureClaim:     form.PictureClaim,
+		DescriptionClaim: form.DescriptionClaim,
+		GroupsClaim:      form.GroupsClaim,
+		AdminGroup:       form.AdminGroup,
+		DefaultGroup:     form.DefaultGroup,
+		On:               form.On,
+		Picture:          form.Picture,
+	}); !ret.OK {
+		return model.Oauth{}, ret
+	}
+	return db.InitOauthRepo(tx).GetByID(oldOauth.ID)
+}
+
+func UpdateCASProvider(tx *gorm.DB, oldOauth model.Oauth, form dto.UpdateCASProviderForm) (model.Oauth, model.RetVal) {
+	if ret := db.InitOauthRepo(tx).Update(oldOauth.ID, db.UpdateOauthOptions{
+		AuthURL:          form.AuthURL,
+		UserInfoURL:      form.UserInfoURL,
+		CallbackURL:      form.CallbackURL,
+		Provider:         form.Provider,
+		Uri:              form.Uri,
 		IDClaim:          form.IDClaim,
 		NameClaim:        form.NameClaim,
 		EmailClaim:       form.EmailClaim,
