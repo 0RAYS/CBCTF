@@ -81,13 +81,21 @@ func GetSystemStatus(tx *gorm.DB) map[string]any {
 func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal {
 	if form.K8SFrpFrps != nil {
 		for i, server := range *form.K8SFrpFrps {
-			if server.Token == "" {
-				for _, existing := range config.Env.K8S.Frp.Frps {
-					if existing.Host == server.Host && existing.Port == server.Port {
-						(*form.K8SFrpFrps)[i].Token = existing.Token
-						break
-					}
+			if server.Token != "" {
+				continue
+			}
+			// 优先按 host:port 精确匹配, 保证删除或重排其他节点后 token 仍能归位.
+			matched := false
+			for _, existing := range config.Env.K8S.Frp.Frps {
+				if existing.Host == server.Host && existing.Port == server.Port {
+					(*form.K8SFrpFrps)[i].Token = existing.Token
+					matched = true
+					break
 				}
+			}
+			// 编辑既有节点的 host/port 而未重新填写 token 时, 回退到按位置匹配, 避免 token 丢失.
+			if !matched && i < len(config.Env.K8S.Frp.Frps) {
+				(*form.K8SFrpFrps)[i].Token = config.Env.K8S.Frp.Frps[i].Token
 			}
 		}
 	}
