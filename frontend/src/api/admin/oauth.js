@@ -11,19 +11,23 @@ export const getOAuthProviderList = (params = { limit: 20, offset: 0 }) => {
 
 // 创建OAuth Provider
 export const createOAuthProvider = (data) => {
+  const { protocol, ...body } = data;
   return request({
     url: '/admin/oauth',
     method: 'POST',
-    data,
+    params: protocol ? { protocol } : undefined,
+    data: body,
   });
 };
 
 // 更新OAuth Provider
 export const updateOAuthProvider = (providerId, data) => {
+  const { protocol, ...body } = data;
   return request({
     url: `/admin/oauth/${providerId}`,
     method: 'PUT',
-    data,
+    params: protocol ? { protocol } : undefined,
+    data: body,
   });
 };
 
