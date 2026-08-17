@@ -9,13 +9,18 @@ type OauthCallbackForm struct {
 	State string `form:"state" json:"state" binding:"required"`
 }
 
+type CASCallbackForm struct {
+	Ticket string `form:"ticket" json:"ticket" binding:"required"`
+}
+
 type CreateOauthProviderForm struct {
+	Protocol         string `form:"protocol" json:"protocol" binding:"omitempty,oneof=oauth2 cas"`
 	AuthURL          string `form:"auth_url" json:"auth_url" binding:"required,url"`
-	TokenURL         string `form:"token_url" json:"token_url" binding:"required,url"`
+	TokenURL         string `form:"token_url" json:"token_url" binding:"omitempty,url"`
 	UserInfoURL      string `form:"user_info_url" json:"user_info_url" binding:"required,url"`
 	CallbackURL      string `form:"callback_url" json:"callback_url" binding:"required,url"`
-	ClientID         string `form:"client_id" json:"client_id" binding:"required"`
-	ClientSecret     string `form:"client_secret" json:"client_secret" binding:"required"`
+	ClientID         string `form:"client_id" json:"client_id"`
+	ClientSecret     string `form:"client_secret" json:"client_secret"`
 	Provider         string `form:"provider" json:"provider" binding:"required"`
 	Uri              string `form:"uri" json:"uri" binding:"required,alphanum"`
 	Scopes           model.StringList `form:"scopes" json:"scopes"`
@@ -30,6 +35,7 @@ type CreateOauthProviderForm struct {
 }
 
 type UpdateOauthProviderForm struct {
+	Protocol         *string        `form:"protocol" json:"protocol" binding:"omitempty,oneof=oauth2 cas"`
 	AuthURL          *string        `form:"auth_url" json:"auth_url" binding:"omitempty,url"`
 	TokenURL         *string        `form:"token_url" json:"token_url" binding:"omitempty,url"`
 	UserInfoURL      *string        `form:"user_info_url" json:"user_info_url" binding:"omitempty,url"`

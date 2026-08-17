@@ -8,7 +8,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/oauth"
+	"CBCTF/internal/oa"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
@@ -94,7 +94,7 @@ func Register(ctx *gin.Context) {
 	ctx.Set("Self", user)
 	log.Logger.Infof("%s:%d register", user.Name, user.ID)
 	setAuthCookie(ctx, token)
-	prometheus.RecordUserRegister(oauth.LocalProvider)
+	prometheus.RecordUserRegister(oa.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.GetUserView(db.DB, user, false), false)))
 }
@@ -128,7 +128,7 @@ func Login(ctx *gin.Context) {
 	ctx.Set("Self", user)
 	log.Logger.Infof("%s:%d login", user.Name, user.ID)
 	setAuthCookie(ctx, token)
-	prometheus.RecordUserLogin(oauth.LocalProvider)
+	prometheus.RecordUserLogin(oa.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.GetUserView(db.DB, user, false), false)))
 }

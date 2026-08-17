@@ -138,7 +138,15 @@ func ListOauthProviders(tx *gorm.DB, form dto.ListModelsForm) ([]model.Oauth, in
 }
 
 func CreateOauthProvider(tx *gorm.DB, form dto.CreateOauthProviderForm) (model.Oauth, model.RetVal) {
+	protocol := form.Protocol
+	if protocol == "" {
+		protocol = model.OauthProtocolOAuth2
+	}
+	if protocol == model.OauthProtocolOAuth2 && (form.TokenURL == "" || form.ClientID == "" || form.ClientSecret == "") {
+		return model.Oauth{}, model.RetVal{Msg: i18n.Response.BadRequest}
+	}
 	return db.InitOauthRepo(tx).Create(model.Oauth{
+		Protocol:         protocol,
 		AuthURL:          form.AuthURL,
 		TokenURL:         form.TokenURL,
 		UserInfoURL:      form.UserInfoURL,
@@ -161,7 +169,31 @@ func CreateOauthProvider(tx *gorm.DB, form dto.CreateOauthProviderForm) (model.O
 }
 
 func UpdateOauthProvider(tx *gorm.DB, oldOauth model.Oauth, form dto.UpdateOauthProviderForm) (model.Oauth, model.RetVal) {
+	protocol := oldOauth.Protocol
+	if form.Protocol != nil {
+		protocol = *form.Protocol
+	}
+	tokenURL := oldOauth.TokenURL
+	if form.TokenURL != nil {
+		tokenURL = *form.TokenURL
+	}
+	clientID := oldOauth.ClientID
+	if form.ClientID != nil {
+		clientID = *form.ClientID
+	}
+	clientSecret := oldOauth.ClientSecret
+	if form.ClientSecret != nil {
+		clientSecret = *form.ClientSecret
+	}
+	on := oldOauth.On
+	if form.On != nil {
+		on = *form.On
+	}
+	if on && protocol == model.OauthProtocolOAuth2 && (tokenURL == "" || clientID == "" || clientSecret == "") {
+		return model.Oauth{}, model.RetVal{Msg: i18n.Response.BadRequest}
+	}
 	if ret := db.InitOauthRepo(tx).Update(oldOauth.ID, db.UpdateOauthOptions{
+		Protocol:         form.Protocol,
 		AuthURL:          form.AuthURL,
 		TokenURL:         form.TokenURL,
 		UserInfoURL:      form.UserInfoURL,

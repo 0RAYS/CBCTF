@@ -2,7 +2,7 @@ package db
 
 import (
 	"CBCTF/internal/model"
-	"CBCTF/internal/oauth"
+	"CBCTF/internal/oa"
 
 	"gorm.io/gorm"
 )
@@ -12,6 +12,7 @@ type OauthRepo struct {
 }
 
 type UpdateOauthOptions struct {
+	Protocol         *string
 	AuthURL          *string
 	TokenURL         *string
 	UserInfoURL      *string
@@ -35,6 +36,9 @@ type UpdateOauthOptions struct {
 
 func (u UpdateOauthOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
+	if u.Protocol != nil {
+		options["protocol"] = *u.Protocol
+	}
 	if u.AuthURL != nil {
 		options["auth_url"] = *u.AuthURL
 	}
@@ -104,14 +108,19 @@ func InitOauthRepo(tx *gorm.DB) *OauthRepo {
 }
 
 func (o *OauthRepo) RegisterDefault() {
-	github := oauth.GetDefaultGithubOauth()
+	github := oa.GetDefaultGithubOauth()
 	_, ret := o.GetByUniqueField("provider", github.Provider)
 	if !ret.OK {
 		o.Create(github)
 	}
-	hduhelp := oauth.GetDefaultHDUHelpOauth()
+	hduhelp := oa.GetDefaultHDUHelpOauth()
 	_, ret = o.GetByUniqueField("provider", hduhelp.Provider)
 	if !ret.OK {
 		o.Create(hduhelp)
+	}
+	hducas := oa.GetDefaultHDUCASOauth()
+	_, ret = o.GetByUniqueField("provider", hducas.Provider)
+	if !ret.OK {
+		o.Create(hducas)
 	}
 }

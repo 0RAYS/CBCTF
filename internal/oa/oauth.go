@@ -1,4 +1,4 @@
-package oauth
+package oa
 
 import (
 	"CBCTF/internal/model"
@@ -22,6 +22,9 @@ func Init() {
 		match:    IsGithubProvider,
 		callback: SetGithubEmail,
 	})
+
+	RegisterProtocol(NewOAuth2Protocol())
+	RegisterProtocol(NewCASProtocol())
 }
 
 func ApplyUserInfoCallback(provider model.Oauth, client *http.Client, response map[string]any) error {

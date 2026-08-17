@@ -1,3 +1,3 @@
-package oauth
+package oa
 
 const LocalProvider = "local"

@@ -9,6 +9,7 @@ import (
 func GetOauthResp(oauth model.Oauth) gin.H {
 	return gin.H{
 		"id":                oauth.ID,
+		"protocol":          oauth.Protocol,
 		"auth_url":          oauth.AuthURL,
 		"token_url":         oauth.TokenURL,
 		"user_info_url":     oauth.UserInfoURL,

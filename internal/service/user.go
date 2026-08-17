@@ -6,7 +6,7 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-	"CBCTF/internal/oauth"
+	"CBCTF/internal/oa"
 	"CBCTF/internal/utils"
 	"CBCTF/internal/view"
 
@@ -38,7 +38,7 @@ func CreateUser(tx *gorm.DB, form dto.RegisterForm) (model.User, model.RetVal) {
 		Name:           form.Name,
 		Password:       utils.HashPassword(form.Password),
 		Email:          form.Email,
-		Provider:       oauth.LocalProvider,
+		Provider:       oa.LocalProvider,
 		ProviderUserID: utils.UUID(),
 		OauthRaw:       "{}",
 	})
@@ -65,7 +65,7 @@ func AdminCreateUser(tx *gorm.DB, form dto.CreateUserForm) (model.User, model.Re
 		Verified:       form.Verified,
 		Banned:         form.Banned,
 		Hidden:         form.Hidden,
-		Provider:       oauth.LocalProvider,
+		Provider:       oa.LocalProvider,
 		ProviderUserID: utils.UUID(),
 		OauthRaw:       "{}",
 	})
