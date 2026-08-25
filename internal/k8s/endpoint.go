@@ -23,12 +23,12 @@ type CreateEndpointOptions struct {
 func DeleteEndpointCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector string
+		var selector strings.Builder
 		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
+			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
 		}
 		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
+			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
 	err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)

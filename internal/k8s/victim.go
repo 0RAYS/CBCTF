@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -32,9 +33,7 @@ func VictimLabels(victim model.Victim, tags ...map[string]string) map[string]str
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
 	}
 	if len(tags) > 0 {
-		for tag, values := range tags[0] {
-			labels[tag] = values
-		}
+		maps.Copy(labels, tags[0])
 	}
 	return labels
 }
@@ -76,9 +75,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 		wg.Go(func() error {
 			// VPC 模式下, 支持多 NetworkPolicy 根据 Labels 绑定到指定 Pod 上
 			podLabels := make(map[string]string, len(labels)+1)
-			for key, value := range labels {
-				podLabels[key] = value
-			}
+			maps.Copy(podLabels, labels)
 			if serviceName := podServiceName(pod.Spec); serviceName != "" {
 				podLabels[ServiceLabel] = serviceName
 			}
@@ -159,10 +156,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			volumes := []corev1.Volume{
 				{
 					Name: nfsVolumeName,
-					VolumeSource: corev1.VolumeSource{
-						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-							ClaimName: nfsVolumeName,
-						},
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: nfsVolumeName,
 					},
 				},
 			}
@@ -187,12 +182,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					})
 					volumes = append(volumes, corev1.Volume{
 						Name: volumeName,
-						VolumeSource: corev1.VolumeSource{
-							ConfigMap: &corev1.ConfigMapVolumeSource{
-								LocalObjectReference: corev1.LocalObjectReference{
-									Name: cm.Name,
-								},
-							},
+						ConfigMap: &corev1.ConfigMapVolumeSource{
+							Name: cm.Name,
 						},
 					})
 				}
@@ -329,9 +320,7 @@ func createVictimNetworkResources(
 		for _, podSpec := range victim.Spec.Pods {
 			serviceName := podServiceName(podSpec)
 			matchLabels := make(map[string]string, len(labels)+1)
-			for key, value := range labels {
-				matchLabels[key] = value
-			}
+			maps.Copy(matchLabels, labels)
 			if serviceName != "" {
 				matchLabels[ServiceLabel] = serviceName
 			}

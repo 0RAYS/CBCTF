@@ -13,5 +13,5 @@ type Pod struct {
 }
 
 func (p Pod) TrafficPcapPath() string {
-	return filepath.Join(Victim{BaseModel: BaseModel{ID: p.VictimID}}.TrafficBasePath(), "pod-"+p.Name+".pcap")
+	return filepath.Join(Victim{ID: p.VictimID}.TrafficBasePath(), "pod-"+p.Name+".pcap")
 }

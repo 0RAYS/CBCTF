@@ -29,10 +29,8 @@ func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.
 		err    error
 	)
 	subnet = &kubeovnv1.Subnet{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   options.Name,
-			Labels: options.Labels,
-		},
+		Name:   options.Name,
+		Labels: options.Labels,
 		Spec: kubeovnv1.SubnetSpec{
 			Vpc:        options.VPC,
 			Protocol:   "IPv4",
@@ -68,12 +66,12 @@ func GetSubnet(ctx context.Context, name string) (*kubeovnv1.Subnet, model.RetVa
 func DeleteSubnetCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector string
+		var selector strings.Builder
 		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
+			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
 		}
 		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
+			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
 	err := ovnClient.KubeovnV1().Subnets().DeleteCollection(ctx, metav1.DeleteOptions{}, options)

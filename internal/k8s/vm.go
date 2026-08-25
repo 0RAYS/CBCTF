@@ -82,11 +82,9 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 	}
 
 	vm = &v1.VirtualMachine{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      options.Name,
-			Namespace: globalNamespace,
-			Labels:    options.Labels,
-		},
+		Name:      options.Name,
+		Namespace: globalNamespace,
+		Labels:    options.Labels,
 		Spec: v1.VirtualMachineSpec{
 			RunStrategy: new(v1.RunStrategyAlways),
 			Template: &v1.VirtualMachineInstanceTemplateSpec{
@@ -123,19 +121,15 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 								{
 									Name:      "root",
 									BootOrder: new(uint(1)),
-									DiskDevice: v1.DiskDevice{
-										Disk: &v1.DiskTarget{
-											Bus: v1.DiskBusVirtio,
-										},
+									Disk: &v1.DiskTarget{
+										Bus: v1.DiskBusVirtio,
 									},
 								},
 								{
 									Name:      "cloud-init",
 									BootOrder: new(uint(2)),
-									DiskDevice: v1.DiskDevice{
-										Disk: &v1.DiskTarget{
-											Bus: v1.DiskBusVirtio,
-										},
+									Disk: &v1.DiskTarget{
+										Bus: v1.DiskBusVirtio,
 									},
 								},
 							},
@@ -143,10 +137,8 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 								interfaces := make([]v1.Interface, 0)
 								for _, network := range options.Networks {
 									interfaces = append(interfaces, v1.Interface{
-										Name: network.Interface,
-										InterfaceBindingMethod: v1.InterfaceBindingMethod{
-											Bridge: new(v1.InterfaceBridge),
-										},
+										Name:   network.Interface,
+										Bridge: new(v1.InterfaceBridge),
 									})
 								}
 								return interfaces
@@ -170,10 +162,8 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 						for _, network := range options.Networks {
 							networks = append(networks, v1.Network{
 								Name: network.Interface,
-								NetworkSource: v1.NetworkSource{
-									Multus: &v1.MultusNetwork{
-										NetworkName: fmt.Sprintf("%s/%s", globalNamespace, network.NetAttachDef),
-									},
+								Multus: &v1.MultusNetwork{
+									NetworkName: fmt.Sprintf("%s/%s", globalNamespace, network.NetAttachDef),
 								},
 							})
 						}
@@ -182,19 +172,15 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 					Volumes: []v1.Volume{
 						{
 							Name: "root",
-							VolumeSource: v1.VolumeSource{
-								ContainerDisk: &v1.ContainerDiskSource{
-									Image: options.Image,
-								},
+							ContainerDisk: &v1.ContainerDiskSource{
+								Image: options.Image,
 							},
 						},
 						{
 							Name: "cloud-init",
-							VolumeSource: v1.VolumeSource{
-								CloudInitNoCloud: &v1.CloudInitNoCloudSource{
-									UserData:    userData,
-									NetworkData: networkData,
-								},
+							CloudInitNoCloud: &v1.CloudInitNoCloudSource{
+								UserData:    userData,
+								NetworkData: networkData,
 							},
 						},
 					},
@@ -228,12 +214,12 @@ func GetVM(ctx context.Context, name string) (*v1.VirtualMachine, model.RetVal) 
 func DeleteVMCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector string
+		var selector strings.Builder
 		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
+			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
 		}
 		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
+			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
 	err := virtClient.KubevirtV1().VirtualMachines(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)

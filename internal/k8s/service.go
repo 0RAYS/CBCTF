@@ -28,11 +28,9 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 		err     error
 	)
 	service = &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      options.Name,
-			Namespace: globalNamespace,
-			Labels:    options.Labels,
-		},
+		Name:      options.Name,
+		Namespace: globalNamespace,
+		Labels:    options.Labels,
 		Spec: corev1.ServiceSpec{
 			Selector: options.Selector,
 			Ports: func() []corev1.ServicePort {
@@ -62,12 +60,12 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 func ListServices(ctx context.Context, labels ...map[string]string) (*corev1.ServiceList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector string
+		var selector strings.Builder
 		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
+			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
 		}
 		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
+			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
 	serviceList, err := kubeClient.CoreV1().Services(globalNamespace).List(ctx, options)

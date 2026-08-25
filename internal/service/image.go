@@ -51,10 +51,8 @@ func PullContestChallengeImage(form dto.PullImageForm) model.RetVal {
 		}
 
 		if corev1.PullPolicy(form.PullPolicy) != corev1.PullAlways && slices.ContainsFunc(node.Status.Images, func(image corev1.ContainerImage) bool {
-			for _, name := range image.Names {
-				if name == imageName {
-					return true
-				}
+			if slices.Contains(image.Names, imageName) {
+				return true
 			}
 			return false
 		}) {
@@ -74,10 +72,7 @@ func PullContestChallengeImage(form dto.PullImageForm) model.RetVal {
 	for nodeName, images := range targetImages {
 		var chunks [][]string
 		for i := 0; i < len(images); i += 5 {
-			end := i + 5
-			if end > len(images) {
-				end = len(images)
-			}
+			end := min(i+5, len(images))
 			chunks = append(chunks, images[i:end])
 		}
 		for _, chunk := range chunks {

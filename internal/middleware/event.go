@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
 	"CBCTF/internal/webhook"
+	"maps"
 
 	"github.com/gin-gonic/gin"
 )
@@ -41,9 +42,7 @@ func Events(ctx *gin.Context) {
 	}
 	if value, ok := ctx.Get(CTXEventModelsKey); ok {
 		if eventModels, ok := value.(model.UintMap); ok {
-			for k, v := range eventModels {
-				options.Models[k] = v
-			}
+			maps.Copy(options.Models, eventModels)
 		}
 	}
 	options.Models["Self"] = GetSelf(ctx).ID

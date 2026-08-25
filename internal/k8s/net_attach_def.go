@@ -31,11 +31,9 @@ func CreateNetAttachDef(ctx context.Context, options CreateNetAttachDefOptions) 
 		err          error
 	)
 	netAttachDef = &netattv1.NetworkAttachmentDefinition{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      options.Name,
-			Namespace: globalNamespace,
-			Labels:    options.Labels,
-		},
+		Name:      options.Name,
+		Namespace: globalNamespace,
+		Labels:    options.Labels,
 		Spec: netattv1.NetworkAttachmentDefinitionSpec{
 			Config: fmt.Sprintf(OVNNetworkConfigTmpl, options.Name, globalNamespace),
 		},
@@ -69,12 +67,12 @@ func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*ne
 func DeleteNetAttachDefCollection(ctx context.Context, namespace string, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector string
+		var selector strings.Builder
 		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
+			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
 		}
 		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
+			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
 	if err := netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options); err != nil && !apierror.IsNotFound(err) {

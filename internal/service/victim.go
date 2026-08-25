@@ -13,6 +13,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"fmt"
+	"maps"
 	"math/big"
 	"slices"
 	"strings"
@@ -103,9 +104,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			VolumeMounts: append(model.XVolumes(nil), containerTemplate.VolumeMounts...),
 			Exposes:      append(model.Exposes(nil), containerTemplate.Exposes...),
 		}
-		for key, value := range containerTemplate.Environment {
-			containerSpec.Environment[key] = value
-		}
+		maps.Copy(containerSpec.Environment, containerTemplate.Environment)
 		for _, flag := range containerFlags[bindingKey(podTemplate.Key, containerTemplate.Key)] {
 			value := flag.Value
 			if injected, ok := flagValues[flag.ID]; ok {

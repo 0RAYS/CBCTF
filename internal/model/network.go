@@ -69,7 +69,7 @@ func (e Exposes) Value() (driver.Value, error) {
 	}))
 }
 
-func (e *Exposes) Scan(value interface{}) error {
+func (e *Exposes) Scan(value any) error {
 	if err := scanJSON(value, e); err != nil {
 		return fmt.Errorf("failed to scan Exposes value")
 	}

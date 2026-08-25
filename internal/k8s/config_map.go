@@ -25,12 +25,10 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 		err       error
 	)
 	configMap = &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      options.Name,
-			Namespace: globalNamespace,
-			Labels:    options.Labels,
-		},
-		Data: options.Data,
+		Name:      options.Name,
+		Namespace: globalNamespace,
+		Labels:    options.Labels,
+		Data:      options.Data,
 	}
 	configMap, err = kubeClient.CoreV1().ConfigMaps(globalNamespace).Create(ctx, configMap, metav1.CreateOptions{})
 	if err != nil {
@@ -43,12 +41,12 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 func DeleteConfigMapCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector string
+		var selector strings.Builder
 		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
+			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
 		}
 		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
+			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
 	err := kubeClient.CoreV1().ConfigMaps(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)

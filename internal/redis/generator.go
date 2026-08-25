@@ -103,7 +103,7 @@ func LockAvailableGenerator(ctx context.Context, contestID, challengeID uint) (m
 		return model.Generator{}, "", err
 	}
 
-	resultSlice, ok := result.([]interface{})
+	resultSlice, ok := result.([]any)
 	if !ok || len(resultSlice) != 2 {
 		return model.Generator{}, "", fmt.Errorf("invalid lock generator script result")
 	}

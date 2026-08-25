@@ -12,6 +12,7 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/sys"
+	"maps"
 	"os"
 	"path/filepath"
 
@@ -42,9 +43,7 @@ func SystemStatus(ctx *gin.Context) {
 		ret["recv"] = ioStats[0].BytesRecv
 	}
 
-	for key, value := range service.GetSystemStatus(db.DB) {
-		ret[key] = value
-	}
+	maps.Copy(ret, service.GetSystemStatus(db.DB))
 	if middleware.TotalRequests.Load() == 0 {
 		ret["duration"] = 0
 	} else {
