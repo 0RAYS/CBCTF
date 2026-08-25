@@ -24,12 +24,10 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, m
 		err error
 	)
 	vpc = &kubeovnv1.Vpc{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      options.Name,
-			Namespace: globalNamespace,
-			Labels:    options.Labels,
-		},
-		Spec: kubeovnv1.VpcSpec{},
+		Name:      options.Name,
+		Namespace: globalNamespace,
+		Labels:    options.Labels,
+		Spec:      kubeovnv1.VpcSpec{},
 	}
 	vpc, err = ovnClient.KubeovnV1().Vpcs().Create(ctx, vpc, metav1.CreateOptions{})
 	if err != nil {
@@ -42,12 +40,12 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, m
 func DeleteVPCCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector string
+		var selector strings.Builder
 		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
+			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
 		}
 		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
+			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
 	err := ovnClient.KubeovnV1().Vpcs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)

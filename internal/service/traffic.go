@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/utils"
 	"fmt"
 	"net/netip"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -290,7 +291,7 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 	for timestampMs := range timelineBuckets {
 		timestamps = append(timestamps, timestampMs)
 	}
-	sort.Slice(timestamps, func(i, j int) bool { return timestamps[i] < timestamps[j] })
+	slices.Sort(timestamps)
 	for _, timestampMs := range timestamps {
 		bucket := timelineBuckets[timestampMs]
 		timeline = append(timeline, resp.TrafficTimelineBucketResp{

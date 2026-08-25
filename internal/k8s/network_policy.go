@@ -50,11 +50,9 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 		return ingress, egress
 	}(options.Policies)
 	networkPolicy = &netv1.NetworkPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      options.Name,
-			Namespace: globalNamespace,
-			Labels:    options.Labels,
-		},
+		Name:      options.Name,
+		Namespace: globalNamespace,
+		Labels:    options.Labels,
 		Spec: netv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
 				MatchLabels: options.Labels,
@@ -81,12 +79,12 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 func DeleteNetworkPolicyCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector string
+		var selector strings.Builder
 		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
+			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
 		}
 		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
+			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
 	err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)

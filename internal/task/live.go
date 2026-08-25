@@ -74,9 +74,7 @@ func ListLiveTasks(status, queue, taskID string, limit, offset int) ([]*asynq.Ta
 		allTasks = []*asynq.TaskInfo{}
 	} else {
 		end := offset + limit
-		if end > len(allTasks) {
-			end = len(allTasks)
-		}
+		end = min(end, len(allTasks))
 		allTasks = allTasks[offset:end]
 	}
 

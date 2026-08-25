@@ -151,10 +151,10 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 	if team.CaptainID == userID {
 		return model.RetVal{Msg: i18n.Model.Team.CaptainCannotLeave}
 	}
-	if ret := db.DeleteUserFromTeam(tx, model.User{BaseModel: model.BaseModel{ID: userID}}, team); !ret.OK {
+	if ret := db.DeleteUserFromTeam(tx, model.User{ID: userID}, team); !ret.OK {
 		return ret
 	}
-	if ret := db.DeleteUserFromContest(tx, model.User{BaseModel: model.BaseModel{ID: userID}}, contest); !ret.OK {
+	if ret := db.DeleteUserFromContest(tx, model.User{ID: userID}, contest); !ret.OK {
 		return ret
 	}
 	return model.SuccessRetVal()

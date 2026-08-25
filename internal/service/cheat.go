@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"fmt"
+	"maps"
 	"net/netip"
 	"slices"
 	"strconv"
@@ -32,9 +33,7 @@ func ListCheats(tx *gorm.DB, contest model.Contest, form dto.GetCheatsForm) ([]m
 		return nil, 0, 0, ret
 	}
 	countOptions := db.CountOptions{Conditions: map[string]any{}}
-	for key, value := range options.Conditions {
-		countOptions.Conditions[key] = value
-	}
+	maps.Copy(countOptions.Conditions, options.Conditions)
 	countOptions.Conditions["checked"] = true
 	checked, ret := db.InitCheatRepo(tx).Count(countOptions)
 	if !ret.OK {

@@ -201,30 +201,20 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			}
 			fcmVolume := corev1.Volume{
 				Name: "frpc-volume",
-				VolumeSource: corev1.VolumeSource{
-					ConfigMap: &corev1.ConfigMapVolumeSource{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: fcm.Name,
-						},
-					},
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					Name: fcm.Name,
 				},
 			}
 			ncmVolume := corev1.Volume{
 				Name: "nginx-volume",
-				VolumeSource: corev1.VolumeSource{
-					ConfigMap: &corev1.ConfigMapVolumeSource{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: ncm.Name,
-						},
-					},
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					Name: ncm.Name,
 				},
 			}
 			nfsVolume := corev1.Volume{
 				Name: nfsVolumeName,
-				VolumeSource: corev1.VolumeSource{
-					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: nfsVolumeName,
-					},
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: nfsVolumeName,
 				},
 			}
 			containers := []corev1.Container{

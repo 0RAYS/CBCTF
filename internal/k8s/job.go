@@ -27,11 +27,9 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 		err error
 	)
 	job = &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      options.Name,
-			Namespace: globalNamespace,
-			Labels:    options.Labels,
-		},
+		Name:      options.Name,
+		Namespace: globalNamespace,
+		Labels:    options.Labels,
 		Spec: batchv1.JobSpec{
 			BackoffLimit:            new(int32(0)),
 			TTLSecondsAfterFinished: new(int32),

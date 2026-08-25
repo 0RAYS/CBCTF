@@ -15,6 +15,7 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -29,11 +30,8 @@ func setAuthCookie(ctx *gin.Context, token string) {
 	sameSite := http.SameSiteLaxMode
 	origin := ctx.GetHeader("Origin")
 	if origin != "" {
-		for _, allowed := range config.Env.Gin.Origins {
-			if allowed == origin {
-				sameSite = http.SameSiteNoneMode
-				break
-			}
+		if slices.Contains(config.Env.Gin.Origins, origin) {
+			sameSite = http.SameSiteNoneMode
 		}
 	}
 	http.SetCookie(ctx.Writer, &http.Cookie{
@@ -139,11 +137,8 @@ func Logout(ctx *gin.Context) {
 	sameSite := http.SameSiteLaxMode
 	origin := ctx.GetHeader("Origin")
 	if origin != "" {
-		for _, allowed := range config.Env.Gin.Origins {
-			if allowed == origin {
-				sameSite = http.SameSiteNoneMode
-				break
-			}
+		if slices.Contains(config.Env.Gin.Origins, origin) {
+			sameSite = http.SameSiteNoneMode
 		}
 	}
 	http.SetCookie(ctx.Writer, &http.Cookie{

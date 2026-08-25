@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"maps"
 	"os"
 	"path"
 	"strconv"
@@ -22,9 +23,7 @@ func GeneratorLabels(generator model.Generator, tags ...map[string]string) map[s
 		"challenge_id": strconv.Itoa(int(generator.ChallengeID)),
 	}
 	if len(tags) > 0 {
-		for tag, value := range tags[0] {
-			labels[tag] = value
-		}
+		maps.Copy(labels, tags[0])
 	}
 	return labels
 }
@@ -64,10 +63,8 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 		Volumes: []corev1.Volume{
 			{
 				Name: nfsVolumeName,
-				VolumeSource: corev1.VolumeSource{
-					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: nfsVolumeName,
-					},
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: nfsVolumeName,
 				},
 			},
 		},

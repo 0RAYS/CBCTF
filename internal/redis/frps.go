@@ -77,7 +77,7 @@ func LockFrpsPort(host string, portRange []int32, protocol string) (int32, model
 		log.Logger.Warningf("Failed to eval lua script: %s", err)
 		return 0, model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
 	}
-	resultSlice, ok := result.([]interface{})
+	resultSlice, ok := result.([]any)
 	if !ok || len(resultSlice) != 2 {
 		return 0, model.RetVal{Msg: i18n.Redis.InvalidScriptResult}
 	}

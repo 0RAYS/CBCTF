@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"maps"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -44,30 +45,26 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		DeletePod(ctx, options.Name)
 	}
 	pod = &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      options.Name,
-			Namespace: globalNamespace,
-			Labels:    options.Labels,
-			Annotations: func() map[string]string {
-				annotations := make(map[string]string)
-				for key, value := range options.Annotations {
-					annotations[key] = value
+		Name:      options.Name,
+		Namespace: globalNamespace,
+		Labels:    options.Labels,
+		Annotations: func() map[string]string {
+			annotations := make(map[string]string)
+			maps.Copy(annotations, options.Annotations)
+			for _, network := range options.Networks {
+				annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
+				annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
+				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", network.NetAttachDef, globalNamespace)] = network.Subnet
+				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", network.NetAttachDef, globalNamespace)] = network.IPv4
+				if network.MAC != "" {
+					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/mac_address", network.NetAttachDef, globalNamespace)] = network.MAC
 				}
-				for _, network := range options.Networks {
-					annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
-					annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", network.NetAttachDef, globalNamespace)] = network.Subnet
-					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", network.NetAttachDef, globalNamespace)] = network.IPv4
-					if network.MAC != "" {
-						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/mac_address", network.NetAttachDef, globalNamespace)] = network.MAC
-					}
-				}
-				if len(annotations) == 0 {
-					return nil
-				}
-				return annotations
-			}(),
-		},
+			}
+			if len(annotations) == 0 {
+				return nil
+			}
+			return annotations
+		}(),
 		Spec: corev1.PodSpec{
 			EnableServiceLinks:            new(false),
 			AutomountServiceAccountToken:  new(false),
@@ -160,12 +157,12 @@ func GetPod(ctx context.Context, name string) (*corev1.Pod, model.RetVal) {
 func ListPods(ctx context.Context, labels ...map[string]string) (*corev1.PodList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector string
+		var selector strings.Builder
 		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
+			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
 		}
 		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
+			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
 	podList, err := kubeClient.CoreV1().Pods(globalNamespace).List(ctx, options)
@@ -211,12 +208,12 @@ func DeletePod(ctx context.Context, name string) model.RetVal {
 func DeletePodCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector string
+		var selector strings.Builder
 		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
+			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
 		}
 		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
+			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
 	err := kubeClient.CoreV1().Pods(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)

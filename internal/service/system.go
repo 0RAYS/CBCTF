@@ -30,11 +30,8 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 		}
 		userCountMap, _ := repo.CountUsersMap(contestIDs...)
 		teamCountMap, _ := repo.CountTeamsMap(contestIDs...)
-		limit := len(contests)
-		if limit > 3 {
-			limit = 3
-		}
-		for i := 0; i < limit; i++ {
+		limit := min(len(contests), 3)
+		for i := range limit {
 			contest := contests[i]
 			data["upcoming"] = append(data["upcoming"].([]gin.H), gin.H{
 				"name":     contest.Name,
