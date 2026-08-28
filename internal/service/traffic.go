@@ -864,18 +864,18 @@ func availableTrafficSlices(totalDuration int64) []int64 {
 	if totalDuration <= 0 {
 		return base
 	}
-	slices := make([]int64, 0, len(base)+1)
+	list := make([]int64, 0, len(base)+1)
 	for _, candidate := range base {
 		if candidate <= totalDuration {
-			slices = append(slices, candidate)
+			list = append(list, candidate)
 		}
 	}
-	if len(slices) == 0 {
-		slices = append(slices, totalDuration)
-	} else if slices[len(slices)-1] != totalDuration {
-		slices = append(slices, totalDuration)
+	if len(list) == 0 {
+		list = append(list, totalDuration)
+	} else if list[len(list)-1] != totalDuration {
+		list = append(list, totalDuration)
 	}
-	return slices
+	return list
 }
 
 func buildTrafficCenterLabel(victim model.Victim) string {
