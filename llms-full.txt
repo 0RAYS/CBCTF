@@ -2,7 +2,7 @@
 url: /guide/start/introduction.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/start/introduction.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 介绍
 
@@ -184,7 +184,7 @@ networks:
 url: /guide/start/quick-start.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/start/quick-start.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 快速上手
 
@@ -269,7 +269,7 @@ export const API_CONFIG = {
 url: /deploy/cluster.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/cluster.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # K8s 集群搭建
 
@@ -477,7 +477,7 @@ helm install nfs-provisioner \
 url: /deploy/helm.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/helm.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # Helm 部署
 
@@ -708,7 +708,7 @@ PVC 缺失会导致动态附件不可用。KubeVirt 资源不会在启动时创�
 url: /deploy/settings.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/settings.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 配置说明
 
@@ -829,7 +829,7 @@ GeoLite2-City 数据库可通过管理后台上传，保存到 `{path}/GeoLite2-
 url: /deploy/separation.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/separation.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 前后端分离
 
@@ -910,7 +910,7 @@ cbctf:
 url: /deploy/troubleshooting.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /deploy/troubleshooting.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 常见问题
 
@@ -1070,7 +1070,7 @@ Redis 用于缓存和 Asynq 任务队列。连接失败会影响登录状态、�
 url: /guide/features/challenge.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/challenge.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 题目类型
 
@@ -1133,7 +1133,7 @@ CBCTF 支持三种题目类型，覆盖从传统静态题到复杂网络靶机�
 url: /guide/features/flag.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/flag.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 ***
 
@@ -1267,7 +1267,7 @@ Flag 前缀由所在比赛的 `prefix` 字段配置，不同比赛可以使用�
 url: /guide/features/scoring.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/scoring.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 ***
 
@@ -1374,7 +1374,7 @@ score = (Score - MinScore) × exp(-5/Decay × solvers) + MinScore
 url: /guide/features/attachment.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/attachment.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 动态附件生成
 
@@ -1479,7 +1479,7 @@ zip -j /root/mnt/attachments/${TEAM_ID}.zip /tmp/challenge/*
 url: /guide/features/container.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/container.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 动态靶机
 
@@ -1629,7 +1629,7 @@ VM 必须接入至少一个 VPC 网络
 url: /guide/features/contest.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/contest.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 比赛配置
 
@@ -1743,7 +1743,7 @@ uuid{}           →  {prefix}{uuid}
 url: /guide/features/auth.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/auth.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 认证与 OAuth
 
@@ -1835,7 +1835,7 @@ GitHub OAuth App 回调地址示例：`https://your.domain.com/oauth/github/call
 url: /guide/features/webhook.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /guide/features/webhook.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # Webhook
 
@@ -1947,7 +1947,7 @@ Webhook 投递通过 Asynq 异步队列处理。若请求失败（超时、非 2
 url: /admin/overview.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/overview.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 管理后台概览
 
@@ -2043,7 +2043,7 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 url: /admin/rbac.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/rbac.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 权限与角色
 
@@ -2267,7 +2267,7 @@ admin:contest_traffic:read
 url: /admin/users.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/users.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 用户与分组
 
@@ -2332,7 +2332,7 @@ OAuth 登录用户单独设置默认分组。
 url: /admin/challenges.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/challenges.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 题目管理
 
@@ -2446,7 +2446,7 @@ flag 独立配置计分：
 url: /admin/contests.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/contests.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 比赛管理
 
@@ -2538,7 +2538,7 @@ GET /admin/contests/:contestID/teams/:teamID/writeups/:fileID  # 下载（admin:
 url: /admin/cheat.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/cheat.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 作弊检测
 
@@ -2639,7 +2639,7 @@ cheat:
 url: /admin/smtp.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/smtp.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 邮件配置
 
@@ -2694,7 +2694,7 @@ CBCTF 通过 SMTP 发送邮件（目前用于邮箱验证功能）。
 url: /admin/monitoring.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /admin/monitoring.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # 监控与日志
 
@@ -2816,7 +2816,7 @@ PostgreSQL/GORM、Redis、数据目录、Gin 监听地址和监听端口在页�
 url: /index.md
 ---
 
-> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt, and this page is available as Markdown at /index.md.
+> For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
 # CBCTF
 
