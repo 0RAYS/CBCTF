@@ -4,7 +4,7 @@ go 1.27.0
 
 replace (
 	github.com/openshift/api => github.com/openshift/api v0.0.1
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260904170622-9ab3195f2a72
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098
 )
 
 require (
@@ -133,19 +133,15 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/arch v0.30.0 // indirect
-	golang.org/x/mod v0.40.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.49.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/apiextensions-apiserver v0.36.3 // indirect
-	k8s.io/code-generator v0.37.0 // indirect
-	k8s.io/gengo/v2 v2.0.0-20260408192533-25e2208e0dc3 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.35.0 // indirect
 	k8s.io/streaming v0.37.0 // indirect
@@ -155,6 +151,5 @@ require (
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.2 // indirect
-	sigs.k8s.io/structured-merge-diff/v7 v7.0.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
