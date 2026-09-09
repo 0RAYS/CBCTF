@@ -106,6 +106,9 @@ func InitOauthRepo(tx *gorm.DB) *OauthRepo {
 }
 
 func (o *OauthRepo) RegisterDefault() {
+	if count, _ := o.Count(); count > 0 {
+		return
+	}
 	github := oa.GetDefaultGithubOauth()
 	_, ret := o.GetByUniqueField("provider", github.Provider)
 	if !ret.OK {
