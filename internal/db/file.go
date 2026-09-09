@@ -14,9 +14,7 @@ type FileRepo struct {
 
 func InitFileRepo(tx *gorm.DB) *FileRepo {
 	return &FileRepo{
-		BaseRepo: BaseRepo[model.File]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

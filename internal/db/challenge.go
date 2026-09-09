@@ -46,9 +46,7 @@ func (u UpdateChallengeOptions) Convert2Map() map[string]any {
 
 func InitChallengeRepo(tx *gorm.DB) *ChallengeRepo {
 	return &ChallengeRepo{
-		BaseRepo: BaseRepo[model.Challenge]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

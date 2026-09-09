@@ -63,9 +63,7 @@ func (u UpdateTeamOptions) Convert2Map() map[string]any {
 
 func InitTeamRepo(tx *gorm.DB) *TeamRepo {
 	return &TeamRepo{
-		BaseRepo: BaseRepo[model.Team]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

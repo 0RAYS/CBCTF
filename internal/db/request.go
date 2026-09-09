@@ -15,9 +15,7 @@ type RequestRepo struct {
 
 func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 	return &RequestRepo{
-		BaseRepo: BaseRepo[model.Request]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

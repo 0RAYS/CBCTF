@@ -7,6 +7,7 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -45,9 +46,7 @@ func (u UpdateCheatRepo) Convert2Map() map[string]any {
 
 func InitCheatRepo(tx *gorm.DB) *CheatRepo {
 	return &CheatRepo{
-		BaseRepo: BaseRepo[model.Cheat]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 
@@ -63,7 +62,7 @@ func (c *CheatRepo) Create(cheat model.Cheat) (model.Cheat, model.RetVal) {
 	for _, k := range keys {
 		ids := make([]uint, len(cheat.Model[k]))
 		copy(ids, cheat.Model[k])
-		sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+		slices.Sort(ids)
 		hash += fmt.Sprintf("%s-", k)
 		for _, id := range ids {
 			hash += strconv.FormatUint(uint64(id), 10) + "-,"

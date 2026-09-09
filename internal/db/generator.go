@@ -63,9 +63,7 @@ func (d DiffUpdateGeneratorOptions) Convert2Expr() map[string]any {
 
 func InitGeneratorRepo(tx *gorm.DB) *GeneratorRepo {
 	return &GeneratorRepo{
-		BaseRepo: BaseRepo[model.Generator]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

@@ -15,9 +15,7 @@ type TaskRepo struct {
 
 func InitTaskRepo(tx *gorm.DB) *TaskRepo {
 	return &TaskRepo{
-		BaseRepo: BaseRepo[model.Task]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

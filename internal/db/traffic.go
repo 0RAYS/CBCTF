@@ -16,9 +16,7 @@ type TrafficRepo struct {
 
 func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 	return &TrafficRepo{
-		BaseRepo: BaseRepo[model.Traffic]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

@@ -25,9 +25,7 @@ func (u UpdatePermissionOptions) Convert2Map() map[string]any {
 
 func InitPermissionRepo(tx *gorm.DB) *PermissionRepo {
 	return &PermissionRepo{
-		BaseRepo: BaseRepo[model.Permission]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

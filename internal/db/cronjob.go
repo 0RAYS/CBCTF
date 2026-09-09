@@ -59,9 +59,7 @@ func (d DiffUpdateCronJobOptions) Convert2Expr() map[string]any {
 
 func InitCronJobRepo(tx *gorm.DB) *CronJobRepo {
 	return &CronJobRepo{
-		BaseRepo: BaseRepo[model.CronJob]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

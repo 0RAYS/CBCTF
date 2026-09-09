@@ -73,9 +73,7 @@ func (d DiffUpdateSmtpOptions) Convert2Expr() map[string]any {
 
 func InitSmtpRepo(tx *gorm.DB) *SmtpRepo {
 	return &SmtpRepo{
-		BaseRepo: BaseRepo[model.Smtp]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 
