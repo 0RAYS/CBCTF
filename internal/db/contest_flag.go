@@ -55,9 +55,7 @@ func (c UpdateContestFlagOptions) Convert2Map() map[string]any {
 
 func InitContestFlagRepo(tx *gorm.DB) *ContestFlagRepo {
 	return &ContestFlagRepo{
-		BaseRepo: BaseRepo[model.ContestFlag]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

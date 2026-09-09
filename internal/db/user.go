@@ -72,9 +72,7 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 
 func InitUserRepo(tx *gorm.DB) *UserRepo {
 	return &UserRepo{
-		BaseRepo: BaseRepo[model.User]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

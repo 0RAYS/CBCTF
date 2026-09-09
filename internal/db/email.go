@@ -14,9 +14,7 @@ type EmailRepo struct {
 
 func InitEmailRepo(tx *gorm.DB) *EmailRepo {
 	return &EmailRepo{
-		BaseRepo: BaseRepo[model.Email]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

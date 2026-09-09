@@ -14,9 +14,7 @@ type WebhookHistoryRepo struct {
 
 func InitWebhookHistoryRepo(tx *gorm.DB) *WebhookHistoryRepo {
 	return &WebhookHistoryRepo{
-		BaseRepo: BaseRepo[model.WebhookHistory]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

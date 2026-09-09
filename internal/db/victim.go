@@ -51,9 +51,7 @@ func (u UpdateVictimOptions) Convert2Map() map[string]any {
 
 func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 	return &VictimRepo{
-		BaseRepo: BaseRepo[model.Victim]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

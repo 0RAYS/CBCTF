@@ -12,8 +12,6 @@ type EventRepo struct {
 
 func InitEventRepo(tx *gorm.DB) *EventRepo {
 	return &EventRepo{
-		BaseRepo: BaseRepo[model.Event]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }

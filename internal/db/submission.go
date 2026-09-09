@@ -38,9 +38,7 @@ func (u UpdateSubmissionOptions) Convert2Map() map[string]any {
 
 func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 	return &SubmissionRepo{
-		BaseRepo: BaseRepo[model.Submission]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

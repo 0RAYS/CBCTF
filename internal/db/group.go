@@ -34,9 +34,7 @@ func (u UpdateGroupOptions) Convert2Map() map[string]any {
 
 func InitGroupRepo(tx *gorm.DB) *GroupRepo {
 	return &GroupRepo{
-		BaseRepo: BaseRepo[model.Group]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 func (g *GroupRepo) InitDefaultGroups() model.RetVal {

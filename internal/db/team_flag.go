@@ -31,9 +31,7 @@ func (u UpdateTeamFlagRepo) Convert2Map() map[string]any {
 
 func InitTeamFlagRepo(tx *gorm.DB) *TeamFlagRepo {
 	return &TeamFlagRepo{
-		BaseRepo: BaseRepo[model.TeamFlag]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

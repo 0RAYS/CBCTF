@@ -79,9 +79,7 @@ func (u UpdateContestOptions) Convert2Map() map[string]any {
 
 func InitContestRepo(tx *gorm.DB) *ContestRepo {
 	return &ContestRepo{
-		BaseRepo: BaseRepo[model.Contest]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

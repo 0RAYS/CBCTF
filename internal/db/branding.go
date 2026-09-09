@@ -69,9 +69,7 @@ func (u UpdateBrandingOptions) Convert2Map() map[string]any {
 
 func InitBrandingRepo(tx *gorm.DB) *BrandingRepo {
 	return &BrandingRepo{
-		BaseRepo: BaseRepo[model.Branding]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

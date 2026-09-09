@@ -29,9 +29,7 @@ func (u UpdateSettingOptions) Convert2Map() map[string]any {
 
 func InitSettingRepo(tx *gorm.DB) *SettingRepo {
 	return &SettingRepo{
-		BaseRepo: BaseRepo[model.Setting]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

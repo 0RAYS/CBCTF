@@ -32,9 +32,7 @@ func (u UpdateRoleOptions) Convert2Map() map[string]any {
 
 func InitRoleRepo(tx *gorm.DB) *RoleRepo {
 	return &RoleRepo{
-		BaseRepo: BaseRepo[model.Role]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

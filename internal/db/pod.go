@@ -14,9 +14,7 @@ type PodRepo struct {
 
 func InitPodRepo(tx *gorm.DB) *PodRepo {
 	return &PodRepo{
-		BaseRepo: BaseRepo[model.Pod]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

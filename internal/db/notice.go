@@ -32,9 +32,7 @@ func (u UpdateNoticeOptions) Convert2Map() map[string]any {
 
 func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {
 	return &NoticeRepo{
-		BaseRepo: BaseRepo[model.Notice]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

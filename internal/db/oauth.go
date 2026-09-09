@@ -101,9 +101,7 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 
 func InitOauthRepo(tx *gorm.DB) *OauthRepo {
 	return &OauthRepo{
-		BaseRepo: BaseRepo[model.Oauth]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

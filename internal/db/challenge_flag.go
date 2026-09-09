@@ -30,9 +30,7 @@ func (u UpdateChallengeFlagOptions) Convert2Map() map[string]any {
 
 func InitChallengeFlagRepo(tx *gorm.DB) *ChallengeFlagRepo {
 	return &ChallengeFlagRepo{
-		BaseRepo: BaseRepo[model.ChallengeFlag]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 

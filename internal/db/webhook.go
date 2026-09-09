@@ -85,9 +85,7 @@ func (d DiffUpdateWebhookOptions) Convert2Expr() map[string]any {
 
 func InitWebhookRepo(tx *gorm.DB) *WebhookRepo {
 	return &WebhookRepo{
-		BaseRepo: BaseRepo[model.Webhook]{
-			DB: tx,
-		},
+		DB: tx,
 	}
 }
 
