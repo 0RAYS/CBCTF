@@ -39,8 +39,8 @@ const cidrContainsIp = (cidr, ip) => {
   return (base & mask) === (target & mask);
 };
 
-const getPolicyBlocks = (blocks = []) =>
-  blocks
+const getPolicyBlocks = (blocks) =>
+  (blocks ?? [])
     .map((block) => ({
       cidr: String(block?.cidr || block?.CIDR || '').trim(),
       except: block?.except || block?.Except || [],
@@ -71,7 +71,7 @@ export const buildNetworkTopology = (config, policies = []) => {
     const angle = (Math.PI * 2 * index) / nodes.length - Math.PI / 2;
     return { ...node, x: 50 + Math.cos(angle) * 34, y: 50 + Math.sin(angle) * 34 };
   });
-  const policyByService = new Map(policies.map((policy) => [policy.service, policy]));
+  const policyByService = new Map((policies ?? []).map((policy) => [policy.service, policy]));
   const getNodeIps = (node) => node.networks.map((network) => network.ip).filter((ip) => ipToNumber(ip) !== null);
   const connections = [];
   positionedNodes.forEach((source) => {

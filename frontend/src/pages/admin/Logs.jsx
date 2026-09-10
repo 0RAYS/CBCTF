@@ -15,6 +15,7 @@ const IP_ALLOWED_ATTR = ['data-ip', 'role', 'tabindex'];
 function AdminLogs() {
   const [logs, setLogs] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+  const [failed, setFailed] = useState(false);
   const [level, setLevel] = useState('INFO');
   const pageSize = 100;
   const containerRef = useRef(null);
@@ -28,7 +29,7 @@ function AdminLogs() {
   const fetchLogs = useCallback(
     async (nextPage) => {
       const scope = scopeRef.current;
-      if (!scope || scope.level !== level || loadingRef.current) return;
+      if (!scope || scope.level !== level || scope.failed || loadingRef.current) return;
       loadingRef.current = true;
       try {
         const res = await getSystemLogs({ limit: pageSize, offset: (nextPage - 1) * pageSize, level });
@@ -42,14 +43,14 @@ function AdminLogs() {
             setHasMore(false);
           }
         } else {
-          hasMoreRef.current = false;
-          setHasMore(false);
+          scope.failed = true;
+          setFailed(true);
         }
       } catch (error) {
         if (scopeRef.current !== scope) return;
         toast.danger({ description: error.message || t('admin.logs.toast.fetchFailed') });
-        hasMoreRef.current = false;
-        setHasMore(false);
+        scope.failed = true;
+        setFailed(true);
       } finally {
         if (scopeRef.current === scope) loadingRef.current = false;
       }
@@ -58,7 +59,9 @@ function AdminLogs() {
   );
 
   const handleRefresh = () => {
+    // Only an explicit refresh or level change resumes loading after a failed page.
     scopeRef.current = { level };
+    setFailed(false);
     closeIpLookup();
     hasMoreRef.current = true;
     setHasMore(true);
@@ -143,8 +146,12 @@ function AdminLogs() {
           onClick={handleLogActivation}
           className="max-h-[70vh]"
           sentinel={
-            <div ref={sentinelRef} className="h-8 flex items-center justify-center text-neutral-500 text-xs">
-              {hasMore ? t('admin.logs.loadMore') : t('admin.logs.noMore')}
+            <div
+              ref={sentinelRef}
+              role={failed ? 'alert' : undefined}
+              className="min-h-8 flex items-center justify-center text-neutral-500 text-xs"
+            >
+              {failed ? t('admin.logs.toast.fetchFailed') : hasMore ? t('admin.logs.loadMore') : t('admin.logs.noMore')}
             </div>
           }
         />

@@ -1,6 +1,7 @@
 package resp
 
 import (
+	"CBCTF/internal/model"
 	"CBCTF/internal/view"
 
 	"github.com/gin-gonic/gin"
@@ -8,6 +9,15 @@ import (
 
 func GetContestResp(contestView view.ContestView, admin bool) gin.H {
 	contest := contestView.Contest
+	if contest.Rules == nil {
+		contest.Rules = model.StringList{}
+	}
+	if contest.Prizes == nil {
+		contest.Prizes = model.Prizes{}
+	}
+	if contest.Timelines == nil {
+		contest.Timelines = model.Timelines{}
+	}
 	data := gin.H{
 		"id":          contest.ID,
 		"name":        contest.Name,

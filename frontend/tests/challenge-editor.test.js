@@ -328,6 +328,31 @@ test('policy normalization accepts persisted uppercase rules without mutating in
   assert.equal(defaultNetworkPolicy().to[0].except.length, 4);
 });
 
+for (const direction of ['from', 'to', 'both']) {
+  test(`topology treats JSON null ${direction} directions as empty arrays`, () => {
+    const config = vpcConfig();
+    config.services.push(service({ name: 'db', networks: [{ name: 'lan', ipv4Address: '10.1.0.3' }] }));
+    const policies = ['web', 'db'].map((name) => ({
+      service: name,
+      from: direction === 'to' ? [{ cidr: '10.1.0.0/24', except: null }] : null,
+      to: direction === 'from' ? [{ cidr: '10.1.0.0/24', except: null }] : null,
+    }));
+    const original = structuredClone(policies);
+    const normalized = policies.map(normalizeNetworkPolicy);
+    const topology = buildNetworkTopology(config, policies);
+    assert.deepEqual(topology, buildNetworkTopology(config, normalized));
+    assert.equal(topology.connections.length, 2);
+    assert.ok(topology.connections.every((connection) => connection.allowed === (direction === 'from')));
+    assert.deepEqual(policies, original);
+  });
+}
+
+test('topology accepts a nil policy collection serialized as JSON null', () => {
+  const config = vpcConfig();
+  config.services.push(service({ name: 'db', networks: [{ name: 'lan', ipv4Address: '10.1.0.3' }] }));
+  assert.deepEqual(buildNetworkTopology(config, null), buildNetworkTopology(config, []));
+});
+
 test('topology combines outbound and inbound policy, exceptions and target names', () => {
   const config = vpcConfig();
   config.services[0].containerName = 'frontend';

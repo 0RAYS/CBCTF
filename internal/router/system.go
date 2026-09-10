@@ -58,7 +58,11 @@ func GetLogs(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	data, _ := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit-1), form.Level)
+	data, ret := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit-1), form.Level)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
 	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
