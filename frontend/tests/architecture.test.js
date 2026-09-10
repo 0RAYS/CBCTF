@@ -198,6 +198,7 @@ test('extracted business models/parsers/serializers stay isolated from runtime l
     'components/features/Scoreboard/timelineOption.js',
     'components/features/CTFGame/Challenges/models/challengeViewModel.js',
     'components/features/CTFGame/Team/model.js',
+    'components/features/CTFGame/OverView/contestModel.js',
     'components/features/Admin/Contests/challenges/challengeData.js',
     'components/features/Admin/Contests/editor/contestForm.js',
     'components/features/Admin/Contests/teams/teamDetailData.js',
