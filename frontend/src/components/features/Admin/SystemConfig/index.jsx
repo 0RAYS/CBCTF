@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Modal } from '../../../common';
-import { useSystemConfig } from '../../../../hooks/useSystemConfig';
+import ConfirmModal from '../../../common/ConfirmModal';
+import { useSystemConfig } from './useSystemConfig';
 import { SystemConfigForm } from './SystemConfigForm';
 
 /**
@@ -64,38 +64,38 @@ function SystemConfig({ config, onConfigUpdated }) {
         />
       </motion.div>
 
-      <Modal
+      <ConfirmModal
         isOpen={isUpdateConfirmOpen}
         onClose={() => setIsUpdateConfirmOpen(false)}
         title={t('admin.system.update.title')}
-        variant="confirm"
         confirmText={t('admin.system.update.confirm')}
         cancelText={t('admin.system.update.cancel')}
         onConfirm={handleConfirmUpdate}
-        confirmType="danger"
+        type="danger"
+        loading={isUpdating}
       >
         <div className="space-y-2 text-sm text-neutral-300">
           <p>{t('admin.system.update.prompt')}</p>
           <p className="text-amber-300">{t('admin.system.update.warning')}</p>
         </div>
-      </Modal>
+      </ConfirmModal>
 
-      <Modal
+      <ConfirmModal
         isOpen={isRestartConfirmOpen}
         onClose={() => setIsRestartConfirmOpen(false)}
         title={t('admin.system.restart.manualTitle')}
-        variant="confirm"
         confirmText={t('admin.system.restart.confirm')}
         cancelText={t('admin.system.restart.cancel')}
         onConfirm={handleConfirmRestart}
-        confirmType="danger"
+        type="danger"
+        loading={isRestarting}
       >
         <div className="space-y-2 text-sm text-neutral-300">
           <p>{t('admin.system.restart.manualPrompt')}</p>
           <p className="text-amber-300">{t('admin.system.restart.warning')}</p>
           {isRestarting && <p className="text-neutral-400">{t('admin.system.restart.inProgress')}</p>}
         </div>
-      </Modal>
+      </ConfirmModal>
     </div>
   );
 }

@@ -5,25 +5,25 @@ import { toastVariants } from '../../config/motion';
 
 const TOAST_CONFIG = {
   primary: {
-    container: 'border-geek-400/70 bg-geek-900/70 text-geek-300 shadow-glow-primary',
+    container: 'border-geek-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-geek-300 font-mono',
     iconColor: 'text-geek-400',
     icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />,
   },
   secondary: {
-    container: 'border-geek-400/70 bg-geek-900/70 text-geek-300 shadow-glow-primary',
+    container: 'border-geek-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-geek-300 font-mono',
     iconColor: 'text-geek-400',
     icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />,
   },
   success: {
-    container: 'border-green-400/70 bg-green-900/70 text-green-300 shadow-glow-success',
+    container: 'border-green-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-green-300 font-mono',
     iconColor: 'text-green-400',
     icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />,
   },
   warning: {
-    container: 'border-amber-400/70 bg-amber-900/70 text-amber-300 shadow-glow-warning',
+    container: 'border-amber-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-amber-300 font-mono',
     iconColor: 'text-amber-400',
     icon: (
@@ -36,15 +36,15 @@ const TOAST_CONFIG = {
     ),
   },
   danger: {
-    container: 'border-red-400/70 bg-red-900/70 text-red-300 shadow-glow-danger',
+    container: 'border-red-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-red-300 font-mono',
     iconColor: 'text-red-400',
     icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />,
   },
   info: {
-    container: 'border-cyan-400/70 bg-cyan-900/70 text-cyan-300 shadow-glow-info',
-    title: 'text-cyan-300 font-mono',
-    iconColor: 'text-cyan-400',
+    container: 'border-geek-400/50 bg-neutral-800/95 text-neutral-200',
+    title: 'text-geek-300 font-mono',
+    iconColor: 'text-geek-400',
     icon: (
       <path
         strokeLinecap="round"
@@ -55,7 +55,7 @@ const TOAST_CONFIG = {
     ),
   },
   default: {
-    container: 'border-neutral-500/50 bg-black/70 text-neutral-300 shadow-glow-muted',
+    container: 'border-neutral-500/50 bg-neutral-800/95 text-neutral-300',
     title: 'text-neutral-200 font-mono',
     iconColor: 'text-neutral-400',
     icon: (
@@ -85,18 +85,13 @@ const Toast = forwardRef(({ id, title, description, color = 'default', onClose, 
   return (
     <motion.div
       ref={ref}
-      className={`border rounded-md ${config.container} p-3.5 shadow-lg max-w-md z-[10000] overflow-hidden`}
+      className={`border rounded-md ${config.container} p-3 shadow-lg max-w-md z-[10000] overflow-hidden`}
       variants={toastVariants}
       initial="hidden"
       animate="visible"
       exit="exit"
       layout
     >
-      {/* 添加一个微妙的动画背景 */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 opacity-20 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse"></div>
-      </div>
-
       <div className="relative z-10 flex items-start space-x-3">
         {/* 图标 */}
         <div className="flex-shrink-0 mt-0.5">
@@ -105,17 +100,16 @@ const Toast = forwardRef(({ id, title, description, color = 'default', onClose, 
 
         {/* 内容 */}
         <div className="flex-1 min-w-0">
-          {title && <h3 className={`font-medium text-base ${config.title}`}>{title}</h3>}
-          {description && (
-            <div className="mt-1 text-sm opacity-90 font-light break-words overflow-wrap-anywhere">{description}</div>
-          )}
+          {title && <h3 className={`font-medium text-sm [overflow-wrap:anywhere] ${config.title}`}>{title}</h3>}
+          {description && <div className="mt-1 text-sm leading-relaxed [overflow-wrap:anywhere]">{description}</div>}
         </div>
 
         {/* 关闭按钮 */}
         {hasCloseButton && (
           <button
+            type="button"
             onClick={() => onClose && onClose(id)}
-            className="flex-shrink-0 ml-1 text-current opacity-70 hover:opacity-100 transition-opacity focus:outline-none focus:ring-1 focus:ring-white/20 rounded-full p-1"
+            className="pointer-events-auto flex-shrink-0 ml-1 text-current opacity-70 hover:opacity-100 transition-opacity focus-visible:ring-2 focus-visible:ring-geek-400 rounded-md p-2"
             aria-label={t('common.closeNotification')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

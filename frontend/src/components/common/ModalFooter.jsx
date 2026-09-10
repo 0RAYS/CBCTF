@@ -1,4 +1,4 @@
-import ModalButton from './ModalButton';
+import Button from './Button';
 
 function ModalFooter({
   onCancel,
@@ -7,13 +7,16 @@ function ModalFooter({
   submitLabel,
   submitVariant = 'primary',
   submitDisabled = false,
+  submitLoading = false,
 }) {
   return (
     <>
-      <ModalButton onClick={onCancel}>{cancelLabel}</ModalButton>
-      <ModalButton variant={submitVariant} onClick={onSubmit} disabled={submitDisabled}>
+      <Button size="sm" variant="ghost" onClick={onCancel} disabled={submitLoading}>
+        {cancelLabel}
+      </Button>
+      <Button size="sm" variant={submitVariant} onClick={onSubmit} disabled={submitDisabled} loading={submitLoading}>
         {submitLabel}
-      </ModalButton>
+      </Button>
     </>
   );
 }

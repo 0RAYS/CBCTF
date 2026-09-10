@@ -92,7 +92,7 @@ request.interceptors.response.use(
     }
 
     // 处理业务错误
-    if (code !== 200) {
+    if (code !== 200 && !config.noToast) {
       toast.warning({
         description: msg,
       });
@@ -173,10 +173,12 @@ request.interceptors.response.use(
       errorMessage = error.message;
     }
 
-    // 显示错误信息
-    toast.warning({
-      description: errorMessage,
-    });
+    // Forms with inline errors own their feedback instead of showing a duplicate overlay.
+    if (!error.config?.noToast) {
+      toast.warning({
+        description: errorMessage,
+      });
+    }
     return Promise.reject(error);
   }
 );

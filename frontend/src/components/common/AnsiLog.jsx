@@ -1,6 +1,9 @@
 import { useMemo, forwardRef, useRef, useEffect, useImperativeHandle } from 'react';
 import DOMPurify from 'dompurify';
 import { ansiToHtml } from '../../utils/ansi';
+import Spinner from './Spinner';
+
+const EMPTY_ATTRIBUTES = [];
 
 /**
  * AnsiLog — 将含 ANSI 转义码的日志文本渲染为带颜色的 HTML。
@@ -23,7 +26,7 @@ const AnsiLog = forwardRef(function AnsiLog(
     loading = false,
     empty = '',
     postProcess,
-    allowedAttr = [],
+    allowedAttr = EMPTY_ATTRIBUTES,
     onClick,
     sentinel,
     scrollToBottom = false,
@@ -69,7 +72,7 @@ const AnsiLog = forwardRef(function AnsiLog(
     <div ref={innerRef} className={`${baseClass} ${className}`} onClick={onClick}>
       {loading ? (
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="w-3 h-3 rounded-full border border-neutral-500 border-t-transparent animate-spin" />
+          <Spinner size="xs" colorClassName="border-neutral-500" />
         </div>
       ) : isEmpty ? (
         <div className="flex items-center justify-center min-h-[400px]">

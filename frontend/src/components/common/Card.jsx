@@ -30,7 +30,7 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
   // 基础样式
   const cardClasses = `
     ${variants[variant] || variants.default}
-    ${paddings[padding] || paddings.md}
+    ${paddings[padding] ?? paddings.md}
     ${onClick ? 'cursor-pointer transition-colors hover:border-geek-400/50' : ''}
     ${className}
   `
@@ -62,20 +62,5 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
     </CardComponent>
   );
 }
-
-// 子组件: 卡片头部
-Card.Header = function CardHeader({ children, className = '' }) {
-  return <div className={`mb-4 ${className}`}>{children}</div>;
-};
-
-// 子组件: 卡片主体
-Card.Body = function CardBody({ children, className = '' }) {
-  return <div className={className}>{children}</div>;
-};
-
-// 子组件: 卡片底部
-Card.Footer = function CardFooter({ children, className = '' }) {
-  return <div className={`mt-4 ${className}`}>{children}</div>;
-};
 
 export default Card;

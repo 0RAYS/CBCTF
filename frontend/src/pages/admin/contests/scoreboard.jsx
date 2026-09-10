@@ -9,14 +9,15 @@ import {
   getContestTimeline,
 } from '../../../api/admin/contest';
 import { downloadBlobResponse } from '../../../utils/fileDownload';
-import AdminScoreboard from '../../../components/features/Admin/Contests/AdminScoreboard';
-import AdminScoreboardTable from '../../../components/features/Admin/Contests/AdminScoreboardTable';
-import ScoreboardTimeline from '../../../components/features/CTFGame/Scoreboard/ScoreboardTimeline';
+import AdminRanking from '../../../components/features/Scoreboard/AdminRanking';
+import ScoreboardTable from '../../../components/features/Scoreboard/ScoreboardTable';
+import ScoreboardTimeline from '../../../components/features/Scoreboard/ScoreboardTimeline';
+import { collectChallenges, toRankingTeam } from '../../../components/features/Scoreboard/scoreboardModel.js';
 import Button from '../../../components/common/Button';
 import { IconTable, IconList, IconChartLine } from '@tabler/icons-react';
-import ScoreboardStats from '../../../components/features/CTFGame/Scoreboard/ScoreboardStats.jsx';
+import ScoreboardStats from '../../../components/features/Scoreboard/ScoreboardStats.jsx';
 import { useTranslation } from 'react-i18next';
-import { useTeamDetailDialog } from '../../../hooks/useTeamDetailDialog.jsx';
+import { useTeamDetailDialog } from '../../../components/features/Admin/details/useTeamDetailDialog.jsx';
 
 function AdminContestScoreboard(props) {
   const { id } = useParams();
@@ -71,34 +72,8 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
   };
 
   const teamTransform = (page, teamData, index) => {
-    // 格式化日期
-    const formatDate = (dateString) => {
-      if (!dateString) return '-';
-      const date = new Date(dateString);
-
-      // 格式化为: YYYY-MM-DD HH:MM:SS
-      return date
-        .toLocaleString(i18n.language || 'en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false,
-        })
-        .replace(/\//g, '-');
-    };
-
     return {
-      id: teamData.id,
-      rank: (page - 1) * pageSize + index + 1,
-      name: teamData.name,
-      picture: teamData.picture,
-      score: teamData.score,
-      solved: teamData.solved,
-      totalSolved: teamData.solved.reduce((total, category) => total + category.solved, 0),
-      lastSubmit: formatDate(teamData.last),
+      ...toRankingTeam(teamData, index, page, pageSize, i18n.language || 'en-US'),
       captain_id: teamData.captain_id,
       captcha: teamData.captcha,
       description: teamData.description,
@@ -159,28 +134,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
         setTableTeams(response.data.teams || []);
         setTableTotalCount(response.data.count || 0);
 
-        // 提取所有题目并按分类分组
-        const allChallenges = [];
-        const challengeMap = new Map();
-
-        response.data.teams?.forEach((team) => {
-          team.challenges?.forEach((challenge) => {
-            if (!challengeMap.has(challenge.id)) {
-              challengeMap.set(challenge.id, challenge);
-              allChallenges.push(challenge);
-            }
-          });
-        });
-
-        // 按分类分组排序
-        const sortedChallenges = allChallenges.toSorted((a, b) => {
-          if (a.category !== b.category) {
-            return a.category.localeCompare(b.category);
-          }
-          return a.name.localeCompare(b.name);
-        });
-
-        setChallenges(sortedChallenges);
+        setChallenges(collectChallenges(response.data.teams || []));
       }
     } catch (error) {
       if (isCurrent())
@@ -300,19 +254,16 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
       {/* 视图内容 */}
       <ScoreboardStats {...stats} />
       {viewMode === 'ranking' ? (
-        <AdminScoreboard
+        <AdminRanking
           teams={teams}
           currentPage={currentPage}
           pageSize={pageSize}
           totalCount={totalCount}
           onPageChange={setCurrentPage}
-          onExportScoreboard={handleExportScoreboard}
-          viewMode={viewMode}
-          onViewModeChange={handleViewModeChange}
           onRowClick={handleRowClick}
         />
       ) : viewMode === 'table' ? (
-        <AdminScoreboardTable
+        <ScoreboardTable
           teams={tableTeams}
           challenges={challenges}
           totalCount={tableTotalCount}

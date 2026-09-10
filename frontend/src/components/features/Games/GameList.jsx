@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import MarkdownContent from '../../common/MarkdownContent';
 import Button from '../../common/Button';
 import Pagination from '../../common/Pagination';
 import { useTranslation } from 'react-i18next';
@@ -46,9 +45,9 @@ function GameCard({ game, onGameAction, user }) {
               {t(`game.status.${game.status}`)}
             </span>
           </div>
-          <div className="text-neutral-400 text-sm line-clamp-2 [&>p]:m-0 prose prose-invert prose-sm max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{game.description || ''}</ReactMarkdown>
-          </div>
+          <MarkdownContent className="text-neutral-400 text-sm line-clamp-2 [&>p]:m-0 prose-sm">
+            {game.description}
+          </MarkdownContent>
         </div>
 
         {/* 右侧: 时间 + 操作按钮 */}

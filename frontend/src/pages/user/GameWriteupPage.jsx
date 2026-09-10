@@ -1,77 +1,55 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from '../../utils/toast';
-import { uploadWriteup, getWriteups } from '../../api/challenge';
 import { getContestInfo } from '../../api/contest';
-import WriteupUpload from '../../components/features/CTFGame/Challenges/WriteupUpload';
+import WriteupUpload from '../../components/features/CTFGame/Writeup/WriteupUpload';
+import useContestWriteups from '../../components/features/CTFGame/Writeup/useContestWriteups';
 import Loading from '../../components/common/Loading';
 import { useTranslation } from 'react-i18next';
 import { getContestStatus } from '../../config/contest';
 
-function GameWriteupPage() {
-  const { contestId } = useParams();
+function ContestWriteups({ contestId }) {
   const navigate = useNavigate();
-  const [writeups, setWriteups] = useState([]);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
-
-  const fetchWriteups = async () => {
-    try {
-      const response = await getWriteups(contestId);
-      if (response.code === 200 && response.data.writeups) {
-        setWriteups(response.data.writeups);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('game.challenges.toast.fetchWriteupsFailed') });
-    }
-  };
-
-  const checkContestAndFetch = async () => {
-    try {
-      const contestRes = await getContestInfo(contestId);
-      if (contestRes.code === 200) {
-        const contest = contestRes.data;
-        if (getContestStatus(contest.start, contest.duration) === 'upcoming') {
-          navigate(`/contests/${contestId}/challenges`, { replace: true });
-          return;
-        }
-      }
-      await fetchWriteups();
-    } catch (error) {
-      toast.danger({ description: error.message || t('game.challenges.toast.fetchFailed') });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { writeups, refresh, upload } = useContestWriteups(contestId);
 
   useEffect(() => {
+    let active = true;
+    const checkContestAndFetch = async () => {
+      try {
+        const response = await getContestInfo(contestId);
+        if (!active) return;
+        if (response.code === 200) {
+          const contest = response.data;
+          if (getContestStatus(contest.start, contest.duration) === 'upcoming') {
+            navigate(`/contests/${contestId}/challenges`, { replace: true });
+            return;
+          }
+        }
+        await refresh();
+      } catch (error) {
+        if (active) toast.danger({ description: error.message || t('game.challenges.toast.fetchFailed') });
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
     checkContestAndFetch();
+    return () => {
+      active = false;
+    };
   }, [contestId]);
 
-  const handleUploadWriteup = async (file) => {
-    try {
-      const res = await uploadWriteup(contestId, file);
-      if (res.code === 200) {
-        toast.success({
-          title: t('game.challenges.toast.uploadSuccess'),
-          description: t('game.challenges.toast.uploadThanks'),
-        });
-        fetchWriteups();
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('game.challenges.toast.uploadFailed') });
-    }
-  };
-
-  if (loading) {
-    return <Loading />;
-  }
+  if (loading) return <Loading />;
 
   return (
     <div className="contest-container mx-auto">
-      <WriteupUpload onUploadWriteup={handleUploadWriteup} writeups={writeups} />
+      <WriteupUpload onUploadWriteup={upload} writeups={writeups} />
     </div>
   );
 }
 
-export default GameWriteupPage;
+export default function GameWriteupPage() {
+  const { contestId } = useParams();
+  return <ContestWriteups key={contestId} contestId={contestId} />;
+}

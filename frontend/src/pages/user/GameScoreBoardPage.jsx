@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Scoreboard from '../../components/features/CTFGame/Scoreboard/Scoreboard';
-import ScoreboardTimeline from '../../components/features/CTFGame/Scoreboard/ScoreboardTimeline';
+import ScoreboardRanking from '../../components/features/Scoreboard/ScoreboardRanking';
+import ScoreboardTable from '../../components/features/Scoreboard/ScoreboardTable';
+import ScoreboardTimeline from '../../components/features/Scoreboard/ScoreboardTimeline';
+import { collectChallenges, toRankingTeam } from '../../components/features/Scoreboard/scoreboardModel.js';
 import { getContestRank, getContestInfo, getContestScoreboard, getContestTimeline } from '../../api/contest';
 import { getTeamInfo } from '../../api/game/team';
 import Button from '../../components/common/Button';
+import Pagination from '../../components/common/Pagination';
 import { IconList, IconTable, IconChartLine } from '@tabler/icons-react';
-import ScoreboardStats from '../../components/features/CTFGame/Scoreboard/ScoreboardStats';
+import ScoreboardStats from '../../components/features/Scoreboard/ScoreboardStats';
 import { toast } from '../../utils/toast.js';
 import { useTranslation } from 'react-i18next';
 
@@ -36,28 +39,8 @@ function ContestScoreboard({ contestId }) {
 
   useEffect(() => {
     let ignore = false;
-    const teamTransform = (teamData, index = 0) => ({
-      id: teamData.id,
-      rank: (currentPage - 1) * pageSize + index + 1,
-      name: teamData.name,
-      picture: teamData.picture,
-      score: teamData.score,
-      solved: teamData.solved || [],
-      totalSolved: (teamData.solved || []).reduce((total, category) => total + category.solved, 0),
-      lastSubmit: teamData.last
-        ? new Date(teamData.last)
-            .toLocaleString(i18n.language || 'en-US', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-              hour12: false,
-            })
-            .replace(/\//g, '-')
-        : '-',
-    });
+    const teamTransform = (teamData, index = 0) =>
+      toRankingTeam(teamData, index, currentPage, pageSize, i18n.language || 'en-US');
 
     Promise.all([
       getContestRank(contestId, pageSize, (currentPage - 1) * pageSize),
@@ -98,19 +81,10 @@ function ContestScoreboard({ contestId }) {
     })
       .then((response) => {
         if (ignore || response.code !== 200) return;
-        const challengeMap = new Map();
-        response.data.teams?.forEach((team) => {
-          team.challenges?.forEach((challenge) => {
-            if (!challengeMap.has(challenge.id)) challengeMap.set(challenge.id, challenge);
-          });
-        });
-        const challenges = Array.from(challengeMap.values()).toSorted((a, b) =>
-          a.category !== b.category ? a.category.localeCompare(b.category) : a.name.localeCompare(b.name)
-        );
         setTableData({
           page: tableCurrentPage,
           teams: response.data.teams || [],
-          challenges,
+          challenges: collectChallenges(response.data.teams || []),
           count: response.data.count || 0,
         });
       })
@@ -172,18 +146,42 @@ function ContestScoreboard({ contestId }) {
       <ScoreboardStats {...scoreboardData.stats} />
       {viewMode === 'timeline' ? (
         <ScoreboardTimeline timelineData={timelineData || []} loading={timelineLoading} />
-      ) : (
-        <Scoreboard
-          currentPage={currentPage}
-          totalPages={Math.ceil(totalCount / pageSize)}
-          onPageChange={setCurrentPage}
-          viewMode={viewMode}
+      ) : viewMode === 'table' ? (
+        <ScoreboardTable
+          teams={tableData.teams}
           challenges={tableData.challenges}
-          totalCount={viewMode === 'table' ? tableData.count : totalCount}
-          teams={viewMode === 'table' ? tableData.teams : scoreboardData.teams}
-          tableCurrentPage={tableCurrentPage}
-          tablePageSize={tablePageSize}
-          onTablePageChange={setTableCurrentPage}
+          totalCount={tableData.count}
+          currentPage={tableCurrentPage}
+          pageSize={tablePageSize}
+          onPageChange={setTableCurrentPage}
+        />
+      ) : (
+        <ScoreboardRanking
+          teams={scoreboardData.teams}
+          locale={i18n.language || 'en-US'}
+          labels={{
+            rank: t('game.scoreboard.headers.rank'),
+            team: t('game.scoreboard.headers.team'),
+            score: t('game.scoreboard.headers.score'),
+            challenges: t('game.scoreboard.headers.challenges'),
+            lastSubmit: t('game.scoreboard.headers.lastSubmit'),
+            total: t('game.scoreboard.total'),
+          }}
+          emptyMessage={t('common.noData')}
+          footer={
+            totalCount > pageSize ? (
+              <div className="mt-6 flex justify-center">
+                <Pagination
+                  current={currentPage}
+                  total={Math.ceil(totalCount / pageSize)}
+                  onChange={setCurrentPage}
+                  showTotal={true}
+                  totalItems={totalCount}
+                  animate
+                />
+              </div>
+            ) : null
+          }
         />
       )}
     </div>

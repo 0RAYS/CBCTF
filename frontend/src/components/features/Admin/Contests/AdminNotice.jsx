@@ -14,7 +14,7 @@
 import { useState } from 'react';
 import { IconEdit, IconTrash, IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button, FormField, Input, List, Modal, ModalFooter, Pagination, Textarea } from '../../../common';
+import { Button, Input, List, Modal, ModalFooter, Pagination, Textarea } from '../../../common';
 
 function AdminNotice({
   notices = [],
@@ -150,34 +150,31 @@ function AdminNotice({
     }
 
     return (
-      <div className="space-y-4">
-        <FormField label={t('admin.contests.notices.form.title')} className="[&_label]:font-mono [&_label]:mb-2">
-          <Input
-            type="text"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder={t('admin.contests.notices.form.titlePlaceholder')}
-            required
-          />
-        </FormField>
-        <FormField label={t('admin.contests.notices.form.type')} className="[&_label]:font-mono [&_label]:mb-2">
-          <Input
-            type="text"
-            value={form.type}
-            onChange={(e) => setForm({ ...form, type: e.target.value })}
-            placeholder={t('admin.contests.notices.form.typePlaceholder')}
-            required
-          />
-        </FormField>
-        <FormField label={t('admin.contests.notices.form.content')} className="[&_label]:font-mono [&_label]:mb-2">
-          <Textarea
-            required
-            value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
-            placeholder={t('admin.contests.notices.form.contentPlaceholder')}
-            rows={5}
-          />
-        </FormField>
+      <div className="space-y-4 [&_label]:font-mono [&_label]:mb-2">
+        <Input
+          label={t('admin.contests.notices.form.title')}
+          type="text"
+          value={form.title}
+          onChange={(e) => setForm({ ...form, title: e.target.value })}
+          placeholder={t('admin.contests.notices.form.titlePlaceholder')}
+          required
+        />
+        <Input
+          label={t('admin.contests.notices.form.type')}
+          type="text"
+          value={form.type}
+          onChange={(e) => setForm({ ...form, type: e.target.value })}
+          placeholder={t('admin.contests.notices.form.typePlaceholder')}
+          required
+        />
+        <Textarea
+          label={t('admin.contests.notices.form.content')}
+          required
+          value={form.content}
+          onChange={(e) => setForm({ ...form, content: e.target.value })}
+          placeholder={t('admin.contests.notices.form.contentPlaceholder')}
+          rows={5}
+        />
       </div>
     );
   };

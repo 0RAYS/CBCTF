@@ -1,14 +1,14 @@
 import { useParams } from 'react-router-dom';
 import { getContestPullImages, pullContestImages } from '../../../api/admin/contest';
-import AdminImagesPullPage from '../../../components/features/Admin/AdminImagesPullPage.jsx';
+import ImagesPullManagement from '../../../components/features/Admin/images/ImagesPullManagement.jsx';
 
 function AdminContestImagesPull() {
   const { id } = useParams();
 
   return (
-    <AdminImagesPullPage
+    <ImagesPullManagement
+      key={id}
       scope="contest"
-      refreshKey={id}
       fetchImages={() => getContestPullImages(parseInt(id, 10))}
       pullImages={(data) => pullContestImages(parseInt(id, 10), data)}
     />

@@ -34,27 +34,36 @@ export default defineConfig({
   ],
   base: '/platform/',
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: (id) => {
-          const packageName = getPackageName(id);
+        strictExecutionOrder: true,
+        codeSplitting: {
+          // Keep shared helpers out of lazy vendors, or eager imports will load the whole vendor.
+          includeDependenciesRecursively: false,
+          groups: [
+            {
+              name: (id) => {
+                const packageName = getPackageName(id);
 
-          if (
-            packageName === 'react' ||
-            packageName === 'react-dom' ||
-            packageName === 'scheduler' ||
-            isPnpmPackage(id, 'react') ||
-            isPnpmPackage(id, 'react-dom') ||
-            isPnpmPackage(id, 'scheduler')
-          ) {
-            return 'vendor-react';
-          }
-          if (packageName === 'monaco-editor') {
-            return 'vendor-monaco';
-          }
-          if (packageName === 'echarts' || packageName === 'zrender') {
-            return 'vendor-echarts';
-          }
+                if (
+                  packageName === 'react' ||
+                  packageName === 'react-dom' ||
+                  packageName === 'scheduler' ||
+                  isPnpmPackage(id, 'react') ||
+                  isPnpmPackage(id, 'react-dom') ||
+                  isPnpmPackage(id, 'scheduler')
+                ) {
+                  return 'vendor-react';
+                }
+                if (packageName === 'monaco-editor') {
+                  return 'vendor-monaco';
+                }
+                if (packageName === 'echarts' || packageName === 'zrender') {
+                  return 'vendor-echarts';
+                }
+              },
+            },
+          ],
         },
       },
     },

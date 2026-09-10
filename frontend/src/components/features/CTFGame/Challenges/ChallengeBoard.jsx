@@ -20,7 +20,8 @@
  * @param {Array<{picture: string, name: string}>} props.teamInfo.members - 团队成员头像列表
  */
 
-import { Button, Pagination, Card, Avatar, EmptyState, ChallengeSkeleton } from '../../../../components/common';
+import { Button, Pagination, Card, Avatar, EmptyState } from '../../../../components/common';
+import ChallengeSkeleton from './display/ChallengeSkeleton';
 import { useTranslation } from 'react-i18next';
 
 function ChallengeBoard({

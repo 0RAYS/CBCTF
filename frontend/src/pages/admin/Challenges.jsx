@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../utils/toast';
 import { downloadBlobResponse } from '../../utils/fileDownload';
 import AdminChallenge from '../../components/features/Admin/AdminChallenge.jsx';
-import AdminChallengeModal from '../../components/features/Admin/AdminChallengeModal.jsx';
-import AdminChallengeTestModal from '../../components/features/Admin/AdminChallengeTestModal.jsx';
+import ChallengeEditorDialog from '../../components/features/Admin/challenges/editor/ChallengeEditorDialog.jsx';
+import { buildChallengePayload } from '../../components/features/Admin/challenges/editor/challengePayload.js';
+import AdminChallengeTestModal from '../../components/features/Admin/challenges/testing/ChallengeTestDialog.jsx';
 import {
   getChallengeCategories,
   getChallengeList,
@@ -17,8 +18,6 @@ import {
 import { useDebounce } from '../../hooks';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '../../config/challenges';
-
-const hasVpcNetworks = (dockerCompose = '') => /^networks\s*:/m.test(String(dockerCompose));
 
 function ChallengesManagement() {
   const [challenges, setChallenges] = useState([]);
@@ -341,66 +340,7 @@ function ChallengesManagement() {
         // 删除操作直接调用删除API
         response = await deleteChallenge(selectedChallenge.id);
       } else {
-        // 添加和编辑操作需要构建challenge对象
-        const apiChallenge = {
-          name: challenge.name,
-          description: challenge.description,
-          category: challenge.category,
-          type: challenge.type,
-        };
-
-        // 处理flags格式, 根据模式和类型确定正确的格式
-        let processedFlags;
-
-        if (challenge.type === 'pods') {
-          // pods类型不需要flags, 由后端自动生成
-          processedFlags = [];
-        } else if (mode === 'add') {
-          // 创建模式: flags是字符串数组
-          processedFlags = challenge.flags.map((flag) => {
-            return typeof flag === 'string' ? flag : flag.value || '';
-          });
-        } else if (mode === 'edit') {
-          // 编辑模式: flags是对象数组, 包含id和value
-          processedFlags = challenge.flags.map((flag) => {
-            if (typeof flag === 'string') {
-              return { id: 0, value: flag };
-            } else {
-              return { id: flag.id || 0, value: flag.value || '' };
-            }
-          });
-        }
-
-        if (challenge.type === 'static') {
-          apiChallenge.flags = processedFlags || [];
-        } else if (challenge.type === 'dynamic') {
-          apiChallenge.flags = processedFlags || [];
-          apiChallenge.generator_image = challenge.generator_image || '';
-        } else if (challenge.type === 'pods') {
-          // docker-compose 内容发生变化时才传递
-          if (mode === 'add') {
-            apiChallenge.docker_compose = challenge.docker_compose || '';
-          } else {
-            initDockerCompose.map((docker_compose) => {
-              if (docker_compose.id === challenge.id && docker_compose.value !== challenge.docker_compose) {
-                apiChallenge.docker_compose = challenge.docker_compose;
-              }
-            });
-          }
-          const vpcMode = hasVpcNetworks(challenge.docker_compose);
-          apiChallenge.network_policies =
-            challenge.network_policies?.map((policy) => {
-              const normalizeRule = (rule = {}) => ({
-                cidr: rule.cidr || rule.CIDR || '',
-                except: Array.isArray(rule.except) ? rule.except : Array.isArray(rule.Except) ? rule.Except : [],
-              });
-              return {
-                ...(vpcMode ? { service: policy.service || '' } : {}),
-                from: Array.isArray(policy.from) ? policy.from.map(normalizeRule) : [],
-                to: Array.isArray(policy.to) ? policy.to.map(normalizeRule) : [],
-              };
-            }) || [];
-        }
+        const apiChallenge = buildChallengePayload(challenge, mode, initDockerCompose);
 
         if (mode === 'add') {
           response = await createChallenge(apiChallenge);
@@ -456,7 +396,7 @@ function ChallengesManagement() {
         onDescChange={setDescQuery}
       />
 
-      <AdminChallengeModal
+      <ChallengeEditorDialog
         isOpen={isModalOpen}
         mode={mode}
         challenge={editChallenge}

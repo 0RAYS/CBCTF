@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --fix",
+    "lint:check": "eslint src --no-fix --max-warnings 0 --rule react-hooks/rules-of-hooks:error",
+    "test": "node --test tests/*.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
