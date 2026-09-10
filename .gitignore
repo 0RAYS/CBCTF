@@ -31,8 +31,6 @@ AGENTS.md
 *.so
 *.dylib
 
-*_test.go
-
 # Test binary, built with `go test -c`
 *.test
 
