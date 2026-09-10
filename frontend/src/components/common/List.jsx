@@ -2,7 +2,6 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import Loading from './Loading';
 import EmptyState from './EmptyState';
-import StatusTag from './StatusTag';
 
 /**
  * 通用列表/表格组件（扩展自AdminList）
@@ -14,12 +13,12 @@ import StatusTag from './StatusTag';
  * @param {boolean} props.loading - 加载状态
  * @param {boolean} props.empty - 是否为空
  * @param {ReactNode|string} props.emptyContent - 空状态内容
- * @param {string} props.emptyMessage - 空状态文案（向后兼容）
  * @param {ReactNode} props.footer - 底部内容, 通常是分页
  * @param {Function} props.rowClassName - 自定义行类名函数 (item, index) => string
  * @param {'default'|'striped'|'bordered'} props.variant - 表格变体
  * @param {boolean} props.animate - 是否启用行动画
  * @param {string} props.className - 额外的自定义类名
+ * @param {number|string} props.minWidth - Table minimum width; narrow screens scroll inside the table region
  */
 function List({
   columns = [],
@@ -27,14 +26,14 @@ function List({
   renderCell,
   onRowClick,
   loading = false,
-  empty = false,
+  empty,
   emptyContent,
-  emptyMessage,
   footer,
   rowClassName,
   variant = 'default',
   animate = true,
   className = '',
+  minWidth = 640,
 }) {
   const { t } = useTranslation();
 
@@ -67,9 +66,6 @@ function List({
     if (emptyContent) {
       return emptyContent;
     }
-    if (typeof emptyMessage === 'string' && emptyMessage.length > 0) {
-      return <EmptyState title={emptyMessage} />;
-    }
     return <EmptyState title={t('common.noData')} />;
   };
 
@@ -77,7 +73,7 @@ function List({
     <div className={className}>
       {/* 表格区域 */}
       <div className="overflow-x-auto">
-        <table className="w-full table-fixed">
+        <table className="w-full table-fixed" style={{ minWidth }}>
           {/* 表头 */}
           <thead>
             <tr className="bg-black/40">
@@ -99,10 +95,10 @@ function List({
             {loading ? (
               <tr>
                 <td colSpan={columns.length}>
-                  <Loading />
+                  <Loading compact />
                 </td>
               </tr>
-            ) : empty ? (
+            ) : (empty ?? data.length === 0) ? (
               <tr>
                 <td colSpan={columns.length} className="p-8 text-center text-neutral-400">
                   {resolveEmptyContent()}
@@ -132,7 +128,7 @@ function List({
                     {...rowMotionProps}
                   >
                     {columns.map((column, colIndex) => (
-                      <td key={colIndex} className="p-4 text-neutral-300 font-mono overflow-hidden">
+                      <td key={colIndex} className="p-4 text-neutral-300 font-mono break-words overflow-hidden">
                         {cellRenderer(item, column, rowIndex, colIndex)}
                       </td>
                     ))}
@@ -149,8 +145,5 @@ function List({
     </div>
   );
 }
-
-// 导出StatusTag作为子组件（保持向后兼容）
-List.StatusTag = StatusTag;
 
 export default List;

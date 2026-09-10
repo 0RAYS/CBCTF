@@ -1,5 +1,3 @@
-import 'react';
-
 const sizeClasses = {
   xs: 'w-3 h-3',
   sm: 'w-4 h-4',
@@ -17,12 +15,13 @@ function Spinner({ size = 'sm', border = 'sm', className = '', colorClassName = 
   const resolvedBorder = borderClasses[border] || borderClasses.sm;
 
   return (
-    <div
+    <span
+      aria-hidden="true"
       className={[
         resolvedSize,
         resolvedBorder,
         colorClassName,
-        'border-t-transparent rounded-full animate-spin',
+        'inline-block shrink-0 border-t-transparent rounded-full animate-spin',
         className,
       ].join(' ')}
     />

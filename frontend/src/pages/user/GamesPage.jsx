@@ -78,7 +78,7 @@ function GamesPage() {
     if (!game) return;
 
     try {
-      const checkResponse = await getTeamInfo(gameId);
+      const checkResponse = await getTeamInfo(gameId, { noToast: true });
       if (checkResponse.code === 200) {
         navigate(`/contests/${gameId}`);
       } else {

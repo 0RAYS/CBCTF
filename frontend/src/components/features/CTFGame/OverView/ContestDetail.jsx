@@ -1,6 +1,5 @@
 import { motion } from 'motion/react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import MarkdownContent from '../../../common/MarkdownContent';
 import { useState } from 'react';
 import { Button, Card } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
@@ -68,9 +67,9 @@ function ContestDetail({ contest, handleJoinContest }) {
                 {t(`game.status.${contest.status}`)}
               </span>
             </div>
-            <div className="min-w-0 text-neutral-300 max-w-[800px] text-base sm:text-lg prose prose-invert">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{contest.description || ''}</ReactMarkdown>
-            </div>
+            <MarkdownContent className="min-w-0 text-neutral-300 max-w-[800px] text-base sm:text-lg">
+              {contest.description}
+            </MarkdownContent>
           </div>
 
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -170,7 +169,7 @@ function ContestDetail({ contest, handleJoinContest }) {
                     transition: { duration: 0.2, delay: 0.1 },
                   }}
                 >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{prize.description || ''}</ReactMarkdown>
+                  <MarkdownContent className="prose-sm text-neutral-400">{prize.description}</MarkdownContent>
                 </motion.div>
               </motion.div>
             ))}
@@ -203,9 +202,7 @@ function ContestDetail({ contest, handleJoinContest }) {
                 >
                   <div className="text-geek-400 font-mono mb-2">{new Date(item.date).toISOString().slice(0, 10)}</div>
                   <div className="text-neutral-50 font-mono mb-1">{item.title}</div>
-                  <div className="text-neutral-400 text-sm prose prose-invert prose-sm max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.description || ''}</ReactMarkdown>
-                  </div>
+                  <MarkdownContent className="text-neutral-400 text-sm prose-sm">{item.description}</MarkdownContent>
                 </motion.div>
               </motion.div>
             ))}

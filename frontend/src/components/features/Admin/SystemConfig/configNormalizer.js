@@ -1,0 +1,99 @@
+/**
+ * Normalizes system configuration from backend to nested structure
+ * Handles both flat keys and nested objects for DB-managed runtime settings.
+ */
+
+const fallback = (value, defaultValue) => (value !== undefined && value !== null ? value : defaultValue);
+
+export function normalizeConfig(source) {
+  if (!source) {
+    return null;
+  }
+  return {
+    host: fallback(source?.host, ''),
+    path: fallback(source?.path, ''),
+    asyncq: {
+      log: {
+        level: fallback(source?.asyncq_log_level, fallback(source?.asynq?.log?.level, '')),
+      },
+      queues: {
+        victim: fallback(source?.asyncq_victim_concurrency, fallback(source?.asynq?.queues?.victim, 0)),
+        traffic: fallback(source?.asyncq_traffic_concurrency, fallback(source?.asynq?.queues?.traffic, 0)),
+        generator: fallback(source?.asyncq_generator_concurrency, fallback(source?.asynq?.queues?.generator, 0)),
+        attachment: fallback(source?.asyncq_attachment_concurrency, fallback(source?.asynq?.queues?.attachment, 0)),
+        email: fallback(source?.asyncq_email_concurrency, fallback(source?.asynq?.queues?.email, 0)),
+        webhook: fallback(source?.asyncq_webhook_concurrency, fallback(source?.asynq?.queues?.webhook, 0)),
+        image: fallback(source?.asyncq_image_concurrency, fallback(source?.asynq?.queues?.image, 0)),
+      },
+    },
+    gin: {
+      host: fallback(source?.gin_host, fallback(source?.gin?.host, '')),
+      mode: fallback(source?.gin_mode, fallback(source?.gin?.mode, '')),
+      port: fallback(source?.gin_port, fallback(source?.gin?.port, 0)),
+      upload: {
+        picture: fallback(source?.gin_upload_picture, fallback(source?.gin?.upload?.picture, 0)),
+        challenge: fallback(source?.gin_upload_challenge, fallback(source?.gin?.upload?.challenge, 0)),
+        writeup: fallback(source?.gin_upload_writeup, fallback(source?.gin?.upload?.writeup, 0)),
+      },
+      ratelimit: {
+        global: fallback(source?.gin_ratelimit_global, fallback(source?.gin?.ratelimit?.global, 0)),
+        whitelist: fallback(source?.gin_ratelimit_whitelist, fallback(source?.gin?.ratelimit?.whitelist, [])),
+      },
+      proxies: fallback(source?.gin_proxies, fallback(source?.gin?.proxies, [])),
+      log: {
+        whitelist: fallback(source?.gin_log_whitelist, fallback(source?.gin?.log?.whitelist, [])),
+      },
+      origins: fallback(source?.gin_origins, fallback(source?.gin?.origins, [])),
+      jwt: {
+        secret: fallback(source?.gin_jwt_secret, fallback(source?.gin?.jwt?.secret, '')),
+      },
+      metrics: {
+        whitelist: fallback(source?.gin_metrics_whitelist, fallback(source?.gin?.metrics?.whitelist, [])),
+      },
+      pprof: {
+        whitelist: fallback(source?.gin_pprof_whitelist, fallback(source?.gin?.pprof?.whitelist, [])),
+      },
+    },
+    gorm: {
+      log: {
+        level: fallback(source?.gorm_log_level, fallback(source?.gorm?.log?.level, '')),
+      },
+      postgres: {
+        host: fallback(source?.gorm_postgres_host, fallback(source?.gorm?.postgres?.host, '')),
+        port: fallback(source?.gorm_postgres_port, fallback(source?.gorm?.postgres?.port, 0)),
+        db: fallback(source?.gorm_postgres_db, fallback(source?.gorm?.postgres?.db, '')),
+        user: fallback(source?.gorm_postgres_user, fallback(source?.gorm?.postgres?.user, '')),
+        pwd: fallback(source?.gorm_postgres_pwd, fallback(source?.gorm?.postgres?.pwd, '')),
+        sslmode: fallback(source?.gorm_postgres_sslmode, fallback(source?.gorm?.postgres?.sslmode, false)),
+        mxopen: fallback(source?.gorm_postgres_mxopen, fallback(source?.gorm?.postgres?.mxopen, 0)),
+        mxidle: fallback(source?.gorm_postgres_mxidle, fallback(source?.gorm?.postgres?.mxidle, 0)),
+      },
+    },
+    redis: {
+      host: fallback(source?.redis_host, fallback(source?.redis?.host, '')),
+      port: fallback(source?.redis_port, fallback(source?.redis?.port, 0)),
+      pwd: fallback(source?.redis_pwd, fallback(source?.redis?.pwd, '')),
+    },
+    k8s: {
+      namespace: fallback(source?.k8s_namespace, fallback(source?.k8s?.namespace, '')),
+      capture: fallback(source?.k8s_capture, fallback(source?.k8s?.capture, '')),
+      frp: {
+        frpc: fallback(source?.k8s_frp_frpc, fallback(source?.k8s?.frp?.frpc, '')),
+        nginx: fallback(source?.k8s_frp_nginx, fallback(source?.k8s?.frp?.nginx, '')),
+        on: fallback(source?.k8s_frp_on, fallback(source?.k8s?.frp?.on, false)),
+        frps: fallback(source?.k8s_frp_frps, fallback(source?.k8s?.frp?.frps, [])),
+      },
+    },
+    cheat: {
+      ip_whitelist: fallback(source?.cheat_ip_whitelist, fallback(source?.cheat?.ip_whitelist, [])),
+    },
+    webhook: {
+      whitelist: fallback(source?.webhook_whitelist, fallback(source?.webhook?.whitelist, [])),
+    },
+    registration: {
+      enabled: fallback(source?.registration_enabled, fallback(source?.registration?.enabled, true)),
+      default_group: fallback(source?.registration_default_group, fallback(source?.registration?.default_group, 0)),
+    },
+    geocity_db: fallback(source?.geocity_db, ''),
+  };
+}

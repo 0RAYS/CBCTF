@@ -9,7 +9,7 @@ import ModalFooter from './ModalFooter';
  * @param {Function} props.onSubmit - Submit handler
  * @param {Object} [props.labels] - Override button labels { create, save, delete, cancel }
  */
-function CRUDModalFooter({ mode, onCancel, onSubmit, labels = {} }) {
+function CRUDModalFooter({ mode, onCancel, onSubmit, labels = {}, submitDisabled = false, submitLoading = false }) {
   const { t } = useTranslation();
 
   const defaultLabels = {
@@ -21,8 +21,8 @@ function CRUDModalFooter({ mode, onCancel, onSubmit, labels = {} }) {
 
   const mergedLabels = { ...defaultLabels, ...labels };
 
-  const actionLabel =
-    mode === 'create' ? mergedLabels.create : mode === 'edit' ? mergedLabels.save : mergedLabels.delete;
+  const actionLabel = { create: mergedLabels.create, edit: mergedLabels.save, delete: mergedLabels.delete }[mode];
+  if (!actionLabel) return null;
 
   return (
     <ModalFooter
@@ -31,6 +31,8 @@ function CRUDModalFooter({ mode, onCancel, onSubmit, labels = {} }) {
       cancelLabel={mergedLabels.cancel}
       submitLabel={actionLabel}
       submitVariant={mode === 'delete' ? 'danger' : 'primary'}
+      submitDisabled={submitDisabled}
+      submitLoading={submitLoading}
     />
   );
 }

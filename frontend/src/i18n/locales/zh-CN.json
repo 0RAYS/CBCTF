@@ -39,6 +39,7 @@
     "retry": "重试",
     "copy": "复制",
     "copyToClipboard": "复制到剪贴板",
+    "notifications": "通知",
     "pageError": {
       "title": "页面暂时无法显示",
       "description": "请重试；如果问题仍然存在，请刷新页面。",

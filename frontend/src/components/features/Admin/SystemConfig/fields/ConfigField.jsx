@@ -24,10 +24,10 @@ export function ConfigField({
   };
 
   return (
-    <div className="space-y-1">
-      <span className="text-xs font-mono text-neutral-400">{label}</span>
+    <div className="space-y-1 [&_label]:text-xs [&_label]:font-mono [&_label]:text-neutral-400">
       {type === 'select' || type === 'boolean' ? (
         <Select
+          label={label}
           size="sm"
           value={type === 'boolean' ? (value ? 'true' : 'false') : value}
           disabled={disabled}
@@ -39,6 +39,7 @@ export function ConfigField({
         />
       ) : (
         <Input
+          label={label}
           size="sm"
           type={type}
           value={value ?? ''}

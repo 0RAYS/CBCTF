@@ -39,6 +39,7 @@
     "retry": "Retry",
     "copy": "Copy",
     "copyToClipboard": "Copy to clipboard",
+    "notifications": "Notifications",
     "pageError": {
       "title": "This page could not be displayed",
       "description": "Try again, or refresh the page if the problem continues.",

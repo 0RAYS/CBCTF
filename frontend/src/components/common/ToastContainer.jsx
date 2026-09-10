@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import Toast from './Toast';
+import { useTranslation } from 'react-i18next';
 
 const POSITION_CLASSES = {
   'top-left': 'top-4 left-4',
@@ -11,6 +12,7 @@ const POSITION_CLASSES = {
 };
 
 const ToastContainer = ({ position = 'top-right', toasts = [], removeToast }) => {
+  const { t } = useTranslation();
   const isTop = position.includes('top');
   const animations = {
     entry: { y: isTop ? -50 : 50, opacity: 0 },
@@ -22,8 +24,8 @@ const ToastContainer = ({ position = 'top-right', toasts = [], removeToast }) =>
     <div
       aria-live="polite"
       aria-atomic="false"
-      aria-label="Notifications"
-      className={`fixed z-[9999] flex flex-col ${POSITION_CLASSES[position] || POSITION_CLASSES['top-right']} pointer-events-none`}
+      aria-label={t('common.notifications')}
+      className={`toast-region fixed z-[9999] flex flex-col ${POSITION_CLASSES[position] || POSITION_CLASSES['top-right']} pointer-events-none`}
       style={{
         gap: '0.75rem',
         maxWidth: 'calc(100vw - 2rem)',
@@ -46,7 +48,7 @@ const ToastContainer = ({ position = 'top-right', toasts = [], removeToast }) =>
               damping: 25,
               mass: 1,
             }}
-            className="pointer-events-auto"
+            className="pointer-events-none"
             style={{
               marginTop: '0.5rem',
               marginBottom: '0.5rem',

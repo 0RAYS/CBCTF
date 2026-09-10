@@ -11,23 +11,47 @@
  */
 
 import Modal from './Modal';
+import ModalFooter from './ModalFooter';
 import { useTranslation } from 'react-i18next';
 
-function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText, type = 'default' }) {
+function ConfirmModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  children,
+  confirmText,
+  cancelText,
+  type = 'default',
+  loading = false,
+  disabled = false,
+}) {
   const { t } = useTranslation();
+  const close = () => {
+    if (!loading) onClose?.();
+  };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={close}
       title={title}
-      variant="confirm"
-      confirmText={confirmText || t('common.confirm')}
-      cancelText={t('common.cancel')}
-      onConfirm={onConfirm}
-      confirmType={type === 'danger' ? 'danger' : 'primary'}
+      size="sm"
+      showCloseButton={false}
+      footer={
+        <ModalFooter
+          onCancel={close}
+          onSubmit={onConfirm}
+          cancelLabel={cancelText ?? t('common.cancel')}
+          submitLabel={confirmText ?? t('common.confirm')}
+          submitVariant={type === 'danger' ? 'danger' : 'primary'}
+          submitLoading={loading}
+          submitDisabled={disabled}
+        />
+      }
     >
-      {message}
+      {children ?? message}
     </Modal>
   );
 }

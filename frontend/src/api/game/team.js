@@ -58,10 +58,11 @@ export const kickTeamMember = (contestId, userId) => {
 //    },
 //    "trace": "ac5f9334-6303-4396-a2bb-32b763fe14ad"
 // }
-export const getTeamInfo = (contestId) => {
+export const getTeamInfo = (contestId, { noToast = false } = {}) => {
   return request({
     url: `/contests/${contestId}/teams/me`,
     method: 'GET',
+    noToast,
   });
 };
 
@@ -134,6 +135,7 @@ export const createTeam = (contestId, data) => {
   return request({
     url: `/contests/${contestId}/teams/create`,
     method: 'POST',
+    noToast: true,
     data,
   });
 };
@@ -148,6 +150,7 @@ export const joinTeam = (contestId, data) => {
   return request({
     url: `/contests/${contestId}/teams/join`,
     method: 'POST',
+    noToast: true,
     data,
   });
 };

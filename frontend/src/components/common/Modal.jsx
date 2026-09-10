@@ -31,11 +31,6 @@ const FOCUSABLE_SELECTORS = [
  * @param {React.ReactNode} props.children - 模态框内容
  * @param {React.ReactNode} props.footer - 模态框底部内容（default模式使用）
  * @param {'sm'|'md'|'lg'|'xl'|'2xl'} props.size - 模态框大小
- * @param {'default'|'confirm'} props.variant - 模态框变体
- * @param {string} props.confirmText - 确认按钮文本（confirm模式使用）
- * @param {string} props.cancelText - 取消按钮文本（confirm模式使用）
- * @param {function} props.onConfirm - 确认回调（confirm模式使用）
- * @param {'primary'|'danger'} props.confirmType - 确认按钮类型（confirm模式使用）
  * @param {string} props.className - 额外的自定义类名
  */
 function Modal({
@@ -46,11 +41,6 @@ function Modal({
   footer,
   bodyClassName = '',
   size = 'md',
-  variant = 'default',
-  confirmText,
-  cancelText,
-  onConfirm,
-  confirmType = 'primary',
   className = '',
   showHeader = true,
   showCloseButton = true,
@@ -139,52 +129,6 @@ function Modal({
 
   // Portal容器未就绪时不渲染
   if (!portalContainer) return null;
-
-  // Confirm模式: 简化的确认对话框
-  if (variant === 'confirm') {
-    return createPortal(
-      <AnimatePresence>
-        {isOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center">
-            <motion.div
-              className="fixed inset-0 bg-neutral-900/70 backdrop-blur-sm"
-              variants={backdropVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              onClick={onClose}
-            />
-            <motion.div
-              ref={dialogRef}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={titleId}
-              tabIndex={-1}
-              className={`relative w-full ${sizeClasses.sm} max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain m-4 p-6 border border-neutral-600/60 rounded-md bg-neutral-800/95 shadow-2xl ${className}`}
-              variants={panelVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <h3 id={titleId} className="text-lg font-mono text-neutral-50 mb-4">
-                {title}
-              </h3>
-              <div className="text-neutral-300 mb-6">{children}</div>
-              <div className="flex flex-wrap justify-end gap-3">
-                <Button size="sm" variant="ghost" onClick={onClose}>
-                  {cancelText ?? t('common.cancel')}
-                </Button>
-                <Button size="sm" variant={confirmType === 'danger' ? 'danger' : 'primary'} onClick={onConfirm}>
-                  {confirmText ?? t('common.confirm')}
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>,
-      portalContainer
-    );
-  }
 
   // Default模式: 完整的模态框
   return createPortal(
@@ -275,20 +219,5 @@ function Modal({
     portalContainer
   );
 }
-
-// 子组件: 模态框头部
-Modal.Header = function ModalHeader({ children, className = '' }) {
-  return <div className={`mb-4 ${className}`}>{children}</div>;
-};
-
-// 子组件: 模态框主体
-Modal.Body = function ModalBody({ children, className = '' }) {
-  return <div className={className}>{children}</div>;
-};
-
-// 子组件: 模态框底部
-Modal.Footer = function ModalFooter({ children, className = '' }) {
-  return <div className={`mt-4 ${className}`}>{children}</div>;
-};
 
 export default Modal;

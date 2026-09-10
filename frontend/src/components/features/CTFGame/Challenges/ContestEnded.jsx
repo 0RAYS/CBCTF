@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { Button, Card } from '../../../common';
 import { useTranslation } from 'react-i18next';
-import WriteupUpload from './WriteupUpload';
+import WriteupUpload from '../Writeup/WriteupUpload';
 
 function ContestEnded({ contestInfo, onViewScoreboard, onUploadWriteup, onViewChallenges, writeups = [] }) {
   const { t } = useTranslation();

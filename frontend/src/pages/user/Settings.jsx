@@ -94,6 +94,10 @@ function Settings() {
       onEmailVerify={handleEmailVerify}
       onDeleteAccount={handleDeleteAccount}
       onPictureChange={handlePictureChange}
+      onLogout={() => {
+        navigate('/');
+        dispatch(logoutUser());
+      }}
     />
   );
 }

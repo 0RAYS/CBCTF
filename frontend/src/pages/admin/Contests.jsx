@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../../utils/toast';
 import AdminContests from '../../components/features/Admin/AdminContests';
-import { DateTimeInput, FormField, Input, Modal, Textarea } from '../../components/common';
+import { DateTimeInput, Input, Modal, Textarea } from '../../components/common';
 import CRUDModalFooter from '../../components/common/CRUDModalFooter';
 import DeleteConfirmation from '../../components/common/DeleteConfirmation';
 import { getContestList, createContest, deleteContest, updateContestPicture } from '../../api/admin/contest';
@@ -143,58 +143,52 @@ function ContestsManagement() {
     if (mode === 'create') {
       return (
         <div className="space-y-4">
-          <FormField label={t('admin.contests.form.name')}>
-            <Input
-              type="text"
-              value={createForm.name}
-              onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-              fullWidth
-            />
-          </FormField>
+          <Input
+            label={t('admin.contests.form.name')}
+            type="text"
+            value={createForm.name}
+            onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+            fullWidth
+          />
 
-          <FormField label={t('admin.contests.form.description')}>
-            <Textarea
-              value={createForm.description}
-              onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-              rows={4}
-              fullWidth
-            />
-          </FormField>
+          <Textarea
+            label={t('admin.contests.form.description')}
+            value={createForm.description}
+            onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+            rows={4}
+            fullWidth
+          />
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField label={t('admin.contests.form.flagPrefix')}>
-              <Input
-                type="text"
-                value={createForm.prefix}
-                onChange={(e) => setCreateForm({ ...createForm, prefix: e.target.value })}
-                fullWidth
-              />
-            </FormField>
-            <FormField label={t('admin.contests.form.teamSize')}>
-              <Input
-                type="number"
-                value={createForm.size}
-                onChange={(e) => setCreateForm({ ...createForm, size: parseInt(e.target.value) })}
-                fullWidth
-              />
-            </FormField>
-          </div>
-
-          <FormField label={t('admin.contests.form.startTime')}>
-            <DateTimeInput
-              value={createForm.start}
-              onChange={(e) => setCreateForm({ ...createForm, start: e.target.value })}
-            />
-          </FormField>
-
-          <FormField label={t('admin.contests.form.durationHours')}>
             <Input
-              type="number"
-              value={createForm.duration}
-              onChange={(e) => setCreateForm({ ...createForm, duration: parseInt(e.target.value) })}
+              label={t('admin.contests.form.flagPrefix')}
+              type="text"
+              value={createForm.prefix}
+              onChange={(e) => setCreateForm({ ...createForm, prefix: e.target.value })}
               fullWidth
             />
-          </FormField>
+            <Input
+              label={t('admin.contests.form.teamSize')}
+              type="number"
+              value={createForm.size}
+              onChange={(e) => setCreateForm({ ...createForm, size: parseInt(e.target.value) })}
+              fullWidth
+            />
+          </div>
+
+          <DateTimeInput
+            label={t('admin.contests.form.startTime')}
+            value={createForm.start}
+            onChange={(e) => setCreateForm({ ...createForm, start: e.target.value })}
+          />
+
+          <Input
+            label={t('admin.contests.form.durationHours')}
+            type="number"
+            value={createForm.duration}
+            onChange={(e) => setCreateForm({ ...createForm, duration: parseInt(e.target.value) })}
+            fullWidth
+          />
         </div>
       );
     } else {

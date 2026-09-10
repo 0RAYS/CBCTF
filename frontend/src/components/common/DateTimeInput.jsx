@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback, useId } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { IconCalendar, IconClock, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,8 @@ function DateTimeInput({
   value,
   onChange,
   name,
+  id: externalId,
+  label,
   placeholder,
   disabled = false,
   error,
@@ -28,7 +30,11 @@ function DateTimeInput({
   ...rest
 }) {
   const { t } = useTranslation();
+  const generatedId = useId();
+  const id = externalId || generatedId;
+  const errorId = `${id}-error`;
   const containerRef = useRef(null);
+  const inputRef = useRef(null);
   const hourListRef = useRef(null);
   const minuteListRef = useRef(null);
 
@@ -93,7 +99,7 @@ function DateTimeInput({
     [onChange, name]
   );
 
-  // Click outside / Escape to close
+  // Click outside to close; Escape is handled locally before it reaches a parent modal.
   useEffect(() => {
     if (!isOpen) return;
 
@@ -103,15 +109,9 @@ function DateTimeInput({
       }
     };
 
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') setIsOpen(false);
-    };
-
     document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen]);
 
@@ -212,13 +212,31 @@ function DateTimeInput({
     .replace(/\s+/g, ' ');
 
   return (
-    <div ref={containerRef} className={fullWidth ? 'w-full' : 'inline-block'}>
+    <div
+      ref={containerRef}
+      className={fullWidth ? 'w-full' : 'inline-block'}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && isOpen) {
+          event.preventDefault();
+          event.stopPropagation();
+          setIsOpen(false);
+          inputRef.current?.focus();
+        }
+      }}
+    >
+      {label && (
+        <label htmlFor={id} className="block text-sm text-neutral-300 mb-1">
+          {label}
+        </label>
+      )}
       <div className="relative">
         <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 pointer-events-none">
           <IconCalendar size={18} />
         </div>
 
         <input
+          ref={inputRef}
+          id={id}
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
@@ -228,23 +246,35 @@ function DateTimeInput({
           disabled={disabled}
           className={inputClasses}
           {...rest}
+          aria-invalid={error ? 'true' : rest['aria-invalid']}
+          aria-describedby={[rest['aria-describedby'], error ? errorId : null].filter(Boolean).join(' ') || undefined}
         />
 
-        <div
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 cursor-pointer hover:text-geek-400 transition-colors"
+        <button
+          type="button"
+          disabled={disabled}
+          aria-label={label || rest['aria-label'] || t('common.dateTimeInput.time')}
+          aria-expanded={isOpen}
+          aria-controls={isOpen ? `${id}-calendar` : undefined}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 cursor-pointer hover:text-geek-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 disabled:cursor-not-allowed"
           onClick={() => {
             if (!disabled) setIsOpen((v) => !v);
           }}
         >
           <IconClock size={18} />
-        </div>
+        </button>
       </div>
 
-      {error && <div className="mt-1 text-sm text-red-400">{error}</div>}
+      {error && (
+        <div id={errorId} role="alert" className="mt-1 text-sm text-red-400">
+          {error}
+        </div>
+      )}
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id={`${id}-calendar`}
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}

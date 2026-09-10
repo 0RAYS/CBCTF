@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
-import AdminTeams from '../../../components/features/Admin/Contests/AdminTeams';
+import AdminTeams from '../../../components/features/Admin/Contests/teams/Teams';
 import {
   getContestTeams,
   updateTeamInfo,
@@ -11,11 +11,10 @@ import {
   getTeamMembers,
 } from '../../../api/admin/contest';
 import { useTranslation } from 'react-i18next';
-import { useDebounce } from '../../../hooks';
-import { useTeamDetailDialog } from '../../../hooks/useTeamDetailDialog.jsx';
+import { useDebounce } from '../../../hooks/useDebounce';
+import { useTeamDetailDialog } from '../../../components/features/Admin/details/useTeamDetailDialog';
 
-function AdminContestTeams() {
-  const { id } = useParams();
+function ContestTeamsManagement({ id }) {
   const [teams, setTeams] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,6 +34,19 @@ function AdminContestTeams() {
   const [teamMembers, setTeamMembers] = useState([]);
   const pageSize = 20;
   const { t } = useTranslation();
+  const listRequest = useRef(0);
+  const memberRequest = useRef(0);
+  const modalSession = useRef(0);
+  const [revision, setRevision] = useState(0);
+  const refreshTeams = () => setRevision((previous) => previous + 1);
+  useEffect(
+    () => () => {
+      listRequest.current += 1;
+      memberRequest.current += 1;
+      modalSession.current += 1;
+    },
+    []
+  );
 
   // 搜索相关状态
   const searchRef = useRef(null);
@@ -56,6 +68,7 @@ function AdminContestTeams() {
     if (!debouncedName.trim() && !debouncedDesc.trim()) {
       setSearchResults([]);
       setSearchError(null);
+      setSearchLoading(false);
       return;
     }
     const doSearch = async () => {
@@ -86,17 +99,19 @@ function AdminContestTeams() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedName, debouncedDesc]);
+  }, [id, debouncedName, debouncedDesc, revision]);
 
   const fetchTeams = async () => {
+    const version = ++listRequest.current;
     try {
       const response = await getContestTeams(parseInt(id), { limit: pageSize, offset: (currentPage - 1) * pageSize });
-      if (response.code === 200) {
+      if (version === listRequest.current && response.code === 200) {
         setTeams(response.data.teams);
         setTotalCount(response.data.count);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.teams.toast.fetchFailed') });
+      if (version === listRequest.current)
+        toast.danger({ description: error.message || t('admin.contests.teams.toast.fetchFailed') });
     }
   };
 
@@ -118,7 +133,7 @@ function AdminContestTeams() {
       const response = await updateTeamPicture(parseInt(id), pictureUploadTeam.id, file);
       if (response.code === 200) {
         toast.success({ description: t('admin.contests.teams.toast.pictureUpdated') });
-        fetchTeams();
+        refreshTeams();
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.teams.toast.pictureUpdateFailed') });
@@ -129,16 +144,21 @@ function AdminContestTeams() {
     if (!isSearchMode) {
       fetchTeams();
     }
-  }, [id, currentPage, isSearchMode]);
+    return () => {
+      listRequest.current += 1;
+    };
+  }, [id, currentPage, isSearchMode, revision]);
 
   const fetchTeamMembers = async (team) => {
+    const version = ++memberRequest.current;
     try {
       const response = await getTeamMembers(parseInt(id), team.id);
-      if (response.code === 200) {
+      if (version === memberRequest.current && response.code === 200) {
         setTeamMembers(response.data || []);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.teams.toast.fetchMembersFailed') });
+      if (version === memberRequest.current)
+        toast.danger({ description: error.message || t('admin.contests.teams.toast.fetchMembersFailed') });
     }
   };
 
@@ -153,8 +173,10 @@ function AdminContestTeams() {
   };
 
   const handleEditTeam = (team) => {
+    modalSession.current += 1;
+    setTeamMembers([]);
     setSelectedTeam(team);
-    setSelectedUserId('');
+    setSelectedUserId(team.captain_id || '');
     setKickUserId('');
     setEditForm({
       name: team.name,
@@ -170,30 +192,37 @@ function AdminContestTeams() {
   };
 
   const handleDeleteTeam = (team) => {
+    modalSession.current += 1;
+    memberRequest.current += 1;
     setSelectedTeam(team);
     setModalMode('delete');
     setShowModal(true);
   };
 
   const handleKickSubmit = async () => {
+    const session = modalSession.current;
     if (!kickUserId) {
       toast.warning({ description: t('admin.contests.teams.toast.selectMember') });
       return;
     }
     try {
       const response = await kickTeamMember(parseInt(id), selectedTeam.id, parseInt(kickUserId));
+      if (session !== modalSession.current) return;
       if (response.code === 200) {
         toast.success({ description: t('admin.contests.teams.toast.kickSuccess') });
         setKickUserId('');
         fetchTeamMembers(selectedTeam);
-        fetchTeams();
+        refreshTeams();
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.teams.toast.actionFailed') });
+      if (session === modalSession.current)
+        toast.danger({ description: error.message || t('admin.contests.teams.toast.actionFailed') });
     }
   };
 
   const handleModalClose = () => {
+    modalSession.current += 1;
+    memberRequest.current += 1;
     setShowModal(false);
   };
 
@@ -203,25 +232,32 @@ function AdminContestTeams() {
 
   const handleUserSelect = (userId) => {
     setSelectedUserId(userId);
+    setEditForm((previous) => ({ ...previous, captain_id: Number(userId) }));
   };
 
   const handleModalSubmit = async () => {
+    const session = modalSession.current;
     try {
       if (modalMode === 'edit') {
         const response = await updateTeamInfo(parseInt(id), selectedTeam.id, editForm);
+        if (session !== modalSession.current) return;
+        if (response.code !== 200) throw new Error(response.msg || t('admin.contests.teams.toast.actionFailed'));
         if (response.code === 200) {
           toast.success({ description: t('admin.contests.teams.toast.updateSuccess') });
         }
       } else if (modalMode === 'delete') {
         const response = await deleteTeam(parseInt(id), selectedTeam.id);
+        if (session !== modalSession.current) return;
+        if (response.code !== 200) throw new Error(response.msg || t('admin.contests.teams.toast.actionFailed'));
         if (response.code === 200) {
           toast.success({ description: t('admin.contests.teams.toast.deleteSuccess') });
         }
       }
-      setShowModal(false);
-      fetchTeams();
+      handleModalClose();
+      refreshTeams();
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.teams.toast.actionFailed') });
+      if (session === modalSession.current)
+        toast.danger({ description: error.message || t('admin.contests.teams.toast.actionFailed') });
     }
   };
 
@@ -273,4 +309,7 @@ function AdminContestTeams() {
   );
 }
 
-export default AdminContestTeams;
+export default function AdminContestTeams() {
+  const { id } = useParams();
+  return <ContestTeamsManagement key={id} id={id} />;
+}

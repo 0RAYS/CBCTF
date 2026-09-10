@@ -63,10 +63,12 @@ export const getChallengeCategories = (contestId) => {
 //   },
 //   "trace": "eae36b06-36bf-4970-a5d3-91399b9f9ed4"
 // }
-export const getChallengeStatus = (contestId, challengeId) => {
+export const getChallengeStatus = (contestId, challengeId, { noToast = false, noLoading = false } = {}) => {
   return request({
     url: `/contests/${contestId}/challenges/${challengeId}`,
     method: 'GET',
+    noToast,
+    noLoading,
   });
 };
 
@@ -161,6 +163,7 @@ export const submitFlag = (contestId, challengeId, data) => {
   return request({
     url: `/contests/${contestId}/challenges/${challengeId}/submit`,
     method: 'POST',
+    noToast: true,
     data,
   });
 };
