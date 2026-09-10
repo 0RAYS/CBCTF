@@ -4,7 +4,7 @@ import AdminDashboard from '../../components/features/Admin/AdminDashboard';
 import { toast } from '../../utils/toast.js';
 import { useTranslation } from 'react-i18next';
 
-const ReactECharts = lazy(() => import('echarts-for-react'));
+const ReactECharts = lazy(() => import('../../components/common/EChart'));
 
 function Dashboard() {
   const [status, setStatus] = useState(null);

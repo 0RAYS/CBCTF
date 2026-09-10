@@ -77,7 +77,7 @@ function Button({
     ${variants[variant] || variants.default}
     ${sizes[size] || sizes.md}
     ${getPadding()}
-    ${fullWidth ? 'w-full' : 'inline-flex'}
+    ${fullWidth ? 'w-full flex' : 'inline-flex'}
     items-center ${alignments[align]}
     ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}
     ${className}
@@ -141,19 +141,10 @@ function Button({
       className={buttonClasses}
       onClick={disabled || loading ? undefined : onClick}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       {...motionProps}
       {...rest}
     >
-      {/* 主按钮 hover 填充动画（仅 primary 变体） */}
-      {!disabled && !loading && variant === 'primary' && animate && size !== 'icon' && (
-        <motion.div
-          className="absolute inset-0 bg-geek-400/20"
-          initial={{ scale: 0, opacity: 0 }}
-          whileHover={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.2 }}
-        />
-      )}
-
       {/* 按钮内容 */}
       <span className="relative z-10 w-full">{renderContent()}</span>
     </ButtonComponent>

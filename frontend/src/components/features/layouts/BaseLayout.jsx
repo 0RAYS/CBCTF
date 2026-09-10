@@ -28,7 +28,7 @@ function BaseLayout({
   });
 
   return (
-    <div className="h-full w-full overflow-x-hidden">
+    <div className="min-h-dvh w-full flex flex-col overflow-x-clip">
       <div className="fixed inset-0 bg-neutral-900">
         {backgroundImage && (
           <>
@@ -71,12 +71,12 @@ function BaseLayout({
       </div>
 
       {/* 内容区域 */}
-      <main id="main-content" className="w-full min-h-full pt-[110px] pb-[80px] px-4 md:px-8 relative z-1">
+      <main id="main-content" className="w-full min-w-0 flex-1 pt-[104px] pb-8 px-4 md:px-8 relative z-1">
         {children}
       </main>
 
-      <div className="relative z-2">
-        <Footer {...footerConfig} />
+      <div className="relative z-2 shrink-0">
+        <Footer {...footerConfig} fixed={false} />
       </div>
     </div>
   );

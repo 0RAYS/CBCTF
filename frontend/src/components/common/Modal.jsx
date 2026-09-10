@@ -5,6 +5,12 @@ import { IconX } from '@tabler/icons-react';
 import Button from './Button';
 import { useModalPortal } from './ModalProvider';
 import { backdropVariants, panelVariants } from '../../config/motion';
+import { useTranslation } from 'react-i18next';
+
+// Only the topmost dialog handles keyboard input; nested dialogs share the scroll lock.
+const openDialogs = [];
+let savedBodyOverflow;
+let dialogOrder = 0;
 
 // 可聚焦元素选择器
 const FOCUSABLE_SELECTORS = [
@@ -41,14 +47,15 @@ function Modal({
   bodyClassName = '',
   size = 'md',
   variant = 'default',
-  confirmText = 'CONFIRM',
-  cancelText = 'CANCEL',
+  confirmText,
+  cancelText,
   onConfirm,
   confirmType = 'primary',
   className = '',
   showHeader = true,
   showCloseButton = true,
 }) {
+  const { t } = useTranslation();
   const portalContainer = useModalPortal();
   const titleId = useId();
   const dialogRef = useRef(null);
@@ -58,58 +65,60 @@ function Modal({
     onCloseRef.current = onClose;
   });
 
-  // 保存触发元素, 关闭时恢复焦点
   useEffect(() => {
-    if (isOpen) {
-      triggerRef.current = document.activeElement;
-    }
-  }, [isOpen]);
+    if (!isOpen || !portalContainer || !dialogRef.current) return;
 
-  // 焦点陷阱: 将焦点移入模态框, 并限制 Tab 键在内部循环
-  useEffect(() => {
-    if (!isOpen || !dialogRef.current) return;
-
-    // 将焦点移至模态框内第一个可聚焦元素
-    const focusableElements = dialogRef.current.querySelectorAll(FOCUSABLE_SELECTORS);
-    if (focusableElements.length > 0) {
-      focusableElements[0].focus();
-    } else {
-      dialogRef.current.focus();
+    const dialog = dialogRef.current;
+    triggerRef.current = document.activeElement;
+    if (openDialogs.length === 0) {
+      savedBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
     }
+    openDialogs.push(dialog);
+    dialog.parentElement.style.zIndex = String(1000 + dialogOrder++);
+
+    const getFocusableElements = () =>
+      [...dialog.querySelectorAll(FOCUSABLE_SELECTORS)].filter((element) => element.getClientRects().length > 0);
+    (getFocusableElements()[0] || dialog).focus({ preventScroll: true });
 
     const handleKeyDown = (e) => {
+      if (openDialogs.at(-1) !== dialog) return;
       if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
         onCloseRef.current?.();
         return;
       }
       if (e.key !== 'Tab') return;
 
-      const elements = dialogRef.current.querySelectorAll(FOCUSABLE_SELECTORS);
-      if (elements.length === 0) return;
-
-      const first = elements[0];
-      const last = elements[elements.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
+      const elements = getFocusableElements();
+      const first = elements[0] || dialog;
+      const last = elements.at(-1) || dialog;
+      if (
+        !dialog.contains(document.activeElement) ||
+        document.activeElement === dialog ||
+        (e.shiftKey ? document.activeElement === first : document.activeElement === last)
+      ) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      // 恢复焦点到触发元素
-      triggerRef.current?.focus();
+      const wasTopmost = openDialogs.at(-1) === dialog;
+      openDialogs.splice(openDialogs.indexOf(dialog), 1);
+      if (openDialogs.length === 0) {
+        document.body.style.overflow = savedBodyOverflow;
+        dialogOrder = 0;
+      }
+      if (wasTopmost) {
+        const target = triggerRef.current?.isConnected ? triggerRef.current : openDialogs.at(-1);
+        target?.focus({ preventScroll: true });
+      }
     };
-  }, [isOpen]);
+  }, [isOpen, portalContainer]);
 
   // 根据size确定宽度
   const sizeClasses = {
@@ -122,15 +131,11 @@ function Modal({
   const isFullScreen = size === 'full';
   const dialogWrapperClassName = isFullScreen
     ? 'relative h-[100dvh] w-[100vw] max-w-none'
-    : `relative w-full ${sizeClasses[size]} mx-4`;
+    : `relative min-w-0 w-full ${sizeClasses[size]} mx-4`;
   const dialogContainerClassName = isFullScreen
     ? `flex h-full flex-col overflow-hidden border border-neutral-600/50 bg-neutral-900/90 backdrop-blur-[8px] rounded-none ${className}`
-    : `border border-neutral-600/50 rounded-lg bg-neutral-900/90 backdrop-blur-[8px] overflow-hidden ${className}`;
-  const dialogBodyClassName = bodyClassName
-    ? `${isFullScreen ? 'min-h-0 flex-1 ' : ''}${bodyClassName}`
-    : isFullScreen
-      ? 'p-6 min-h-0 flex-1 overflow-y-auto'
-      : 'p-6 max-h-[70vh] overflow-y-auto';
+    : `flex max-h-[calc(100dvh-2rem)] flex-col border border-neutral-600/70 rounded-lg bg-neutral-900/95 shadow-2xl backdrop-blur-[8px] overflow-hidden ${className}`;
+  const dialogBodyClassName = `min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain ${bodyClassName || 'p-4 sm:p-6'}`;
 
   // Portal容器未就绪时不渲染
   if (!portalContainer) return null;
@@ -155,7 +160,7 @@ function Modal({
               aria-modal="true"
               aria-labelledby={titleId}
               tabIndex={-1}
-              className={`relative w-full ${sizeClasses.sm} m-4 p-6 border border-neutral-600/60 rounded-md bg-neutral-800/90 ${className}`}
+              className={`relative w-full ${sizeClasses.sm} max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain m-4 p-6 border border-neutral-600/60 rounded-md bg-neutral-800/95 shadow-2xl ${className}`}
               variants={panelVariants}
               initial="hidden"
               animate="visible"
@@ -165,12 +170,12 @@ function Modal({
                 {title}
               </h3>
               <div className="text-neutral-300 mb-6">{children}</div>
-              <div className="flex justify-end gap-4">
+              <div className="flex flex-wrap justify-end gap-3">
                 <Button size="sm" variant="ghost" onClick={onClose}>
-                  {cancelText}
+                  {cancelText ?? t('common.cancel')}
                 </Button>
                 <Button size="sm" variant={confirmType === 'danger' ? 'danger' : 'primary'} onClick={onConfirm}>
-                  {confirmText}
+                  {confirmText ?? t('common.confirm')}
                 </Button>
               </div>
             </motion.div>
@@ -210,12 +215,17 @@ function Modal({
             exit="exit"
           >
             <div className={dialogContainerClassName}>
+              {!showHeader && (
+                <h2 id={titleId} className="sr-only">
+                  {title}
+                </h2>
+              )}
               {!showHeader && showCloseButton ? (
                 <div className="pointer-events-none absolute right-4 top-4 z-10">
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label="Close dialog"
+                    aria-label={t('common.close')}
                     className="pointer-events-auto !bg-black/30 !text-neutral-300 backdrop-blur-sm hover:!text-neutral-100"
                     onClick={onClose}
                   >
@@ -225,17 +235,20 @@ function Modal({
               ) : null}
               {/* 头部 */}
               {showHeader ? (
-                <div className="p-6 border-b border-neutral-600/50">
-                  <div className="flex items-center justify-between">
-                    <h2 id={titleId} className="text-xl font-mono text-neutral-50">
+                <div className="shrink-0 p-4 sm:p-6 border-b border-neutral-600/50">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2
+                      id={titleId}
+                      className="min-w-0 text-lg sm:text-xl font-mono text-neutral-50 [overflow-wrap:anywhere]"
+                    >
                       {title}
                     </h2>
                     {showCloseButton ? (
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Close dialog"
-                        className="!bg-transparent !text-neutral-400 hover:!text-neutral-200"
+                        aria-label={t('common.close')}
+                        className="shrink-0 !bg-transparent !text-neutral-400 hover:!text-neutral-200"
                         onClick={onClose}
                       >
                         <IconX size={18} />
@@ -250,8 +263,8 @@ function Modal({
 
               {/* 底部 */}
               {footer && (
-                <div className="p-6 border-t border-neutral-600/50 bg-neutral-800/40">
-                  <div className="flex justify-end gap-3">{footer}</div>
+                <div className="shrink-0 p-4 sm:p-6 border-t border-neutral-600/50 bg-neutral-800/40">
+                  <div className="flex flex-wrap justify-end gap-3">{footer}</div>
                 </div>
               )}
             </div>

@@ -1,4 +1,5 @@
 import { StrictMode } from 'react';
+import { MotionConfig } from 'motion/react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
@@ -11,14 +12,16 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ErrorBoundary>
-      <ModalProvider>
-        <Provider store={store}>
-          <ToastProvider position="bottom-right" maxToasts={5}>
-            <App />
-          </ToastProvider>
-        </Provider>
-      </ModalProvider>
-    </ErrorBoundary>
+    <MotionConfig reducedMotion="user">
+      <ErrorBoundary>
+        <ModalProvider>
+          <Provider store={store}>
+            <ToastProvider position="bottom-right" maxToasts={5}>
+              <App />
+            </ToastProvider>
+          </Provider>
+        </ModalProvider>
+      </ErrorBoundary>
+    </MotionConfig>
   </StrictMode>
 );

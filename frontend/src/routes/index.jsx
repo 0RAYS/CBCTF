@@ -1,4 +1,4 @@
-import { Routes } from 'react-router-dom';
+import { Routes, useLocation } from 'react-router-dom';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import { MainRoutes } from './mainRoutes';
 import { ContestRoutes } from './contestRoutes';
@@ -6,8 +6,9 @@ import { AdminRoutes } from './adminRoutes';
 import { AdminContestRoutes } from './adminContestRoutes';
 
 const AppRoutes = () => {
+  const { pathname } = useLocation();
   return (
-    <ErrorBoundary>
+    <ErrorBoundary resetKey={pathname}>
       <Routes>
         {MainRoutes()}
         {ContestRoutes()}

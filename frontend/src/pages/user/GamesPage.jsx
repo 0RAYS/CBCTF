@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { getTeamInfo, createTeam, joinTeam } from '../../api/game/team';
 import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
+import Button from '../../components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_CONTEST_IMAGE, getContestStatus, getContestTimeRange } from '../../config/contest';
 
@@ -37,6 +38,8 @@ const transformContestData = (contests) => {
 function GamesPage() {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [retry, setRetry] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentGameId, setCurrentGameId] = useState(null);
   const navigate = useNavigate();
@@ -44,22 +47,26 @@ function GamesPage() {
   const { t } = useTranslation();
 
   useEffect(() => {
+    let active = true;
     const fetchGames = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const res = await getContestList();
-        if (res.code === 200) {
-          const transformedGames = transformContestData(res.data.contests);
-          setGames(transformedGames);
-        }
+        if (!active) return;
+        if (res.code !== 200) throw new Error(res.msg || t('toast.game.fetchListFailed'));
+        setGames(transformContestData(res.data?.contests || []));
       } catch (error) {
-        toast.danger({ title: t('toast.game.fetchListFailed'), description: error.message });
-        setGames([]);
+        if (active) setError(error.message || t('errors.requestFailed'));
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
     fetchGames();
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [retry, t]);
 
   const handleGameAction = async (gameId, action) => {
     if (!user.user) {
@@ -94,34 +101,26 @@ function GamesPage() {
   };
 
   const handleCreateTeam = async (formData) => {
-    try {
-      const response = await createTeam(currentGameId, {
-        name: formData.teamName,
-        description: formData.description,
-        captcha: formData.contestCode,
-      });
-      if (response.code === 200) {
-        toast.success({ description: t('toast.team.createSuccess') });
-        navigate(`/contests/${currentGameId}`);
-      }
-    } catch (error) {
-      toast.danger({ title: t('toast.team.createFailed'), description: error.message });
-    }
+    const response = await createTeam(currentGameId, {
+      name: formData.teamName,
+      description: formData.description,
+      captcha: formData.contestCode,
+    });
+    if (response.code !== 200) throw new Error(response.msg || t('toast.team.createFailed'));
+    toast.success({ description: t('toast.team.createSuccess') });
+    navigate(`/contests/${currentGameId}`);
+    return true;
   };
 
   const handleJoinTeam = async (formData) => {
-    try {
-      const response = await joinTeam(currentGameId, {
-        name: formData.teamName,
-        captcha: formData.teamCode,
-      });
-      if (response.code === 200) {
-        toast.success({ description: t('toast.team.joinSuccess') });
-        navigate(`/contests/${currentGameId}`);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('toast.team.joinFailed') });
-    }
+    const response = await joinTeam(currentGameId, {
+      name: formData.teamName,
+      captcha: formData.teamCode,
+    });
+    if (response.code !== 200) throw new Error(response.msg || t('toast.team.joinFailed'));
+    toast.success({ description: t('toast.team.joinSuccess') });
+    navigate(`/contests/${currentGameId}`);
+    return true;
   };
 
   if (loading) {
@@ -130,7 +129,15 @@ function GamesPage() {
 
   return (
     <div>
-      {games.length === 0 ? (
+      {error ? (
+        <div role="alert" className="py-16">
+          <EmptyState
+            title={t('toast.game.fetchListFailed')}
+            description={error}
+            action={<Button onClick={() => setRetry((value) => value + 1)}>{t('common.refresh')}</Button>}
+          />
+        </div>
+      ) : games.length === 0 ? (
         <div className="py-16">
           <EmptyState title={t('game.noGames')} description={t('game.noGamesDescription')} />
         </div>
@@ -138,6 +145,7 @@ function GamesPage() {
         <GameList games={games} onGameAction={handleGameAction} user={user} />
       )}
       <TeamJoinModal
+        key={`${currentGameId}-${isModalOpen}`}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onCreateTeam={handleCreateTeam}

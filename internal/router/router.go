@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"strings"
 	"time"
@@ -35,8 +36,15 @@ func Init() *gin.Engine {
 			ctx.Redirect(http.StatusFound, fmt.Sprintf("%s/platform", config.Env.Host))
 		})
 		router.Use(func(ctx *gin.Context) {
-			if strings.HasPrefix(ctx.Request.URL.Path, "/platform") {
-				ctx.Header("Cache-Control", "public, max-age=31536000, immutable")
+			path := ctx.Request.URL.Path
+			if path == "/platform" || strings.HasPrefix(path, "/platform/") {
+				// Revalidate the entry page so deployments cannot strand users on old chunks.
+				ctx.Header("Cache-Control", "no-cache")
+				if strings.HasPrefix(path, "/platform/assets/") {
+					if info, err := fs.Stat(frontend.SubFS, strings.TrimPrefix(path, "/platform/")); err == nil && !info.IsDir() {
+						ctx.Header("Cache-Control", "public, max-age=31536000, immutable")
+					}
+				}
 			}
 			ctx.Next()
 		})

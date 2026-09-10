@@ -36,6 +36,14 @@
     "next": "Next",
     "points": "{{count}} pts",
     "refresh": "Refresh",
+    "retry": "Retry",
+    "copy": "Copy",
+    "copyToClipboard": "Copy to clipboard",
+    "pageError": {
+      "title": "This page could not be displayed",
+      "description": "Try again, or refresh the page if the problem continues.",
+      "resource": "A page resource could not be loaded. Check your connection and refresh to load the latest version."
+    },
     "autoRefresh": "Auto Refresh",
     "autoRefreshOff": "Off",
     "yes": "Yes",

@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import Button from '../../common/Button';
+import Pagination from '../../common/Pagination';
 import { useTranslation } from 'react-i18next';
 
 const PAGE_SIZE = 5;
@@ -38,11 +37,11 @@ function GameCard({ game, onGameAction, user }) {
         </div>
       )}
 
-      <div className="flex-1 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="min-w-0 flex-1 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
         {/* 左侧: 标题 + 描述 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <h3 className="text-base font-mono text-neutral-50 tracking-wide">{game.title}</h3>
+            <h3 className="min-w-0 break-words text-base font-mono text-neutral-50 tracking-wide">{game.title}</h3>
             <span className={`px-2 py-0.5 border rounded text-xs shrink-0 ${getStatusStyle(game.status)}`}>
               {t(`game.status.${game.status}`)}
             </span>
@@ -83,67 +82,20 @@ function GameList({ games = [], onGameAction, user }) {
   const [page, setPage] = useState(1);
 
   const totalPages = Math.ceil(games.length / PAGE_SIZE);
-  const pageGames = games.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const currentPage = Math.min(page, Math.max(1, totalPages));
+  const pageGames = games.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div className="w-full max-w-[1200px] mx-auto">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={page}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.18 }}
-          className="space-y-3"
-        >
-          {pageGames.map((game) => (
-            <GameCard key={game.id} game={game} onGameAction={onGameAction} user={user} />
-          ))}
-        </motion.div>
-      </AnimatePresence>
+      <div className="space-y-3">
+        {pageGames.map((game) => (
+          <GameCard key={game.id} game={game} onGameAction={onGameAction} user={user} />
+        ))}
+      </div>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-6">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className={`w-9 h-9 border rounded-md flex items-center justify-center transition-colors duration-200
-              ${
-                page === 1
-                  ? 'border-neutral-700 text-neutral-600 cursor-not-allowed'
-                  : 'border-neutral-500 text-neutral-300 hover:border-geek-400 hover:text-geek-400'
-              }`}
-          >
-            <IconChevronLeft size={15} />
-          </button>
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`w-9 h-9 border rounded-md flex items-center justify-center font-mono text-sm transition-colors duration-200
-                ${
-                  p === page
-                    ? 'border-geek-400 text-geek-400 bg-geek-400/10'
-                    : 'border-neutral-600 text-neutral-400 hover:border-neutral-400 hover:text-neutral-200'
-                }`}
-            >
-              {p}
-            </button>
-          ))}
-
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-            className={`w-9 h-9 border rounded-md flex items-center justify-center transition-colors duration-200
-              ${
-                page === totalPages
-                  ? 'border-neutral-700 text-neutral-600 cursor-not-allowed'
-                  : 'border-neutral-500 text-neutral-300 hover:border-geek-400 hover:text-geek-400'
-              }`}
-          >
-            <IconChevronRight size={15} />
-          </button>
+          <Pagination current={currentPage} total={totalPages} onChange={setPage} totalItems={games.length} showTotal />
         </div>
       )}
     </div>

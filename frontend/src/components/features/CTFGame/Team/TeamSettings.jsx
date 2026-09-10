@@ -91,19 +91,20 @@ function TeamSettings({
     <div className="contest-container mx-auto space-y-6">
       {/* 队伍信息卡片 */}
       <Card variant="default" padding="md" animate>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="relative group">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="relative group shrink-0">
               <Avatar src={team.picture} name={team.name} size="lg" className="border-2 border-neutral-300" />
               {isLeader && (
                 <label
                   className="absolute inset-0 flex items-center justify-center 
-                                    bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity 
+                                    bg-black/50 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity focus-within:ring-2 focus-within:ring-geek-400
                                     cursor-pointer rounded-lg"
                 >
                   <input
                     type="file"
-                    className="hidden"
+                    className="sr-only"
+                    aria-label={t('game.team.settings.changeAvatar')}
                     accept="image/png,image/jpeg,image/jpg,image/gif"
                     onChange={handlePictureUpload}
                   />
@@ -111,22 +112,16 @@ function TeamSettings({
                 </label>
               )}
             </div>
-            <div>
+            <div className="min-w-0 [overflow-wrap:anywhere]">
               <div className="text-neutral-50 font-mono text-lg">{team.name}</div>
               <div className="text-neutral-400 text-sm">
                 {t('game.team.settings.members', { count: team.members.length + 1 })}
               </div>
             </div>
           </div>
-          {/* 队伍信息卡片底部添加解散按钮 */}
-          <div className="flex items-center gap-2">
+          <div className="shrink-0">
             {isLeader && (
-              <Button variant="danger" size="sm" onClick={() => setShowDisbandModal(true)}>
-                {t('game.team.settings.disbandTeam')}
-              </Button>
-            )}
-            {isLeader && (
-              <Button variant="primary" size="sm" onClick={() => setShowEditModal(true)}>
+              <Button variant="primary" size="sm" className="w-full sm:w-auto" onClick={() => setShowEditModal(true)}>
                 {t('game.team.settings.editTeam')}
               </Button>
             )}
@@ -137,7 +132,7 @@ function TeamSettings({
         <div className="mb-6">
           <div className="text-neutral-400 text-sm mb-2">{t('game.team.settings.description')}</div>
           <div className="p-3 bg-neutral-900 rounded-md">
-            <div className="text-neutral-300 text-sm prose prose-invert prose-sm line-clamp-3">
+            <div className="text-neutral-300 text-sm prose prose-invert prose-sm max-w-none min-w-0 [overflow-wrap:anywhere]">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {team.description || t('game.team.settings.noDescription')}
               </ReactMarkdown>
@@ -149,17 +144,26 @@ function TeamSettings({
         <div className="space-y-2">
           <div className="text-neutral-400 text-sm">{t('game.team.settings.invitationCode')}</div>
           <div className="flex items-center gap-2">
-            <div className="flex-1 flex items-center justify-between p-3 bg-neutral-900 rounded-md">
-              <span className="font-mono text-neutral-50">{team.inviteCode}</span>
-              <Button variant="ghost" className="p-0 min-w-0 h-auto" onClick={handleCopyCode}>
+            <div className="min-w-0 flex-1 flex items-center justify-between gap-2 p-3 bg-neutral-900 rounded-md">
+              <span className="min-w-0 font-mono text-neutral-50 [overflow-wrap:anywhere]">{team.inviteCode}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                aria-label={
+                  isCodeCopied ? t('game.team.toast.inviteCopied') : t('common.copy', { defaultValue: 'Copy' })
+                }
+                onClick={handleCopyCode}
+              >
                 {isCodeCopied ? '✓' : '📋'}
               </Button>
             </div>
             {isLeader && (
               <Button
-                variant="primary"
+                variant="outline"
                 size="icon"
-                className="border-yellow-400 text-yellow-400 hover:bg-yellow-400/10"
+                className="shrink-0"
+                aria-label={t('common.refresh')}
                 onClick={onRefreshCode}
               >
                 ↻
@@ -177,39 +181,45 @@ function TeamSettings({
 
         <div className="divide-y divide-neutral-300/10">
           {/* 队长 */}
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-4">
               <Avatar
                 src={team.leader.picture}
                 name={team.leader.name}
                 size="sm"
-                className="border-2 border-yellow-400"
+                className="shrink-0 border-2 border-yellow-400"
               />
-              <div>
+              <div className="min-w-0 [overflow-wrap:anywhere]">
                 <div className="text-neutral-50 font-mono">{team.leader.name}</div>
                 <div className="text-yellow-400 text-sm font-mono">{t('game.team.settings.leader')}</div>
               </div>
             </div>
-            <div className="text-neutral-400 text-sm">{team.leader.email}</div>
+            <div className="min-w-0 text-neutral-400 text-sm [overflow-wrap:anywhere]">{team.leader.email}</div>
           </div>
 
           {/* 队员 */}
           {team.members.map((member, index) => (
-            <div key={index} className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar src={member.picture} name={member.name} size="sm" className="border-2 border-neutral-300" />
-                <div>
+            <div key={index} className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-4">
+                <Avatar
+                  src={member.picture}
+                  name={member.name}
+                  size="sm"
+                  className="shrink-0 border-2 border-neutral-300"
+                />
+                <div className="min-w-0 [overflow-wrap:anywhere]">
                   <div className="text-neutral-50 font-mono">{member.name}</div>
                   <div className="text-neutral-400 text-sm font-mono">{t('game.team.settings.member')}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-neutral-400 text-sm">{member.email}</div>
+              <div className="flex min-w-0 items-center justify-between gap-3">
+                <div className="min-w-0 text-neutral-400 text-sm [overflow-wrap:anywhere]">{member.email}</div>
                 {isLeader && (
                   <Button
-                    variant="danger"
+                    variant="ghost"
                     size="icon"
-                    className="w-6 h-6"
+                    className="shrink-0 text-red-400! hover:bg-red-400/10!"
+                    aria-label={`${t('game.team.settings.kickModal.title')}: ${member.name}`}
                     onClick={() => setShowKickModal(member.name)}
                   >
                     ✕
@@ -220,6 +230,20 @@ function TeamSettings({
           ))}
         </div>
       </Card>
+
+      {isLeader && (
+        <div className="border-t border-red-400/20 pt-4">
+          <Button
+            variant="ghost"
+            textColor="text-red-400"
+            size="sm"
+            className="w-full sm:w-auto hover:bg-red-400/10!"
+            onClick={() => setShowDisbandModal(true)}
+          >
+            {t('game.team.settings.disbandTeam')}
+          </Button>
+        </div>
+      )}
 
       {/* 编辑模态框 */}
       <EditTeamModal

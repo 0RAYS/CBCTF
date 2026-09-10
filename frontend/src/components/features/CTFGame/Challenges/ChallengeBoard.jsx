@@ -20,10 +20,8 @@
  * @param {Array<{picture: string, name: string}>} props.teamInfo.members - 团队成员头像列表
  */
 
-import { motion } from 'motion/react';
 import { Button, Pagination, Card, Avatar, EmptyState, ChallengeSkeleton } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
-import { EASE_T2, staggerDelay } from '../../../../config/motion';
 
 function ChallengeBoard({
   categories,
@@ -39,6 +37,8 @@ function ChallengeBoard({
   pageSize = 20,
   onPageChange,
   isLoading = false,
+  error = null,
+  onRetry,
 }) {
   const { t } = useTranslation();
   const normalizedCategories = Array.isArray(categories) ? categories.filter(Boolean) : [];
@@ -46,7 +46,7 @@ function ChallengeBoard({
   const teamName = teamInfo?.name || '-';
 
   return (
-    <Card variant="default" padding="lg" animate className="">
+    <Card variant="default" padding="lg" className="">
       {/* 分类和团队信息 */}
       <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:justify-between sm:items-center">
         <div className="flex flex-col gap-3">
@@ -61,6 +61,7 @@ function ChallengeBoard({
                   selectedCategory === category ? '' : 'text-neutral-400 hover:text-neutral-200'
                 }`}
                 onClick={() => onCategoryChange(category)}
+                aria-pressed={selectedCategory === category}
               >
                 {category}
               </Button>
@@ -94,28 +95,38 @@ function ChallengeBoard({
 
       {/* 赛题列表 */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div
+          aria-busy="true"
+          aria-label={t('common.loading')}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+        >
           {Array.from({ length: pageSize }).map((_, i) => (
             <ChallengeSkeleton key={i} />
           ))}
+        </div>
+      ) : error ? (
+        <div role="alert">
+          <EmptyState
+            title={t('game.challenges.toast.fetchListFailed')}
+            description={error}
+            action={<Button onClick={onRetry}>{t('common.refresh')}</Button>}
+          />
         </div>
       ) : challenges.length === 0 ? (
         <EmptyState title={t('game.noChallenges')} description={t('game.noChallengesDescription')} className="py-12" />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {challenges.map((challenge, index) => (
-            <motion.div
+          {challenges.map((challenge) => (
+            <button
+              type="button"
               key={challenge.id}
-              className={`p-4 border rounded-md transition-colors duration-200 cursor-pointer
+              className={`min-w-0 w-full text-left p-4 border rounded-md transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900
                 ${
                   challenge.solved
                     ? 'border-geek-400/40 bg-geek-400/8 hover:bg-geek-400/12'
                     : 'border-neutral-600/50 bg-neutral-800/40 hover:bg-neutral-800/60'
                 }`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: staggerDelay(index), ease: EASE_T2, duration: 0.22 }}
-              whileHover={{ y: -2 }}
+              aria-haspopup="dialog"
               onClick={() => onChallengeClick(challenge)}
             >
               {/* 标题栏 */}
@@ -148,7 +159,7 @@ function ChallengeBoard({
               </div>
 
               {/* 标签和状态区域 */}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 {/* 标签列表 */}
                 <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
                   {challenge.tags &&
@@ -174,10 +185,10 @@ function ChallengeBoard({
                 </div>
 
                 {/* 状态指示器 */}
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   {!challenge.isInitialized && (
                     <div className="flex items-center gap-1.5 px-2 py-1 bg-black/50 border border-yellow-400/30 rounded">
-                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
                       <span className="text-yellow-400 text-xs font-mono">
                         {t('game.challengeBoard.status.notInitialized')}
                       </span>
@@ -186,7 +197,7 @@ function ChallengeBoard({
 
                   {challenge.hasInstance && challenge.instanceRunning && (
                     <div className="flex items-center gap-1.5 px-2 py-1 bg-black/50 border border-green-400/30 rounded">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
                       <span className="text-green-400 text-xs font-mono">
                         {t('game.challengeBoard.status.instanceRunning')}
                       </span>
@@ -201,7 +212,7 @@ function ChallengeBoard({
                   )}
                 </div>
               </div>
-            </motion.div>
+            </button>
           ))}
         </div>
       )}
