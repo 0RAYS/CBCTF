@@ -40,7 +40,26 @@
 }
 
 html {
+  color-scheme: dark;
   scrollbar-gutter: stable;
+  scroll-padding-top: 96px;
+}
+
+body {
+  margin: 0;
+  background: var(--surface-base);
+  color: #d9d9d9;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(89, 126, 247, 0.3);
+  color: #f9f9f9;
+}
+
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #597ef7;
+  outline-offset: 3px;
 }
 
 * {
@@ -110,7 +129,7 @@ html {
 @layer components {
   /* 统一的select样式 */
   .select-custom {
-    @apply w-full bg-black/20 border border-neutral-300/30 rounded-md text-neutral-50
+    @apply min-w-0 w-full bg-neutral-800/60 border border-neutral-600/60 rounded-md text-neutral-50
            focus:outline-none focus:border-geek-400 focus:shadow-focus
            transition-all duration-200;
   }
@@ -131,8 +150,92 @@ html {
   }
 
   .contest-container {
-    width: clamp(320px, 92vw, 1400px);
+    width: 100%;
+    max-width: 1400px;
+    min-width: 0;
+    margin-inline: auto;
   }
+
+  /* Shared Markdown typography for challenge statements, notices and contest details. */
+  .prose {
+    color: #d9d9d9;
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+
+  .prose :where(p, ul, ol, blockquote, pre, table, hr) {
+    margin-block: 1em;
+  }
+
+  .prose > :first-child { margin-top: 0; }
+  .prose > :last-child { margin-bottom: 0; }
+
+  .prose :where(h1, h2, h3, h4, h5, h6) {
+    margin-block: 1.4em 0.6em;
+    color: #f0f0f0;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .prose h1 { font-size: 1.5em; }
+  .prose h2 { font-size: 1.25em; }
+  .prose h3 { font-size: 1.125em; }
+  .prose ul { list-style: disc; padding-inline-start: 1.5em; }
+  .prose ol { list-style: decimal; padding-inline-start: 1.5em; }
+  .prose li { margin-block: 0.3em; }
+  .prose li > :where(ul, ol) { margin-block: 0.4em; }
+  .prose strong { color: #f0f0f0; font-weight: 700; }
+
+  .prose a {
+    color: #85a5ff;
+    text-decoration: underline;
+    text-decoration-color: rgba(133, 165, 255, 0.4);
+    text-underline-offset: 3px;
+  }
+  .prose a:hover { text-decoration-color: currentColor; }
+
+  .prose blockquote {
+    border-inline-start: 2px solid #597ef7;
+    padding-inline-start: 1em;
+    color: #b3b3b3;
+  }
+
+  .prose code {
+    font-family: 'Maple Mono', monospace;
+    font-size: 0.9em;
+    background: rgba(179, 179, 179, 0.08);
+    border-radius: 3px;
+    padding: 0.15em 0.35em;
+  }
+
+  .prose pre {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    padding: 1em;
+    background: #0f0f0f;
+    line-height: 1.65;
+  }
+  .prose pre code { padding: 0; background: transparent; }
+
+  .prose table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .prose :where(th, td) { border: 1px solid #2a2a2a; padding: 0.5em 0.8em; }
+  .prose th { background: #1a1a1a; color: #f0f0f0; text-align: start; }
+  .prose hr { border-color: #2a2a2a; }
+  .prose img { max-width: 100%; height: auto; border-radius: 4px; }
+
+  .prose-sm { font-size: 0.875rem; }
+  .prose .contains-task-list { list-style: none; padding-inline-start: 0; }
+  .prose .task-list-item input { margin-inline-end: 0.5em; accent-color: #597ef7; }
   
   /* 自定义下拉框容器样式 */
   .dropdown-custom {

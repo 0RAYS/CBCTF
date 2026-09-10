@@ -36,6 +36,14 @@
     "next": "下一页",
     "points": "{{count}} 分",
     "refresh": "刷新",
+    "retry": "重试",
+    "copy": "复制",
+    "copyToClipboard": "复制到剪贴板",
+    "pageError": {
+      "title": "页面暂时无法显示",
+      "description": "请重试；如果问题仍然存在，请刷新页面。",
+      "resource": "页面资源加载失败。请检查网络连接，并刷新页面以加载最新版本。"
+    },
     "autoRefresh": "自动刷新",
     "autoRefreshOff": "关闭",
     "yes": "是",

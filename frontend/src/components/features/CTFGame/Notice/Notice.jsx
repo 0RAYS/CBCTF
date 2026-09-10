@@ -13,7 +13,8 @@
  */
 
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const typeColors = {
   important: 'border-red-400 bg-red-400/5',
@@ -29,6 +30,13 @@ const typeIcons = {
 
 function Notice({ notices }) {
   const [expandedId, setExpandedId] = useState(null);
+  const id = useId();
+  const { t } = useTranslation();
+  const typeLabels = {
+    important: t('admin.contests.notices.types.important'),
+    update: t('admin.contests.notices.types.update'),
+    normal: t('admin.contests.notices.types.normal'),
+  };
 
   return (
     <div className="contest-container mx-auto">
@@ -36,14 +44,14 @@ function Notice({ notices }) {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         {/* 标题栏 */}
         <div className="flex items-center justify-end mb-6">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-red-400" />
-              <span className="text-neutral-400 text-sm">Important</span>
+              <span className="text-neutral-400 text-sm">{typeLabels.important}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-yellow-400" />
-              <span className="text-neutral-400 text-sm">Update</span>
+              <span className="text-neutral-400 text-sm">{typeLabels.update}</span>
             </div>
           </div>
         </div>
@@ -51,45 +59,53 @@ function Notice({ notices }) {
         {/* 公告列表 */}
         <div className="space-y-4">
           {notices.map((notice) => (
-            <motion.div
+            <motion.article
               key={notice.id}
               className={`border rounded-md overflow-hidden transition-colors duration-200
-                                ${typeColors[notice.type] || typeColors.normal}
-                                hover:border-neutral-100`}
+                                ${typeColors[notice.type] || typeColors.normal}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
-              onClick={() => setExpandedId(expandedId === notice.id ? null : notice.id)}
             >
-              <div className="p-4 cursor-pointer transition-colors duration-200 hover:bg-white/5">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl select-none">{typeIcons[notice.type] || typeIcons.normal}</span>
-                    <div>
-                      <div className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-mono">
-                        {notice.type || 'normal'}
-                      </div>
-                      <h3 className="font-mono text-neutral-50 transition-colors duration-200">{notice.title}</h3>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-neutral-400 text-sm font-mono">{notice.timestamp}</span>
-                  </div>
-                </div>
-
-                <motion.div
-                  initial={false}
-                  animate={{
-                    height: expandedId === notice.id ? 'auto' : 0,
-                    opacity: expandedId === notice.id ? 1 : 0,
-                  }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
+              <h3>
+                <button
+                  type="button"
+                  id={`${id}-title-${notice.id}`}
+                  aria-expanded={expandedId === notice.id}
+                  aria-controls={`${id}-content-${notice.id}`}
+                  onClick={() => setExpandedId((current) => (current === notice.id ? null : notice.id))}
+                  className="flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-geek-400"
                 >
-                  <div className="py-2 text-neutral-300 whitespace-pre-wrap">{notice.content}</div>
-                </motion.div>
+                  <span aria-hidden="true" className="shrink-0 text-xl select-none">
+                    {typeIcons[notice.type] || typeIcons.normal}
+                  </span>
+                  <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">
+                    <span className="block text-xs uppercase tracking-wider text-neutral-400 font-mono">
+                      {typeLabels[notice.type] || notice.type || typeLabels.normal}
+                    </span>
+                    <span className="block font-mono text-neutral-50 mt-1">{notice.title}</span>
+                    <span className="block text-neutral-400 text-xs font-mono mt-2">{notice.timestamp}</span>
+                  </span>
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    className={`mt-1 size-5 shrink-0 text-neutral-400 transition-transform ${expandedId === notice.id ? 'rotate-180' : ''}`}
+                  >
+                    <path d="m5 7.5 5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </h3>
+              <div
+                id={`${id}-content-${notice.id}`}
+                role="region"
+                aria-labelledby={`${id}-title-${notice.id}`}
+                hidden={expandedId !== notice.id}
+                className="border-t border-neutral-300/10 p-4 text-neutral-300 whitespace-pre-wrap leading-relaxed [overflow-wrap:anywhere]"
+              >
+                {notice.content}
               </div>
-            </motion.div>
+            </motion.article>
           ))}
         </div>
       </motion.div>

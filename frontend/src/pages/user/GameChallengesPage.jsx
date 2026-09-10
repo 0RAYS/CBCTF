@@ -25,7 +25,7 @@ import { getTeamMembers, getTeamInfo } from '../../api/game/team';
 import { downloadChallengeAttachment } from '../../api/challenge';
 import { getContestNotices } from '../../api/contest';
 import Loading from '../../components/common/Loading';
-import { Button } from '../../components/common';
+import { Button, EmptyState } from '../../components/common';
 import { useTranslation } from 'react-i18next';
 
 const normalizeInstanceStatus = (status) => {
@@ -119,8 +119,7 @@ const transformChallengeData = (challenge) => {
 const normalizeCategories = (categoryList) => (Array.isArray(categoryList) ? categoryList.filter(Boolean) : []);
 const isInstanceTransitioning = (status) => ['waiting', 'pending', 'terminating'].includes(status);
 
-function GameChallengesPage() {
-  const { contestId } = useParams();
+function ContestChallenges({ contestId }) {
   const navigate = useNavigate();
   const [contestStatus, setContestStatus] = useState({});
   const [categories, setCategories] = useState([]);
@@ -131,6 +130,10 @@ function GameChallengesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [contestError, setContestError] = useState(null);
+  const [listError, setListError] = useState(null);
+  const [listLoading, setListLoading] = useState(true);
+  const [listRevision, setListRevision] = useState(0);
   const [teamInfo, setTeamInfo] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [writeups, setWriteups] = useState([]);
@@ -143,10 +146,18 @@ function GameChallengesPage() {
   const selectedChallengeRef = useRef(null);
   const pollingIntervalRef = useRef(null);
   const pollingTimeoutRef = useRef(null);
+  const pollingGenerationRef = useRef(0);
+  const selectionRef = useRef(0);
+  const statusRequestRef = useRef(0);
+  const scopeRef = useRef(null);
+  const contestRequestRef = useRef(0);
+  const categoriesRequestRef = useRef(0);
+  const writeupRequestRef = useRef(0);
 
   const stopPolling = () => {
+    pollingGenerationRef.current += 1;
     if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
+      clearTimeout(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
     }
     if (pollingTimeoutRef.current) {
@@ -155,17 +166,21 @@ function GameChallengesPage() {
     }
   };
 
-  const startPolling = (targetStatus = 'running') => {
+  const startPolling = (challengeId, targetStatus, selection) => {
+    if (selectionRef.current !== selection || selectedChallengeRef.current?.id !== challengeId) return;
     stopPolling();
-    pollingIntervalRef.current = setInterval(async () => {
-      if (!selectedChallengeRef.current) {
-        stopPolling();
-        return;
-      }
+    const generation = pollingGenerationRef.current;
+    const isCurrent = () => generation === pollingGenerationRef.current && selection === selectionRef.current;
+    // Schedule only after completion, so slow responses cannot overlap the next poll.
+    const poll = async () => {
+      if (!isCurrent()) return;
+      const request = ++statusRequestRef.current;
       try {
-        const statusRes = await getChallengeStatus(contestId, selectedChallengeRef.current.id);
-        if (statusRes.code === 200) {
+        const statusRes = await getChallengeStatus(contestId, challengeId);
+        if (!isCurrent()) return;
+        if (statusRes.code === 200 && request === statusRequestRef.current) {
           const updatedChallenge = mapChallengeStatusToViewModel(selectedChallengeRef.current, statusRes.data);
+          selectedChallengeRef.current = updatedChallenge;
           setSelectedChallenge(updatedChallenge);
           setChallenges((prev) => prev.map((c) => (c.id === updatedChallenge.id ? updatedChallenge : c)));
 
@@ -181,29 +196,50 @@ function GameChallengesPage() {
       } catch {
         // Silently ignore polling errors
       }
-    }, 5000);
+      if (isCurrent()) pollingIntervalRef.current = setTimeout(poll, 5000);
+    };
+    pollingIntervalRef.current = setTimeout(poll, 5000);
     pollingTimeoutRef.current = setTimeout(stopPolling, 3 * 60 * 1000);
   };
 
-  // Keep selectedChallengeRef in sync; stop polling when modal closes
-  useEffect(() => {
-    selectedChallengeRef.current = selectedChallenge;
-    if (!selectedChallenge) {
-      stopPolling();
-    }
-  }, [selectedChallenge]);
+  const closeChallenge = () => {
+    stopPolling();
+    selectionRef.current += 1;
+    selectedChallengeRef.current = null;
+    setSelectedChallenge(null);
+  };
 
   // 获取比赛信息和题目列表
   useEffect(() => {
-    fetchContestAndChallenges();
+    scopeRef.current = { contestId };
+    setLoading(true);
+    setContestStatus({});
+    setTeamInfo(null);
+    setNotifications([]);
+    setCategories([]);
+    setWriteups([]);
+    setShowChallengesAfterEnd(false);
+    closeChallenge();
+    fetchContestInfo();
+    fetchCategories();
+    return () => {
+      scopeRef.current = null;
+      selectionRef.current += 1;
+      selectedChallengeRef.current = null;
+      stopPolling();
+    };
   }, [contestId]);
 
   // 当当前页变化时, 重新获取题目数据
   useEffect(() => {
-    if (contestId && currentPage > 0) {
-      fetchChallengesWithFilters(currentPage, selectedCategory, unsolvedOnly);
-    }
-  }, [currentPage, contestId, unsolvedOnly]);
+    let active = true;
+    setListLoading(true);
+    setListError(null);
+    fetchChallengesWithFilters(currentPage, selectedCategory, unsolvedOnly, () => active);
+    return () => {
+      active = false;
+    };
+  }, [currentPage, contestId, selectedCategory, unsolvedOnly, listRevision]);
 
   // 获取已上传的题解
   useEffect(() => {
@@ -212,60 +248,96 @@ function GameChallengesPage() {
     }
   }, [contestId, contestStatus?.status]);
 
-  const fetchContestAndChallenges = async () => {
-    try {
-      const [contestRes, teamMembersRes, teamInfoRes, noticesRes] = await Promise.all([
-        getContestInfo(contestId),
-        getTeamMembers(contestId),
-        getTeamInfo(contestId),
-        getContestNotices(contestId),
-      ]);
+  useEffect(() => {
+    if (contestStatus.status === 'ended' && !showChallengesAfterEnd) closeChallenge();
+  }, [contestStatus.status, showChallengesAfterEnd]);
 
-      if (contestRes.code === 200 && teamMembersRes.code === 200) {
-        // 设置比赛状态
-        const status = getContestStatus(contestRes.data, teamInfoRes);
-        setContestStatus(status);
+  const fetchContestInfo = async () => {
+    const scope = scopeRef.current;
+    const request = ++contestRequestRef.current;
+    const isCurrent = () => scopeRef.current === scope && request === contestRequestRef.current;
+    setContestError(null);
+    if (!contestStatus.status) setLoading(true);
+
+    // Notices are optional: neither their latency nor failure should block the contest.
+    getContestNotices(contestId)
+      .then((response) => {
+        if (!isCurrent()) return;
+        if (response.code !== 200) throw new Error(response.msg || t('errors.requestFailed'));
         setNotifications(
-          noticesRes.data.notices.map((notice) => ({
+          (response.data?.notices || []).map((notice) => ({
             type: notice.type || 'info',
             title: notice.title,
             message: notice.content,
           }))
         );
+      })
+      .catch((error) => {
+        if (isCurrent()) toast.danger({ description: error.message || t('errors.requestFailed') });
+      });
 
-        // 设置队伍信息
-        setTeamInfo({
-          members: teamMembersRes.data.map((member) => ({ picture: member.picture, name: member.name })),
+    try {
+      const [contestRes, teamMembersRes, teamInfoRes] = await Promise.all([
+        getContestInfo(contestId),
+        getTeamMembers(contestId),
+        getTeamInfo(contestId),
+      ]);
+      if (!isCurrent()) return;
+
+      if (contestRes.code === 200 && teamMembersRes.code === 200 && teamInfoRes.code === 200) {
+        // 设置比赛状态
+        const status = getContestStatus(contestRes.data, teamInfoRes);
+        const team = {
+          members: teamMembersRes.data.map((member) => ({
+            picture: member.picture,
+            name: member.name,
+          })),
           name: teamInfoRes.data.name,
-        });
-
-        // 获取分类和题目数据
-        await fetchCategories();
-        await fetchChallengesWithFilters(1, selectedCategory, unsolvedOnly);
+        };
+        setContestStatus(status);
+        setTeamInfo(team);
+      } else {
+        const failedResponse = [contestRes, teamMembersRes, teamInfoRes].find((response) => response.code !== 200);
+        throw new Error(failedResponse.msg || t('game.challenges.toast.fetchFailed'));
       }
     } catch (error) {
-      toast.danger({ title: t('game.challenges.toast.fetchFailed'), description: error.message });
+      if (!isCurrent()) return;
+      setContestError(error.message || t('game.challenges.toast.fetchFailed'));
+      if (contestStatus.status) {
+        toast.danger({
+          title: t('game.challenges.toast.fetchFailed'),
+          description: error.message,
+        });
+      }
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   };
 
   // 获取所有分类
   const fetchCategories = async () => {
+    const scope = scopeRef.current;
+    const request = ++categoriesRequestRef.current;
+    const isCurrent = () => scopeRef.current === scope && request === categoriesRequestRef.current;
     try {
       // 获取所有题目来提取分类
       const response = await getChallengeCategories(contestId);
+      if (!isCurrent()) return;
+      if (response.code !== 200) throw new Error(response.msg || t('game.challenges.toast.fetchCategoriesFailed'));
       if (response.code === 200) {
         setCategories(normalizeCategories(response.data));
       }
     } catch (error) {
+      if (!isCurrent()) return;
       setCategories([]);
-      toast.danger({ description: error.message || t('game.challenges.toast.fetchCategoriesFailed') });
+      toast.danger({
+        description: error.message || t('game.challenges.toast.fetchCategoriesFailed'),
+      });
     }
   };
 
   // 获取带过滤器的题目数据
-  const fetchChallengesWithFilters = async (page, category, unsolved = unsolvedOnly) => {
+  const fetchChallengesWithFilters = async (page, category, unsolved, isCurrent) => {
     try {
       const params = {
         limit: pageSize,
@@ -279,6 +351,8 @@ function GameChallengesPage() {
       }
 
       const response = await getChallengeList(contestId, params);
+      if (!isCurrent()) return;
+      if (response.code !== 200) throw new Error(response.msg || t('game.challenges.toast.fetchListFailed'));
       if (response.code === 200) {
         const challengeData = response.data === null ? [] : response.data;
 
@@ -288,90 +362,127 @@ function GameChallengesPage() {
         );
         setChallenges(transformedChallenges);
         setTotalCount(challengeData.count || 0);
+        const lastPage = Math.max(1, Math.ceil((challengeData.count || 0) / pageSize));
+        if (page > lastPage) setCurrentPage(lastPage);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('game.challenges.toast.fetchListFailed') });
+      if (!isCurrent()) return;
+      setChallenges([]);
+      setTotalCount(0);
+      setListError(error.message || t('game.challenges.toast.fetchListFailed'));
+    } finally {
+      if (isCurrent()) setListLoading(false);
     }
   };
 
   // 获取已上传的题解数据
   const fetchWriteups = async () => {
+    const scope = scopeRef.current;
+    const request = ++writeupRequestRef.current;
+    const isCurrent = () => scopeRef.current === scope && request === writeupRequestRef.current;
     try {
       const response = await getWriteups(contestId);
+      if (!isCurrent()) return;
 
       if (response.code === 200 && response.data.writeups) {
         setWriteups(response.data.writeups);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('game.challenges.toast.fetchWriteupsFailed') });
+      if (!isCurrent()) return;
+      toast.danger({
+        description: error.message || t('game.challenges.toast.fetchWriteupsFailed'),
+      });
     }
   };
 
   // 刷新当前选中题目的状态
-  const refreshChallengeStatus = async () => {
-    if (!selectedChallengeRef.current) return;
+  const refreshChallengeStatus = async (challengeId, selection) => {
+    if (selectionRef.current !== selection || selectedChallengeRef.current?.id !== challengeId) return;
+    const request = ++statusRequestRef.current;
+    const isCurrent = () => selectionRef.current === selection && request === statusRequestRef.current;
 
     try {
-      const statusRes = await getChallengeStatus(contestId, selectedChallengeRef.current.id);
+      const statusRes = await getChallengeStatus(contestId, challengeId);
+      if (!isCurrent()) return;
 
       if (statusRes.code === 200) {
         const updatedChallenge = mapChallengeStatusToViewModel(selectedChallengeRef.current, statusRes.data);
-
+        selectedChallengeRef.current = updatedChallenge;
         setSelectedChallenge(updatedChallenge);
 
         // 更新题目列表中的对应题目
         setChallenges((prev) => prev.map((c) => (c.id === updatedChallenge.id ? updatedChallenge : c)));
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('game.challenges.toast.refreshStatusFailed') });
+      if (!isCurrent()) return;
+      toast.danger({
+        description: error.message || t('game.challenges.toast.refreshStatusFailed'),
+      });
     }
   };
 
   // 处理题目初始化
   const handleInitialize = async (challengeId) => {
+    const selection = selectionRef.current;
     try {
       const res = await initChallenge(contestId, challengeId);
+      if (selectionRef.current !== selection) return false;
+      if (res.code !== 200) throw new Error(res.msg || t('game.challenges.toast.initFailed'));
       if (res.code === 200) {
-        toast.success({ title: res.msg || t('game.challenges.toast.initSuccess') });
-        await refreshChallengeStatus();
+        toast.success({
+          title: res.msg || t('game.challenges.toast.initSuccess'),
+        });
+        await refreshChallengeStatus(challengeId, selection);
         return true;
       }
     } catch (error) {
-      toast.danger({ title: t('game.challenges.toast.initFailed'), description: error.message });
+      if (selectionRef.current !== selection) return false;
+      toast.danger({
+        title: t('game.challenges.toast.initFailed'),
+        description: error.message,
+      });
     }
     return false;
   };
 
   const handleReset = async (challengeId) => {
+    const selection = selectionRef.current;
     try {
       const res = await resetChallenge(contestId, challengeId);
+      if (selectionRef.current !== selection) return false;
+      if (res.code !== 200) throw new Error(res.msg || t('game.challenges.toast.resetFailed'));
       if (res.code === 200) {
         toast.success({ title: t('game.challenges.toast.resetSuccess') });
-        await refreshChallengeStatus();
+        await refreshChallengeStatus(challengeId, selection);
         return true;
       }
     } catch (error) {
-      toast.danger({ title: t('game.challenges.toast.resetFailed'), description: error.message });
+      if (selectionRef.current !== selection) return false;
+      toast.danger({
+        title: t('game.challenges.toast.resetFailed'),
+        description: error.message,
+      });
     }
     return false;
   };
 
   // 处理启动靶机
   const handleLaunchInstance = async (challengeId) => {
+    const selection = selectionRef.current;
     try {
       const res = await startRemoteTarget(contestId, challengeId);
+      if (selectionRef.current !== selection) return false;
+      if (res.code !== 200) throw new Error(res.msg || t('game.challenges.toast.launchFailed'));
       if (res.code === 200) {
-        setSelectedChallenge((prev) =>
-          prev?.id === challengeId
-            ? {
-                ...prev,
-                instanceStatus: 'waiting',
-                instanceRunning: false,
-                instancePending: false,
-                instanceWaiting: true,
-              }
-            : prev
-        );
+        statusRequestRef.current += 1;
+        selectedChallengeRef.current = {
+          ...selectedChallengeRef.current,
+          instanceStatus: 'waiting',
+          instanceRunning: false,
+          instancePending: false,
+          instanceWaiting: true,
+        };
+        setSelectedChallenge(selectedChallengeRef.current);
         setChallenges((prev) =>
           prev.map((challenge) =>
             challenge.id === challengeId
@@ -386,60 +497,94 @@ function GameChallengesPage() {
           )
         );
         toast.success({ title: t('game.challenges.toast.launchSuccess') });
-        startPolling('running');
+        startPolling(challengeId, 'running', selection);
         return true;
       }
     } catch (error) {
-      toast.danger({ title: t('game.challenges.toast.launchFailed'), description: error.message });
+      if (selectionRef.current !== selection) return false;
+      toast.danger({
+        title: t('game.challenges.toast.launchFailed'),
+        description: error.message,
+      });
     }
     return false;
   };
 
   // 处理延长靶机时间
   const handleExtendInstance = async (challengeId) => {
+    const selection = selectionRef.current;
     try {
       const res = await extendContainerTime(contestId, challengeId);
+      if (selectionRef.current !== selection) return false;
+      if (res.code !== 200) throw new Error(res.msg || t('game.challenges.toast.extendFailed'));
       if (res.code === 200) {
-        toast.success({ title: res.msg || t('game.challenges.toast.extendSuccess') });
-        await refreshChallengeStatus();
+        toast.success({
+          title: res.msg || t('game.challenges.toast.extendSuccess'),
+        });
+        await refreshChallengeStatus(challengeId, selection);
         return true;
       }
     } catch (error) {
-      toast.danger({ title: t('game.challenges.toast.extendFailed'), description: error.message });
+      if (selectionRef.current !== selection) return false;
+      toast.danger({
+        title: t('game.challenges.toast.extendFailed'),
+        description: error.message,
+      });
     }
     return false;
   };
 
   // 处理销毁靶机
   const handleDestroyInstance = async (challengeId) => {
+    const selection = selectionRef.current;
     try {
       const res = await stopContainer(contestId, challengeId);
+      if (selectionRef.current !== selection) return false;
+      if (res.code !== 200) throw new Error(res.msg || t('game.challenges.toast.destroyFailed'));
       if (res.code === 200) {
-        toast.success({ title: res.msg || t('game.challenges.toast.destroySuccess') });
-        await refreshChallengeStatus();
-        startPolling('stopped');
+        toast.success({
+          title: res.msg || t('game.challenges.toast.destroySuccess'),
+        });
+        await refreshChallengeStatus(challengeId, selection);
+        startPolling(challengeId, 'stopped', selection);
         return true;
       }
     } catch (error) {
-      toast.danger({ title: t('game.challenges.toast.destroyFailed'), description: error.message });
+      if (selectionRef.current !== selection) return false;
+      toast.danger({
+        title: t('game.challenges.toast.destroyFailed'),
+        description: error.message,
+      });
     }
     return false;
   };
 
   // 处理提交flag
   const handleSubmitFlag = async (challengeId, value) => {
+    const selection = selectionRef.current;
     try {
       const data = { flag: value };
       const res = await submitFlag(contestId, challengeId, data);
-      await refreshChallengeStatus();
-      await fetchContestAndChallenges();
+      if (selectionRef.current !== selection) return { success: false };
+      // Refresh attempts even for an incorrect flag, without replacing the modal or its input.
+      void refreshChallengeStatus(challengeId, selection);
       if (res.code === 200) {
-        toast.success({ title: res.msg || t('game.challenges.toast.submitSuccess') });
-        return { success: true, message: t('game.challenges.toast.submitSuccessMessage') };
+        void fetchContestInfo();
+        setListRevision((revision) => revision + 1);
+        toast.success({
+          title: res.msg || t('game.challenges.toast.submitSuccess'),
+        });
+        return {
+          success: true,
+          message: t('game.challenges.toast.submitSuccessMessage'),
+        };
       }
-      return { success: true, message: res.msg };
+      return { success: false, message: res.msg || t('errors.requestFailed') };
     } catch (error) {
-      return { success: false, message: error.message };
+      return {
+        success: false,
+        message: error.message || t('errors.requestFailed'),
+      };
     }
   };
 
@@ -448,34 +593,47 @@ function GameChallengesPage() {
     const nextCategory = selectedCategory === category ? '' : category;
     setSelectedCategory(nextCategory);
     setCurrentPage(1); // 重置到第一页
-    fetchChallengesWithFilters(1, nextCategory, unsolvedOnly);
   };
 
   const handleSolvedFilterChange = () => {
     const nextUnsolvedOnly = !unsolvedOnly;
     setUnsolvedOnly(nextUnsolvedOnly);
     setCurrentPage(1);
-    fetchChallengesWithFilters(1, selectedCategory, nextUnsolvedOnly);
   };
 
   // 处理题目点击
   const handleChallengeClick = async (challenge) => {
+    stopPolling();
+    const selection = ++selectionRef.current;
+    selectedChallengeRef.current = null;
+    setSelectedChallenge(null);
     try {
       // 获取题目状态, 包含附件、靶机信息和初始化状态
       const statusRes = await getChallengeStatus(contestId, challenge.id);
+      if (selectionRef.current !== selection) return;
+      if (statusRes.code !== 200) throw new Error(statusRes.msg || t('game.challenges.toast.fetchStatusFailed'));
       if (statusRes.code === 200) {
         const updatedChallenge = mapChallengeStatusToViewModel(challenge, statusRes.data);
 
+        selectedChallengeRef.current = updatedChallenge;
         setSelectedChallenge(updatedChallenge);
 
         // 页面刷新后 Pod 仍在排队或启动中 → 自动开始轮询
         if (isInstanceTransitioning(updatedChallenge.instanceStatus)) {
-          startPolling(updatedChallenge.instanceStatus === 'terminating' ? 'stopped' : 'running');
+          startPolling(
+            challenge.id,
+            updatedChallenge.instanceStatus === 'terminating' ? 'stopped' : 'running',
+            selection
+          );
         }
       }
     } catch (error) {
+      if (selectionRef.current !== selection) return;
+      selectedChallengeRef.current = challenge;
       setSelectedChallenge(challenge); // 即使失败也显示题目
-      toast.danger({ description: error.message || t('game.challenges.toast.fetchStatusFailed') });
+      toast.danger({
+        description: error.message || t('game.challenges.toast.fetchStatusFailed'),
+      });
     }
   };
 
@@ -489,15 +647,19 @@ function GameChallengesPage() {
 
       toast.success({ title: t('game.challenges.toast.downloadSuccess') });
     } catch (error) {
-      toast.danger({ description: error.message || t('game.challenges.toast.downloadFailed') });
+      toast.danger({
+        description: error.message || t('game.challenges.toast.downloadFailed'),
+      });
     }
   };
 
   // 处理上传题解
   const handleUploadWriteup = async (file) => {
+    const scope = scopeRef.current;
     try {
       setLoading(true);
       const res = await uploadWriteup(contestId, file);
+      if (scopeRef.current !== scope) return;
 
       if (res.code === 200) {
         toast.success({
@@ -508,9 +670,12 @@ function GameChallengesPage() {
         fetchWriteups();
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('game.challenges.toast.uploadFailed') });
+      if (scopeRef.current !== scope) return;
+      toast.danger({
+        description: error.message || t('game.challenges.toast.uploadFailed'),
+      });
     } finally {
-      setLoading(false);
+      if (scopeRef.current === scope) setLoading(false);
     }
   };
 
@@ -522,11 +687,33 @@ function GameChallengesPage() {
   // 处理返回比赛结束页面
   const handleBackToContestEnd = () => {
     setShowChallengesAfterEnd(false);
-    setSelectedChallenge(null);
+    closeChallenge();
   };
 
   if (loading) {
     return <Loading />;
+  }
+
+  if (!contestStatus.status) {
+    return (
+      <div role="alert">
+        <EmptyState
+          title={t('game.challenges.toast.fetchFailed')}
+          description={contestError}
+          action={
+            <Button
+              onClick={() => {
+                fetchContestInfo();
+                fetchCategories();
+                setListRevision((revision) => revision + 1);
+              }}
+            >
+              {t('common.refresh')}
+            </Button>
+          }
+        />
+      </div>
+    );
   }
 
   return (
@@ -570,12 +757,16 @@ function GameChallengesPage() {
               currentPage={currentPage}
               pageSize={pageSize}
               onPageChange={setCurrentPage}
+              isLoading={listLoading}
+              error={listError}
+              onRetry={() => setListRevision((revision) => revision + 1)}
             />
             <ChallengeModal
+              key={selectedChallenge?.id || 'closed'}
               challenge={selectedChallenge}
               contest={contestStatus}
               isOpen={!!selectedChallenge}
-              onClose={() => setSelectedChallenge(null)}
+              onClose={closeChallenge}
               onInitialize={handleInitialize}
               onReset={handleReset}
               onLaunchInstance={handleLaunchInstance}
@@ -618,12 +809,16 @@ function GameChallengesPage() {
             currentPage={currentPage}
             pageSize={pageSize}
             onPageChange={setCurrentPage}
+            isLoading={listLoading}
+            error={listError}
+            onRetry={() => setListRevision((revision) => revision + 1)}
           />
           <ChallengeModal
+            key={selectedChallenge?.id || 'closed'}
             challenge={selectedChallenge}
             contest={contestStatus}
             isOpen={!!selectedChallenge}
-            onClose={() => setSelectedChallenge(null)}
+            onClose={closeChallenge}
             onInitialize={handleInitialize}
             onReset={handleReset}
             onLaunchInstance={handleLaunchInstance}
@@ -638,4 +833,7 @@ function GameChallengesPage() {
   );
 }
 
-export default GameChallengesPage;
+export default function GameChallengesPage() {
+  const { contestId } = useParams();
+  return <ContestChallenges key={contestId} contestId={contestId} />;
+}

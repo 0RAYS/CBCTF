@@ -28,15 +28,15 @@ import { useTranslation } from 'react-i18next';
 function ContestDetail({ contest, handleJoinContest }) {
   const [hoveredPrize, setHoveredPrize] = useState(null);
   const [hoveredTimeline, setHoveredTimeline] = useState(null);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   if (!contest) return null;
 
   return (
-    <div className="contest-container mx-auto space-y-6">
+    <div className="contest-container mx-auto space-y-6 [overflow-wrap:anywhere]">
       {/* 头部信息区域 - 移除悬停效果 */}
       <motion.div
-        className="relative w-full h-auto min-h-[250px] md:h-[300px] border border-neutral-600 rounded-md overflow-hidden bg-black/30"
+        className="relative w-full min-h-[250px] md:min-h-[300px] border border-neutral-600 rounded-md overflow-hidden bg-black/30"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -52,10 +52,10 @@ function ContestDetail({ contest, handleJoinContest }) {
         />
 
         {/* 内容 */}
-        <div className="relative h-full p-4 md:p-8 flex flex-col justify-between">
+        <div className="relative min-w-0 p-4 md:p-8 flex flex-col gap-8">
           <div>
             <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4">
-              <h1 className="text-2xl md:text-4xl font-mono text-neutral-50 tracking-wider">{contest.title}</h1>
+              <h1 className="min-w-0 text-2xl md:text-4xl font-mono text-neutral-50 tracking-wider">{contest.title}</h1>
               <span
                 className={`px-3 py-1 border rounded-md text-sm ${
                   contest.status === 'upcoming'
@@ -68,20 +68,24 @@ function ContestDetail({ contest, handleJoinContest }) {
                 {t(`game.status.${contest.status}`)}
               </span>
             </div>
-            <div className="text-neutral-300 max-w-[800px] text-lg prose prose-invert">
+            <div className="min-w-0 text-neutral-300 max-w-[800px] text-base sm:text-lg prose prose-invert">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{contest.description || ''}</ReactMarkdown>
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-wrap gap-4 md:gap-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0 flex flex-wrap gap-4 md:gap-8">
               <div>
                 <span className="text-neutral-400">{t('game.detail.labels.startTime')}</span>
-                <div className="text-neutral-50 font-mono">{new Date(contest.startTime).toLocaleString()}</div>
+                <div className="text-neutral-50 font-mono">
+                  {new Date(contest.startTime).toLocaleString(i18n.language)}
+                </div>
               </div>
               <div>
                 <span className="text-neutral-400">{t('game.detail.labels.endTime')}</span>
-                <div className="text-neutral-50 font-mono">{new Date(contest.endTime).toLocaleString()}</div>
+                <div className="text-neutral-50 font-mono">
+                  {new Date(contest.endTime).toLocaleString(i18n.language)}
+                </div>
               </div>
               <div>
                 <span className="text-neutral-400">{t('game.detail.labels.participants')}</span>
@@ -90,17 +94,23 @@ function ContestDetail({ contest, handleJoinContest }) {
             </div>
 
             {/* 使用Button组件重构 */}
-            <Button variant="primary" size="lg" disabled={contest.status === 'ended'} onClick={handleJoinContest}>
-              {contest.status === 'upcoming' || contest.status === 'active' ? 'JOIN CONTEST' : 'CONTEST ENDED'}
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full lg:w-auto shrink-0 min-h-[50px] h-auto! py-2"
+              disabled={contest.status === 'ended'}
+              onClick={handleJoinContest}
+            >
+              {contest.status === 'ended' ? t('game.status.ended') : t('game.team.joinModal.title.select')}
             </Button>
           </div>
         </div>
       </motion.div>
 
       {/* 详细信息区域 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 比赛规则 - 添加规则项悬停效果 */}
-        <Card className="col-span-1 md:col-span-2" variant="default" padding="lg">
+        <Card className="min-w-0 col-span-1 lg:col-span-2" variant="default" padding="lg">
           <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">
             {t('game.detail.labels.contestRules')}
           </h2>
@@ -109,17 +119,16 @@ function ContestDetail({ contest, handleJoinContest }) {
               <motion.div
                 key={index}
                 className="flex gap-4 p-2 rounded-md hover:bg-neutral-300/5 transition-colors duration-200 cursor-default"
-                whileHover={{ x: 10 }}
               >
-                <span className="text-geek-400 font-mono">{(index + 1).toString().padStart(2, '0')}</span>
-                <p>{rule}</p>
+                <span className="shrink-0 text-geek-400 font-mono">{(index + 1).toString().padStart(2, '0')}</span>
+                <p className="min-w-0">{rule}</p>
               </motion.div>
             ))}
           </div>
         </Card>
 
         {/* 奖励信息 - 添加奖项悬停效果 */}
-        <Card variant="default" padding="lg">
+        <Card variant="default" padding="lg" className="min-w-0">
           <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">{t('game.detail.labels.prizes')}</h2>
           <div className="space-y-6">
             {contest.prizes?.map((prize, index) => (
@@ -131,9 +140,9 @@ function ContestDetail({ contest, handleJoinContest }) {
                 onMouseLeave={() => setHoveredPrize(null)}
               >
                 <motion.div
-                  className="flex items-center gap-3 text-neutral-50 mb-2"
+                  className="flex flex-wrap items-center gap-3 text-neutral-50 mb-2"
                   animate={{
-                    x: hoveredPrize === index ? 10 : 0,
+                    opacity: hoveredPrize === index ? 0.9 : 1,
                     transition: { duration: 0.2 },
                   }}
                 >
@@ -157,7 +166,7 @@ function ContestDetail({ contest, handleJoinContest }) {
                 <motion.div
                   className="text-neutral-400 text-sm prose prose-invert prose-sm max-w-none"
                   animate={{
-                    x: hoveredPrize === index ? 10 : 0,
+                    opacity: hoveredPrize === index ? 0.9 : 1,
                     transition: { duration: 0.2, delay: 0.1 },
                   }}
                 >
@@ -173,21 +182,21 @@ function ContestDetail({ contest, handleJoinContest }) {
       <Card variant="default" padding="lg">
         <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">{t('game.detail.labels.timeline')}</h2>
         <div className="overflow-x-auto">
-          <div className="relative flex items-start gap-8 min-w-max">
+          <div className="relative flex flex-col md:flex-row items-stretch gap-6 md:gap-8 md:min-w-max">
             {/* 连接线 */}
-            <div className="absolute top-[30px] left-0 right-0 h-[2px] bg-neutral-300/20" />
+            <div className="hidden md:block absolute top-[30px] left-0 right-0 h-[2px] bg-neutral-300/20" />
 
             {contest.timeline?.map((item, index) => (
               <motion.div
                 key={index}
-                className={`flex-1 relative p-4 rounded-md transition-all duration-200 cursor-default
+                className={`min-w-0 md:w-64 md:flex-none relative p-4 rounded-md transition-colors duration-200 cursor-default
                                 ${hoveredTimeline === index ? 'bg-neutral-300/5' : 'hover:bg-neutral-300/5'}`}
                 onMouseEnter={() => setHoveredTimeline(index)}
                 onMouseLeave={() => setHoveredTimeline(null)}
               >
                 <motion.div
                   animate={{
-                    x: hoveredTimeline === index ? 5 : 0,
+                    opacity: hoveredTimeline === index ? 0.9 : 1,
                     transition: { duration: 0.2 },
                   }}
                   className="border-none"

@@ -80,9 +80,9 @@ function StatusPanel({ contestStatus, notifications, onStatusExpired }) {
   // 即将开始的状态
   if (contestStatus.status === 'upcoming') {
     return (
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 [overflow-wrap:anywhere] [&>div]:min-w-0">
         <motion.div
-          className="col-span-3 grid grid-cols-3 gap-6"
+          className="xl:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4 [&>div]:min-w-0 [&>div>div.flex]:flex-col [&>div>div.flex]:items-start [&>div>div.flex]:gap-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -115,9 +115,9 @@ function StatusPanel({ contestStatus, notifications, onStatusExpired }) {
 
   // 比赛进行中的状态
   return (
-    <div className="grid grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 [overflow-wrap:anywhere] [&>div]:min-w-0">
       <motion.div
-        className="col-span-3 grid grid-cols-3 gap-6"
+        className="xl:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4 [&>div]:min-w-0 [&>div>div.flex]:flex-col [&>div>div.flex]:items-start [&>div>div.flex]:gap-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >

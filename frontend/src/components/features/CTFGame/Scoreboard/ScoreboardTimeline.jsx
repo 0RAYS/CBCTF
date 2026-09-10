@@ -1,59 +1,50 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useMemo, useState } from 'react';
 import Button from '../../../common/Button';
 import Card from '../../../common/Card';
 import { useTranslation } from 'react-i18next';
 
-const ReactECharts = lazy(() => import('echarts-for-react'));
+const ReactECharts = lazy(() => import('../../../common/EChart'));
 
 /**
  * 分数时间线图表组件
  * @param {Object} props
  * @param {Array} props.timelineData - 时间线数据
  */
-function ScoreboardTimeline({ timelineData = [] }) {
+function ScoreboardTimeline({ timelineData = [], loading = false }) {
   const { t, i18n } = useTranslation();
-  const [selectedTeams, setSelectedTeams] = useState([]);
-  const [chartKey, setChartKey] = useState(0);
+  const [hiddenTeams, setHiddenTeams] = useState(() => new Set());
 
   // 处理时间线数据, 转换为图表格式
-  const chartData = useMemo(() => {
-    if (!timelineData || timelineData.length === 0) {
-      return [];
-    }
-
-    // 获取所有时间点
+  const { timePoints, teams } = useMemo(() => {
     const allTimePoints = new Set();
-    timelineData.forEach((team) => {
-      team.timeline.forEach((point) => {
-        allTimePoints.add(point.time);
-      });
+    const teams = (timelineData || []).map((team) => {
+      const points = (team.timeline || [])
+        .toSorted((a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : 0))
+        // Keep the first event at a duplicate timestamp, as the previous lookup did.
+        .filter((point, index, points) => index === 0 || point.time !== points[index - 1].time);
+      points.forEach((point) => allTimePoints.add(point.time));
+      return { ...team, timeline: points };
     });
-
-    // 按时间排序
-    const sortedTimePoints = Array.from(allTimePoints).toSorted();
-
-    // 构建图表数据
-    return sortedTimePoints.map((time) => {
-      const dataPoint = { time };
-
-      timelineData.forEach((team) => {
-        // 找到该时间点或之前最近的分数
-        const teamScore = team.timeline.reduce(
-          (latest, point) => (point.time <= time && (!latest || point.time > latest.time) ? point : latest),
-          null
-        );
-
-        // 如果找到分数, 使用该分数; 否则使用0（从0开始）
-        dataPoint[`team_${team.id}`] = teamScore ? teamScore.score : 0;
-      });
-
-      return dataPoint;
-    });
+    return { timePoints: Array.from(allTimePoints).toSorted(), teams };
   }, [timelineData]);
 
-  useEffect(() => {
-    setSelectedTeams(timelineData.map((team) => team.id));
-  }, [timelineData]);
+  const chartData = useMemo(
+    () =>
+      teams.flatMap((team, index) => {
+        if (hiddenTeams.has(team.id)) return [];
+        let cursor = 0;
+        let score = 0;
+        // Preserve the shared category axis, but allocate values only for visible teams.
+        const data = timePoints.map((time) => {
+          while (cursor < team.timeline.length && team.timeline[cursor].time <= time) {
+            score = team.timeline[cursor++].score;
+          }
+          return score;
+        });
+        return [{ team, index, data }];
+      }),
+    [teams, timePoints, hiddenTeams]
+  );
 
   // 格式化时间显示
   const formatTime = (time) => {
@@ -73,7 +64,7 @@ function ScoreboardTimeline({ timelineData = [] }) {
   // 生成随机颜色
   const generateColor = (index) => {
     const colors = [
-      '#3B82F6', // blue
+      '#597ef7', // blue
       '#EF4444', // red
       '#10B981', // green
       '#F59E0B', // yellow
@@ -89,18 +80,14 @@ function ScoreboardTimeline({ timelineData = [] }) {
 
   // 生成 ECharts 配置
   const getChartOption = () => {
-    if (!chartData.length) return {};
-
-    const timePoints = chartData.map((item) => formatTime(item.time));
     const series = [];
 
-    timelineData.forEach((team, index) => {
-      if (!selectedTeams.includes(team.id)) return;
-
+    chartData.forEach(({ team, index, data }) => {
       series.push({
+        id: `team_${team.id}`,
         name: `#${team.rank} ${team.name}`,
         type: 'line',
-        data: chartData.map((item) => item[`team_${team.id}`]),
+        data,
         smooth: true,
         lineStyle: {
           color: generateColor(index),
@@ -140,21 +127,11 @@ function ScoreboardTimeline({ timelineData = [] }) {
           color: '#fff',
           fontSize: 12,
         },
-        formatter: function (params) {
-          let result = `<div style="margin-bottom: 8px; font-family: 'Maple Mono', 'Source Han Sans SC', ui-monospace, monospace; color: #9CA3AF;">${params[0].axisValue}</div>`;
-          params.forEach((param) => {
-            // 显示所有队伍, 包括0分
-            const team = timelineData.find((t) => `#${t.rank} ${t.name}` === param.seriesName);
-            if (team) {
-              result += `<div style="color: ${param.color}; margin: 2px 0;">${param.seriesName}: ${formatScore(param.value)}</div>`;
-            }
-          });
-          return result;
-        },
+        valueFormatter: formatScore,
       },
       xAxis: {
         type: 'category',
-        data: timePoints,
+        data: timePoints.map(formatTime),
         axisLine: {
           lineStyle: {
             color: '#374151',
@@ -193,15 +170,20 @@ function ScoreboardTimeline({ timelineData = [] }) {
 
   // 切换队伍显示
   const toggleTeam = (teamId) => {
-    setSelectedTeams((prev) => (prev.includes(teamId) ? prev.filter((id) => id !== teamId) : [...prev, teamId]));
-    // 强制图表重新渲染
-    setChartKey((prev) => prev + 1);
+    setHiddenTeams((prev) => {
+      const next = new Set(prev);
+      if (next.has(teamId)) next.delete(teamId);
+      else next.add(teamId);
+      return next;
+    });
   };
 
-  if (!timelineData || timelineData.length === 0) {
+  if (loading || !timelineData || timelineData.length === 0) {
     return (
       <div className="flex justify-center items-center py-20">
-        <div className="text-neutral-400">{t('common.noData')}</div>
+        <div className="text-neutral-400" role="status">
+          {t(loading ? 'common.loading' : 'common.noData')}
+        </div>
       </div>
     );
   }
@@ -213,13 +195,14 @@ function ScoreboardTimeline({ timelineData = [] }) {
         {timelineData.map((team, index) => (
           <Button
             key={team.id}
-            variant={selectedTeams.includes(team.id) ? 'primary' : 'ghost'}
+            variant={!hiddenTeams.has(team.id) ? 'primary' : 'ghost'}
+            aria-pressed={!hiddenTeams.has(team.id)}
             size="sm"
             onClick={() => toggleTeam(team.id)}
             className="!text-xs"
             style={{
-              borderColor: selectedTeams.includes(team.id) ? generateColor(index) : undefined,
-              color: selectedTeams.includes(team.id) ? generateColor(index) : undefined,
+              borderColor: !hiddenTeams.has(team.id) ? generateColor(index) : undefined,
+              color: !hiddenTeams.has(team.id) ? generateColor(index) : undefined,
             }}
           >
             #{team.rank} {team.name}
@@ -234,7 +217,7 @@ function ScoreboardTimeline({ timelineData = [] }) {
             <div className="h-full flex items-center justify-center text-neutral-400">{t('common.loading')}</div>
           }
         >
-          <ReactECharts key={chartKey} option={chartOption} style={{ height: '100%', width: '100%' }} />
+          <ReactECharts option={chartOption} replaceMerge={['series']} style={{ height: '100%', width: '100%' }} />
         </Suspense>
       </div>
     </Card>

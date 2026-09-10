@@ -48,6 +48,7 @@ function Scoreboard({
   challenges = [],
   totalCount = 0,
   tableCurrentPage,
+  tablePageSize = 20,
   onTablePageChange,
 }) {
   const { t, i18n } = useTranslation();
@@ -92,9 +93,8 @@ function Scoreboard({
           challenges={challenges}
           totalCount={totalCount}
           currentPage={tableCurrentPage || 1}
-          pageSize={10}
+          pageSize={tablePageSize}
           onPageChange={onTablePageChange}
-          isAdmin={false}
           PaginationComponent={Pagination}
         />
       ) : (

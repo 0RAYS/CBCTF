@@ -34,9 +34,6 @@ export default defineConfig({
   ],
   base: '/platform/',
   build: {
-    modulePreload: {
-      resolveDependencies: (_, deps) => deps.filter((dep) => !/vendor-(monaco|echarts)/.test(dep)),
-    },
     rollupOptions: {
       output: {
         manualChunks: (id) => {

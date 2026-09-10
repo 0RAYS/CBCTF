@@ -57,7 +57,7 @@ function Input({
 
   // 基础样式
   const inputClasses = `
-    bg-neutral-800/60 border rounded-md text-neutral-50 placeholder-neutral-500 font-mono
+    min-w-0 bg-neutral-800/60 border rounded-md text-neutral-50 placeholder-neutral-400 font-mono
     focus:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 transition-all duration-200
     ${type === 'number' ? 'tabular-nums' : ''}
     ${sizes[size] || sizes.md}
@@ -71,7 +71,7 @@ function Input({
     .replace(/\s+/g, ' ');
 
   return (
-    <div className={`relative ${fullWidth ? 'w-full' : 'inline-block'}`}>
+    <div className={`relative min-w-0 ${fullWidth ? 'w-full' : 'inline-block'}`}>
       {/* 关联标签 */}
       {label && (
         <label htmlFor={id} className="block text-sm text-neutral-300 mb-1">

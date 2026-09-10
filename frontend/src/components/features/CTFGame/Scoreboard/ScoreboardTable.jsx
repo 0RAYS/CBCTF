@@ -7,7 +7,6 @@
  * @param {number} props.currentPage - 当前页码
  * @param {number} props.pageSize - 每页显示数量
  * @param {Function} props.onPageChange - 页码变化处理函数
- * @param {boolean} props.isAdmin - 是否为管理员界面
  * @param {Function} props.PaginationComponent - 分页组件
  */
 
@@ -23,7 +22,6 @@ function ScoreboardTable({
   currentPage = 1,
   pageSize = 20,
   onPageChange,
-  isAdmin = false,
   PaginationComponent,
 }) {
   const { t } = useTranslation();
@@ -308,24 +306,13 @@ function ScoreboardTable({
       {/* 分页 */}
       {PaginationComponent && (
         <div className="mt-6 flex justify-center w-full overflow-x-auto">
-          {isAdmin ? (
-            <PaginationComponent
-              total={Math.ceil(totalCount / pageSize)}
-              current={currentPage}
-              pageSize={pageSize}
-              onChange={onPageChange}
-              showTotal={isAdmin}
-              totalItems={totalCount}
-            />
-          ) : (
-            <PaginationComponent
-              currentPage={currentPage}
-              totalPages={Math.ceil(totalCount / pageSize)}
-              onPageChange={onPageChange}
-              showTotal={true}
-              totalItems={totalCount}
-            />
-          )}
+          <PaginationComponent
+            current={currentPage}
+            total={Math.ceil(totalCount / pageSize)}
+            onChange={onPageChange}
+            showTotal={true}
+            totalItems={totalCount}
+          />
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button, LanguageSwitcher, Avatar } from '../../common';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +18,34 @@ function NavBar({
 }) {
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location, activeTab]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setMobileMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    const desktop = window.matchMedia('(min-width: 1280px)');
+    const closeOnDesktop = () => {
+      if (desktop.matches) setMobileMenuOpen(false);
+    };
+    closeOnDesktop();
+    document.addEventListener('keydown', handleKeyDown);
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      desktop.removeEventListener('change', closeOnDesktop);
+    };
+  }, [mobileMenuOpen]);
 
   const handleTabChange = (id) => {
     onTabChange(id);
@@ -26,33 +55,38 @@ function NavBar({
   return (
     <>
       <div
-        className={`fixed top-0 left-0 w-full h-[80px] flex items-center justify-between px-4 md:px-12 bg-neutral-900/70 backdrop-blur-[4px] border-b border-neutral-700/60 z-40 ${className}`}
+        className={`fixed top-0 left-0 w-full h-[80px] flex items-center justify-between gap-3 px-3 sm:px-6 lg:px-8 bg-neutral-900/70 backdrop-blur-[4px] border-b border-neutral-700/60 z-40 ${className}`}
       >
         {/* 左侧区域包装 */}
-        <div className="flex items-center">
+        <div className="flex min-w-0 flex-1 items-center">
           {/* Logo区域 */}
-          <div className="relative">
+          <div className="relative min-w-0 max-w-[240px] xl:max-w-[200px]">
             <Button
               variant="outline"
               size="lg"
-              className="min-w-[120px] md:min-w-[180px] h-[50px] font-mono text-lg tracking-wider"
-              onClick={onLogoClick}
+              className="w-full min-w-0 h-[50px] px-3! sm:px-4! font-mono text-sm! sm:text-lg! tracking-wider [&>span]:min-w-0"
+              title={logo}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onLogoClick();
+              }}
             >
-              {logo}
+              <span className="block truncate">{logo}</span>
             </Button>
             {/* Logo装饰角 */}
             <div className="absolute -top-[3px] -right-[3px] w-[10px] h-[10px] border-t border-r border-neutral-300" />
             <div className="absolute -bottom-[3px] -left-[3px] w-[10px] h-[10px] border-b border-l border-neutral-300" />
           </div>
 
-          {/* 标签区域 — 仅在 md+ 显示 */}
-          <nav aria-label={t('common.mainNavigation')} className="hidden md:flex ml-16 gap-6">
+          {/* Keep the six contest tabs collapsed on tablets. */}
+          <nav aria-label={t('common.mainNavigation')} className="hidden xl:flex shrink-0 ml-6 gap-2">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
                 variant={activeTab === tab.id ? 'primary' : 'outline'}
                 size="sm"
-                className="min-w-[100px]"
+                className="min-w-0 px-3! whitespace-nowrap"
+                aria-current={activeTab === tab.id ? 'page' : undefined}
                 onClick={() => onTabChange(tab.id)}
               >
                 {tab.label}
@@ -62,13 +96,16 @@ function NavBar({
         </div>
 
         {/* 右侧语言切换与头像区域 */}
-        <div className="flex items-center gap-3">
-          <LanguageSwitcher size="sm" />
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <LanguageSwitcher size="sm" className="min-h-10" />
           <button
             type="button"
             aria-label={t('common.openUserMenu')}
             className="relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 rounded-md"
-            onClick={onPictureClick}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              onPictureClick();
+            }}
           >
             <div className="w-[45px] h-[45px] border border-neutral-300 rounded-md overflow-hidden transition-colors duration-200 hover:border-neutral-100 cursor-pointer">
               <Avatar src={pictureSrc} name={userName} size={45} shape="rounded" />
@@ -78,14 +115,15 @@ function NavBar({
             <div className="absolute -bottom-[2px] -left-[2px] w-[8px] h-[8px] border-b border-l border-neutral-300 group-hover:border-neutral-100 rounded-bl-none"></div>
           </button>
 
-          {/* 汉堡菜单按钮 — 仅在 mobile 显示 */}
+          {/* Collapsed navigation trigger. */}
           {tabs.length > 0 && (
             <button
               type="button"
+              ref={menuButtonRef}
               aria-label={t('common.toggleMenu')}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav-menu"
-              className="md:hidden w-10 h-10 border border-neutral-300/40 rounded-md flex items-center justify-center text-neutral-300 hover:text-neutral-100 hover:border-neutral-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 relative overflow-hidden"
+              className="xl:hidden shrink-0 w-10 h-10 border border-neutral-300/40 rounded-md flex items-center justify-center text-neutral-300 hover:text-neutral-100 hover:border-neutral-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 relative overflow-hidden"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -127,7 +165,7 @@ function NavBar({
         {mobileMenuOpen && tabs.length > 0 && (
           <>
             <motion.div
-              className="fixed inset-0 bg-neutral-900/70 z-30 md:hidden"
+              className="fixed inset-0 bg-neutral-900/70 z-30 xl:hidden"
               onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
               initial={{ opacity: 0 }}
@@ -138,7 +176,7 @@ function NavBar({
             <motion.nav
               id="mobile-nav-menu"
               aria-label={t('common.mainNavigation')}
-              className="fixed top-[80px] left-0 right-0 z-40 bg-neutral-800/95 border-b border-neutral-600/50 md:hidden"
+              className="fixed top-[80px] left-0 right-0 max-h-[calc(100dvh-80px)] overflow-y-auto z-40 bg-neutral-800/95 border-b border-neutral-600/50 xl:hidden"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -151,6 +189,7 @@ function NavBar({
                     variant={activeTab === tab.id ? 'primary' : 'outline'}
                     size="sm"
                     fullWidth
+                    aria-current={activeTab === tab.id ? 'page' : undefined}
                     onClick={() => handleTabChange(tab.id)}
                   >
                     {tab.label}

@@ -18,9 +18,12 @@ import ScoreboardStats from '../../../components/features/CTFGame/Scoreboard/Sco
 import { useTranslation } from 'react-i18next';
 import { useTeamDetailDialog } from '../../../hooks/useTeamDetailDialog.jsx';
 
-function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange }) {
+function AdminContestScoreboard(props) {
   const { id } = useParams();
+  return <ContestScoreboard key={id} id={id} {...props} />;
+}
 
+function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange }) {
   // 视图状态
   const [viewMode, setViewMode] = useState(externalViewMode || 'ranking'); // 'ranking' | 'table' | 'timeline'
 
@@ -44,7 +47,7 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
   const tablePageSize = 20;
 
   // 时间线相关状态
-  const [timelineData, setTimelineData] = useState([]);
+  const [timelineData, setTimelineData] = useState(null);
   const [timelineLoading, setTimelineLoading] = useState(false);
   const { t, i18n } = useTranslation();
 
@@ -112,58 +115,47 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
   };
 
   // 获取时间线数据
-  const fetchTimelineData = async () => {
+  const fetchTimelineData = async (isCurrent) => {
     setTimelineLoading(true);
     try {
       const response = await getContestTimeline(id);
-      if (response.code === 200) {
+      if (isCurrent() && response.code === 200) {
         setTimelineData(response.data || []);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTimelineFailed') });
+      if (isCurrent())
+        toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTimelineFailed') });
     } finally {
-      setTimelineLoading(false);
+      if (isCurrent()) setTimelineLoading(false);
     }
   };
 
-  const fetchRankings = async (noLoading = false) => {
+  const fetchRankings = async (isCurrent) => {
     try {
-      const contestId = parseInt(id);
-      const [contestInfoResponse, response] = await Promise.all([
-        getContestInfo(contestId),
-        getContestRank(
-          contestId,
-          {
-            limit: pageSize,
-            offset: (currentPage - 1) * pageSize,
-          },
-          noLoading
-        ),
-      ]);
-      if (response.code === 200 && contestInfoResponse.code === 200) {
-        setStats({
-          totalTeams: contestInfoResponse.data.teams || 0,
-          totalSolves: contestInfoResponse.data.solved || 0,
-          highestScore: contestInfoResponse.data.highest || 0,
-          totalPlayers: contestInfoResponse.data.users || 0,
-        });
-
+      const response = await getContestRank(parseInt(id), {
+        limit: pageSize,
+        offset: (currentPage - 1) * pageSize,
+      });
+      if (isCurrent() && response.code === 200) {
         setTeams(rankTransform(currentPage, response.data));
         setTotalCount(response.data.count);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
+      if (isCurrent())
+        toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
     }
   };
 
-  const fetchScoreboardTable = async () => {
+  const fetchScoreboardTable = async (isCurrent) => {
+    setTableTeams([]);
+    setChallenges([]);
     try {
       const response = await getContestScoreboard(parseInt(id), {
         limit: tablePageSize,
         offset: (tableCurrentPage - 1) * tablePageSize,
       });
 
-      if (response.code === 200) {
+      if (isCurrent() && response.code === 200) {
         setTableTeams(response.data.teams || []);
         setTableTotalCount(response.data.count || 0);
 
@@ -191,19 +183,47 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
         setChallenges(sortedChallenges);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchScoreboardFailed') });
+      if (isCurrent())
+        toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchScoreboardFailed') });
     }
   };
 
+  // Statistics belong to the contest, not the active view or ranking page.
   useEffect(() => {
+    let ignore = false;
+    getContestInfo(parseInt(id))
+      .then((response) => {
+        if (ignore || response.code !== 200) return;
+        setStats({
+          totalTeams: response.data.teams || 0,
+          totalSolves: response.data.solved || 0,
+          highestScore: response.data.highest || 0,
+          totalPlayers: response.data.users || 0,
+        });
+      })
+      .catch((error) => {
+        if (!ignore)
+          toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchScoreboardFailed') });
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    let ignore = false;
+    const isCurrent = () => !ignore;
     if (viewMode === 'ranking') {
-      fetchRankings();
+      fetchRankings(isCurrent);
     } else if (viewMode === 'table') {
-      fetchScoreboardTable();
-    } else if (viewMode === 'timeline' && timelineData.length === 0) {
-      fetchTimelineData();
+      fetchScoreboardTable(isCurrent);
+    } else if (viewMode === 'timeline' && timelineData === null) {
+      fetchTimelineData(isCurrent);
     }
-  }, [id, viewMode, currentPage, tableCurrentPage]);
+    return () => {
+      ignore = true;
+    };
+  }, [id, viewMode, currentPage, tableCurrentPage, i18n.language]);
 
   // 同步外部视图模式
   useEffect(() => {
@@ -229,15 +249,23 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
   return (
     <div className="w-full mx-auto space-y-6">
       {/* 头部和视图切换 */}
-      <div className="flex justify-end items-center">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-wrap justify-between items-center gap-3">
+        <h1 className="text-xl font-mono text-neutral-50">{t('nav.scoreboard')}</h1>
+        <div className="flex flex-wrap items-center gap-3">
           {/* 视图切换按钮 */}
-          <div className="flex items-center gap-2 p-1 bg-black/30 border border-neutral-300/30 rounded-md">
+          <div
+            role="group"
+            aria-label={t('nav.scoreboard')}
+            className="flex items-center gap-2 p-1 bg-black/30 border border-neutral-300/30 rounded-md"
+          >
             <Button
               variant={viewMode === 'ranking' ? 'primary' : 'ghost'}
               size="sm"
               align="icon-left"
               icon={<IconList size={16} />}
+              aria-label={t('common.rank')}
+              title={t('common.rank')}
+              aria-pressed={viewMode === 'ranking'}
               onClick={() => handleViewModeChange('ranking')}
             />
             <Button
@@ -245,6 +273,9 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
               size="sm"
               align="icon-left"
               icon={<IconTable size={16} />}
+              aria-label={t('game.scoreboard.headers.challenges')}
+              title={t('game.scoreboard.headers.challenges')}
+              aria-pressed={viewMode === 'table'}
               onClick={() => handleViewModeChange('table')}
             />
             <Button
@@ -252,6 +283,9 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
               size="sm"
               align="icon-left"
               icon={<IconChartLine size={16} />}
+              aria-label={t('game.detail.labels.timeline')}
+              title={t('game.detail.labels.timeline')}
+              aria-pressed={viewMode === 'timeline'}
               onClick={() => handleViewModeChange('timeline')}
             />
           </div>
@@ -287,7 +321,7 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
           onPageChange={setTableCurrentPage}
         />
       ) : (
-        <ScoreboardTimeline timelineData={timelineData} loading={timelineLoading} />
+        <ScoreboardTimeline timelineData={timelineData || []} loading={timelineLoading} />
       )}
 
       {renderTeamDetailDialog()}

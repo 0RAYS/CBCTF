@@ -63,7 +63,7 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
     { id: 'profile', label: t('user.settings.sections.profile'), icon: '👤' },
     { id: 'security', label: t('user.settings.sections.security'), icon: '🔒' },
     { id: 'divider', type: 'divider' },
-    { id: 'logout', label: t('user.settings.sections.logout'), icon: '🖖', color: 'text-red-400' },
+    { id: 'logout', label: t('user.settings.sections.logout'), icon: '🖖' },
   ];
 
   const handlePasswordInputChange = (e) => {
@@ -175,13 +175,13 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
     <div className="w-full max-w-[1200px] mx-auto">
       <Card variant="default" padding="none" animate className="overflow-hidden">
         {/* 标题栏 */}
-        <div className="p-6 border-b border-neutral-300/30">
+        <div className="p-4 sm:p-6 border-b border-neutral-300/30">
           <h2 className="text-2xl font-mono text-neutral-50">{t('user.settings.title')}</h2>
         </div>
 
-        <div className="flex">
+        <div className="flex flex-col md:flex-row">
           {/* 左侧导航 */}
-          <div className="w-[240px] border-r border-neutral-300/30 p-4">
+          <div className="w-full md:w-[220px] shrink-0 border-b md:border-b-0 md:border-r border-neutral-300/30 p-4">
             <div className="space-y-2">
               {sections.map((section) =>
                 section.type === 'divider' ? (
@@ -194,7 +194,7 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
                     icon={<span className="text-xl">{section.icon}</span>}
                     textColor={
                       section.id === 'logout'
-                        ? 'text-red-400'
+                        ? 'text-neutral-400'
                         : activeSection === section.id
                           ? 'text-geek-400'
                           : 'text-neutral-300'
@@ -202,7 +202,7 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
                     className={`w-full px-4 py-3 rounded-md min-w-0 h-auto
                       ${
                         section.id === 'logout'
-                          ? 'hover:bg-red-400/10'
+                          ? 'hover:bg-white/5'
                           : activeSection === section.id
                             ? 'bg-geek-400/10'
                             : 'hover:bg-neutral-700/10 hover:text-neutral-200'
@@ -223,23 +223,28 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
           </div>
 
           {/* 右侧内容 */}
-          <div className="flex-1 p-6">
+          <div className="min-w-0 flex-1 p-4 sm:p-6">
             {/* 个人资料 */}
             {activeSection === 'profile' && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                 {/* 头像上传 */}
-                <div className="flex items-center gap-6">
-                  <div className="relative group" onClick={handlePictureClick}>
+                <div className="flex flex-col items-start sm:flex-row sm:items-center gap-4 sm:gap-6">
+                  <button
+                    type="button"
+                    aria-label={t('common.change')}
+                    className="relative group shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400"
+                    onClick={handlePictureClick}
+                  >
                     <Avatar src={user.picture} name={user.name} size="xl" shape="circle" />
                     <div
                       className="absolute inset-0 flex items-center justify-center
-                                            bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity
+                                            bg-black/60 rounded-full opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity
                                             cursor-pointer"
                     >
                       <span className="text-neutral-200 text-sm font-mono">{t('common.change')}</span>
                     </div>
-                  </div>
-                  <div>
+                  </button>
+                  <div className="min-w-0 [overflow-wrap:anywhere]">
                     <h3 className="text-neutral-50 font-mono mb-1">{user.name}</h3>
                     <p className="text-neutral-400 text-sm">
                       {user.emailVerified ? t('user.settings.emailVerified') : t('user.settings.emailNotVerified')}
@@ -273,21 +278,21 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
                   </div>
                   <div>
                     <label className="block text-neutral-400 text-sm mb-2">{t('auth.placeholders.email')}</label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         required
                         name="email"
                         type="email"
                         defaultValue={user.email}
-                        className="flex-1 p-3 bg-neutral-900 border border-neutral-300/30 rounded-md
+                        className="min-w-0 w-full flex-1 p-3 bg-neutral-900 border border-neutral-300/30 rounded-md
                                                     text-neutral-50 font-mono
                                                     focus:outline-none focus:border-geek-400"
                       />
                       {!user.emailVerified && onEmailVerify && (
                         <Button
-                          variant="primary"
+                          variant="outline"
                           size="sm"
-                          className="border-yellow-400 text-yellow-400 hover:bg-yellow-400/10"
+                          className="shrink-0 w-full sm:w-auto"
                           onClick={() => setShowEmailModal(true)}
                         >
                           {t('user.settings.verify')}
@@ -309,7 +314,12 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
 
                   {/* 保存按钮 */}
                   <div className="flex justify-end pt-4 border-t border-neutral-300/30">
-                    <Button type="submit" variant="primary" size="sm">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="sm"
+                      className="w-full sm:w-auto min-h-10 h-auto! py-2"
+                    >
                       {t('common.saveChanges')}
                     </Button>
                   </div>
@@ -420,7 +430,12 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
                     </div>
 
                     <div className="flex justify-end">
-                      <Button type="submit" variant="primary" size="sm">
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        size="sm"
+                        className="w-full sm:w-auto min-h-10 h-auto! py-2"
+                      >
                         {t('user.settings.updatePassword')}
                       </Button>
                     </div>
@@ -429,10 +444,16 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
 
                 {/* 账户注销 */}
                 {onDeleteAccount && (
-                  <div className="p-4 border border-red-400/30 rounded-md bg-red-400/5">
+                  <div className="p-4 border border-red-400/20 rounded-md">
                     <h3 className="text-red-400 font-mono mb-2">{t('user.settings.deleteAccount')}</h3>
                     <p className="text-neutral-400 text-sm mb-4">{t('user.settings.deleteAccountHint')}</p>
-                    <Button variant="danger" size="sm" onClick={openDeleteModal}>
+                    <Button
+                      variant="ghost"
+                      textColor="text-red-400"
+                      size="sm"
+                      className="w-full sm:w-auto min-h-10 h-auto! py-2 hover:bg-red-400/10!"
+                      onClick={openDeleteModal}
+                    >
                       {t('user.settings.deleteAccountAction')}
                     </Button>
                   </div>

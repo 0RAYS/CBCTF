@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { REPO_URL } from '../../../config/footer';
 
-function Footer({ copyright, icp, links }) {
+// AdminShellLayout still reserves space for a fixed footer.
+function Footer({ copyright, icp, links, fixed = true }) {
   const { t } = useTranslation();
 
   const resolvedCopyright = copyright ?? t('footer.copyright');
@@ -43,14 +44,16 @@ function Footer({ copyright, icp, links }) {
   };
 
   return (
-    <motion.div
-      className="fixed bottom-0 left-0 w-full bg-neutral-900/80 backdrop-blur-[4px] border-t border-neutral-600/50"
+    <motion.footer
+      className={`${fixed ? 'fixed bottom-0 left-0' : 'relative'} w-full bg-neutral-900/80 backdrop-blur-[4px] border-t border-neutral-600/50 [overflow-wrap:anywhere]`}
       style={{ minHeight: '60px' }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="min-h-[60px] max-w-[1200px] mx-auto px-4 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 py-2 sm:py-0">
+      <div
+        className={`min-h-[60px] max-w-[1200px] mx-auto px-4 md:px-8 flex flex-col sm:flex-row items-center justify-between ${fixed ? 'gap-2 py-2 sm:py-0' : 'gap-3 py-3'}`}
+      >
         {/* 左侧装饰和备案信息 */}
         <div className="relative flex items-center">
           {/* 装饰线条 */}
@@ -58,7 +61,7 @@ function Footer({ copyright, icp, links }) {
           <div className="absolute left-0 bottom-0 w-[60px] h-[1px] bg-gradient-to-r from-neutral-300/60 to-transparent hidden sm:block"></div>
 
           {/* 备案信息 */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:ml-8">
+          <div className="min-w-0 flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 sm:ml-8">
             <span className="text-neutral-300 text-xs tracking-wider font-mono">{resolvedCopyright}</span>
             {resolvedIcp && (
               <>
@@ -88,13 +91,13 @@ function Footer({ copyright, icp, links }) {
             <div className="absolute right-0 bottom-0 w-[40px] h-[1px] bg-gradient-to-l from-neutral-300/60 to-transparent hidden sm:block"></div>
 
             {/* 链接区域 */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:mr-8">
+            <div className="min-w-0 flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1 sm:mr-8">
               {resolvedLinks.map((link, index) => renderLink(link, index))}
             </div>
           </div>
         )}
       </div>
-    </motion.div>
+    </motion.footer>
   );
 }
 
