@@ -88,6 +88,9 @@ function GamesPage() {
             setIsModalOpen(true);
             break;
           default:
+            if (checkResponse.code === 404) {
+              toast.warning({ title: t('toast.team.notFound'), description: t('toast.team.notJoinContest') });
+            }
             navigate(`/games`);
             break;
         }
