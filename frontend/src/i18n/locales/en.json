@@ -2557,6 +2557,8 @@
       "fetchListFailed": "Failed to load contests"
     },
     "team": {
+      "notFound": "Team not found",
+      "notJoinContest": "Did not participate in the competition",
       "checkStatusFailed": "Failed to check team status",
       "createSuccess": "Team created",
       "createFailed": "Failed to create team",

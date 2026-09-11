@@ -2556,6 +2556,8 @@
       "fetchListFailed": "获取比赛列表失败"
     },
     "team": {
+      "notFound": "队伍不存在",
+      "notJoinContest": "未参与比赛",
       "checkStatusFailed": "获取队伍状态失败",
       "createSuccess": "创建队伍成功",
       "createFailed": "创建队伍失败",
