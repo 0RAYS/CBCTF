@@ -182,15 +182,6 @@ export const getTeamContainers = async (contestId, teamId, params) => {
   });
 };
 
-// 获取容器流量数据
-export function getContainerTraffic(contestId, teamId, containerId, params = { limit: 20, offset: 0 }) {
-  return request({
-    url: `/admin/contests/${contestId}/teams/${teamId}/victims/${containerId}/traffic`,
-    method: 'GET',
-    params,
-  });
-}
-
 // 下载容器流量文件
 export function downloadContainerTraffic(contestId, teamId, containerId) {
   return request({

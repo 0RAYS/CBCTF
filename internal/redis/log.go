@@ -48,7 +48,7 @@ func NewLogHook(max int64, formatter logrus.Formatter) *LogHook {
 	return &LogHook{Key: logKey, Max: MaxLogScanLimit, Formatter: formatter}
 }
 
-func (h *LogHook) Levels() []logrus.Level {
+func (*LogHook) Levels() []logrus.Level {
 	return logrus.AllLevels
 }
 

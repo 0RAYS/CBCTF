@@ -26,7 +26,8 @@ const brandingSlice = createSlice({
   },
 });
 
-export const { setBranding, setBrandingLoading, setBrandingError } = brandingSlice.actions;
+export const { setBranding } = brandingSlice.actions;
+const { setBrandingLoading, setBrandingError } = brandingSlice.actions;
 
 export const fetchBranding = () => async (dispatch) => {
   dispatch(setBrandingLoading(true));

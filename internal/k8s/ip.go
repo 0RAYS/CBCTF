@@ -12,14 +12,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type CreateIPOptions struct {
-	Name    string
-	Labels  map[string]string
-	Subnet  string
-	PodName string
-	IP      string
-}
-
 func DeleteIPCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {

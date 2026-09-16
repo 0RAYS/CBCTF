@@ -12,14 +12,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type CreateEndpointOptions struct {
-	Name     string
-	Labels   map[string]string
-	IP       string
-	Port     int32
-	Protocol string
-}
-
 func DeleteEndpointCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {

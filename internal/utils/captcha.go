@@ -36,15 +36,11 @@ type generator interface {
 }
 
 type imageItem interface {
-	WriteTo(w io.Writer) (int64, error)
 	EncodeB64string() string
 }
 
-type Captcha struct{}
-
-func NewCaptcha() *Captcha { return &Captcha{} }
-
-func (c *Captcha) Generate() (id, base64Image, answer string, err error) {
+// GenerateCaptcha returns a random captcha ID, PNG data URL, and answer.
+func GenerateCaptcha() (id, base64Image, answer string, err error) {
 	g := randomGenerator()
 	id, content, answer := g.generate()
 	captcha, err := g.draw(content)
@@ -116,7 +112,7 @@ type arithmeticCaptcha struct {
 	dotCount   int
 }
 
-func (c *arithmeticCaptcha) generate() (id, question, answer string) {
+func (*arithmeticCaptcha) generate() (id, question, answer string) {
 	id = randomID()
 	var result int32
 	switch []string{"+", "-", "x"}[randomInt(3)] {
@@ -238,11 +234,6 @@ func (img *captchaImage) binaryEncoding() []byte {
 		panic(err)
 	}
 	return buf.Bytes()
-}
-
-func (img *captchaImage) WriteTo(w io.Writer) (int64, error) {
-	n, err := w.Write(img.binaryEncoding())
-	return int64(n), err
 }
 
 func (img *captchaImage) EncodeB64string() string {

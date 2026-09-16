@@ -42,7 +42,6 @@ function AdminRanking({ teams = [], currentPage = 1, pageSize = 6, totalCount = 
             <Pagination
               total={Math.ceil(totalCount / pageSize)}
               current={currentPage}
-              pageSize={pageSize}
               onChange={onPageChange}
               showTotal
               totalItems={totalCount}

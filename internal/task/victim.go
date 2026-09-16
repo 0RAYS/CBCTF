@@ -47,7 +47,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 		if ret := victimRepo.UpdateIfStatus(victim.ID, expectedStatus, db.UpdateVictimOptions{Status: new(model.TerminatingVictimStatus)}); !ret.OK {
 			log.Logger.Warningf("Failed to mark victim terminating after start failure: victim_id=%d reason=%s", victim.ID, ret.Msg)
 		}
-		if _, enqueueErr := EnqueueStopVictimTask(victim); enqueueErr == nil {
+		if enqueueErr := EnqueueStopVictimTask(victim); enqueueErr == nil {
 			cleanupQueued = true
 			return reason
 		} else {
@@ -140,13 +140,14 @@ type StopVictimPayload struct {
 	Victim model.Victim
 }
 
-func EnqueueStopVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
+func EnqueueStopVictimTask(victim model.Victim) error {
 	payload, err := msgpack.Marshal(StopVictimPayload{victim})
 	if err != nil {
-		return nil, err
+		return err
 	}
 	task := asynq.NewTask(stopVictimTaskType, payload)
-	return enqueueTask(stopVictimTaskType, task, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
+	_, err = enqueueTask(stopVictimTaskType, task, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
+	return err
 }
 
 func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {

@@ -86,7 +86,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Interface:    network.Attachment.Name,
 					IPv4:         network.Attachment.IP,
 					MAC:          network.Attachment.MAC,
-					Gateway:      network.Definition.Gateway,
 					Subnet:       subnetMap[network.Definition.Name].Name,
 					NetAttachDef: netAttachDefMap[network.Definition.Name].Name,
 				})

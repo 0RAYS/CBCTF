@@ -305,7 +305,6 @@ function AdminContestChallenges({
             <Pagination
               total={Math.ceil(totalCount / pageSize)}
               current={currentPage}
-              pageSize={pageSize}
               onChange={onPageChange}
               showTotal={true}
               totalItems={totalCount}

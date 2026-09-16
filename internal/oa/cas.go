@@ -24,11 +24,11 @@ func NewCASProtocol() Protocol {
 	return &casProtocol{}
 }
 
-func (c *casProtocol) ID() string {
+func (*casProtocol) ID() string {
 	return model.OauthProtocolCAS
 }
 
-func (c *casProtocol) LoginURL(provider model.Oauth) (string, model.RetVal) {
+func (*casProtocol) LoginURL(provider model.Oauth) (string, model.RetVal) {
 	loginURL, err := buildCASLoginURL(provider)
 	if err != nil {
 		return "", model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
@@ -36,7 +36,7 @@ func (c *casProtocol) LoginURL(provider model.Oauth) (string, model.RetVal) {
 	return loginURL, model.SuccessRetVal()
 }
 
-func (c *casProtocol) Exchange(ctx *gin.Context, provider model.Oauth) (map[string]any, model.RetVal) {
+func (*casProtocol) Exchange(ctx *gin.Context, provider model.Oauth) (map[string]any, model.RetVal) {
 	var form dto.CASCallbackForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		return nil, ret

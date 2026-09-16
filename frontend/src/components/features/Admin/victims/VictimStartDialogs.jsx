@@ -168,7 +168,6 @@ export function VictimCandidateDialog({
             <Pagination
               total={Math.ceil(detailChallengeTotal / challengePageSize)}
               current={detailChallengePage}
-              pageSize={challengePageSize}
               onChange={onPageChange}
               showTotal
               totalItems={detailChallengeTotal}

@@ -111,7 +111,7 @@ func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {
 	if err := unregisterGenerator(generator); err != nil {
 		log.Logger.Warningf("Failed to unregister generator before stop: generator_id=%d name=%s error=%v", generator.ID, generator.Name, err)
 	}
-	_, err := task.EnqueueStopGeneratorTask(generator)
+	err := task.EnqueueStopGeneratorTask(generator)
 	if err != nil {
 		log.Logger.Warningf("Failed to enqueue stop generator task: generator_id=%d name=%s challenge_id=%d error=%v", generator.ID, generator.Name, generator.ChallengeID, err)
 		_ = repo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})

@@ -56,7 +56,7 @@ export const DEFAULT_BRANDING = {
   },
 };
 
-export function getBrandingLanguageKey(language) {
+function getBrandingLanguageKey(language) {
   return language?.toLowerCase().startsWith('zh') ? 'zh_cn' : 'en';
 }
 

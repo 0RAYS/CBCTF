@@ -19,16 +19,6 @@ func InitTaskRepo(tx *gorm.DB) *TaskRepo {
 	}
 }
 
-// Create stores task execution history without generic uniqueness checks.
-// Task records are append-only observability data and have no natural unique key.
-func (t *TaskRepo) Create(task model.Task) model.RetVal {
-	if res := t.DB.Model(&model.Task{}).Create(&task); res.Error != nil {
-		log.Logger.Warningf("Failed to create Task: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Name(model.Task{}), "Error": res.Error.Error()}}
-	}
-	return model.SuccessRetVal()
-}
-
 func (t *TaskRepo) CreateBatch(tasks ...model.Task) model.RetVal {
 	if len(tasks) == 0 {
 		return model.SuccessRetVal()

@@ -21,7 +21,6 @@ type Network struct {
 	Interface    string
 	IPv4         string
 	MAC          string
-	Gateway      string
 	Subnet       string
 	NetAttachDef string
 }

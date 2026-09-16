@@ -11,12 +11,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type CreatePVCOptions struct {
-	Name    string
-	Labels  map[string]string
-	Storage string
-}
-
 func GetPVC(ctx context.Context, name string) (*corev1.PersistentVolumeClaim, model.RetVal) {
 	pvc, err := kubeClient.CoreV1().PersistentVolumeClaims(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {

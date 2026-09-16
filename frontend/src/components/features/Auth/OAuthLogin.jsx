@@ -27,7 +27,7 @@ function OAuthLogin() {
     fetchOAuthProviders();
   }, []);
 
-  const handleOAuthLogin = (providerName, loginUrl) => {
+  const handleOAuthLogin = (loginUrl) => {
     // 跳转到OAuth登录页面
     // eslint-disable-next-line react-hooks/immutability
     window.location.href = loginUrl;
@@ -68,7 +68,7 @@ function OAuthLogin() {
         {Object.entries(providers).map(([providerName, provider]) => (
           <motion.button
             key={providerName}
-            onClick={() => handleOAuthLogin(providerName, provider.url)}
+            onClick={() => handleOAuthLogin(provider.url)}
             className="w-full h-[44px] bg-neutral-800/60 border border-neutral-600/60 rounded-md px-4
                      text-neutral-50 hover:border-geek-400 hover:shadow-focus font-mono
                      transition-all duration-200 flex items-center justify-center gap-3"

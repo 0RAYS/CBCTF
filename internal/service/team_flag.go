@@ -39,7 +39,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 						},
 					}
 				}
-				if _, err := task.EnqueueGenAttachmentTask(team.CaptainID, generator, lockToken, contestChallenge.Challenge, team, teamFlags); err != nil {
+				if err := task.EnqueueGenAttachmentTask(team.CaptainID, generator, lockToken, contestChallenge.Challenge, team.ID, teamFlags); err != nil {
 					log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 					return model.RetVal{
 						Msg: i18n.Model.CreateError,
@@ -176,15 +176,11 @@ func ListTeamFlagViews(tx *gorm.DB, team model.Team) ([]view.TeamFlagChallengeVi
 		return nil, ret
 	}
 
-	type groupData struct {
-		index int
-		view  view.TeamFlagChallengeView
-	}
-	groupMap := make(map[uint]*groupData)
+	groupIndices := make(map[uint]int)
 	result := make([]view.TeamFlagChallengeView, 0)
 	for _, flag := range teamFlags {
 		id := flag.ContestFlag.ContestChallengeID
-		group, ok := groupMap[id]
+		index, ok := groupIndices[id]
 		if !ok {
 			result = append(result, view.TeamFlagChallengeView{
 				Name:     flag.ContestFlag.ContestChallenge.Name,
@@ -193,10 +189,10 @@ func ListTeamFlagViews(tx *gorm.DB, team model.Team) ([]view.TeamFlagChallengeVi
 				Hidden:   flag.ContestFlag.ContestChallenge.Hidden,
 				Flags:    make([]view.TeamFlagInfoView, 0),
 			})
-			group = &groupData{index: len(result) - 1, view: result[len(result)-1]}
-			groupMap[id] = group
+			index = len(result) - 1
+			groupIndices[id] = index
 		}
-		result[group.index].Flags = append(result[group.index].Flags, view.TeamFlagInfoView{
+		result[index].Flags = append(result[index].Flags, view.TeamFlagInfoView{
 			Value:        flag.Value,
 			Solved:       flag.Solved,
 			Template:     flag.ContestFlag.Value,
@@ -231,7 +227,7 @@ func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest mo
 		if !generatorRet.OK {
 			return generatorRet
 		}
-		if _, err := task.EnqueueGenAttachmentTask(user.ID, generator, lockToken, challenge, team, teamFlags); err != nil {
+		if err := task.EnqueueGenAttachmentTask(user.ID, generator, lockToken, challenge, team.ID, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 		}
@@ -260,7 +256,7 @@ func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest m
 		if !generatorRet.OK {
 			return generatorRet
 		}
-		if _, err := task.EnqueueGenAttachmentTask(user.ID, generator, lockToken, challenge, team, teamFlags); err != nil {
+		if err := task.EnqueueGenAttachmentTask(user.ID, generator, lockToken, challenge, team.ID, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 		}
