@@ -46,7 +46,7 @@ func setAuthCookie(ctx *gin.Context, token string) {
 }
 
 func GetCaptcha(ctx *gin.Context) {
-	id, image, answer, err := utils.NewCaptcha().Generate()
+	id, image, answer, err := utils.GenerateCaptcha()
 	if err != nil {
 		log.Logger.Warningf("Failed to generate captcha: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})

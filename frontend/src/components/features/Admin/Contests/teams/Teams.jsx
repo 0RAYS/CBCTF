@@ -336,7 +336,6 @@ function AdminTeams({
           <Pagination
             total={Math.ceil(totalCount / pageSize)}
             current={currentPage}
-            pageSize={pageSize}
             onChange={onPageChange}
             showTotal
             totalItems={totalCount}

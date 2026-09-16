@@ -32,7 +32,7 @@ const publicConfigSlice = createSlice({
   },
 });
 
-export const { setPublicConfig, setPublicConfigLoading, setPublicConfigError } = publicConfigSlice.actions;
+const { setPublicConfig, setPublicConfigLoading, setPublicConfigError } = publicConfigSlice.actions;
 
 export const fetchPublicConfig = () => async (dispatch) => {
   dispatch(setPublicConfigLoading(true));

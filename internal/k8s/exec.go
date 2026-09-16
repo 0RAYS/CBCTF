@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"CBCTF/internal/log"
-	"bytes"
 	"context"
 	"io"
 
@@ -11,8 +10,8 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-// Exec executes a command in a Pod
-func Exec(ctx context.Context, pod, container, command string, stdin io.Reader) (*bytes.Buffer, *bytes.Buffer, error) {
+// Exec executes a command in a Pod, draining output without buffering it.
+func Exec(ctx context.Context, pod, container, command string) error {
 	cmd := []string{"sh", "-c", command}
 	req := kubeClient.CoreV1().RESTClient().Post().
 		Resource("pods").
@@ -24,19 +23,15 @@ func Exec(ctx context.Context, pod, container, command string, stdin io.Reader) 
 			Command:   cmd,
 			Stdout:    true,
 			Stderr:    true,
-			Stdin:     stdin != nil,
 			TTY:       false,
 		}, scheme.ParameterCodec)
 	exec, err := remotecommand.NewSPDYExecutor(kubeConfig, "POST", req.URL())
 	if err != nil {
 		log.Logger.Warningf("Failed to create SPDY executor: %s", err)
-		return nil, nil, err
+		return err
 	}
-	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
-	err = exec.StreamWithContext(ctx, remotecommand.StreamOptions{
-		Stdin:  stdin,
-		Stdout: stdout,
-		Stderr: stderr,
+	return exec.StreamWithContext(ctx, remotecommand.StreamOptions{
+		Stdout: io.Discard,
+		Stderr: io.Discard,
 	})
-	return stdout, stderr, err
 }

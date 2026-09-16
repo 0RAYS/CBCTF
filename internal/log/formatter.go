@@ -107,7 +107,7 @@ func shortenCaller(path string) string {
 
 type Formatter struct{}
 
-func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	color.NoColor = false
 	t, ok := entry.Data["Type"].(string)
 	if !ok {

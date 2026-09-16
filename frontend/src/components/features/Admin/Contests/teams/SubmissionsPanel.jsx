@@ -66,7 +66,6 @@ export default function SubmissionsPanel({
             <Pagination
               total={Math.ceil(count / TEAM_DETAIL_PAGE_SIZE)}
               current={page}
-              pageSize={TEAM_DETAIL_PAGE_SIZE}
               onChange={onPageChange}
               showTotal
               totalItems={count}

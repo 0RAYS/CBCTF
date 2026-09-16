@@ -41,7 +41,6 @@ export function VictimFilters({ scope, filters, onResetFilters, onFilterChange }
 
         <div className={`grid grid-cols-1 ${contestId ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-3`}>
           <SearchFilter
-            t={t}
             label={t(`${translationKey}.filters.userName`)}
             placeholder={t(`${translationKey}.filters.searchUserPlaceholder`)}
             icon={
@@ -62,7 +61,6 @@ export function VictimFilters({ scope, filters, onResetFilters, onFilterChange }
 
           {contestId && (
             <SearchFilter
-              t={t}
               label={t(`${translationKey}.filters.teamName`)}
               placeholder={t(`${translationKey}.filters.searchTeamPlaceholder`)}
               icon={
@@ -81,7 +79,6 @@ export function VictimFilters({ scope, filters, onResetFilters, onFilterChange }
           )}
 
           <SearchFilter
-            t={t}
             label={t(`${translationKey}.filters.challengeName`)}
             placeholder={t(`${translationKey}.filters.searchChallengePlaceholder`)}
             icon={

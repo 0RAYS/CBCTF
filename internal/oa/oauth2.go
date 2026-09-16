@@ -24,11 +24,11 @@ func NewOAuth2Protocol() Protocol {
 	return &oauth2Protocol{}
 }
 
-func (o *oauth2Protocol) ID() string {
+func (*oauth2Protocol) ID() string {
 	return model.OauthProtocolOAuth2
 }
 
-func (o *oauth2Protocol) config(provider model.Oauth) *oauth2.Config {
+func (*oauth2Protocol) config(provider model.Oauth) *oauth2.Config {
 	config := &oauth2.Config{
 		ClientID:     provider.ClientID,
 		ClientSecret: provider.ClientSecret,

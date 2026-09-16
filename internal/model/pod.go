@@ -1,7 +1,5 @@
 package model
 
-import "path/filepath"
-
 // Pod K8s Pod 实例
 // BelongsTo Victim
 type Pod struct {
@@ -10,8 +8,4 @@ type Pod struct {
 	Name     string  `json:"name"`
 	Spec     PodSpec `gorm:"type:jsonb" json:"-"`
 	BaseModel
-}
-
-func (p Pod) TrafficPcapPath() string {
-	return filepath.Join(Victim{ID: p.VictimID}.TrafficBasePath(), "pod-"+p.Name+".pcap")
 }

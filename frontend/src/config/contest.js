@@ -15,9 +15,3 @@ export function getContestTimeRange(startTime, durationSeconds) {
   const endDate = new Date(startDate.getTime() + durationSeconds * 1000);
   return { startTime: startDate.toISOString(), endTime: endDate.toISOString() };
 }
-
-export function isContestEnded(startTime, durationSeconds, nowMs = Date.now()) {
-  const start = new Date(startTime).getTime();
-  const end = start + durationSeconds * 1000;
-  return nowMs > end;
-}

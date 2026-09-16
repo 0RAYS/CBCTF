@@ -227,7 +227,7 @@ function Pagination({
       {/* 页码 - 使用响应式设计 */}
       {!simple && total > 0 && (
         <div className="flex items-center gap-1 md:gap-2 flex-wrap justify-center">
-          {calculatePageRange().map((page, index) => renderPageButton(page, index))}
+          {calculatePageRange().map(renderPageButton)}
         </div>
       )}
 

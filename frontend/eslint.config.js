@@ -61,8 +61,8 @@ export default [
             'react-hooks/exhaustive-deps': 'off',
             'react-hooks/set-state-in-effect': 'off',
 
-            // 如果有使用 TypeScript 的话, 可以适当放宽这些规则
-            'no-unused-vars': ['warn'], // 仅发出警告, 允许有未使用的变量
+            // 检查所有形参；仅允许保留回调参数位置所需的 _ 占位符。
+            'no-unused-vars': ['error', { args: 'all', argsIgnorePattern: '^_$', caughtErrors: 'all' }],
         },
         linterOptions: {
             reportUnusedDisableDirectives: true, // 将该选项移动到这里

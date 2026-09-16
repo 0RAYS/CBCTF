@@ -96,5 +96,3 @@ export function ansiToHtml(input) {
   // 用白色作为默认前景色, 子 span 的 color 会覆盖
   return `<span style="color:#ffffff">${converted}</span>`;
 }
-
-export default ansiToHtml;

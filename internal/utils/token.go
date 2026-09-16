@@ -28,7 +28,7 @@ func GenerateToken(id uint, name, secret string) (tokenString string, err error)
 
 // ParseToken 解析token
 func ParseToken(t, secret string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(t, &Claims{}, func(token *jwt.Token) (any, error) {
+	token, err := jwt.ParseWithClaims(t, &Claims{}, func(_ *jwt.Token) (any, error) {
 		return []byte(secret), nil
 	})
 	if err != nil {

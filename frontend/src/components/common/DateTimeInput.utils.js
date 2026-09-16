@@ -59,7 +59,7 @@ export function parseDateTimeString(str) {
   return null;
 }
 
-export function getDaysInMonth(year, month) {
+function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 

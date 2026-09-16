@@ -22,11 +22,11 @@ type systemLogsRedisHook struct {
 	err   error
 }
 
-func (h systemLogsRedisHook) DialHook(next goredis.DialHook) goredis.DialHook {
+func (systemLogsRedisHook) DialHook(next goredis.DialHook) goredis.DialHook {
 	return next
 }
 
-func (h systemLogsRedisHook) ProcessPipelineHook(next goredis.ProcessPipelineHook) goredis.ProcessPipelineHook {
+func (systemLogsRedisHook) ProcessPipelineHook(next goredis.ProcessPipelineHook) goredis.ProcessPipelineHook {
 	return next
 }
 

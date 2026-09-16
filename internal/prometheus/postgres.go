@@ -12,8 +12,6 @@ import (
 const postgresMetricPrefix = "postgres_"
 
 type PostgresCollector struct {
-	labels prometheus.Labels
-
 	replicationLagDesc    *prometheus.Desc
 	postmasterStartedDesc *prometheus.Desc
 	databaseSizeDesc      *prometheus.Desc
@@ -54,8 +52,6 @@ func NewPostgresCollector() *PostgresCollector {
 	tableLabels := []string{"datname", "schemaname", "relname"}
 
 	return &PostgresCollector{
-		labels: labels,
-
 		replicationLagDesc: prometheus.NewDesc(
 			postgresMetricPrefix+"lag",
 			"Replication lag behind master in seconds",

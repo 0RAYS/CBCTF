@@ -26,7 +26,7 @@ type GenAttachmentPayload struct {
 	TeamID    uint
 }
 
-func EnqueueGenAttachmentTask(userID uint, generator model.Generator, lockToken string, challenge model.Challenge, team model.Team, teamFlags []model.TeamFlag) (*asynq.TaskInfo, error) {
+func EnqueueGenAttachmentTask(userID uint, generator model.Generator, lockToken string, challenge model.Challenge, teamID uint, teamFlags []model.TeamFlag) error {
 	var flags []string
 	for _, flag := range teamFlags {
 		flags = append(flags, flag.Value)
@@ -35,20 +35,20 @@ func EnqueueGenAttachmentTask(userID uint, generator model.Generator, lockToken 
 		UserID:    userID,
 		Generator: generator,
 		Challenge: challenge,
-		TeamID:    team.ID,
+		TeamID:    teamID,
 		Flags:     flags,
 		LockToken: lockToken,
 	})
 	if err != nil {
 		unlockGeneratorAttachment(generator.ID, lockToken)
-		return nil, err
+		return err
 	}
 	task := asynq.NewTask(genAttachmentTaskType, payload)
-	info, err := enqueueTask(genAttachmentTaskType, task, asynq.MaxRetry(0), asynq.Timeout(5*time.Minute))
+	_, err = enqueueTask(genAttachmentTaskType, task, asynq.MaxRetry(0), asynq.Timeout(5*time.Minute))
 	if err != nil {
 		unlockGeneratorAttachment(generator.ID, lockToken)
 	}
-	return info, err
+	return err
 }
 
 func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {

@@ -64,7 +64,7 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 		_, ret = k8s.StartGenerator(ctx, challenge, generator)
 		cancel()
 		if !ret.OK {
-			if _, err := EnqueueStopGeneratorTask(generator); err != nil {
+			if err := EnqueueStopGeneratorTask(generator); err != nil {
 				return fmt.Errorf("start generator failed: %s; enqueue cleanup failed: %w", ret.Msg, err)
 			}
 			cleanupQueued = true
@@ -85,7 +85,7 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 		return nil
 	}()
 	if err != nil && !cleanupQueued {
-		if _, enqueueErr := EnqueueStopGeneratorTask(payload.Generator); enqueueErr != nil {
+		if enqueueErr := EnqueueStopGeneratorTask(payload.Generator); enqueueErr != nil {
 			log.Logger.Warningf("Failed to enqueue generator cleanup after start failure: generator_id=%d error=%v", payload.Generator.ID, enqueueErr)
 		}
 	}
@@ -96,13 +96,14 @@ type StopGeneratorPayload struct {
 	Generator model.Generator
 }
 
-func EnqueueStopGeneratorTask(generator model.Generator) (*asynq.TaskInfo, error) {
+func EnqueueStopGeneratorTask(generator model.Generator) error {
 	payload, err := msgpack.Marshal(StopGeneratorPayload{generator})
 	if err != nil {
-		return nil, err
+		return err
 	}
 	task := asynq.NewTask(stopGeneratorTaskType, payload)
-	return enqueueTask(stopGeneratorTaskType, task, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
+	_, err = enqueueTask(stopGeneratorTaskType, task, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
+	return err
 }
 
 func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
