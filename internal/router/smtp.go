@@ -86,4 +86,3 @@ func TestSmtp(ctx *gin.Context) {
 	}
 	resp.JSON(ctx, model.SuccessRetVal())
 }
-

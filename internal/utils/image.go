@@ -327,16 +327,10 @@ func precomputeResizeWeights(dstSize, srcSize int, filter resizeFilter) [][]resi
 
 	weights := make([][]resizeWeight, dstSize)
 	tmp := make([]resizeWeight, 0, dstSize*int(radius+2)*2)
-	for dst := 0; dst < dstSize; dst++ {
+	for dst := range dstSize {
 		center := (float64(dst)+0.5)*scale - 0.5
-		begin := int(math.Ceil(center - radius))
-		if begin < 0 {
-			begin = 0
-		}
-		end := int(math.Floor(center + radius))
-		if end > srcSize-1 {
-			end = srcSize - 1
-		}
+		begin := max(int(math.Ceil(center-radius)), 0)
+		end := min(int(math.Floor(center+radius)), srcSize-1)
 
 		var sum float64
 		for src := begin; src <= end; src++ {
@@ -406,10 +400,7 @@ func parallelRange(start, stop int, fn func(<-chan int)) {
 		return
 	}
 
-	procs := runtime.GOMAXPROCS(0)
-	if procs > count {
-		procs = count
-	}
+	procs := min(runtime.GOMAXPROCS(0), count)
 
 	items := make(chan int, count)
 	for i := start; i < stop; i++ {
@@ -419,11 +410,9 @@ func parallelRange(start, stop int, fn func(<-chan int)) {
 
 	var wg sync.WaitGroup
 	for i := 0; i < procs; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			fn(items)
-		}()
+		})
 	}
 	wg.Wait()
 }

@@ -183,7 +183,7 @@ func (img *captchaImage) drawSineLine() {
 }
 
 func (img *captchaImage) drawDots(count int) {
-	for i := 0; i < count; i++ {
+	for range count {
 		size := randomIntRange(1, maxInt(img.height/35, 2))
 		img.drawBlock(randomInt(maxInt(img.width, 1)), randomInt(maxInt(img.height, 1)), size, size, randomDarkColor())
 	}
@@ -219,8 +219,8 @@ func (img *captchaImage) drawRune(r rune, x, y, scale int, c color.RGBA, skew fl
 }
 
 func (img *captchaImage) drawBlock(x, y, w, h int, c color.RGBA) {
-	for yy := 0; yy < h; yy++ {
-		for xx := 0; xx < w; xx++ {
+	for yy := range h {
+		for xx := range w {
 			img.set(x+xx, y+yy, c)
 		}
 	}
