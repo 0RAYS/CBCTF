@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  expandStartCounts,
-  getGeneratorPageStats,
-  getGeneratorResponseData,
-  isGeneratorStoppable,
-  normalizeStartCount,
-  retainStoppableSelection,
+    expandStartCounts,
+    getGeneratorPageStats,
+    getGeneratorResponseData,
+    isGeneratorStoppable,
+    normalizeStartCount,
+    retainStoppableSelection,
 } from '../src/components/features/Admin/generators/generatorUtils.js';
 
 test('start counts normalize empty, negative, fractional and invalid input', () => {

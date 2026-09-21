@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getUserInfo, getAccessibleRoutes } from '../api/user';
+import { getAccessibleRoutes, getUserInfo } from '../api/user';
 import i18n from '../i18n';
 
 const initialState = {

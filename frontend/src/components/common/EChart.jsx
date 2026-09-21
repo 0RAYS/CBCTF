@@ -1,7 +1,7 @@
 import ReactEChartsCore from 'echarts-for-react/esm/core';
 import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
-import { GridComponent, TooltipComponent, GraphicComponent } from 'echarts/components';
+import { GraphicComponent, GridComponent, TooltipComponent } from 'echarts/components';
 import { LegacyGridContainLabel } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 

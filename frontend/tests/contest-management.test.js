@@ -1,24 +1,24 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  createContestDraft,
-  contestUpdatePayload,
-  formatDateForInput,
-  validateContestDraft,
+    contestUpdatePayload,
+    createContestDraft,
+    formatDateForInput,
+    validateContestDraft,
 } from "../src/components/features/Admin/Contests/editor/contestForm.js";
 import {
-  challengeDraft,
-  challengeQuery,
-  flagUpdatePayload,
-  isFlagDirty,
-  toggleChallengeSelection,
+    challengeDraft,
+    challengeQuery,
+    flagUpdatePayload,
+    isFlagDirty,
+    toggleChallengeSelection,
 } from "../src/components/features/Admin/Contests/challenges/challengeData.js";
 import {
-  containerStatus,
-  filterTeamFlags,
-  flagFilterOptions,
-  formatFileSize,
-  TEAM_DETAIL_PAGE_SIZE,
+    containerStatus,
+    filterTeamFlags,
+    flagFilterOptions,
+    formatFileSize,
+    TEAM_DETAIL_PAGE_SIZE,
 } from "../src/components/features/Admin/Contests/teams/teamDetailData.js";
 
 const contest = {

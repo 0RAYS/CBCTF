@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createGuideConfig, emptyComposeYaml, normalizeGuideConfigForMode } from './guideModel.js';
 import { buildGuidedComposeYaml } from './composeSerializer.js';
 import { parseComposeYamlToGuideConfig } from './composeParser.js';

@@ -1,13 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
-import {
-  createResolver,
-  findCycles,
-  isSynchronousModule,
-  readSources,
-  scanImports,
-} from './helpers/architecture.js';
+import {fileURLToPath} from 'node:url';
+import {createResolver, findCycles, isSynchronousModule, readSources, scanImports,} from './helpers/architecture.js';
 
 // Resolve from this file, not process.cwd(): node --test works from either repo root or frontend.
 const root = fileURLToPath(new URL('../', import.meta.url));

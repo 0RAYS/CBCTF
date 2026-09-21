@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Modal } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
 

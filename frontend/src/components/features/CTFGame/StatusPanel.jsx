@@ -25,7 +25,7 @@
  */
 
 import { motion } from 'motion/react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import InfoCard from './InfoCard';
 import NotificationCard from './NotificationCard';
 import { useTranslation } from 'react-i18next';

@@ -173,7 +173,7 @@ func DeletePodCollection(ctx context.Context, labels map[string]string) model.Re
 	return model.SuccessRetVal()
 }
 
-// Delete acceptance is not deletion completion (PVC mounts and exec may still be active).
+// DeletePodAndWait Delete acceptance is not deletion completion (PVC mounts and exec may still be active).
 func DeletePodAndWait(ctx context.Context, name string, uid types.UID) model.RetVal {
 	if ret := DeletePod(ctx, name, uid); !ret.OK {
 		return ret

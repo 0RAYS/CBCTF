@@ -1,6 +1,5 @@
-import { List, StatusTag, Avatar } from '../../../common';
-import { IconPlus, IconEdit, IconTrash, IconSearch } from '@tabler/icons-react';
-import { Button, Input, Pagination, Spinner } from '../../../common';
+import { Avatar, Button, Input, List, Pagination, Spinner, StatusTag } from '../../../common';
+import { IconEdit, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
 /**

@@ -12,7 +12,7 @@
  */
 
 import { useState } from 'react';
-import { IconEdit, IconTrash, IconPlus } from '@tabler/icons-react';
+import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input, List, Modal, ModalFooter, Pagination, Textarea } from '../../../common';
 

@@ -1,5 +1,5 @@
 import Notices from '../../components/features/CTFGame/Notice/Notice';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { getContestNotices } from '../../api/contest';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';

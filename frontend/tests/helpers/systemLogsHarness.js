@@ -1,4 +1,4 @@
-import { useRef } from './pollingHookHarness.js';
+import {useRef} from './pollingHookHarness.js';
 
 export { useState, useRef, useEffect, useEffect as useLayoutEffect, toast } from './pollingHookHarness.js';
 export const Button = 'button';

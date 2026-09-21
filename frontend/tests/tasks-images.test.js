@@ -1,28 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createTaskQuery,
-  formatDateTime,
-  formatPayload,
-  livePollingDelay,
-  normalizeTaskPayload,
-  PAGE_SIZE,
-  TASK_STATUSES,
-  taskQueryParams,
-  taskQueryReducer,
-  taskRowKey,
-  taskTimestamp,
+    createTaskQuery,
+    formatDateTime,
+    formatPayload,
+    livePollingDelay,
+    normalizeTaskPayload,
+    PAGE_SIZE,
+    TASK_STATUSES,
+    taskQueryParams,
+    taskQueryReducer,
+    taskRowKey,
+    taskTimestamp,
 } from '../src/components/features/Admin/tasks/taskModel.js';
 import {
-  buildTargetKey,
-  buildTargets,
-  hasImageTag,
-  missingTargetKeys,
-  normalizeNodes,
-  normalizePayload,
-  normalizeTargetImages,
-  parseManualImages,
-  parseTargetKey,
+    buildTargetKey,
+    buildTargets,
+    hasImageTag,
+    missingTargetKeys,
+    normalizeNodes,
+    normalizePayload,
+    normalizeTargetImages,
+    parseManualImages,
+    parseTargetKey,
 } from '../src/components/features/Admin/images/imageModel.js';
 
 test('task queries retain independent pages and filters', () => {

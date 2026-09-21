@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { deleteContestCheat, deleteAllContestCheats, checkContestCheats } from '../../../../api/admin/contest';
+import { checkContestCheats, deleteAllContestCheats, deleteContestCheat } from '../../../../api/admin/contest';
 import { toast } from '../../../../utils/toast';
 import { Button, Modal } from '../../../common';
 

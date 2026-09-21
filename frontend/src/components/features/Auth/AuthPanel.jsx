@@ -1,5 +1,5 @@
-import { motion, AnimatePresence, useAnimationControls } from 'motion/react';
-import { useState, useEffect } from 'react';
+import { AnimatePresence, motion, useAnimationControls } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { Button, Input, Modal } from '../../common';
 import OAuthLogin from './OAuthLogin';
 import { useTranslation } from 'react-i18next';

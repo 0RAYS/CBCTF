@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from '../../../../utils/toast';
-import { getUserList, updateUser, deleteUser, createUser, updateUserPicture } from '../../../../api/admin/user';
+import { createUser, deleteUser, getUserList, updateUser, updateUserPicture } from '../../../../api/admin/user';
 import AdminUsers from './AdminUsers';
 import UserForm from './UserForm';
 import { lastAvailablePage, userUpdatePayload } from './payloads';
 import { Modal } from '../../../common';
 import CRUDModalFooter from '../../../common/CRUDModalFooter';
-import { useDebounce, useCRUDModal } from '../../../../hooks';
+import { useCRUDModal, useDebounce } from '../../../../hooks';
 import { useUserDetailDialog } from '../details/useUserDetailDialog.jsx';
 import { useTranslation } from 'react-i18next';
 

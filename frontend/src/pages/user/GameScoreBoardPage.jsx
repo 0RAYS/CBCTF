@@ -4,11 +4,11 @@ import ScoreboardRanking from '../../components/features/Scoreboard/ScoreboardRa
 import ScoreboardTable from '../../components/features/Scoreboard/ScoreboardTable';
 import ScoreboardTimeline from '../../components/features/Scoreboard/ScoreboardTimeline';
 import { collectChallenges, toRankingTeam } from '../../components/features/Scoreboard/scoreboardModel.js';
-import { getContestRank, getContestInfo, getContestScoreboard, getContestTimeline } from '../../api/contest';
+import { getContestInfo, getContestRank, getContestScoreboard, getContestTimeline } from '../../api/contest';
 import { getTeamInfo } from '../../api/game/team';
 import Button from '../../components/common/Button';
 import Pagination from '../../components/common/Pagination';
-import { IconList, IconTable, IconChartLine } from '@tabler/icons-react';
+import { IconChartLine, IconList, IconTable } from '@tabler/icons-react';
 import ScoreboardStats from '../../components/features/Scoreboard/ScoreboardStats';
 import { toast } from '../../utils/toast.js';
 import { useTranslation } from 'react-i18next';

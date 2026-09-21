@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { Link, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/common';
 import { verifyEmail } from '../../api/auth';

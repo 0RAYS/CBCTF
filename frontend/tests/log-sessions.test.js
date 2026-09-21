@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { registerHooks } from 'node:module';
+import {registerHooks} from 'node:module';
 import test from 'node:test';
-import { mountHook, notices } from './helpers/pollingHookHarness.js';
-import { requests } from './helpers/logRequestHarness.js';
+import {mountHook, notices} from './helpers/pollingHookHarness.js';
+import {requests} from './helpers/logRequestHarness.js';
 
 const helperURL = new URL('./helpers/pollingHookHarness.js', import.meta.url).href;
 const requestURL = new URL('./helpers/logRequestHarness.js', import.meta.url).href;

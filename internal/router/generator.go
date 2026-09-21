@@ -99,7 +99,7 @@ func GetGeneratorStatus(ctx *gin.Context) {
 	timeout, cancel := context.WithTimeout(ctx.Request.Context(), 15*time.Second)
 	defer cancel()
 	pod, ret := k8s.GetPod(timeout, generator.Name)
-	pods := []k8s.PodDiagnostics{}
+	var pods []k8s.PodDiagnostics
 	if !ret.OK {
 		if ret.Msg != i18n.K8S.NotFound {
 			resp.JSON(ctx, ret)

@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useImmerState } from '../../../../hooks/useImmerState';
 import { normalizeConfig } from './configNormalizer';
 import { buildPayload } from './configPayloadBuilder';
-import { updateSystemConfig, uploadGeoCityDB, restartSystem } from '../../../../api/admin/system';
+import { restartSystem, updateSystemConfig, uploadGeoCityDB } from '../../../../api/admin/system';
 import { toast } from '../../../../utils/toast';
 
 /**

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { transformContestData } from '../src/components/features/CTFGame/OverView/contestModel.js';
-import { DEFAULT_CONTEST_IMAGE } from '../src/config/contest.js';
+import {transformContestData} from '../src/components/features/CTFGame/OverView/contestModel.js';
+import {DEFAULT_CONTEST_IMAGE} from '../src/config/contest.js';
 
 const contest = Object.freeze({
   prefix: 'CTF',

@@ -8,9 +8,10 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
 	"context"
-	corev1 "k8s.io/api/core/v1"
 	"strconv"
 	"time"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 // closeTimeoutVictimsTask 关闭超时的靶机

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"time"
@@ -25,7 +26,9 @@ func WithWorkloadLock(ctx context.Context, root *gorm.DB, kind string, id uint, 
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func(conn *sql.Conn) {
+		_ = conn.Close()
+	}(conn)
 	key := fmt.Sprintf("cbctf:%s:%d", kind, id)
 	// On cancellation the server may have acquired the lock before the client
 	// observed the result; discard the session rather than returning it locked.

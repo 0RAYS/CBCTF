@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Pagination, Card, EmptyState, Chip, Modal, Spinner } from '../../../../common';
+import { Button, Card, Chip, EmptyState, Modal, Pagination, Spinner } from '../../../../common';
 import Checkbox from '../../../../common/Checkbox';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../../config/challengeChips';
 

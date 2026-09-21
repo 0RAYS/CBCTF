@@ -1,4 +1,4 @@
-import { getTeamInfo, getTeamMembers, getTeamCaptcha } from '../../../../api/game/team';
+import { getTeamCaptcha, getTeamInfo, getTeamMembers } from '../../../../api/game/team';
 import { mapTeamSettings } from './model';
 
 export async function loadTeamSettings(contestId, kind = 'team') {

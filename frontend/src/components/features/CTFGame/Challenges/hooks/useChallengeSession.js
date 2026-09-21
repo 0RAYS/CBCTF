@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  downloadChallengeAttachment,
+  extendContainerTime,
   getChallengeStatus,
   initChallenge,
   resetChallenge,
   startRemoteTarget,
-  extendContainerTime,
   stopContainer,
   submitFlag,
-  downloadChallengeAttachment,
 } from '../../../../../api/challenge';
 import { toast } from '../../../../../utils/toast';
 import { downloadBlobResponse } from '../../../../../utils/fileDownload';

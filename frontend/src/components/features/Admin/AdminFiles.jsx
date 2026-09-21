@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { IconTrash, IconDownload, IconFile, IconPhoto, IconFileText } from '@tabler/icons-react';
+import { IconDownload, IconFile, IconFileText, IconPhoto, IconTrash } from '@tabler/icons-react';
 import { Button, Pagination } from '../../../components/common';
 import { List } from '../../common';
 import { useTranslation } from 'react-i18next';

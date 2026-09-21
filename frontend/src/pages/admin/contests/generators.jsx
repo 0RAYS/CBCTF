@@ -1,11 +1,11 @@
 import { useParams } from 'react-router-dom';
 import {
-  getContestGenerators,
-  startContestGenerators,
-  stopContestGenerators,
   getContestChallenges,
   getContestGeneratorLogs,
+  getContestGenerators,
   getContestGeneratorStatus,
+  startContestGenerators,
+  stopContestGenerators,
 } from '../../../api/admin/contest';
 import GeneratorManagement from '../../../components/features/Admin/generators/GeneratorManagement';
 

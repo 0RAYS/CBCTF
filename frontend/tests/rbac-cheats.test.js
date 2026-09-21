@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  lastAvailablePage,
-  successfulAssignmentIds,
-  toggleVisibleCandidates,
-  userUpdatePayload,
+    lastAvailablePage,
+    successfulAssignmentIds,
+    toggleVisibleCandidates,
+    userUpdatePayload,
 } from '../src/components/features/Admin/rbac/payloads.js';
 import {
-  cheatListParams,
-  cheatReviewForm,
-  cheatUpdatePayload,
+    cheatListParams,
+    cheatReviewForm,
+    cheatUpdatePayload,
 } from '../src/components/features/Admin/cheats/payloads.js';
 
 test('user update omits an empty password without mutating the form or dropping false flags', () => {

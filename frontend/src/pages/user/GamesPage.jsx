@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../../utils/toast';
 import GameList from '../../components/features/Games/GameList';
 import TeamJoinModal from '../../components/features/CTFGame/Team/TeamJoinModal';
 import { getContestList } from '../../api/contest';
 import { useSelector } from 'react-redux';
-import { getTeamInfo, createTeam, joinTeam } from '../../api/game/team';
+import { createTeam, getTeamInfo, joinTeam } from '../../api/game/team';
 import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
 import Button from '../../components/common/Button';

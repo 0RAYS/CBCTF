@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
 import {
@@ -14,7 +14,7 @@ import ScoreboardTable from '../../../components/features/Scoreboard/ScoreboardT
 import ScoreboardTimeline from '../../../components/features/Scoreboard/ScoreboardTimeline';
 import { collectChallenges, toRankingTeam } from '../../../components/features/Scoreboard/scoreboardModel.js';
 import Button from '../../../components/common/Button';
-import { IconTable, IconList, IconChartLine } from '@tabler/icons-react';
+import { IconChartLine, IconList, IconTable } from '@tabler/icons-react';
 import ScoreboardStats from '../../../components/features/Scoreboard/ScoreboardStats.jsx';
 import { useTranslation } from 'react-i18next';
 import { useTeamDetailDialog } from '../../../components/features/Admin/details/useTeamDetailDialog.jsx';

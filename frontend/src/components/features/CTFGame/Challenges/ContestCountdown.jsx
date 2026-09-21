@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Card } from '../../../common';
 import { useTranslation } from 'react-i18next';
-import { IconSettings, IconBook, IconUsers } from '@tabler/icons-react';
+import { IconBook, IconSettings, IconUsers } from '@tabler/icons-react';
 
 function ContestCountdown({ startTime, joined, onJoin }) {
   const { t } = useTranslation();

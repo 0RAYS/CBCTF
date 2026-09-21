@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createWebhook, updateWebhook, deleteWebhook, getEvents } from '../../../../api/admin/webhook';
+import { createWebhook, deleteWebhook, getEvents, updateWebhook } from '../../../../api/admin/webhook';
 import { toast } from '../../../../utils/toast';
 import { Button, Modal } from '../../../common';
 import { buildWebhookPayload, webhookForm } from './payload';

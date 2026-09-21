@@ -1,6 +1,5 @@
-import { List, StatusTag } from '../../../common';
-import { IconPlus, IconEdit, IconTrash, IconUsers } from '@tabler/icons-react';
-import { Button, Pagination } from '../../../common';
+import { Button, List, Pagination, StatusTag } from '../../../common';
+import { IconEdit, IconPlus, IconTrash, IconUsers } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
 function AdminGroups({

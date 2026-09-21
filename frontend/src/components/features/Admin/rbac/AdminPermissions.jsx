@@ -1,6 +1,5 @@
-import { List } from '../../../common';
+import { Button, List, Pagination } from '../../../common';
 import { IconEdit } from '@tabler/icons-react';
-import { Button, Pagination } from '../../../common';
 import { useTranslation } from 'react-i18next';
 
 function AdminPermissions({

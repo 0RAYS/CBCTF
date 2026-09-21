@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Card, EmptyState, Avatar } from '../../common';
+import { Avatar, Card, EmptyState } from '../../common';
 import ChallengeSolves from './ChallengeSolves';
 
 const DEFAULT_LABELS = {

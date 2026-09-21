@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  buildWebhookPayload,
-  cleanHeaders,
-  renameHeader,
-  webhookForm,
+    buildWebhookPayload,
+    cleanHeaders,
+    renameHeader,
+    webhookForm,
 } from '../src/components/features/Admin/webhook/payload.js';
-import { buildSmtpPayload, smtpForm } from '../src/components/features/Admin/smtp/payload.js';
-import { buildOAuthPayload, oauthForm, parseScopes } from '../src/components/features/Admin/oauth/payload.js';
+import {buildSmtpPayload, smtpForm} from '../src/components/features/Admin/smtp/payload.js';
+import {buildOAuthPayload, oauthForm, parseScopes} from '../src/components/features/Admin/oauth/payload.js';
 
 test('webhook defaults and editing isolate mutable collections from server data', () => {
   assert.deepEqual(webhookForm(), {

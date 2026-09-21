@@ -1,4 +1,4 @@
-import { createGuideService, createGuideUser, createGuideGroup, createGuideWriteFile } from './guideModel.js';
+import { createGuideGroup, createGuideService, createGuideUser, createGuideWriteFile } from './guideModel.js';
 
 const stripYamlValue = (value = '') => {
   const trimmed = String(value).trim();

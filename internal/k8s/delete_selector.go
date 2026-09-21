@@ -38,7 +38,7 @@ func deleteCollectionOptions(resource string, filter map[string]string) (metav1.
 	if !owned {
 		return invalid()
 	}
-	selector, err := labels.ValidatedSelectorFromSet(labels.Set(filter))
+	selector, err := labels.ValidatedSelectorFromSet(filter)
 	if err != nil || selector.Empty() {
 		return invalid()
 	}

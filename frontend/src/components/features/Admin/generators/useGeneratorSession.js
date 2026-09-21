@@ -1,8 +1,8 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from '../../../../utils/toast';
 import {
-  GENERATOR_PAGE_SIZE,
   expandStartCounts,
+  GENERATOR_PAGE_SIZE,
   getGeneratorResponseData,
   isGeneratorStoppable,
   retainStoppableSelection,

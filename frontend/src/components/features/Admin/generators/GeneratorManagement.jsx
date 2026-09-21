@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconPlayerPlay, IconBan, IconCheck, IconX, IconTrash, IconRefresh } from '@tabler/icons-react';
+import { IconBan, IconCheck, IconPlayerPlay, IconRefresh, IconTrash, IconX } from '@tabler/icons-react';
 import { Button, Pagination, StatCard } from '../../../common';
 import AutoRefreshControl from '../../../common/AutoRefreshControl';
 import GeneratorList from './GeneratorList';

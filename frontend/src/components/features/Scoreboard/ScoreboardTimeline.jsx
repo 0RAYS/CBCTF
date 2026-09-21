@@ -1,8 +1,8 @@
-import { Suspense, lazy, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import Button from '../../common/Button';
 import Card from '../../common/Card';
 import { useTranslation } from 'react-i18next';
-import { buildTimelineModel, buildTimelineChartData } from './timelineModel.js';
+import { buildTimelineChartData, buildTimelineModel } from './timelineModel.js';
 import { buildTimelineOption, timelineTeamColor } from './timelineOption.js';
 
 const ReactECharts = lazy(() => import('../../common/EChart'));

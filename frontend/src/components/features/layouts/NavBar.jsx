@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
-import { Button, LanguageSwitcher, Avatar } from '../../common';
+import { AnimatePresence, motion } from 'motion/react';
+import { Avatar, Button, LanguageSwitcher } from '../../common';
 import { useTranslation } from 'react-i18next';
 import { EASE_T2, EASE_T3 } from '../../../config/motion';
 

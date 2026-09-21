@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
-import { useEffect, useRef, useId } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useEffect, useId, useRef } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { IconX } from '@tabler/icons-react';
 import Button from './Button';
 import { useModalPortal } from './ModalProvider';

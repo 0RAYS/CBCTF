@@ -31,7 +31,7 @@
  * @param {boolean} props.isSearchMode - 是否处于搜索模式
  */
 
-import { IconEdit, IconTrash, IconSearch, IconUserMinus } from '@tabler/icons-react';
+import { IconEdit, IconSearch, IconTrash, IconUserMinus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import {
   Avatar,
