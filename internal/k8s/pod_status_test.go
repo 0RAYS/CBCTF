@@ -11,13 +11,12 @@ import (
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
 func TestPodDiagnosticsAllowlist(t *testing.T) {
-	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "test"}, Spec: corev1.PodSpec{Containers: []corev1.Container{
+	pod := &corev1.Pod{Name: "test", Spec: corev1.PodSpec{Containers: []corev1.Container{
 		{Name: "web", Env: []corev1.EnvVar{{Name: "FLAG", Value: "secret-marker"}}, Args: []string{"secret-marker"}}, {Name: CaptureContainerName},
 	}, InitContainers: []corev1.Container{{Name: "init"}}}, Status: corev1.PodStatus{
 		Phase: corev1.PodPending, Message: "secret-marker",
@@ -50,7 +49,7 @@ func TestPodDiagnosticsAllowlist(t *testing.T) {
 
 func TestGeneratorPodOwnership(t *testing.T) {
 	generator := model.Generator{ID: 7, ChallengeID: 9, Name: "generator-7"}
-	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: generator.Name, Labels: map[string]string{"challenge_id": "9", RoleLabel: GeneratorPodTag}}}
+	pod := &corev1.Pod{Name: generator.Name, Labels: map[string]string{"challenge_id": "9", RoleLabel: GeneratorPodTag}}
 	if GeneratorOwnsPod(generator, pod) {
 		t.Fatal("pod without generator_id accepted")
 	}

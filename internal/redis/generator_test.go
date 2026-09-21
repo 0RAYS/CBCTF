@@ -44,7 +44,7 @@ func TestGeneratorLeaseIntegration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	id := uint(time.Now().UnixNano())
-	generator := model.Generator{BaseModel: model.BaseModel{ID: id}, ChallengeID: id, Status: model.RunningGeneratorStatus}
+	generator := model.Generator{ID: id, ChallengeID: id, Status: model.RunningGeneratorStatus}
 	t.Cleanup(func() {
 		RDB.Del(context.Background(), fmt.Sprintf(GeneratorKeyTmpl, id), fmt.Sprintf(GeneratorAttachmentLockKeyTmpl, id), generatorSetKey(0, false, id))
 	})
