@@ -3,6 +3,26 @@ entries:
   cbctf:
   - apiVersion: v2
     appVersion: latest
+    created: "2026-09-21T06:46:36.034583764Z"
+    description: A Kubernetes-native CTF competition platform
+    digest: c5799e7b7ad78928f8a1f8de4d901d982b4c6aa9f1b8e74787ebacf648b5ccdc
+    home: https://github.com/0RAYS/CBCTF
+    keywords:
+    - ctf
+    - cybersecurity
+    - competition
+    - 0RAYS
+    maintainers:
+    - name: JBNRZ
+    name: cbctf
+    sources:
+    - https://github.com/0RAYS/CBCTF
+    type: application
+    urls:
+    - https://github.com/0RAYS/CBCTF/releases/download/cbctf-0.0.24/cbctf-0.0.24.tgz
+    version: 0.0.24
+  - apiVersion: v2
+    appVersion: latest
     created: "2026-07-08T15:11:29.173612486Z"
     description: A Kubernetes-native CTF competition platform
     digest: 1c45df45c2a5b12b8f87614da3222342858b68a5e5254c7f46b6fb2c6222e92d
@@ -141,4 +161,4 @@ entries:
     urls:
     - https://github.com/0RAYS/CBCTF/releases/download/cbctf-0.0.15/cbctf-0.0.15.tgz
     version: 0.0.15
-generated: "2026-07-08T15:11:29.173640598Z"
+generated: "2026-09-21T06:46:36.034615063Z"
