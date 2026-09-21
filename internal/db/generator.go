@@ -67,6 +67,18 @@ func InitGeneratorRepo(tx *gorm.DB) *GeneratorRepo {
 	}
 }
 
+// UpdateIfStatus prevents stale workers/requests from overwriting a stop.
+func (g *GeneratorRepo) UpdateIfStatus(id uint, expected string, options UpdateGeneratorOptions) model.RetVal {
+	res := g.DB.Model(&model.Generator{}).Where("id = ? AND status = ?", id, expected).Updates(options.Convert2Map())
+	if res.Error != nil {
+		return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": "Generator", "Error": res.Error.Error()}}
+	}
+	if res.RowsAffected == 0 {
+		return model.RetVal{Msg: i18n.Model.Generator.NotAvailable}
+	}
+	return model.SuccessRetVal()
+}
+
 func (g *GeneratorRepo) UpdateStatus(id uint, success bool, last time.Time) model.RetVal {
 	var diffOptions DiffUpdateGeneratorOptions
 	var options UpdateGeneratorOptions

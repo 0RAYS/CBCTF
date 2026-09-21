@@ -73,17 +73,12 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 	if !ret.OK {
 		return nil, ret
 	}
-	var commands []string
 	if _, err = os.Stat(challenge.GeneratorPath()); err == nil {
-		commands = append(commands, fmt.Sprintf("unzip /root/mnt/generator.zip -d /root"))
-	} else {
-		log.Logger.Infof("Generator archive not found, skip unpack: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
-	}
-	for _, command := range commands {
-		log.Logger.Debugf("Executing command: %s", command)
-		if err = Exec(ctx, generator.Name, "generator", command); err != nil {
+		if err = Exec(ctx, generator.Name, "generator", "unzip", "-o", "/root/mnt/generator.zip", "-d", "/root"); err != nil {
 			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 		}
+	} else if !os.IsNotExist(err) {
+		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	log.Logger.Debugf("Created generator pod: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
 	return pod, model.SuccessRetVal()
@@ -110,9 +105,8 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, generator mod
 	if !ret.OK {
 		return ret
 	}
-	if pod.Status.Phase != corev1.PodRunning {
-		StopGenerator(ctx, generator)
-		return model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.Name(generator)}}
+	if !podReady(pod) {
+		return model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Generator", "Error": podSummary(pod)}}
 	}
 	var flag string
 	for _, value := range flags {
@@ -120,10 +114,11 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, generator mod
 	}
 	flag = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flag, ",")))
 	filepath := challenge.AttachmentPath(teamID)
-	_ = os.Remove(filepath)
-	command := fmt.Sprintf("/root/run.sh %d %s", teamID, flag)
+	if err = os.Remove(filepath); err != nil && !os.IsNotExist(err) {
+		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+	}
 	log.Logger.Debugf("Executing attachment command: generator=%s team_id=%d challenge_id=%d", generator.Name, teamID, challenge.ID)
-	if err = Exec(ctx, generator.Name, pod.Spec.Containers[0].Name, command); err != nil {
+	if err = Exec(ctx, generator.Name, "generator", "/root/run.sh", strconv.FormatUint(uint64(teamID), 10), flag); err != nil {
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	ticker := time.NewTicker(500 * time.Millisecond)

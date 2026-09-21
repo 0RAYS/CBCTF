@@ -34,62 +34,82 @@ func EnqueueStartGeneratorTask(challenge model.Challenge, generator model.Genera
 	return enqueueTask(startGeneratorTaskType, task, asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
 }
 
-func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
+func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	var payload StartGeneratorPayload
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	cleanupQueued := false
-	err := func() error {
-		challenge := payload.Challenge
-		generator := payload.Generator
-		generatorRepo := db.InitGeneratorRepo(db.TaskDB)
-		currentGenerator, ret := generatorRepo.GetByID(generator.ID)
-		if !ret.OK {
-			if ret.Msg == i18n.Model.NotFound {
-				log.Logger.Debugf("Start generator skipped: generator_id=%d no longer exists", generator.ID)
+	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "generator", payload.Generator.ID, func() error {
+		cleanupQueued := false
+		claimed := false
+		err := func() error {
+			challenge := payload.Challenge
+			generator := payload.Generator
+			generatorRepo := db.InitGeneratorRepo(db.TaskDB)
+			currentGenerator, ret := generatorRepo.GetByID(generator.ID)
+			if !ret.OK {
+				if ret.Msg == i18n.Model.NotFound {
+					log.Logger.Debugf("Start generator skipped: generator_id=%d no longer exists", generator.ID)
+					return nil
+				}
+				return fmt.Errorf("get generator failed: %s", ret.Msg)
+			}
+			if currentGenerator.Status != model.WaitingGeneratorStatus {
+				log.Logger.Infof("Start generator skipped: generator_id=%d status=%s", generator.ID, currentGenerator.Status)
 				return nil
 			}
-			return fmt.Errorf("get generator failed: %s", ret.Msg)
-		}
-		if currentGenerator.Status == model.TerminatingGeneratorStatus {
-			log.Logger.Infof("Start generator skipped: generator_id=%d is terminating", generator.ID)
-			return nil
-		}
-		if ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
-			return fmt.Errorf("update generator failed: %s", ret.Msg)
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-		log.Logger.Infof("Starting generator provisioning: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
-		_, ret = k8s.StartGenerator(ctx, challenge, generator)
-		cancel()
-		if !ret.OK {
-			if err := EnqueueStopGeneratorTask(generator); err != nil {
-				return fmt.Errorf("start generator failed: %s; enqueue cleanup failed: %w", ret.Msg, err)
+			if ret = generatorRepo.UpdateIfStatus(generator.ID, model.WaitingGeneratorStatus, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
+				return fmt.Errorf("update generator failed: %s", ret.Msg)
 			}
-			cleanupQueued = true
-			return fmt.Errorf("start generator failed: %s", ret.Msg)
-		}
-		ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
-		if !ret.OK {
-			return fmt.Errorf("update generator failed: %s", ret.Msg)
-		}
-		generator.Status = model.RunningGeneratorStatus
-		registerCtx, registerCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		if err := redis.RegisterGenerator(registerCtx, generator); err != nil {
+			claimed = true
+			generator = currentGenerator
+			startCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+			log.Logger.Infof("Starting generator provisioning: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
+			_, ret = k8s.StartGenerator(startCtx, challenge, generator)
+			cancel()
+			if !ret.OK {
+				_ = generatorRepo.UpdateIfStatus(generator.ID, model.PendingGeneratorStatus, db.UpdateGeneratorOptions{Status: new(model.TerminatingGeneratorStatus)})
+				if err := EnqueueStopGeneratorTask(generator); err != nil {
+					return fmt.Errorf("%w; enqueue cleanup failed: %v", taskResourceError("start generator failed", ret), err)
+				}
+				cleanupQueued = true
+				return taskResourceError("start generator failed", ret)
+			}
+			ret = generatorRepo.UpdateIfStatus(generator.ID, model.PendingGeneratorStatus, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
+			if !ret.OK {
+				return fmt.Errorf("update generator failed: %s", ret.Msg)
+			}
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+			generator.Status = model.RunningGeneratorStatus
+			registerCtx, registerCancel := context.WithTimeout(ctx, 5*time.Second)
+			if err := redis.RegisterGenerator(registerCtx, generator); err != nil {
+				registerCancel()
+				return fmt.Errorf("register generator failed: %w", err)
+			}
 			registerCancel()
-			return fmt.Errorf("register generator failed: %w", err)
+			log.Logger.Infof("Generator is running: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
+			return nil
+		}()
+		if err != nil && claimed && !cleanupQueued {
+			repo := db.InitGeneratorRepo(db.TaskDB)
+			for _, status := range []string{model.PendingGeneratorStatus, model.RunningGeneratorStatus} {
+				_ = repo.UpdateIfStatus(payload.Generator.ID, status, db.UpdateGeneratorOptions{Status: new(model.TerminatingGeneratorStatus)})
+			}
+			if enqueueErr := EnqueueStopGeneratorTask(payload.Generator); enqueueErr != nil {
+				cleanupCtx, cancel := context.WithTimeout(context.Background(), time.Minute)
+				_ = redis.UnregisterGenerator(cleanupCtx, payload.Generator)
+				ret := k8s.StopGenerator(cleanupCtx, payload.Generator)
+				cancel()
+				if ret.OK {
+					_ = repo.Delete(payload.Generator.ID)
+				}
+				log.Logger.Warningf("Failed to enqueue generator cleanup after start failure: generator_id=%d error=%v", payload.Generator.ID, enqueueErr)
+			}
 		}
-		registerCancel()
-		log.Logger.Infof("Generator is running: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
-		return nil
-	}()
-	if err != nil && !cleanupQueued {
-		if enqueueErr := EnqueueStopGeneratorTask(payload.Generator); enqueueErr != nil {
-			log.Logger.Warningf("Failed to enqueue generator cleanup after start failure: generator_id=%d error=%v", payload.Generator.ID, enqueueErr)
-		}
-	}
-	return err
+		return err
+	})
 }
 
 type StopGeneratorPayload struct {
@@ -111,31 +131,33 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	generatorRepo := db.InitGeneratorRepo(db.TaskDB)
-	generator, ret := generatorRepo.GetByID(payload.Generator.ID)
-	if !ret.OK {
-		if ret.Msg == i18n.Model.NotFound {
-			log.Logger.Debugf("Stop generator skipped: generator_id=%d no longer exists", payload.Generator.ID)
-			return nil
+	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "generator", payload.Generator.ID, func() error {
+		generatorRepo := db.InitGeneratorRepo(db.TaskDB)
+		generator, ret := generatorRepo.GetByID(payload.Generator.ID)
+		if !ret.OK {
+			if ret.Msg == i18n.Model.NotFound {
+				log.Logger.Debugf("Stop generator skipped: generator_id=%d no longer exists", payload.Generator.ID)
+				return nil
+			}
+			return fmt.Errorf("get generator failed: %s", ret.Msg)
 		}
-		return fmt.Errorf("get generator failed: %s", ret.Msg)
-	}
-	log.Logger.Infof("Stopping generator: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
-	unregisterCtx, unregisterCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	if err := redis.UnregisterGenerator(unregisterCtx, generator); err != nil {
-		log.Logger.Warningf("Failed to unregister generator before stop: generator_id=%d error=%v", generator.ID, err)
-	}
-	unregisterCancel()
-	ctx, cancel := context.WithTimeout(ctx, time.Minute)
-	ret = k8s.StopGenerator(ctx, generator)
-	cancel()
-	if !ret.OK {
-		return fmt.Errorf("stop generator failed: %s", ret.Msg)
-	}
-	ret = db.InitGeneratorRepo(db.TaskDB).Delete(generator.ID)
-	if !ret.OK {
-		return fmt.Errorf("delete generator failed: %s", ret.Msg)
-	}
-	log.Logger.Infof("Generator stopped: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
-	return nil
+		log.Logger.Infof("Stopping generator: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
+		unregisterCtx, unregisterCancel := context.WithTimeout(ctx, 5*time.Second)
+		if err := redis.UnregisterGenerator(unregisterCtx, generator); err != nil {
+			log.Logger.Warningf("Failed to unregister generator before stop: generator_id=%d error=%v", generator.ID, err)
+		}
+		unregisterCancel()
+		ctx, cancel := context.WithTimeout(ctx, time.Minute)
+		ret = k8s.StopGenerator(ctx, generator)
+		cancel()
+		if !ret.OK {
+			return fmt.Errorf("stop generator failed: %s", ret.Msg)
+		}
+		ret = db.InitGeneratorRepo(db.TaskDB).Delete(generator.ID)
+		if !ret.OK {
+			return fmt.Errorf("delete generator failed: %s", ret.Msg)
+		}
+		log.Logger.Infof("Generator stopped: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
+		return nil
+	})
 }

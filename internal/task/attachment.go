@@ -77,9 +77,17 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 		}
 	}
 	defer unlockGeneratorAttachment(payload.Generator.ID, lockToken)
+	current, ret := db.InitGeneratorRepo(db.TaskDB).GetByID(payload.Generator.ID)
+	if !ret.OK {
+		return taskResourceError("get attachment generator", ret)
+	}
+	if current.Status != model.RunningGeneratorStatus {
+		return fmt.Errorf("generator %d is not running", current.ID)
+	}
+	payload.Generator = current
 
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
-	ret := k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags)
+	ret = k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags)
 	cancel()
 	generatorRepo := db.InitGeneratorRepo(db.TaskDB)
 	generatorRepo.UpdateStatus(payload.Generator.ID, ret.OK, time.Now())
