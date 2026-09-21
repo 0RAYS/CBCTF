@@ -3,10 +3,10 @@ package cron
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
 	"time"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 func TestVictimExpiryRequiresRunning(t *testing.T) {
@@ -25,7 +25,7 @@ func TestVictimExpiryRequiresRunning(t *testing.T) {
 func TestOrphanScanFailsClosedAndDeduplicates(t *testing.T) {
 	pods := []corev1.Pod{}
 	for _, id := range []string{"", "invalid", "-1", "0", "1", "1", "2"} {
-		pods = append(pods, corev1.Pod{ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"victim_id": id}}})
+		pods = append(pods, corev1.Pod{Labels: map[string]string{"victim_id": id}})
 	}
 	calls := 0
 	ids, ret := orphanVictimIDs(pods, func(id uint) model.RetVal {

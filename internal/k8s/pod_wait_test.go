@@ -66,7 +66,7 @@ func TestWaitPodReadyTracksUIDAndLatestState(t *testing.T) {
 		{name: "replaced namesake", exists: true, replaced: true, want: "replaced"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			created := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "workload", Namespace: "test", UID: "original"}}
+			created := &corev1.Pod{Name: "workload", Namespace: "test", UID: "original"}
 			client := useFakePods(t)
 			if tc.exists {
 				current := created.DeepCopy()
@@ -95,7 +95,7 @@ func TestWaitPodReadyTracksUIDAndLatestState(t *testing.T) {
 }
 
 func TestWaitPodReadyTimeoutRetainsDiagnostics(t *testing.T) {
-	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "slow", Namespace: "test", UID: "uid"}, Status: corev1.PodStatus{Phase: corev1.PodPending, ContainerStatuses: []corev1.ContainerStatus{{Name: "generator", State: corev1.ContainerState{Waiting: &corev1.ContainerStateWaiting{Reason: "ImagePullBackOff"}}}}}}
+	pod := &corev1.Pod{Name: "slow", Namespace: "test", UID: "uid", Status: corev1.PodStatus{Phase: corev1.PodPending, ContainerStatuses: []corev1.ContainerStatus{{Name: "generator", State: corev1.ContainerState{Waiting: &corev1.ContainerStateWaiting{Reason: "ImagePullBackOff"}}}}}}
 	useFakePods(t, pod)
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	defer cancel()
@@ -106,7 +106,7 @@ func TestWaitPodReadyTimeoutRetainsDiagnostics(t *testing.T) {
 }
 
 func TestCreatePodNeverDeletesExistingPod(t *testing.T) {
-	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "existing", Namespace: "test"}}
+	pod := &corev1.Pod{Name: "existing", Namespace: "test"}
 	client := useFakePods(t, pod)
 	_, ret := CreatePod(context.Background(), CreatePodOptions{Name: pod.Name})
 	if ret.OK {
@@ -120,7 +120,7 @@ func TestCreatePodNeverDeletesExistingPod(t *testing.T) {
 }
 
 func TestDeletePodAndWaitIsIdempotent(t *testing.T) {
-	useFakePods(t, &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "done", Namespace: "test", UID: "done-uid"}})
+	useFakePods(t, &corev1.Pod{Name: "done", Namespace: "test", UID: "done-uid"})
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	for range 2 {
@@ -131,7 +131,7 @@ func TestDeletePodAndWaitIsIdempotent(t *testing.T) {
 }
 
 func TestWaitPodReadyRelistsAfterExpiredWatch(t *testing.T) {
-	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "recover", Namespace: "test", UID: "uid"}, Status: corev1.PodStatus{Phase: corev1.PodPending}}
+	pod := &corev1.Pod{Name: "recover", Namespace: "test", UID: "uid", Status: corev1.PodStatus{Phase: corev1.PodPending}}
 	client := useFakePods(t, pod)
 	first := true
 	client.PrependWatchReactor("pods", func(action ktesting.Action) (bool, watch.Interface, error) {

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
@@ -54,7 +53,7 @@ func TestCollectionDeletionRequiresOwner(t *testing.T) {
 }
 
 func TestGeneratorCleanupRejectsForeignPod(t *testing.T) {
-	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "collision", Namespace: "test", UID: "other", Labels: map[string]string{"challenge_id": "9", "generator_id": "8", RoleLabel: GeneratorPodTag}}}
+	pod := &corev1.Pod{Name: "collision", Namespace: "test", UID: "other", Labels: map[string]string{"challenge_id": "9", "generator_id": "8", RoleLabel: GeneratorPodTag}}
 	client := useFakePods(t, pod)
 	ret := StopGenerator(context.Background(), model.Generator{ID: 7, ChallengeID: 9, Name: pod.Name})
 	if ret.OK {
@@ -68,7 +67,7 @@ func TestGeneratorCleanupRejectsForeignPod(t *testing.T) {
 }
 
 func TestGeneratorCleanupRejectsMissingOwnerLabel(t *testing.T) {
-	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "unlabelled", Namespace: "test", UID: "old", Labels: map[string]string{"challenge_id": "9", RoleLabel: GeneratorPodTag}}}
+	pod := &corev1.Pod{Name: "unlabelled", Namespace: "test", UID: "old", Labels: map[string]string{"challenge_id": "9", RoleLabel: GeneratorPodTag}}
 	client := useFakePods(t, pod)
 	generator := model.Generator{ID: 7, ChallengeID: 9, Name: pod.Name}
 	if ret := StopGenerator(context.Background(), generator); ret.OK {
@@ -96,7 +95,7 @@ func TestPodDeletionRequiresObservedIdentity(t *testing.T) {
 }
 
 func TestPodDeletionPinsUIDAndRejectsReplacement(t *testing.T) {
-	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "owned", Namespace: "test", UID: "old"}}
+	pod := &corev1.Pod{Name: "owned", Namespace: "test", UID: "old"}
 	client := useFakePods(t, pod)
 	checked := false
 	client.PrependReactor("delete", "pods", func(action ktesting.Action) (bool, runtime.Object, error) {

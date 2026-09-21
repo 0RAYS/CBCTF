@@ -409,7 +409,7 @@ func parallelRange(start, stop int, fn func(<-chan int)) {
 	close(items)
 
 	var wg sync.WaitGroup
-	for i := 0; i < procs; i++ {
+	for range procs {
 		wg.Go(func() {
 			fn(items)
 		})
