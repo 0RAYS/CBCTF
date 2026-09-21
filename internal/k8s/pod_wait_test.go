@@ -120,11 +120,11 @@ func TestCreatePodNeverDeletesExistingPod(t *testing.T) {
 }
 
 func TestDeletePodAndWaitIsIdempotent(t *testing.T) {
-	useFakePods(t, &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "done", Namespace: "test"}})
+	useFakePods(t, &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "done", Namespace: "test", UID: "done-uid"}})
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	for range 2 {
-		if ret := DeletePodAndWait(ctx, "done"); !ret.OK {
+		if ret := DeletePodAndWait(ctx, "done", "done-uid"); !ret.OK {
 			t.Fatalf("delete: %+v", ret)
 		}
 	}

@@ -35,8 +35,8 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, m
 	return vpc, model.SuccessRetVal()
 }
 
-func DeleteVPCCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("VPC", labels...)
+func DeleteVPCCollection(ctx context.Context, labels map[string]string) model.RetVal {
+	options, ret := deleteCollectionOptions("VPC", labels)
 	if !ret.OK {
 		return ret
 	}

@@ -27,8 +27,8 @@ const { getContestVictimPods, getContestVictimPodLogs } = await import('../src/a
 loader.deregister();
 
 const pods = [
-  { name: 'pod-a', containers: ['web', 'sidecar'] },
-  { name: 'pod-b', containers: ['worker'] },
+  { name: 'pod-a', container_statuses: [{ name: 'web' }, { name: 'sidecar' }] },
+  { name: 'pod-b', container_statuses: [{ name: 'worker' }] },
 ];
 
 function fixture(t, kind) {
@@ -275,5 +275,31 @@ for (const kind of ['victim', 'contest-victim']) {
     assert.equal(f.value.podName, '');
     assert.equal(f.value.containerName, '');
     assert.equal(f.value.content, '');
+  });
+}
+
+for (const kind of ['victim', 'contest-victim']) {
+  test(`${kind}: rejects the retired containers-only response`, async (t) => {
+    const f = fixture(t, kind);
+    await f.resolve(0, { pods: [{ name: 'old-pod', containers: ['web'] }] });
+    await f.tick(0);
+    assert.equal(f.value.statusError, true);
+    assert.equal(f.value.containerName, '');
+    assert.deepEqual(f.value.pods, []);
+    assert.equal(requests.length, 1, 'old contract must not trigger a log request');
+  });
+
+  test(`${kind}: structured init containers can be selected for logs`, async (t) => {
+    const f = fixture(t, kind);
+    await f.resolve(0, { pods: [{ name: 'pod-init', container_statuses: [{ name: 'setup', init: true }, { name: 'web', init: false }] }] });
+    await f.tick(0);
+    assert.equal(f.value.containerName, 'setup');
+    assert.equal(requests[1].config.params.container, 'setup');
+    f.value.selectContainer('web');
+    f.host.render();
+    await f.host.flush();
+    await f.tick(0);
+    assert.equal(f.value.containerName, 'web');
+    assert.equal(requests[2].config.params.container, 'web');
   });
 }

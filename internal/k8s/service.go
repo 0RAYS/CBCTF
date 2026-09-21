@@ -90,11 +90,11 @@ func DeleteService(ctx context.Context, name string) model.RetVal {
 }
 
 // DeleteServiceCollection Service 不支持 DeleteCollection
-func DeleteServiceCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	if _, ret := deleteCollectionOptions("Service", labels...); !ret.OK {
+func DeleteServiceCollection(ctx context.Context, labels map[string]string) model.RetVal {
+	if _, ret := deleteCollectionOptions("Service", labels); !ret.OK {
 		return ret
 	}
-	services, ret := ListServices(ctx, labels...)
+	services, ret := ListServices(ctx, labels)
 	if !ret.OK || services == nil {
 		return ret
 	}

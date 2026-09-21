@@ -62,8 +62,8 @@ func GetSubnet(ctx context.Context, name string) (*kubeovnv1.Subnet, model.RetVa
 	return subnet, model.SuccessRetVal()
 }
 
-func DeleteSubnetCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("Subnet", labels...)
+func DeleteSubnetCollection(ctx context.Context, labels map[string]string) model.RetVal {
+	options, ret := deleteCollectionOptions("Subnet", labels)
 	if !ret.OK {
 		return ret
 	}

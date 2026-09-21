@@ -50,7 +50,7 @@ export default function VictimLogDialog({ victim, onClose, loadPods, loadLogs, t
                 onChange={(event) => log.selectContainer(event.target.value)}
                 className="bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-200 focus:outline-none focus:border-geek-400"
               >
-                {(log.pods.find((pod) => pod.name === log.podName)?.containers ?? []).map((name) => (
+                {(log.pods.find((pod) => pod.name === log.podName)?.container_statuses ?? []).map(({ name }) => (
                   <option key={name} value={name} className="bg-neutral-900">
                     {name}
                   </option>

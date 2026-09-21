@@ -11,16 +11,16 @@ import (
 
 // DeleteCollection must never silently become a namespace/cluster-wide delete.
 // Require a concrete workload owner (or a subnet owner for Kube-OVN IP cleanup),
-// validate selector syntax and reject ambiguous multiple variadic arguments.
-func deleteCollectionOptions(resource string, filters ...map[string]string) (metav1.ListOptions, model.RetVal) {
+// and validate selector syntax. The single selector argument is mandatory.
+func deleteCollectionOptions(resource string, filter map[string]string) (metav1.ListOptions, model.RetVal) {
 	invalid := func() (metav1.ListOptions, model.RetVal) {
 		return metav1.ListOptions{}, model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": resource, "Error": "refusing deletion without a valid, non-empty workload ownership selector"}}
 	}
-	if len(filters) != 1 || len(filters[0]) == 0 {
+	if len(filter) == 0 {
 		return invalid()
 	}
 	owned := false
-	for key, value := range filters[0] {
+	for key, value := range filter {
 		if key == "" || value == "" {
 			return invalid()
 		}
@@ -38,7 +38,7 @@ func deleteCollectionOptions(resource string, filters ...map[string]string) (met
 	if !owned {
 		return invalid()
 	}
-	selector, err := labels.ValidatedSelectorFromSet(labels.Set(filters[0]))
+	selector, err := labels.ValidatedSelectorFromSet(labels.Set(filter))
 	if err != nil || selector.Empty() {
 		return invalid()
 	}
