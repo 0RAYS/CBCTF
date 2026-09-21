@@ -115,12 +115,19 @@ func ListPods(ctx context.Context, labels ...map[string]string) (*corev1.PodList
 	return podList, model.SuccessRetVal()
 }
 
-func GetPodLogs(ctx context.Context, podName, containerName string, lines int64) (string, model.RetVal) {
-	options := &corev1.PodLogOptions{
-		Container: containerName,
-		Follow:    false,
-		TailLines: &lines,
+const MaxPodLogLines int64 = 10000
+const MaxPodLogBytes int64 = 1 << 20
+
+func podLogOptions(containerName string, lines int64) *corev1.PodLogOptions {
+	if lines <= 0 {
+		lines = 1000
 	}
+	lines = min(lines, MaxPodLogLines)
+	return &corev1.PodLogOptions{Container: containerName, TailLines: &lines, LimitBytes: new(MaxPodLogBytes)}
+}
+
+func GetPodLogs(ctx context.Context, podName, containerName string, lines int64) (string, model.RetVal) {
+	options := podLogOptions(containerName, lines)
 	podLogs, err := kubeClient.CoreV1().Pods(globalNamespace).GetLogs(podName, options).Stream(ctx)
 	if err != nil {
 		log.Logger.Warningf("Failed to get Pod Logs: %s", err)
@@ -129,7 +136,7 @@ func GetPodLogs(ctx context.Context, podName, containerName string, lines int64)
 	defer func(podLogs io.ReadCloser) {
 		_ = podLogs.Close()
 	}(podLogs)
-	buf, err := io.ReadAll(podLogs)
+	buf, err := io.ReadAll(io.LimitReader(podLogs, MaxPodLogBytes))
 	if err != nil {
 		log.Logger.Warningf("Failed to read Pod Logs: %s", err)
 		return "", model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": err.Error()}}

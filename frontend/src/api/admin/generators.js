@@ -6,7 +6,24 @@ export const startGenerators = (challenges) =>
   request({ url: '/admin/generators', method: 'POST', data: { challenges } });
 
 export const stopGenerators = (generatorIds) =>
-  request({ url: '/admin/generators', method: 'DELETE', data: { generators: generatorIds } });
+  request({
+    url: '/admin/generators',
+    method: 'DELETE',
+    data: { generators: generatorIds },
+  });
 
 export const getGeneratorLogs = (generatorId, lines = 1000) =>
-  request({ url: `/admin/generators/${generatorId}/logs`, method: 'GET', params: { lines } });
+  request({
+    url: `/admin/generators/${generatorId}/logs`,
+    method: 'GET',
+    params: { lines },
+  });
+
+export const getGeneratorStatus = (generatorId, signal) =>
+  request({
+    url: `/admin/generators/${generatorId}/status`,
+    method: 'GET',
+    signal,
+    noLoading: true,
+    noToast: true,
+  });

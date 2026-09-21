@@ -95,3 +95,20 @@ checks for successful tests. No live Kubernetes/Redis/PostgreSQL cluster is assu
 - Deferred: FRP allocations need tokenized ownership/durable release across DB
   failure after cleanup; synchronous administrative hard-deletes and worker crash
   recovery also need unified ownership/outbox coverage.
+
+## Completed: workload diagnostics and admin UI
+
+- Pod responses expose Ready/deletion, scheduling condition reasons, container state,
+  restart counts and current/previous exit codes. No specs, images, environment,
+  commands, free-form status messages or capture-container details are returned.
+- Generator status endpoints use the existing global/contest permission and ownership
+  chains. Log access validates Pod ownership; victim logs now use a scoped GET rather
+  than listing all sibling Pods. Legacy generator labels remain readable.
+- Kubernetes requests inherit HTTP cancellation. Log requests cap at 10,000 lines and
+  1 MiB (both server request options and defensive local reads).
+- Bilingual admin dialogs refresh status every 5 seconds without overlapping requests,
+  abort on close/scope change, preserve selection and mark stale data after failures.
+  Logs remain explicit snapshots with a refresh button and bounded line controls.
+- Go tests cover diagnostic redaction/ownership/log limits and route permission mapping.
+  Frontend tests cover polling, late responses, selection and disappearance: 265 passed;
+  lint:check and production build passed (existing large-chunk warning remains).

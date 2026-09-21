@@ -341,9 +341,12 @@ export const startContestVictims = (contestId, challenges, teamRatio, duration) 
 };
 
 // 获取比赛靶机 Pod 列表
-export const getContestVictimPods = (contestId, victimId) => {
+export const getContestVictimPods = (contestId, victimId, signal) => {
   return request({
     url: `/admin/contests/${contestId}/victims/${victimId}/pods`,
+    signal,
+    noLoading: true,
+    noToast: true,
     method: 'GET',
   });
 };
@@ -418,12 +421,20 @@ export const getIpInfo = (ip) => {
 
 // 获取附件生成器列表
 export const getContestGenerators = (contestId, params = { limit: 20, offset: 0 }) => {
-  return request({ url: `/admin/contests/${contestId}/generators`, method: 'GET', params });
+  return request({
+    url: `/admin/contests/${contestId}/generators`,
+    method: 'GET',
+    params,
+  });
 };
 
 // 启动附件生成器
 export const startContestGenerators = (contestId, challenges) => {
-  return request({ url: `/admin/contests/${contestId}/generators`, method: 'POST', data: { challenges } });
+  return request({
+    url: `/admin/contests/${contestId}/generators`,
+    method: 'POST',
+    data: { challenges },
+  });
 };
 
 // 停止附件生成器
@@ -443,3 +454,12 @@ export const getContestGeneratorLogs = (contestId, generatorId, lines = 1000) =>
     params: { lines },
   });
 };
+
+export const getContestGeneratorStatus = (contestId, generatorId, signal) =>
+  request({
+    url: `/admin/contests/${contestId}/generators/${generatorId}/status`,
+    method: 'GET',
+    signal,
+    noLoading: true,
+    noToast: true,
+  });

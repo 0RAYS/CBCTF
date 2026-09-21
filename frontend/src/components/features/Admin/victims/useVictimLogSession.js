@@ -9,46 +9,91 @@ export default function useVictimLogSession({ victim, loadPods, loadLogs, transl
   const [podsVictimId, setPodsVictimId] = useState(null);
   const [podName, setPodName] = useState('');
   const [containerName, setContainerName] = useState('');
+  const [logRevision, setLogRevision] = useState(0);
   const [lines, setLines] = useState(1000);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [statusError, setStatusError] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState(null);
+  const refreshStatus = useRef(() => {});
   const request = useRef(0);
   const previousSelection = useRef('');
   const victimId = victim?.id;
-  const fetchPods = useEffectEvent(() => loadPods(victim.id));
+  const fetchPods = useEffectEvent((signal) => loadPods(victim.id, signal));
   const fetchLogs = useEffectEvent(() => loadLogs(victim.id, podName, containerName, lines));
   const reportError = useEffectEvent((key) => toast.danger({ description: t(`${translationKey}.logs.${key}`) }));
 
+  const applyPods = useEffectEvent((available) => {
+    const selected = available.find((pod) => pod.name === podName) ?? available[0];
+    const nextPod = selected?.name ?? '';
+    const nextContainer = selected?.containers?.includes(containerName)
+      ? containerName
+      : (selected?.containers?.[0] ?? '');
+    if (nextPod !== podName || nextContainer !== containerName) {
+      setContent('');
+      setLoading(false);
+    }
+    setPods(available);
+    setPodsVictimId(victimId);
+    setPodName(nextPod);
+    setContainerName(nextContainer);
+  });
+
   useEffect(() => {
     let active = true;
+    let timer;
+    let inFlight = false;
+    let first = true;
+    const controller = new AbortController();
     setPods([]);
-    setPodsLoading(true);
+    setPodsLoading(!!victimId);
     setPodsVictimId(null);
     setPodName('');
     setContainerName('');
     setLines(1000);
     setContent('');
     setLoading(false);
+    setStatusError(false);
+    setUpdatedAt(null);
+    setRefreshing(false);
     previousSelection.current = '';
+    refreshStatus.current = () => {};
     if (!victimId) return;
-    fetchPods()
-      .then((response) => {
+    const poll = async () => {
+      if (!active || inFlight) return;
+      clearTimeout(timer);
+      inFlight = true;
+      setRefreshing(true);
+      try {
+        const response = await fetchPods(controller.signal);
         if (!active) return;
         if (response?.code !== 200) throw new Error(response?.msg);
-        const available = response.data?.pods ?? [];
-        setPods(available);
-        setPodsVictimId(victimId);
-        setPodName(available[0]?.name ?? '');
-        setContainerName(available[0]?.containers?.[0] ?? '');
-      })
-      .catch(() => {
-        if (active) reportError('fetchPodsFailed');
-      })
-      .finally(() => {
-        if (active) setPodsLoading(false);
-      });
+        applyPods(response.data?.pods ?? []);
+        setStatusError(false);
+        setUpdatedAt(new Date().toLocaleTimeString());
+      } catch {
+        if (active) {
+          setStatusError(true);
+          if (first) reportError('fetchPodsFailed');
+        }
+      } finally {
+        inFlight = false;
+        if (active) {
+          first = false;
+          setPodsLoading(false);
+          setRefreshing(false);
+          timer = setTimeout(poll, 5000);
+        }
+      }
+    };
+    refreshStatus.current = poll;
+    poll();
     return () => {
       active = false;
+      controller.abort();
+      clearTimeout(timer);
+      refreshStatus.current = () => {};
     };
   }, [victimId]);
 
@@ -74,17 +119,22 @@ export default function useVictimLogSession({ victim, loadPods, loadLogs, transl
       clearTimeout(timer);
       request.current += 1;
     };
-  }, [victimId, podsVictimId, podName, containerName, lines]);
+  }, [victimId, podsVictimId, podName, containerName, lines, logRevision]);
 
   return {
     pods,
     podsLoading,
+    statusError,
+    refreshing,
+    updatedAt,
+    refreshStatus: () => refreshStatus.current(),
     podName,
     containerName,
     lines,
     content,
     loading,
     setLines,
+    refreshLogs: () => setLogRevision((value) => value + 1),
     selectPod: (name) => {
       setPodName(name);
       setContainerName(pods.find((pod) => pod.name === name)?.containers?.[0] ?? '');

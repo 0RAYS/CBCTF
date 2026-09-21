@@ -136,7 +136,7 @@ func GetVictimPods(ctx *gin.Context) {
 	}
 
 	labels := k8s.VictimLabels(victim)
-	ctxTimeout, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctxTimeout, cancel := context.WithTimeout(ctx.Request.Context(), 15*time.Second)
 	defer cancel()
 	podList, ret := k8s.ListPods(ctxTimeout, labels)
 	if !ret.OK {
@@ -147,30 +147,11 @@ func GetVictimPods(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}})
 		return
 	}
-	pods := make([]gin.H, 0, len(podList.Items))
-	for _, pod := range podList.Items {
-		containers := make([]string, 0, len(pod.Spec.InitContainers)+len(pod.Spec.Containers))
-		for _, c := range pod.Spec.InitContainers {
-			if c.Name == k8s.CaptureContainerName {
-				continue
-			}
-			containers = append(containers, c.Name)
-		}
-		for _, c := range pod.Spec.Containers {
-			if c.Name == k8s.CaptureContainerName {
-				continue
-			}
-			containers = append(containers, c.Name)
-		}
-		if len(containers) == 0 {
-			continue
-		}
-		pods = append(pods, gin.H{
-			"name":       pod.Name,
-			"status":     string(pod.Status.Phase),
-			"containers": containers,
-		})
+	pods := make([]k8s.PodDiagnostics, 0, len(podList.Items))
+	for i := range podList.Items {
+		pods = append(pods, k8s.DescribePod(&podList.Items[i]))
 	}
+
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"pods": pods}))
 }
 
@@ -190,45 +171,25 @@ func GetVictimPodLogs(ctx *gin.Context) {
 		return
 	}
 
-	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctxTimeout, cancel := context.WithTimeout(ctx.Request.Context(), 30*time.Second)
 	defer cancel()
-	podList, ret := k8s.ListPods(ctxTimeout, k8s.VictimLabels(victim))
+	pod, ret := k8s.GetPod(ctxTimeout, form.PodName)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	if podList == nil {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}})
-		return
-	}
-	podFound := false
-	containerFound := false
-	for _, pod := range podList.Items {
-		if pod.Name != form.PodName {
-			continue
-		}
-		podFound = true
-		for _, c := range pod.Spec.InitContainers {
-			if c.Name == form.Container && c.Name != k8s.CaptureContainerName {
-				containerFound = true
-				break
-			}
-		}
-		if containerFound {
-			break
-		}
-		for _, c := range pod.Spec.Containers {
-			if c.Name == form.Container && c.Name != k8s.CaptureContainerName {
-				containerFound = true
-				break
-			}
-		}
-		break
-	}
-	if !podFound {
+	if !k8s.PodMatchesLabels(pod, k8s.VictimLabels(victim)) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": "pod does not belong to victim"}})
 		return
 	}
+	containerFound := false
+	for _, name := range k8s.DescribePod(pod).Containers {
+		if name == form.Container {
+			containerFound = true
+			break
+		}
+	}
+
 	if !containerFound {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": "container does not belong to victim"}})
 		return
