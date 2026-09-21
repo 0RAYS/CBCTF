@@ -183,8 +183,8 @@ func GetVictimPodLogs(ctx *gin.Context) {
 		return
 	}
 	containerFound := false
-	for _, name := range k8s.DescribePod(pod).Containers {
-		if name == form.Container {
+	for _, container := range k8s.DescribePod(pod).ContainerStatuses {
+		if container.Name == form.Container {
 			containerFound = true
 			break
 		}

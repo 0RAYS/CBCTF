@@ -10,8 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func DeleteIPCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("IP", labels...)
+func DeleteIPCollection(ctx context.Context, labels map[string]string) model.RetVal {
+	options, ret := deleteCollectionOptions("IP", labels)
 	if !ret.OK {
 		return ret
 	}

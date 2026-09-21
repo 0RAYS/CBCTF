@@ -25,7 +25,7 @@ export default function PodDiagnostics({ pods = [], refreshing, statusError, upd
       )}
       {!pods.length && !refreshing && <p className="text-xs text-neutral-400">{text('noPods')}</p>}
       {pods.map((pod) => (
-        <div key={pod.uid || pod.name} className="text-xs space-y-2 min-w-0">
+        <div key={pod.uid} className="text-xs space-y-2 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-neutral-300 break-all">{pod.name}</span>
             <span className={pod.ready ? 'text-emerald-400' : 'text-amber-400'}>
@@ -36,7 +36,7 @@ export default function PodDiagnostics({ pods = [], refreshing, statusError, upd
             </span>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-neutral-400">
-            {(pod.conditions ?? [])
+            {pod.conditions
               .filter((condition) => condition.status !== 'True')
               .map((condition) => (
                 <span key={condition.type} className="break-all">
@@ -45,7 +45,7 @@ export default function PodDiagnostics({ pods = [], refreshing, statusError, upd
               ))}
           </div>
           <ul className="space-y-1 text-neutral-400">
-            {(pod.container_statuses ?? []).map((container) => (
+            {pod.container_statuses.map((container) => (
               <li key={`${container.init}:${container.name}`} className="flex flex-wrap gap-x-3 gap-y-1">
                 <span className="font-mono break-all">
                   {container.name}

@@ -225,8 +225,8 @@ func GetVM(ctx context.Context, name string) (*v1.VirtualMachine, model.RetVal) 
 	return vm, model.SuccessRetVal()
 }
 
-func DeleteVMCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("VirtualMachine", labels...)
+func DeleteVMCollection(ctx context.Context, labels map[string]string) model.RetVal {
+	options, ret := deleteCollectionOptions("VirtualMachine", labels)
 	if !ret.OK {
 		return ret
 	}

@@ -25,7 +25,7 @@ func TestPodDiagnosticsAllowlist(t *testing.T) {
 		ContainerStatuses: []corev1.ContainerStatus{{Name: "web", RestartCount: 3, State: corev1.ContainerState{Waiting: &corev1.ContainerStateWaiting{Reason: "CrashLoopBackOff", Message: "secret-marker"}}, LastTerminationState: corev1.ContainerState{Terminated: &corev1.ContainerStateTerminated{ExitCode: 137, Reason: "OOMKilled", Message: "secret-marker"}}}},
 	}}
 	result := DescribePod(pod)
-	if result.Ready || len(result.Containers) != 2 || !result.ContainerStatuses[0].Init {
+	if result.Ready || len(result.ContainerStatuses) != 2 || !result.ContainerStatuses[0].Init {
 		t.Fatalf("bad status: %+v", result)
 	}
 	web := result.ContainerStatuses[1]
@@ -36,6 +36,13 @@ func TestPodDiagnosticsAllowlist(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &fields); err != nil {
+		t.Fatal(err)
+	}
+	if _, exists := fields["containers"]; exists {
+		t.Fatal("legacy container names field retained")
+	}
 	if strings.Contains(string(raw), "secret-marker") || strings.Contains(string(raw), CaptureContainerName) {
 		t.Fatalf("diagnostic leaked data: %s", raw)
 	}
@@ -44,8 +51,12 @@ func TestPodDiagnosticsAllowlist(t *testing.T) {
 func TestGeneratorPodOwnership(t *testing.T) {
 	generator := model.Generator{ID: 7, ChallengeID: 9, Name: "generator-7"}
 	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: generator.Name, Labels: map[string]string{"challenge_id": "9", RoleLabel: GeneratorPodTag}}}
-	if !GeneratorOwnsPod(generator, pod) {
-		t.Fatal("legacy owned pod rejected")
+	if GeneratorOwnsPod(generator, pod) {
+		t.Fatal("pod without generator_id accepted")
+	}
+	pod.Labels["generator_id"] = ""
+	if GeneratorOwnsPod(generator, pod) {
+		t.Fatal("empty owner accepted")
 	}
 	pod.Labels["generator_id"] = "8"
 	if GeneratorOwnsPod(generator, pod) {

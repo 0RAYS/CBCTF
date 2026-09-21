@@ -19,7 +19,6 @@ type PodDiagnostics struct {
 	Terminating       bool                   `json:"terminating"`
 	Reason            string                 `json:"reason,omitempty"`
 	CreatedAt         time.Time              `json:"created_at"`
-	Containers        []string               `json:"containers"`
 	ContainerStatuses []ContainerDiagnostics `json:"container_statuses"`
 	Conditions        []ConditionDiagnostics `json:"conditions"`
 }
@@ -47,7 +46,7 @@ func DescribePod(pod *corev1.Pod) PodDiagnostics {
 		Name: pod.Name, UID: string(pod.UID), Status: pod.Status.Phase,
 		Ready: podReady(pod), Terminating: pod.DeletionTimestamp != nil,
 		Reason: diagnosticReason(pod.Status.Reason), CreatedAt: pod.CreationTimestamp.Time,
-		Containers: []string{}, ContainerStatuses: []ContainerDiagnostics{}, Conditions: []ConditionDiagnostics{},
+		ContainerStatuses: []ContainerDiagnostics{}, Conditions: []ConditionDiagnostics{},
 	}
 	appendContainers := func(containers []corev1.Container, statuses []corev1.ContainerStatus, init bool) {
 		byName := make(map[string]corev1.ContainerStatus, len(statuses))
@@ -58,7 +57,6 @@ func DescribePod(pod *corev1.Pod) PodDiagnostics {
 			if container.Name == CaptureContainerName {
 				continue
 			}
-			result.Containers = append(result.Containers, container.Name)
 			status := byName[container.Name]
 			item := ContainerDiagnostics{Name: container.Name, Init: init, Ready: status.Ready, Restarts: status.RestartCount, State: "unknown"}
 			switch {
@@ -110,11 +108,9 @@ func GeneratorOwnsPod(generator model.Generator, pod *corev1.Pod) bool {
 	if pod == nil || pod.Name != generator.Name {
 		return false
 	}
-	expected := map[string]string{"challenge_id": strconv.FormatUint(uint64(generator.ChallengeID), 10), RoleLabel: GeneratorPodTag}
-	// Existing Pods predate generator_id; the exact DB-owned name and legacy labels
-	// remain required. An explicit, mismatched ID is never accepted.
-	if id, exists := pod.Labels["generator_id"]; exists && id != strconv.FormatUint(uint64(generator.ID), 10) {
-		return false
-	}
-	return PodMatchesLabels(pod, expected)
+	return PodMatchesLabels(pod, map[string]string{
+		"challenge_id": strconv.FormatUint(uint64(generator.ChallengeID), 10),
+		"generator_id": strconv.FormatUint(uint64(generator.ID), 10),
+		RoleLabel:      GeneratorPodTag,
+	})
 }

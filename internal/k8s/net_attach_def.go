@@ -63,11 +63,11 @@ func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*ne
 	return netAttachDef, model.SuccessRetVal()
 }
 
-func DeleteNetAttachDefCollection(ctx context.Context, namespace string, labels ...map[string]string) model.RetVal {
+func DeleteNetAttachDefCollection(ctx context.Context, namespace string, labels map[string]string) model.RetVal {
 	if namespace == "" {
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "NetworkAttachmentDefinition", "Error": "refusing deletion without a namespace"}}
 	}
-	options, ret := deleteCollectionOptions("NetworkAttachmentDefinition", labels...)
+	options, ret := deleteCollectionOptions("NetworkAttachmentDefinition", labels)
 	if !ret.OK {
 		return ret
 	}

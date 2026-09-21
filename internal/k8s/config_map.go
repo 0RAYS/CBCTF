@@ -36,8 +36,8 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	return configMap, model.SuccessRetVal()
 }
 
-func DeleteConfigMapCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("ConfigMap", labels...)
+func DeleteConfigMapCollection(ctx context.Context, labels map[string]string) model.RetVal {
+	options, ret := deleteCollectionOptions("ConfigMap", labels)
 	if !ret.OK {
 		return ret
 	}

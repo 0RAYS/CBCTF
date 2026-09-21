@@ -27,9 +27,9 @@ export default function useVictimLogSession({ victim, loadPods, loadLogs, transl
   const applyPods = useEffectEvent((available) => {
     const selected = available.find((pod) => pod.name === podName) ?? available[0];
     const nextPod = selected?.name ?? '';
-    const nextContainer = selected?.containers?.includes(containerName)
+    const nextContainer = selected?.container_statuses.some((container) => container.name === containerName)
       ? containerName
-      : (selected?.containers?.[0] ?? '');
+      : (selected?.container_statuses[0]?.name ?? '');
     if (nextPod !== podName || nextContainer !== containerName) {
       setContent('');
       setLoading(false);
@@ -137,7 +137,7 @@ export default function useVictimLogSession({ victim, loadPods, loadLogs, transl
     refreshLogs: () => setLogRevision((value) => value + 1),
     selectPod: (name) => {
       setPodName(name);
-      setContainerName(pods.find((pod) => pod.name === name)?.containers?.[0] ?? '');
+      setContainerName(pods.find((pod) => pod.name === name)?.container_statuses[0]?.name ?? '');
       setContent('');
       setLoading(false);
     },

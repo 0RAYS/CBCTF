@@ -105,7 +105,9 @@ cluster was used.
   commands, free-form status messages or capture-container details are returned.
 - Generator status endpoints use the existing global/contest permission and ownership
   chains. Log access validates Pod ownership; victim logs now use a scoped GET rather
-  than listing all sibling Pods. Legacy generator labels remain readable.
+  than listing all sibling Pods. Generator ownership requires the exact name and
+  challenge_id, generator_id and role labels; the initial legacy-label allowance
+  was removed in the compatibility cleanup below.
 - Kubernetes requests inherit HTTP cancellation. Log requests cap at 10,000 lines and
   1 MiB (both server request options and defensive local reads).
 - Bilingual admin dialogs refresh status every 5 seconds without overlapping requests,
@@ -192,3 +194,33 @@ No measured production performance or availability improvement is claimed.
    procedures for pending records, synchronous administrative hard-deletes and FRP
    allocation recovery until durable ownership/outbox work is completed. Batch API
    acceptance is not yet a durable guarantee that every task was enqueued.
+
+
+## Compatibility removal - 2026-09-21
+
+At the operator's request, this scheduling change set no longer preserves old
+resource/API contracts:
+
+- `GeneratorOwnsPod` no longer accepts missing or empty `generator_id`. Status/log
+  access and generator cleanup require the exact DB-owned name plus all ownership
+  labels. Old unlabeled generator Pods must be removed/recreated explicitly; no
+  auto-adoption, relabel migration or broad deletion fallback is added.
+- `PodDiagnostics` no longer emits the duplicate `containers: string[]` field.
+  `container_statuses` is the single structured container contract used by backend
+  log authorization and frontend selection/display, including init containers.
+  The UI does not fall back to the retired response format or Pod name as a UID.
+- `DeletePod` and `DeletePodAndWait` now require an explicit non-empty observed UID;
+  the optional argument and name-only lookup fallback are removed.
+- All ten batch-delete entrypoints and their shared selector validator take exactly
+  one required map, rather than retaining the optional variadic signature. Nil,
+  empty or invalid ownership selectors still fail closed before any API request.
+- Retries, watch recovery, missing-resource idempotence, partial-allocation cleanup,
+  expired-lease reacquisition and empty UI selection handling are fault tolerance,
+  not old-version compatibility, and remain in place.
+
+The frontend and backend must be released together. New regression coverage checks
+missing/empty generator ownership, absence of the retired JSON field, explicit
+UID requirements, rejection of old frontend responses and init-container selection.
+Full Go tests and the focused Kubernetes/router race tests passed; frontend tests
+passed (269), with lint and production build also checked. No live cluster or
+Redis/PostgreSQL integration test service was used for this follow-up.

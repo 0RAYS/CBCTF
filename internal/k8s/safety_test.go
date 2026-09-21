@@ -10,24 +10,25 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	ktesting "k8s.io/client-go/testing"
 )
 
 func TestCollectionDeletionRequiresOwner(t *testing.T) {
-	operations := map[string]func(context.Context, ...map[string]string) model.RetVal{
+	operations := map[string]func(context.Context, map[string]string) model.RetVal{
 		"Pod": DeletePodCollection, "Service": DeleteServiceCollection, "EndpointSlice": DeleteEndpointCollection,
 		"ConfigMap": DeleteConfigMapCollection, "NetworkPolicy": DeleteNetworkPolicyCollection,
 		"Subnet": DeleteSubnetCollection, "VPC": DeleteVPCCollection, "IP": DeleteIPCollection, "VM": DeleteVMCollection,
-		"NAD": func(ctx context.Context, labels ...map[string]string) model.RetVal {
-			return DeleteNetAttachDefCollection(ctx, "test", labels...)
+		"NAD": func(ctx context.Context, labels map[string]string) model.RetVal {
+			return DeleteNetAttachDefCollection(ctx, "test", labels)
 		},
 	}
 	for name, operation := range operations {
 		t.Run(name, func(t *testing.T) {
 			// These must return before touching a client. Several clients are nil in tests.
-			for _, filters := range [][]map[string]string{nil, {nil}, {{}}, {{"role": "victim"}}, {{"victim_id": ""}}, {{"victim_id": "0"}}, {{"victim_id": "-1"}}, {{"victim_id": "7", "bad key": "x"}}, {{"victim_id": "7,role=other"}}, {{"victim_id": "7"}, {"generator_id": "8"}}} {
-				if ret := operation(context.Background(), filters...); ret.OK {
+			for _, filters := range []map[string]string{nil, {}, {"role": "victim"}, {"victim_id": ""}, {"victim_id": "0"}, {"victim_id": "-1"}, {"victim_id": "7", "bad key": "x"}, {"victim_id": "7,role=other"}} {
+				if ret := operation(context.Background(), filters); ret.OK {
 					t.Fatalf("unsafe selector accepted: %v", filters)
 				}
 			}
@@ -63,6 +64,34 @@ func TestGeneratorCleanupRejectsForeignPod(t *testing.T) {
 		if action.GetVerb() != "get" {
 			t.Fatalf("foreign workload mutated: %s", action.GetVerb())
 		}
+	}
+}
+
+func TestGeneratorCleanupRejectsMissingOwnerLabel(t *testing.T) {
+	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "unlabelled", Namespace: "test", UID: "old", Labels: map[string]string{"challenge_id": "9", RoleLabel: GeneratorPodTag}}}
+	client := useFakePods(t, pod)
+	generator := model.Generator{ID: 7, ChallengeID: 9, Name: pod.Name}
+	if ret := StopGenerator(context.Background(), generator); ret.OK {
+		t.Fatal("generator without owner label accepted for cleanup")
+	}
+	for _, action := range client.Actions() {
+		if action.GetVerb() != "get" {
+			t.Fatalf("unowned workload mutated: %s", action.GetVerb())
+		}
+	}
+}
+
+func TestPodDeletionRequiresObservedIdentity(t *testing.T) {
+	client := useFakePods(t)
+	for _, deletePod := range []func(context.Context, string, types.UID) model.RetVal{DeletePod, DeletePodAndWait} {
+		for _, identity := range [][2]string{{"pod", ""}, {"", "uid"}, {"", ""}} {
+			if ret := deletePod(context.Background(), identity[0], types.UID(identity[1])); ret.OK {
+				t.Fatalf("missing identity accepted: %v", identity)
+			}
+		}
+	}
+	if len(client.Actions()) != 0 {
+		t.Fatal("invalid deletion reached Kubernetes API")
 	}
 }
 
