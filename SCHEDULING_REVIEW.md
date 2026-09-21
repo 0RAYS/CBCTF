@@ -44,9 +44,10 @@ Each item is committed separately with regression coverage where feasible.
 ## Validation environment
 
 Actual executable configs require Go 1.27.1 and pnpm 12.4.1 (older AGENTS prose is
-stale). The selected Go 1.27.1 installation initially contains only bin tools;
-`go test` fails with `go: no such tool "vet"`. Do not mistake skipped/incomplete
-checks for successful tests. No live Kubernetes/Redis/PostgreSQL cluster is assumed.
+stale). The selected Go 1.27.1 installation initially contained only bin tools;
+`go test` failed with `go: no such tool "vet"`. This was resolved using the complete
+local toolchain before the final checks below. No live Kubernetes/Redis/PostgreSQL
+cluster was used.
 
 ## Follow-up / integration checks
 
@@ -143,3 +144,51 @@ checks for successful tests. No live Kubernetes/Redis/PostgreSQL cluster is assu
   Operators with exceptionally slow image pulls may need a different policy later.
 - Focused tests passed for all ten batch-delete entrypoints, ownership/UID protection,
   image-job defaults and shared client configuration. These are not load benchmarks.
+
+
+## Final validation results
+
+Validated locally on Windows on 2026-09-21 after the six implementation commits:
+
+| Check | Result / scope |
+| --- | --- |
+| `go test ./...` | Passed with the complete local Go 1.27.1 toolchain. |
+| `go test -race ./internal/k8s ./internal/redis ./internal/db ./internal/cron ./internal/router ./internal/utils` | Passed for these packages; not a race test of the whole application. |
+| `pnpm test` in `frontend/` | 265 tests passed, none failed. |
+| `pnpm lint:check` in `frontend/` | Passed without changing files. |
+| `pnpm build` in `frontend/` | Passed; existing large-chunk warning remains. |
+| `CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o .gocache/CBCTF-review.exe .` | Passed after the frontend build; native Windows build, not the Linux container release. |
+| `helm lint ./chart` | Passed; optional chart icon recommendation remains. |
+| Helm rendering / permission tests | Passed for default and custom service-account/probe/grace settings through the Go tests. |
+| `git diff --check` | Passed. |
+
+The Go commands used `GOROOT=.gocache/toolchain/go` and `GOTOOLCHAIN=local`.
+The optional Redis and PostgreSQL integration tests were **skipped** because
+`CBCTF_TEST_REDIS_ADDR` and `CBCTF_TEST_POSTGRES_DSN` were not provided. A passing
+package therefore does not establish real Redis lease or PostgreSQL lock behavior.
+No live Kubernetes/Kube-OVN/Multus/KubeVirt/FRP integration, browser end-to-end run,
+Linux Docker/libpcap release build, or throughput/latency benchmark was performed.
+No measured production performance or availability improvement is claimed.
+
+## Rollout and acceptance checklist
+
+1. Use a staging deployment first. Upgrade backend and chart 0.0.24 together, verify
+   service-account bindings, and budget the additional PostgreSQL lock-pool sessions.
+   Do not deploy through transaction-mode PgBouncer.
+2. Run the opt-in Redis/PostgreSQL integration tests against isolated test services.
+   Verify two worker processes serialize duplicate start/stop requests and that
+   connection loss releases locks without admitting overlapping cleanup.
+3. Exercise shared-Pod and VPC challenges, generators, FRP and VM-backed workloads:
+   concurrent starts/stops, duplicate deliveries, failed image pulls, unschedulable
+   Pods, init/container exits, watch disconnections, UID replacements and CNI delays.
+   Confirm workloads disappear before networking and FRP allocations are released.
+4. Check global and contest admin diagnostics in English and Chinese, permission
+   denial, status staleness/recovery, close/reopen behavior, and bounded log reads.
+   Confirm responses do not disclose environment/flags or full Pod specifications.
+5. Measure before/after enqueue-to-Ready p50/p95/p99, stop-to-resource-removal latency,
+   API request/throttle/error rate, orphan count, queue age, and DB connection usage
+   under the same workload. Tune capacity from measurements, not the fixed limiter.
+6. Test rolling shutdown and hard process loss separately. Keep explicit reconciliation
+   procedures for pending records, synchronous administrative hard-deletes and FRP
+   allocation recovery until durable ownership/outbox work is completed. Batch API
+   acceptance is not yet a durable guarantee that every task was enqueued.
