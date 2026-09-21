@@ -224,3 +224,87 @@ UID requirements, rejection of old frontend responses and init-container selecti
 Full Go tests and the focused Kubernetes/router race tests passed; frontend tests
 passed (269), with lint and production build also checked. No live cluster or
 Redis/PostgreSQL integration test service was used for this follow-up.
+
+
+## Multi-instance / load-distribution code inventory
+
+This inventories the scheduling change set, not a declaration that the entire
+platform is ready for active-active deployment. These mechanisms were retained:
+the request was to remove compatibility, not to remove concurrency protection.
+
+### Added or changed in the scheduling review
+
+1. **Cross-process workload lifecycle locking (new).**
+   `internal/db/workload_lock.go:WithWorkloadLock` reserves a dedicated SQL session,
+   hashes `cbctf:<victim|generator>:<id>` into a PostgreSQL advisory-lock key, acquires
+   the lock, runs the lifecycle callback, and unlocks with an independent five-second
+   context. Ambiguous acquisition/unlock failures discard the connection. Separate
+   processes sharing the same database contend for the same workload key; different
+   workload IDs can proceed independently. The database releases a session lock
+   when its owning session ends, not by a fixed Redis-style lease expiry.
+   - Integrated in `HandleStartVictimTask` / `HandleStopVictimTask` in
+     `internal/task/victim.go` and their generator counterparts in
+     `internal/task/generator.go`.
+   - `internal/db/db.go:WorkloadLockDB` is a separate lock-only pool, avoiding starvation
+     of the task query connections needed by the callback. Each replica would add
+     its own pool; this is not a shared pool across replicas.
+   - This also matters in one application process: start and stop are distinct
+     concurrent worker queues. It is not exclusively a multi-instance feature.
+   - Scope is these worker handlers, not all admin/cron code. In particular,
+     `internal/service/generator.go:stopGeneratorResources` does not take this lock.
+     There is no fencing token/watchdog to cancel all Kubernetes side effects if an
+     already-held SQL session is lost, so the lock alone is not a complete HA protocol.
+
+2. **Conditional database state transitions (new for generators; victims already
+   had the repository primitive).** `internal/db/generator.go:UpdateIfStatus` uses
+   `WHERE id = ? AND status = ?` and checks `RowsAffected`. Generator workers and
+   `internal/service/generator.go:StopGenerator` use it to avoid stale state writes.
+   Victim workers use `internal/db/victim.go:UpdateIfStatus`; service rollback now
+   restores the recorded original state. These checks coordinate competing requests
+   from either one process or several. They are not a load balancer and do not make
+   the DB update and Redis enqueue one atomic transaction.
+
+3. **Shared generator pool and attachment leases (existing, repaired).**
+   `internal/redis/generator.go` uses a contest/challenge set, a random starting
+   position and Lua `SET ... NX PX` to select and lease an available generator.
+   Refresh/unlock compare the owner token; the review aligns Lua/Go key prefixes and
+   prevents unregister from deleting another attachment's lease.
+   `internal/task/attachment.go:HandleGenAttachmentTask` refreshes/reacquires the
+   lease and now re-reads the generator's running state before execution.
+   This permits shared worker coordination and spreads attachment jobs across
+   generator Pods. It does **not** balance HTTP requests across CBCTF replicas.
+   The five-minute lease is not a fencing mechanism against work continuing after
+   expiration; no Redis Cluster compatibility or exactly-once guarantee is implied.
+
+### Existing infrastructure, not introduced by the review
+
+- `internal/task/task.go:Init`, `enqueueTask` and `newServerConfig`: Asynq client and
+  per-queue servers all use `redis.RDB`. Instances pointed at the same Redis/queues
+  can consume shared task work. The review changed shutdown timing, not the queue
+  distribution architecture. Queue delivery alone is not per-resource serialization,
+  which is why lifecycle locks and state guards remain necessary.
+- `chart/templates/service.yaml` selects application Pods and routes the HTTP port;
+  `chart/templates/ingress.yaml` optionally routes ingress traffic to that Service.
+  Both predate the review and were unchanged. The review did not add an application
+  reverse proxy, sticky-session policy, HPA or multi-replica values.
+
+### Not multi-instance coordination / current deployment limits
+
+- `internal/k8s/k8s.go:configureClientRateLimit` shares one token bucket among clients
+  **inside one process** (100 QPS, burst 150). Multiple processes have independent
+  budgets; this is neither cluster-wide limiting nor a load balancer.
+- `internal/utils/errgroup.go` and local result variables coordinate goroutines in
+  one process. Frontend request cancellation and serialized status polling operate
+  within a UI session, not across backend instances.
+- UID-precondition deletion, Ready waits, deletion selectors and scoped RBAC protect
+  workload identity/lifecycle/permissions in every deployment mode.
+- Startup probes and graceful shutdown also help ordinary single-replica restarts;
+  they are not evidence of multi-instance deployment support.
+- `chart/templates/deployment.yaml` still fixes `replicas: 1` and `strategy: Recreate`.
+  No multi-replica rollout was added or tested.
+- `internal/cron/cron.go:Init` uses in-process `SkipIfStillRunning`; each instance runs
+  its own cron scheduler. There is no cross-instance cron leader election here.
+- Durable enqueue/crash recovery, administrative delete ownership, FRP release
+  ownership, shared storage and other process-local state still need a separate
+  active-active deployment audit. Do not infer whole-platform HA safety from these
+  scheduling safeguards.
