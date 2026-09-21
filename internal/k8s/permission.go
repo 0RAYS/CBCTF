@@ -11,10 +11,12 @@ import (
 )
 
 type permissionCheck struct {
-	Group     string
-	Resource  string
-	Verb      string
-	Namespace string
+	Subresource string
+	Name        string
+	Group       string
+	Resource    string
+	Verb        string
+	Namespace   string
 }
 
 func buildPermissionChecks() []permissionCheck {
@@ -27,8 +29,8 @@ func buildPermissionChecks() []permissionCheck {
 		{Resource: "pods", Verb: "watch", Namespace: ns},
 		{Resource: "pods", Verb: "delete", Namespace: ns},
 		{Resource: "pods", Verb: "deletecollection", Namespace: ns},
-		{Resource: "pods/exec", Verb: "create", Namespace: ns},
-		{Resource: "pods/log", Verb: "get", Namespace: ns},
+		{Resource: "pods", Subresource: "exec", Verb: "create", Namespace: ns},
+		{Resource: "pods", Subresource: "log", Verb: "get", Namespace: ns},
 		// Core: Services
 		{Resource: "services", Verb: "create", Namespace: ns},
 		{Resource: "services", Verb: "list", Namespace: ns},
@@ -39,7 +41,7 @@ func buildPermissionChecks() []permissionCheck {
 		// Core: PersistentVolumeClaims
 		{Resource: "persistentvolumeclaims", Verb: "get", Namespace: ns},
 		// Core: Namespaces (集群级别)
-		{Resource: "namespaces", Verb: "get"},
+		{Resource: "namespaces", Verb: "get", Name: ns},
 		// Core: Nodes (集群级别)
 		{Resource: "nodes", Verb: "list"},
 		// batch: Jobs
@@ -82,10 +84,12 @@ func checkPermissions() {
 		sar := &authorizationv1.SelfSubjectAccessReview{
 			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
 				ResourceAttributes: &authorizationv1.ResourceAttributes{
-					Namespace: check.Namespace,
-					Verb:      check.Verb,
-					Group:     check.Group,
-					Resource:  check.Resource,
+					Namespace:   check.Namespace,
+					Verb:        check.Verb,
+					Group:       check.Group,
+					Resource:    check.Resource,
+					Subresource: check.Subresource,
+					Name:        check.Name,
 				},
 			},
 		}
@@ -98,7 +102,7 @@ func checkPermissions() {
 			if ns == "" {
 				ns = "(cluster-scoped)"
 			}
-			missing = append(missing, fmt.Sprintf("%s %s/%s [%s]", check.Verb, check.Group, check.Resource, ns))
+			missing = append(missing, fmt.Sprintf("%s %s/%s subresource=%q name=%q [%s]", check.Verb, check.Group, check.Resource, check.Subresource, check.Name, ns))
 		}
 	}
 

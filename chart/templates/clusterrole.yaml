@@ -1,5 +1,3 @@
----
-# ClusterRole: permissions the CBCTF app needs at runtime
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -7,65 +5,16 @@ metadata:
   labels:
     {{- include "cbctf.labels" . | nindent 4 }}
 rules:
-  # ── Namespace-scoped resources ────────────────────────────────────────────
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["create", "get", "list", "watch", "delete", "deletecollection"]
-  - apiGroups: [""]
-    resources: ["pods/exec"]
-    verbs: ["create"]
-  - apiGroups: [""]
-    resources: ["pods/log"]
-    verbs: ["get"]
-  - apiGroups: [""]
-    resources: ["services"]
-    verbs: ["create", "list", "delete"]
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["create", "deletecollection"]
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims"]
-    verbs: ["get"]
-
-  # ── Cluster-scoped resources ─────────────────────────────────────────────
   - apiGroups: [""]
     resources: ["namespaces"]
+    resourceNames: [{{ .Release.Namespace | quote }}]
     verbs: ["get"]
   - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["list"]
-
-  # ── Jobs ─────────────────────────────────────────────────────────────────
-  - apiGroups: ["batch"]
-    resources: ["jobs"]
-    verbs: ["create"]
-
-  # ── NetworkPolicy ────────────────────────────────────────────────────────
-  - apiGroups: ["networking.k8s.io"]
-    resources: ["networkpolicies"]
-    verbs: ["create", "deletecollection"]
-
-  # ── EndpointSlices ───────────────────────────────────────────────────────
-  - apiGroups: ["discovery.k8s.io"]
-    resources: ["endpointslices"]
-    verbs: ["deletecollection"]
-
-  # ── Permission self-check ────────────────────────────────────────────────
   - apiGroups: ["authorization.k8s.io"]
     resources: ["selfsubjectaccessreviews"]
     verbs: ["create"]
-
-  # ── Multus CNI (NetworkAttachmentDefinitions) ────────────────────────────
-  - apiGroups: ["k8s.cni.cncf.io"]
-    resources: ["network-attachment-definitions"]
-    verbs: ["create", "get", "deletecollection"]
-
-  # ── KubeVirt resources (VM challenge mode) ─────────────────────────────────
-  - apiGroups: ["kubevirt.io"]
-    resources: ["virtualmachines"]
-    verbs: ["create", "get", "deletecollection"]
-
-  # ── KubeOVN resources (VPC networking mode) ──────────────────────────────
   - apiGroups: ["kubeovn.io"]
     resources: ["subnets"]
     verbs: ["create", "get", "deletecollection"]

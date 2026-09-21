@@ -21,11 +21,22 @@ imageCredentials:
 nameOverride: ""
 fullnameOverride: ""
 
-# Service Account for the CBCTF pod (requires ClusterRole to manage k8s resources)
+# Service Account: namespace Role plus narrowly scoped cluster permissions.
 serviceAccount:
   create: true
   annotations: {}
   name: ""
+
+# Covers the 30s HTTP drain, task shutdown, and typical cron/log flushing.
+# Long-running cron tasks may require a larger operator-selected grace period.
+terminationGracePeriodSeconds: 120
+# Slow migrations/resource checks must finish before liveness restarts the app.
+startupProbe:
+  tcpSocket:
+    port: http
+  periodSeconds: 5
+  timeoutSeconds: 2
+  failureThreshold: 60
 
 podAnnotations: {}
 podLabels: {}

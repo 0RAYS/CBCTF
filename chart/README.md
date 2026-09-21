@@ -20,7 +20,13 @@ These fields are deployment-only:
 
 ## Kubernetes RBAC
 
-The application runs a startup SelfSubjectAccessReview check and exits if required Kubernetes permissions are missing. The chart-created ClusterRole grants the runtime permissions used by the backend:
+The application runs a startup SelfSubjectAccessReview check and exits if required Kubernetes permissions are missing. Namespaced runtime permissions are granted by a **Role + RoleBinding only in the
+release namespace**. The ClusterRole/ClusterRoleBinding retain only namespace GET
+(restricted to the release namespace), node discovery, self-access reviews and
+Kube-OVN cluster-scoped resources. No wildcard permissions are used. The backend's
+self-check uses separate resource/subresource fields for `pods/exec` and `pods/log`.
+
+The combined runtime permissions are:
 
 | API group | Resources | Verbs |
 | --- | --- | --- |
@@ -41,3 +47,21 @@ The application runs a startup SelfSubjectAccessReview check and exits if requir
 | `kubeovn.io` | `subnets` | `create`, `get`, `deletecollection` |
 | `kubeovn.io` | `vpcs` | `create`, `deletecollection` |
 | `kubeovn.io` | `ips` | `deletecollection` |
+
+## Scheduling rollout notes (0.0.24)
+
+- Upgrade the chart RBAC and backend together. Older binaries self-check subresources
+  incorrectly and cannot use the namespace-name-restricted GET rule reliably.
+- Cluster-scoped Kube-OVN deletecollection cannot be confined by label in RBAC. Use a
+  dedicated platform namespace/cluster and keep the application SA out of challenge
+  Pods; the backend also validates deletion selectors.
+- `startupProbe` defaults to a five-minute initialization allowance. Override it for
+  large DB migrations; liveness/readiness are gated until startup succeeds.
+- `terminationGracePeriodSeconds` defaults to 120. HTTP drains for at most 30 seconds,
+  and task workers have a 30-second shutdown allowance. Running cron/DB operations
+  can still extend shutdown; this is not a hard bound on the entire process.
+- Start/stop workers use a separate PostgreSQL advisory-lock pool. Budget additional
+  connections (up to the same configured maximum as the task query pool). Direct or
+  session-pooled PostgreSQL is required; transaction-mode PgBouncer is unsupported.
+- A process crash can still leave pending resources; inspect the admin diagnostics and
+  reconcile explicitly. This release does not implement a durable DB/queue outbox.

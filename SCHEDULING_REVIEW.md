@@ -15,6 +15,7 @@ been exhaustively audited. Runtime secrets and generated/vendor assets are exclu
 3. Harden task state transitions, cancellation and fail-closed reconciliation.
 4. Add bounded, authorized workload diagnostics and bilingual admin presentation.
 5. Scope Helm RBAC and improve startup/shutdown protection.
+6. Reject unscoped deletion and harden Kubernetes client/image-pull job defaults.
 
 Each item is committed separately with regression coverage where feasible.
 
@@ -112,3 +113,17 @@ checks for successful tests. No live Kubernetes/Redis/PostgreSQL cluster is assu
 - Go tests cover diagnostic redaction/ownership/log limits and route permission mapping.
   Frontend tests cover polling, late responses, selection and disappearance: 265 passed;
   lint:check and production build passed (existing large-chunk warning remains).
+
+## Completed: deployment permissions and startup/shutdown
+
+- Chart 0.0.24 splits namespaced CRUD into Role/RoleBinding. Cluster grants retain only
+  required cluster resources; namespace GET is restricted to the release namespace.
+- Fixed SelfSubjectAccessReview resource/subresource encoding for exec/log and added
+  named namespace checks. Upgrade the backend and chart together.
+- Configurable five-minute startup probe and 120-second termination grace. HTTP server
+  initialization precedes serving, schedulers start synchronously, and HTTP draining
+  is bounded to 30 seconds; Asynq shutdown allowance is 30 seconds. Running cron work
+  is still awaited and can exceed the default grace (documented operator limitation).
+- Helm lint passed. Go regression tests render default and custom-service-account
+  charts, compare RBAC against backend permission checks, reject wildcard/namespace
+  leakage and verify configurable startup/shutdown settings. No live install performed.

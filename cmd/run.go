@@ -38,19 +38,22 @@ func run() {
 	restart := make(chan os.Signal, 1)
 	sys.RegisterStopSignals(quit)
 	sys.RegisterRestartSignals(restart)
+	redis.InitRateLimiter()
+	server = &http.Server{
+		Addr:              fmt.Sprintf("%s:%d", ip, port),
+		Handler:           router.Init(),
+		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       90 * time.Second,
+	}
+	// Start synchronously: shutdown must never race a not-yet-started scheduler.
+	task.Start()
+	cron.Start()
 	go func() {
-		redis.InitRateLimiter()
-		server = &http.Server{
-			Addr:    fmt.Sprintf("%s:%d", ip, port),
-			Handler: router.Init(),
-		}
 		log.Logger.Infof("Server listening at %s:%d", ip, port)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Logger.Fatalf("Failed to start: %s", err)
 		}
 	}()
-	go task.Start()
-	go cron.Start()
 	for {
 		select {
 		case <-restart:
@@ -71,13 +74,24 @@ func reboot() {
 }
 
 func stop() {
-	if err := server.Shutdown(context.TODO()); err != nil {
-		log.Logger.Warningf("Failed to shutdown server: %s", err)
-	}
-	time.Sleep(time.Second)
+	shutdownHTTP(server)
+
 	cron.Stop()
 	task.Stop()
 	cron.FlushBufferedLogs()
 	redis.Stop()
 	db.Stop()
+}
+
+func shutdownHTTP(s *http.Server) {
+	if s == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := s.Shutdown(ctx); err != nil {
+		log.Logger.Warningf("HTTP drain deadline reached: %s", err)
+		// Close cancels remaining requests, including Kubernetes diagnostics/log streams.
+		_ = s.Close()
+	}
 }
