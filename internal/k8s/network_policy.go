@@ -5,8 +5,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
-	"fmt"
-	"strings"
 
 	netv1 "k8s.io/api/networking/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
@@ -77,15 +75,9 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 }
 
 func DeleteNetworkPolicyCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector strings.Builder
-		for k, v := range labels[0] {
-			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector.String(), ","),
-		}
+	options, ret := deleteCollectionOptions("NetworkPolicy", labels...)
+	if !ret.OK {
+		return ret
 	}
 	err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {

@@ -226,15 +226,9 @@ func GetVM(ctx context.Context, name string) (*v1.VirtualMachine, model.RetVal) 
 }
 
 func DeleteVMCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector strings.Builder
-		for k, v := range labels[0] {
-			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector.String(), ","),
-		}
+	options, ret := deleteCollectionOptions("VirtualMachine", labels...)
+	if !ret.OK {
+		return ret
 	}
 	err := virtClient.KubevirtV1().VirtualMachines(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{PropagationPolicy: new(metav1.DeletePropagationForeground)}, options)
 	if err != nil && !apierror.IsNotFound(err) {

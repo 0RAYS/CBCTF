@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -145,8 +146,12 @@ func GetPodLogs(ctx context.Context, podName, containerName string, lines int64)
 }
 
 // DeletePod 依据 name 删除 Pod
-func DeletePod(ctx context.Context, name string) model.RetVal {
-	err := kubeClient.CoreV1().Pods(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
+func DeletePod(ctx context.Context, name string, uid ...types.UID) model.RetVal {
+	options := metav1.DeleteOptions{}
+	if len(uid) > 0 && uid[0] != "" {
+		options.Preconditions = &metav1.Preconditions{UID: new(uid[0])}
+	}
+	err := kubeClient.CoreV1().Pods(globalNamespace).Delete(ctx, name, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Pod: %s", err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
@@ -155,15 +160,9 @@ func DeletePod(ctx context.Context, name string) model.RetVal {
 }
 
 func DeletePodCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector strings.Builder
-		for k, v := range labels[0] {
-			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector.String(), ","),
-		}
+	options, ret := deleteCollectionOptions("Pod", labels...)
+	if !ret.OK {
+		return ret
 	}
 	err := kubeClient.CoreV1().Pods(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
@@ -174,14 +173,27 @@ func DeletePodCollection(ctx context.Context, labels ...map[string]string) model
 }
 
 // Delete acceptance is not deletion completion (PVC mounts and exec may still be active).
-func DeletePodAndWait(ctx context.Context, name string) model.RetVal {
-	if ret := DeletePod(ctx, name); !ret.OK {
+func DeletePodAndWait(ctx context.Context, name string, uid ...types.UID) model.RetVal {
+	if len(uid) == 0 {
+		pod, ret := GetPod(ctx, name)
+		if !ret.OK {
+			if ret.Msg == i18n.K8S.NotFound {
+				return model.SuccessRetVal()
+			}
+			return ret
+		}
+		uid = []types.UID{pod.UID}
+	}
+	if ret := DeletePod(ctx, name, uid...); !ret.OK {
 		return ret
 	}
 	err := wait.PollUntilContextCancel(ctx, 500*time.Millisecond, true, func(ctx context.Context) (bool, error) {
-		_, err := kubeClient.CoreV1().Pods(globalNamespace).Get(ctx, name, metav1.GetOptions{})
+		pod, err := kubeClient.CoreV1().Pods(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 		if apierror.IsNotFound(err) {
 			return true, nil
+		}
+		if err == nil && pod.UID != uid[0] {
+			return false, fmt.Errorf("pod %s was replaced during cleanup", name)
 		}
 		return false, err
 	})

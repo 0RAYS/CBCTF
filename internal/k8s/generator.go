@@ -86,8 +86,17 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 
 func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal {
 	log.Logger.Debugf("Deleting generator k8s resources: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
-	if ret := DeletePodAndWait(ctx, generator.Name); !ret.OK {
+	pod, ret := GetPod(ctx, generator.Name)
+	if !ret.OK && ret.Msg != i18n.K8S.NotFound {
 		return ret
+	}
+	if ret.OK {
+		if !GeneratorOwnsPod(generator, pod) {
+			return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": "refusing to delete a Pod not owned by this generator"}}
+		}
+		if ret := DeletePodAndWait(ctx, generator.Name, pod.UID); !ret.OK {
+			return ret
+		}
 	}
 	labels := GeneratorLabels(generator, map[string]string{RoleLabel: GeneratorPodTag})
 	if ret := DeleteServiceCollection(ctx, labels); !ret.OK {

@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"fmt"
-	"strings"
 
 	netattv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
@@ -65,15 +64,12 @@ func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*ne
 }
 
 func DeleteNetAttachDefCollection(ctx context.Context, namespace string, labels ...map[string]string) model.RetVal {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector strings.Builder
-		for k, v := range labels[0] {
-			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector.String(), ","),
-		}
+	if namespace == "" {
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "NetworkAttachmentDefinition", "Error": "refusing deletion without a namespace"}}
+	}
+	options, ret := deleteCollectionOptions("NetworkAttachmentDefinition", labels...)
+	if !ret.OK {
+		return ret
 	}
 	if err := netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options); err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinition: %s", err)
