@@ -1,7 +1,7 @@
 ﻿import assert from 'node:assert/strict';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
-import { ESLint } from 'eslint';
+import {fileURLToPath} from 'node:url';
+import {ESLint} from 'eslint';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const eslint = new ESLint({ cwd: root });

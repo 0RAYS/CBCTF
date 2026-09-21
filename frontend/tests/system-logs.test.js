@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import { registerHooks } from 'node:module';
+import {readFile} from 'node:fs/promises';
+import {registerHooks} from 'node:module';
 import test from 'node:test';
-import { transformWithOxc } from 'vite';
-import { mountHook, notices } from './helpers/pollingHookHarness.js';
-import { requests } from './helpers/logRequestHarness.js';
-import { findElement } from './helpers/systemLogsHarness.js';
+import {transformWithOxc} from 'vite';
+import {mountHook, notices} from './helpers/pollingHookHarness.js';
+import {requests} from './helpers/logRequestHarness.js';
+import {findElement} from './helpers/systemLogsHarness.js';
 
 const pageURL = new URL('../src/pages/admin/Logs.jsx', import.meta.url).href;
 const helperURL = new URL('./helpers/systemLogsHarness.js', import.meta.url).href;

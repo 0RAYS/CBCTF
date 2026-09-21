@@ -1,25 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createGuideConfig,
-  createGuideService,
-  createGuideUser,
-  createGuideGroup,
-  createGuideWriteFile,
-  normalizeGuideConfigForMode,
-  getGuideServiceTargets,
+    createGuideConfig,
+    createGuideGroup,
+    createGuideService,
+    createGuideUser,
+    createGuideWriteFile,
+    getGuideServiceTargets,
+    normalizeGuideConfigForMode,
 } from '../src/components/features/Admin/challenges/editor/guideModel.js';
-import { parseComposeYamlToGuideConfig } from '../src/components/features/Admin/challenges/editor/composeParser.js';
-import { buildGuidedComposeYaml } from '../src/components/features/Admin/challenges/editor/composeSerializer.js';
+import {parseComposeYamlToGuideConfig} from '../src/components/features/Admin/challenges/editor/composeParser.js';
+import {buildGuidedComposeYaml} from '../src/components/features/Admin/challenges/editor/composeSerializer.js';
 import {
-  validateGuidedCompose,
-  validateRawCompose,
+    validateGuidedCompose,
+    validateRawCompose,
 } from '../src/components/features/Admin/challenges/editor/composeValidation.js';
-import { buildChallengePayload } from '../src/components/features/Admin/challenges/editor/challengePayload.js';
+import {buildChallengePayload} from '../src/components/features/Admin/challenges/editor/challengePayload.js';
 import {
-  buildNetworkTopology,
-  defaultNetworkPolicy,
-  normalizeNetworkPolicy,
+    buildNetworkTopology,
+    defaultNetworkPolicy,
+    normalizeNetworkPolicy,
 } from '../src/components/features/Admin/challenges/editor/networkPolicy.js';
 
 const service = (overrides = {}) => ({

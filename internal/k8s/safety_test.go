@@ -136,8 +136,7 @@ func TestImagePullJobHasBoundedLifetimeAndNoCredentials(t *testing.T) {
 func TestClientConfigurationSharesRateLimiter(t *testing.T) {
 	config := &rest.Config{}
 	configureClientRateLimit(config)
-	copy := rest.CopyConfig(config)
-	if config.RateLimiter == nil || copy.RateLimiter != config.RateLimiter || config.RateLimiter.QPS() != 100 || config.Burst != 150 {
+	if config.RateLimiter == nil || rest.CopyConfig(config).RateLimiter != config.RateLimiter || config.RateLimiter.QPS() != 100 || config.Burst != 150 {
 		t.Fatal("missing shared API request budget")
 	}
 	if !strings.Contains(config.UserAgent, "cbctf") {

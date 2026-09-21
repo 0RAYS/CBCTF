@@ -1,10 +1,10 @@
 import {
-  getVictims,
-  stopVictims,
-  getVictimTraffic,
   downloadVictimTraffic,
-  getVictimPods,
   getVictimPodLogs,
+  getVictimPods,
+  getVictims,
+  getVictimTraffic,
+  stopVictims,
 } from '../../api/admin/victims';
 import { getUserList } from '../../api/admin/user';
 import { getChallengeList } from '../../api/admin/challenge';

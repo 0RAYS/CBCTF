@@ -1,12 +1,12 @@
 import { useParams } from 'react-router-dom';
 import {
+  downloadContainerTraffic,
+  getContestChallenges,
+  getContestTeams,
+  getContestVictimPodLogs,
+  getContestVictimPods,
   getContestVictims,
   stopContestVictims,
-  getContestTeams,
-  getContestChallenges,
-  downloadContainerTraffic,
-  getContestVictimPods,
-  getContestVictimPodLogs,
 } from '../../../api/admin/contest';
 import { getUserList } from '../../../api/admin/user';
 import VictimInventory from '../../../components/features/Admin/victims/VictimInventory';

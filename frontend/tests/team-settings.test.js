@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mapTeamSettings, teamUpdatePayload, unchangedTeamFields } from '../src/components/features/CTFGame/Team/model.js';
+import {
+    mapTeamSettings,
+    teamUpdatePayload,
+    unchangedTeamFields
+} from '../src/components/features/CTFGame/Team/model.js';
 
 test('maps the captain separately and preserves member IDs without mutating API data', () => {
   const info = Object.freeze({ name: 'Team', picture: '/team.png', description: 'Bio', captain_id: 2 });

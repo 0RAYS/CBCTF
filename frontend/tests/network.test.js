@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { injectClickableIps, isPublicIp } from '../src/components/features/Admin/network/logIps.js';
-import { ansiToHtml } from '../src/utils/ansi.js';
+import {injectClickableIps, isPublicIp} from '../src/components/features/Admin/network/logIps.js';
+import {ansiToHtml} from '../src/utils/ansi.js';
 
 test('public IPv4 classification excludes private, reserved, multicast, and invalid addresses', () => {
   for (const ip of ['1.1.1.1', '8.8.8.8', '100.63.255.255', '100.128.0.1', '172.15.0.1', '172.32.0.1']) {

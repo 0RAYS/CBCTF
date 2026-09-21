@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { GuideField, GuideInput, GuideBoolean, GuideErrors, GuideListHeader, IconButton } from './GuideFields.jsx';
+import { GuideBoolean, GuideErrors, GuideField, GuideInput, GuideListHeader, IconButton } from './GuideFields.jsx';
 import { selectClass } from './editorStyles.js';
 import CloudInitEditor from './CloudInitEditor.jsx';
 

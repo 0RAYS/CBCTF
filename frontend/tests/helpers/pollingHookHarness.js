@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { toast, registerToastHandler } from '../../src/utils/toast.js';
+import {registerToastHandler, toast} from '../../src/utils/toast.js';
 
 // Only the React lifecycle boundary is replaced; tests import the production hooks.
 let rendering;

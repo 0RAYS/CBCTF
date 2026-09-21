@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StatusPanel from '../../components/features/CTFGame/StatusPanel';
 import ChallengeBoard from '../../components/features/CTFGame/Challenges/ChallengeBoard';

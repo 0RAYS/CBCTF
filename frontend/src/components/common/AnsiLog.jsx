@@ -1,4 +1,4 @@
-import { useMemo, forwardRef, useRef, useEffect, useImperativeHandle } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { ansiToHtml } from '../../utils/ansi';
 import Spinner from './Spinner';

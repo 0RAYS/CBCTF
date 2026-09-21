@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
-import { IconEdit, IconTrash, IconPlus, IconSearch } from '@tabler/icons-react';
-import { Button, Pagination, List, Chip, Input } from '../../../../common';
+import { IconEdit, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
+import { Button, Chip, Input, List, Pagination } from '../../../../common';
 import { useTranslation } from 'react-i18next';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../../config/challengeChips';
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { getOAuthProviders } from '../../../api/oauth';
 import { toast } from '../../../utils/toast';

@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getContestTeamTraffic, downloadContainerTraffic } from '../../../../api/admin/contest.js';
+import { downloadContainerTraffic, getContestTeamTraffic } from '../../../../api/admin/contest.js';
 import { downloadVictimTraffic } from '../../../../api/admin/victims.js';
 import { downloadBlobResponse } from '../../../../utils/fileDownload';
 import { toast } from '../../../../utils/toast';

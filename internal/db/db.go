@@ -19,7 +19,7 @@ var (
 	DB     *gorm.DB
 	HTTPDB *gorm.DB
 	TaskDB *gorm.DB
-	// Separate from query pools: long-lived advisory locks must not exhaust the
+	// WorkloadLockDB Separate from query pools: long-lived advisory locks must not exhaust the
 	// connections that their callbacks need to update workload records.
 	WorkloadLockDB *gorm.DB
 	CronDB         *gorm.DB

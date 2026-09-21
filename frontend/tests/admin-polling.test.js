@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { registerHooks } from 'node:module';
+import {registerHooks} from 'node:module';
 import test from 'node:test';
-import { mountHook, notices } from './helpers/pollingHookHarness.js';
+import {mountHook, notices} from './helpers/pollingHookHarness.js';
 
 const helperURL = new URL('./helpers/pollingHookHarness.js', import.meta.url).href;
 const loader = registerHooks({

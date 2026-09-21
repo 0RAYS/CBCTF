@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createSmtp, updateSmtp, deleteSmtp } from '../../../../api/admin/smtp';
+import { createSmtp, deleteSmtp, updateSmtp } from '../../../../api/admin/smtp';
 import { toast } from '../../../../utils/toast';
 import { Button, Modal } from '../../../common';
 import { buildSmtpPayload, smtpForm } from './payload';

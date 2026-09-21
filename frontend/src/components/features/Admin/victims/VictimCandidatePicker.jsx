@@ -1,4 +1,4 @@
-import { IconTarget, IconSearch, IconArrowsMaximize, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { IconArrowsMaximize, IconChevronLeft, IconChevronRight, IconSearch, IconTarget } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../common';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../config/challengeChips';

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import {test} from 'node:test';
 import {
-  createTestSession,
-  hasReachedTarget,
-  isInstanceTransitioning,
-  normalizeInstanceStatus,
+    createTestSession,
+    hasReachedTarget,
+    isInstanceTransitioning,
+    normalizeInstanceStatus,
 } from '../src/components/features/Admin/challenges/testing/testSession.js';
 
 const response = (status, extra = {}) => ({

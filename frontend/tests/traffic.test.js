@@ -1,29 +1,29 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  buildLines,
-  buildPositions,
-  clampPanToViewport,
-  getViewportMetrics,
-  resolveEdgeLabels,
-  VIEWBOX_HEIGHT,
-  VIEWBOX_WIDTH,
+    buildLines,
+    buildPositions,
+    clampPanToViewport,
+    getViewportMetrics,
+    resolveEdgeLabels,
+    VIEWBOX_HEIGHT,
+    VIEWBOX_WIDTH,
 } from '../src/components/features/Admin/traffic/trafficLayout.js';
 import {
-  buildCompactNodeLabel,
-  buildCompactNodeMeta,
-  edgeChipClass,
-  edgeTone,
-  ellipsis,
-  filterTraffic,
-  formatBytes,
-  formatDurationMs,
-  formatProcessLabel,
-  resolveTrafficSelection,
-  resolveVisibleInlineItems,
-  sanitizeSlice,
+    buildCompactNodeLabel,
+    buildCompactNodeMeta,
+    edgeChipClass,
+    edgeTone,
+    ellipsis,
+    filterTraffic,
+    formatBytes,
+    formatDurationMs,
+    formatProcessLabel,
+    resolveTrafficSelection,
+    resolveVisibleInlineItems,
+    sanitizeSlice,
 } from '../src/components/features/Admin/traffic/trafficPresentation.js';
-import { createDemoTopology } from '../src/components/features/Admin/traffic/trafficDemo.js';
+import {createDemoTopology} from '../src/components/features/Admin/traffic/trafficDemo.js';
 
 test('byte formatting preserves units and precision', () => {
   for (const [input, expected] of [

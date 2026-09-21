@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from '../../utils/toast';
 import SystemConfig from '../../components/features/Admin/SystemConfig';
 import { getSystemConfig } from '../../api/admin/system';

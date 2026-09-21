@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import {defineConfig} from 'vite'
 import transformImports from '@rolldown/plugin-transform-imports'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'

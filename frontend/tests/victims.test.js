@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  buildVictimListParams,
-  buildVictimStartPayload,
-  estimateVictimTeams,
-  isVictimStoppable,
-  selectPageVictims,
-  toggleVictimSelection,
-  updateChallengeSelection,
+    buildVictimListParams,
+    buildVictimStartPayload,
+    estimateVictimTeams,
+    isVictimStoppable,
+    selectPageVictims,
+    toggleVictimSelection,
+    updateChallengeSelection,
 } from '../src/components/features/Admin/victims/victimPayload.js';
 
 test('list parameters retain scope filters, paginate and only include deleted when requested', () => {

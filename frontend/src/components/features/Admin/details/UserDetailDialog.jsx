@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Modal, Card, StatusTag, Avatar } from '../../../common';
+import { Avatar, Card, Modal, StatusTag } from '../../../common';
 
 function AdminUserDetailDialog({ isOpen, onClose, user }) {
   const { t } = useTranslation();

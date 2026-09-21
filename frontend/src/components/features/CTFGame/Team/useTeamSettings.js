@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  updateTeamInfo,
-  uploadTeamPicture,
   deleteTeam,
   kickTeamMember,
   updateTeamCaptcha,
+  updateTeamInfo,
+  uploadTeamPicture,
 } from '../../../../api/game/team';
 import { toast } from '../../../../utils/toast';
 import { loadTeamSettings } from './loader';

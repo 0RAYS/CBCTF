@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createOAuthProvider, updateOAuthProvider, deleteOAuthProvider } from '../../../../api/admin/oauth';
+import { createOAuthProvider, deleteOAuthProvider, updateOAuthProvider } from '../../../../api/admin/oauth';
 import { getGroupList } from '../../../../api/admin/rbac';
 import { toast } from '../../../../utils/toast';
 import { Button, Modal, Select } from '../../../common';

@@ -1,5 +1,5 @@
 import { IconPlus, IconX } from '@tabler/icons-react';
-import { Input, Button } from '../../../../common';
+import { Button, Input } from '../../../../common';
 import { useTranslation } from 'react-i18next';
 
 /**

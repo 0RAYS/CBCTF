@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  normalizeInstanceStatus,
-  isInstanceTransitioning,
-  normalizeCategories,
-  mapChallengeStatusToViewModel,
-  getContestOverview,
-  formatTimeLeft,
+    formatTimeLeft,
+    getContestOverview,
+    isInstanceTransitioning,
+    mapChallengeStatusToViewModel,
+    normalizeCategories,
+    normalizeInstanceStatus,
 } from '../src/components/features/CTFGame/Challenges/models/challengeViewModel.js';
 
 test('instance status normalization and transition classification', () => {

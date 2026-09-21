@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Button, Card, EmptyState, Avatar } from '../../../common';
+import { Avatar, Button, Card, EmptyState, Modal } from '../../../common';
 import AdminContestTeamDetail from '../Contests/teams/TeamDetailPanels';
 import { useUserDetailDialog } from './useUserDetailDialog';
 

@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   assignUserToGroup,
-  removeUserFromGroup,
-  getGroupUsers,
   getGroupAvailableUsers,
+  getGroupUsers,
+  removeUserFromGroup,
 } from '../../../../api/admin/rbac';
 import { useDebounce } from '../../../../hooks';
 import { toast } from '../../../../utils/toast';

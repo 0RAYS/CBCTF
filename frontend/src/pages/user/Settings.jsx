@@ -1,6 +1,6 @@
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { updatePassword, updateUserInfo, deleteAccount, uploadPicture, activateEmail } from '../../api/user';
+import { activateEmail, deleteAccount, updatePassword, updateUserInfo, uploadPicture } from '../../api/user';
 import { fetchUserInfo, logoutUser } from '../../store/user';
 import { toast } from '../../utils/toast';
 import UserSettings from '../../components/features/UserSettings';

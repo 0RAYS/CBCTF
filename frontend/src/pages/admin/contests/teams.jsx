@@ -1,14 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
 import AdminTeams from '../../../components/features/Admin/Contests/teams/Teams';
 import {
+  deleteTeam,
   getContestTeams,
+  getTeamMembers,
+  kickTeamMember,
   updateTeamInfo,
   updateTeamPicture,
-  deleteTeam,
-  kickTeamMember,
-  getTeamMembers,
 } from '../../../api/admin/contest';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from '../../../hooks/useDebounce';

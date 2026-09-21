@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react';
 import Button from './Button';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**

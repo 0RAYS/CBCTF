@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import {readdirSync, readFileSync} from 'node:fs';
 import path from 'node:path';
 
 // Deliberately dependency-free: these checks must work without Vite's transitive parsers.

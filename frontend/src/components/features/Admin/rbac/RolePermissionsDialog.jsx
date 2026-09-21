@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  assignPermissionToRole,
   getPermissionList,
   getRolePermissions,
-  assignPermissionToRole,
   revokePermissionFromRole,
 } from '../../../../api/admin/rbac';
 import { toast } from '../../../../utils/toast';

@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  buildScoreboardColumns,
-  collectChallenges,
-  indexTeamChallenges,
-  toRankingTeam,
+    buildScoreboardColumns,
+    collectChallenges,
+    indexTeamChallenges,
+    toRankingTeam,
 } from '../src/components/features/Scoreboard/scoreboardModel.js';
-import { buildTimelineChartData, buildTimelineModel } from '../src/components/features/Scoreboard/timelineModel.js';
-import { buildTimelineOption, timelineTeamColor } from '../src/components/features/Scoreboard/timelineOption.js';
+import {buildTimelineChartData, buildTimelineModel} from '../src/components/features/Scoreboard/timelineModel.js';
+import {buildTimelineOption, timelineTeamColor} from '../src/components/features/Scoreboard/timelineOption.js';
 
 const times = [0, 1, 2, 3].map((minute) => `2026-09-10T10:0${minute}:00Z`);
 

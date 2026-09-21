@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getGroupList, createGroup, updateGroup, deleteGroup, getRoleList } from '../../../../api/admin/rbac';
+import { createGroup, deleteGroup, getGroupList, getRoleList, updateGroup } from '../../../../api/admin/rbac';
 import { toast } from '../../../../utils/toast';
 import { useCRUDModal } from '../../../../hooks';
 import { Modal } from '../../../common';

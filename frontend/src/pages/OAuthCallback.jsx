@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { fetchUserInfo, fetchAccessibleRoutes } from '../store/user';
+import { fetchAccessibleRoutes, fetchUserInfo } from '../store/user';
 import { store } from '../store';
 import { toast } from '../utils/toast';
 import { motion } from 'motion/react';

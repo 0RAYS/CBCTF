@@ -11,7 +11,7 @@
 
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollingText, Card, Avatar, Pagination } from '../../common';
+import { Avatar, Card, Pagination, ScrollingText } from '../../common';
 import { useTranslation } from 'react-i18next';
 import { buildScoreboardColumns, indexTeamChallenges } from './scoreboardModel.js';
 

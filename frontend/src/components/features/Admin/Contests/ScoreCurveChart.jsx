@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useRef, useCallback, useEffect } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const ReactECharts = lazy(() => import('../../../common/EChart'));

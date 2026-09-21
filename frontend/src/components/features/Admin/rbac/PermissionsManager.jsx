@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from '../../../../utils/toast';
 import { getPermissionList, updatePermission } from '../../../../api/admin/rbac';
 import AdminPermissions from './AdminPermissions';
