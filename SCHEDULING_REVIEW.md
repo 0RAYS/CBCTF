@@ -73,3 +73,25 @@ checks for successful tests. No live Kubernetes/Redis/PostgreSQL cluster is assu
 - Go fake-client tests cover Ready vs Running, exits, UID replacement, disappearance,
   timeout diagnostics, expired watches and non-destructive creation/deletion.
 - Redis integration test is opt-in (`CBCTF_TEST_REDIS_ADDR`); not run without Redis.
+
+## Completed: task ownership and reconciliation
+
+- Start/stop workers serialize by workload using PostgreSQL session advisory locks,
+  released on process death. No long-running DB transaction or Redis lease expiry
+  is involved. This requires direct/session-pooled PostgreSQL, **not transaction-mode
+  PgBouncer**, and uses a separate lock-only connection pool so even a one-connection TaskDB cannot
+  deadlock behind its own lifecycle locks. Budget the extra PostgreSQL connections.
+- Generator transitions are conditional, duplicate starts skip non-waiting records,
+  startup follows task cancellation, and failed enqueue has bounded cleanup fallback.
+- Failed victim startup retains partial allocations; only the worker that claimed
+  startup can schedule failure cleanup. Stop enqueue rollback restores the old state.
+- Expiry only applies to running victims. Orphan scans abort before any deletion on
+  DB errors, deduplicate IDs, and distinguish NotFound from temporary unavailability.
+- Attachment tasks re-check generator state after taking the lease. Exec uses argv
+  without a shell, preserves empty arguments, and does not destroy temporarily
+  unready generators. Filesystem errors are no longer silently ignored.
+- Optional PostgreSQL concurrency integration test uses `CBCTF_TEST_POSTGRES_DSN`.
+
+- Deferred: FRP allocations need tokenized ownership/durable release across DB
+  failure after cleanup; synchronous administrative hard-deletes and worker crash
+  recovery also need unified ownership/outbox coverage.

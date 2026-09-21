@@ -2,12 +2,13 @@ package cron
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
 	"context"
-	"slices"
+	corev1 "k8s.io/api/core/v1"
 	"strconv"
 	"time"
 )
@@ -15,12 +16,12 @@ import (
 // closeTimeoutVictimsTask 关闭超时的靶机
 func closeTimeoutVictimsTask() model.RetVal {
 	repo := db.InitVictimRepo(db.CronDB)
-	victims, _, ret := repo.List(-1, -1)
+	victims, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"status": model.RunningVictimStatus}})
 	if !ret.OK {
 		return ret
 	}
 	for _, victim := range victims {
-		if victim.Start.Add(victim.Duration).Before(time.Now()) {
+		if victimExpired(victim, time.Now()) {
 			if ret = service.ForceStopVictim(db.CronDB, victim); ret.OK {
 				log.Logger.Infof(
 					"Timeout victim stop queued: victim_id=%d team_id=%d challenge_id=%d expired_at=%s",
@@ -45,24 +46,12 @@ func closeUnCtrlVictimsTask() model.RetVal {
 	if pods == nil {
 		return model.SuccessRetVal()
 	}
-	idL := make([]string, 0)
-	victimRepo := db.InitVictimRepo(db.CronDB)
-	for _, pod := range pods.Items {
-		for key := range pod.Labels {
-			if key == "victim_id" {
-				if slices.Contains(idL, pod.Labels[key]) {
-					continue
-				}
-				victimID, err := strconv.Atoi(pod.Labels[key])
-				if err != nil {
-					continue
-				}
-				_, ret = victimRepo.GetByID(uint(victimID))
-				if !ret.OK {
-					idL = append(idL, pod.Labels[key])
-				}
-			}
-		}
+	idL, ret := orphanVictimIDs(pods.Items, func(id uint) model.RetVal {
+		_, ret := db.InitVictimRepo(db.CronDB).GetByID(id)
+		return ret
+	})
+	if !ret.OK {
+		return ret
 	}
 	for _, id := range idL {
 		ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
@@ -74,4 +63,34 @@ func closeUnCtrlVictimsTask() model.RetVal {
 		cancel()
 	}
 	return model.SuccessRetVal()
+}
+
+func victimExpired(victim model.Victim, now time.Time) bool {
+	return victim.Status == model.RunningVictimStatus && !victim.Start.IsZero() && victim.Start.Add(victim.Duration).Before(now)
+}
+
+// Build the complete deletion candidate set before any destructive API call.
+// A database failure invalidates the entire scan, not just the current Pod.
+func orphanVictimIDs(pods []corev1.Pod, lookup func(uint) model.RetVal) ([]string, model.RetVal) {
+	ids := make([]string, 0)
+	seen := make(map[string]bool)
+	for _, pod := range pods {
+		label := pod.Labels["victim_id"]
+		if seen[label] {
+			continue
+		}
+		seen[label] = true
+		id, err := strconv.ParseUint(label, 10, 64)
+		if err != nil || id == 0 || uint64(uint(id)) != id {
+			continue
+		}
+		ret := lookup(uint(id))
+		if !ret.OK && ret.Msg != i18n.Model.NotFound {
+			return nil, ret
+		}
+		if !ret.OK {
+			ids = append(ids, label)
+		}
+	}
+	return ids, model.SuccessRetVal()
 }

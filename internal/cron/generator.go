@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
-	"slices"
 	"time"
 )
 
@@ -25,10 +24,12 @@ func stopUnCtrlGeneratorTask() model.RetVal {
 	if !ret.OK {
 		return ret
 	}
+	known := make(map[string]bool, len(generators))
+	for _, generator := range generators {
+		known[generator.Name] = true
+	}
 	for _, pod := range pods.Items {
-		if !slices.ContainsFunc(generators, func(generator model.Generator) bool {
-			return generator.Name == pod.Name
-		}) {
+		if !known[pod.Name] {
 			ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 			if ret = k8s.DeletePod(ctx, pod.Name); ret.OK {
 				log.Logger.Infof("Deleted uncontrolled generator pod: pod=%s", pod.Name)

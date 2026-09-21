@@ -10,9 +10,8 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-// Exec executes a command in a Pod, draining output without buffering it.
-func Exec(ctx context.Context, pod, container, command string) error {
-	cmd := []string{"sh", "-c", command}
+// Exec executes an argument vector (without a shell) in a Pod, draining output without buffering it.
+func Exec(ctx context.Context, pod, container string, command ...string) error {
 	req := kubeClient.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(pod).
@@ -20,7 +19,7 @@ func Exec(ctx context.Context, pod, container, command string) error {
 		SubResource("exec").
 		VersionedParams(&corev1.PodExecOptions{
 			Container: container,
-			Command:   cmd,
+			Command:   command,
 			Stdout:    true,
 			Stderr:    true,
 			TTY:       false,

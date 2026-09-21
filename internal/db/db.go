@@ -19,7 +19,10 @@ var (
 	DB     *gorm.DB
 	HTTPDB *gorm.DB
 	TaskDB *gorm.DB
-	CronDB *gorm.DB
+	// Separate from query pools: long-lived advisory locks must not exhaust the
+	// connections that their callbacks need to update workload records.
+	WorkloadLockDB *gorm.DB
+	CronDB         *gorm.DB
 )
 
 type Tx = gorm.DB
@@ -62,6 +65,12 @@ func Init() {
 	HTTPDB = DB
 	TaskDB = openPostgresPool(
 		"task",
+		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxOpenConns, 4),
+		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxIdleConns, 4),
+		level,
+	)
+	WorkloadLockDB = openPostgresPool(
+		"workload-lock",
 		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxOpenConns, 4),
 		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxIdleConns, 4),
 		level,
@@ -178,9 +187,10 @@ func backgroundPoolLimit(limit, divisor int) int {
 
 func Stop() {
 	for name, pool := range map[string]*gorm.DB{
-		"cron": CronDB,
-		"task": TaskDB,
-		"http": HTTPDB,
+		"workload-lock": WorkloadLockDB,
+		"cron":          CronDB,
+		"task":          TaskDB,
+		"http":          HTTPDB,
 	} {
 		if pool == nil {
 			continue
