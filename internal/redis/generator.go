@@ -16,8 +16,10 @@ var (
 )
 
 const (
-	GeneratorKeyTmpl               = "generators:%d"
-	GeneratorAttachmentLockKeyTmpl = "generators:locked:%d"
+	generatorKeyPrefix             = "generators:"
+	generatorLockKeyPrefix         = "generators:locked:"
+	GeneratorKeyTmpl               = generatorKeyPrefix + "%d"
+	GeneratorAttachmentLockKeyTmpl = generatorLockKeyPrefix + "%d"
 	generatorContestSetKeyTmpl     = "generators:contest:%d:challenge:%d"
 	generatorLockTTL               = 5 * time.Minute
 )
@@ -33,10 +35,10 @@ local start = math.random(1, count)
 for i = 0, count - 1 do
     local index = ((start + i - 1) % count) + 1
     local id = ids[index]
-    local generator_key = 'generator:' .. id
+    local generator_key = ARGV[3] .. id
     local generator = redis.call('GET', generator_key)
     if generator then
-        local lock_key = generator_key .. ':locked'
+        local lock_key = ARGV[4] .. id
         if redis.call('SET', lock_key, ARGV[1], 'NX', 'PX', ARGV[2]) then
             return {1, generator}
         end
@@ -80,7 +82,8 @@ func RegisterGenerator(ctx context.Context, generator model.Generator) error {
 func UnregisterGenerator(ctx context.Context, generator model.Generator) error {
 	pipe := RDB.TxPipeline()
 	pipe.Del(ctx, fmt.Sprintf(GeneratorKeyTmpl, generator.ID))
-	pipe.Del(ctx, fmt.Sprintf(GeneratorAttachmentLockKeyTmpl, generator.ID))
+	// A running attachment owns its lease until completion/expiry. Removing pool
+	// membership must not release another task's lock during re-registration.
 	pipe.SRem(ctx, generatorSetKey(generator.ContestID.V, generator.ContestID.Valid, generator.ChallengeID), generator.ID)
 	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to unregister generator in redis: generator_id=%d err=%v", generator.ID, err)
@@ -97,6 +100,8 @@ func LockAvailableGenerator(ctx context.Context, contestID, challengeID uint) (m
 		[]string{generatorSetKey(contestID, contestID > 0, challengeID)},
 		token,
 		int64(generatorLockTTL/time.Millisecond),
+		generatorKeyPrefix,
+		generatorLockKeyPrefix,
 	).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to lock available generator: contest_id=%d challenge_id=%d err=%v", contestID, challengeID, err)
