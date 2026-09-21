@@ -22,6 +22,8 @@ func (g *Group) Go(f func() error) {
 	})
 }
 
+func (g *Group) Context() context.Context { return g.ctx }
+
 func (g *Group) Wait() error {
 	return g.wg.Wait()
 }

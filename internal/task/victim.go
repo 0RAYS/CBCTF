@@ -156,7 +156,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	victimRepo := db.InitVictimRepo(db.TaskDB)
-	victim, ret := victimRepo.GetByID(payload.Victim.ID)
+	victim, ret := victimRepo.GetByID(payload.Victim.ID, db.GetOptions{Preloads: map[string]db.GetOptions{"Pods": {}}})
 	if !ret.OK {
 		if ret.Msg == i18n.Model.NotFound {
 			log.Logger.Debugf("Stop victim skipped: victim_id=%d no longer exists", payload.Victim.ID)

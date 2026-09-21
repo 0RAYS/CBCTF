@@ -27,7 +27,7 @@ const (
 )
 
 var (
-	kubeClient      *kubernetes.Clientset
+	kubeClient      kubernetes.Interface
 	netattClient    *netattclient.Clientset
 	ovnClient       *ovnclient.Clientset
 	virtClient      *virtclient.Clientset

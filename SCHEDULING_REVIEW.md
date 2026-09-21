@@ -58,3 +58,18 @@ checks for successful tests. No live Kubernetes/Redis/PostgreSQL cluster is assu
   image pull policy and node placement need operator-compatible deployment policy.
 - Kubernetes event history and durable operation timelines need retention/redaction
   policy; never expose challenge environment/flags or full Pod specs to clients.
+
+## Completed: pool and Kubernetes lifecycle
+
+- Shared Lua/Go key prefixes, preserved owner leases and global/contest pool isolation.
+- Removed destructive preflight GET/delete; Ready condition and terminal container
+  checks, UID-pinned client-go relist/watch recovery, detailed timeout reasons.
+- Parallel Kubernetes operations now use local results and the errgroup context.
+- VM readiness is awaited; foreground VM deletion and workload disappearance precede
+  removal of network isolation. FRP Pods are included and ports released last.
+- Generator cleanup waits for Pod deletion and scopes services by generator ID.
+- Downloaded the complete official Go 1.27.1 toolchain into ignored `.gocache/`;
+  existing global tool installations were not modified. Focused Go tests now run.
+- Go fake-client tests cover Ready vs Running, exits, UID replacement, disappearance,
+  timeout diagnostics, expired watches and non-destructive creation/deletion.
+- Redis integration test is opt-in (`CBCTF_TEST_REDIS_ADDR`); not run without Redis.

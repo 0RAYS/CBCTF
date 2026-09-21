@@ -8,7 +8,6 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
 	"context"
-	"errors"
 	"fmt"
 	"maps"
 	"os"
@@ -73,6 +72,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	wg := utils.NewGroup(ctx)
 	for _, pod := range pods {
 		wg.Go(func() error {
+			ctx := wg.Context()
 			// VPC 模式下, 支持多 NetworkPolicy 根据 Labels 绑定到指定 Pod 上
 			podLabels := make(map[string]string, len(labels)+1)
 			maps.Copy(podLabels, labels)
@@ -94,7 +94,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			// 当 VPC 模式下, 一个 Pod 只有一个 Container
 			if victim.Spec.NetworkPlan.Name != "" && pod.Spec.Containers[0].KubeVirt {
 				container := pod.Spec.Containers[0]
-				_, ret = CreateVM(ctx, CreateVMOptions{
+				_, ret := CreateVM(ctx, CreateVMOptions{
 					Name:        pod.Name,
 					Labels:      podLabels,
 					Image:       container.Image,
@@ -105,8 +105,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					UserData:    container.UserData,
 					Networks:    networks,
 				})
-				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-					return errors.New(err.(string))
+				if !ret.OK {
+					return resourceError(ret)
 				}
 				log.Logger.Debugf("Created victim vm: victim_id=%d vm=%s", victim.ID, pod.Name)
 				return nil
@@ -170,8 +170,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 						Labels: labels,
 						Data:   map[string]string{filename: volumeMount.Content},
 					})
-					if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-						return errors.New(err.(string))
+					if !ret.OK {
+						return resourceError(ret)
 					}
 					volumeName := fmt.Sprintf("vol-%s", utils.RandHexStr(10))
 					volumeMounts = append(volumeMounts, corev1.VolumeMount{
@@ -233,8 +233,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			}
 
 			p, ret := CreatePod(ctx, pOptions)
-			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-				return errors.New(err.(string))
+			if !ret.OK {
+				return resourceError(ret)
 			}
 
 			if len(pod.Spec.ServicePorts) > 0 {
@@ -244,8 +244,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Labels:   labels,
 					Selector: podLabels,
 				})
-				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-					return errors.New(err.(string))
+				if !ret.OK {
+					return resourceError(ret)
 				}
 				endpointsMutex.Lock()
 				for _, port := range service.Spec.Ports {
@@ -299,13 +299,13 @@ func createVictimNetworkResources(
 
 	createNetworkPolicy := func(labels map[string]string, policies model.NetworkPolicies) error {
 		name := fmt.Sprintf("np-%s", utils.RandHexStr(20))
-		_, ret := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
+		_, ret := CreateNetworkPolicy(wg.Context(), CreateNetworkPolicyOptions{
 			Name:     name,
 			Labels:   labels,
 			Policies: policies,
 		})
-		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-			return errors.New(err.(string))
+		if !ret.OK {
+			return resourceError(ret)
 		}
 		log.Logger.Debugf("Created victim network policy: victim_id=%d network_policy=%s", victim.ID, name)
 		return nil
@@ -343,12 +343,13 @@ func createVictimNetworkResources(
 	}
 
 	wg.Go(func() error {
+		ctx := wg.Context()
 		_, ret := CreateVPC(ctx, CreateVPCOptions{
 			Name:   victim.Spec.NetworkPlan.Name,
 			Labels: labels,
 		})
-		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-			return errors.New(err.(string))
+		if !ret.OK {
+			return resourceError(ret)
 		}
 		log.Logger.Debugf("Created victim vpc: victim_id=%d vpc=%s", victim.ID, victim.Spec.NetworkPlan.Name)
 		return nil
@@ -362,18 +363,20 @@ func createVictimNetworkResources(
 		netAttachDefMap[subnet.DefName] = subnet.NetAttachDef
 
 		wg.Go(func() error {
+			ctx := wg.Context()
 			_, ret := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
 				Name:   subnet.NetAttachDef.Name,
 				Labels: labels,
 			})
-			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-				return errors.New(err.(string))
+			if !ret.OK {
+				return resourceError(ret)
 			}
 			log.Logger.Debugf("Created victim net attach def: victim_id=%d net_attach_def=%s", victim.ID, subnet.NetAttachDef.Name)
 			return nil
 		})
 
 		wg.Go(func() error {
+			ctx := wg.Context()
 			_, ret := CreateSubnet(ctx, CreateSubnetOptions{
 				Name:         subnet.Name,
 				Labels:       labels,
@@ -383,8 +386,8 @@ func createVictimNetworkResources(
 				ExcludeIPs:   subnet.ExcludeIps,
 				NetAttachDef: subnet.NetAttachDef.Name,
 			})
-			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-				return errors.New(err.(string))
+			if !ret.OK {
+				return resourceError(ret)
 			}
 			log.Logger.Debugf("Created victim subnet: victim_id=%d subnet=%s", victim.ID, subnet.Name)
 			return nil
@@ -404,9 +407,6 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		victim.ID, victim.TeamID.V, victim.ChallengeID, len(victim.ExposedEndpoints),
 	)
 	labels := VictimLabels(victim)
-	for _, endpoint := range victim.ExposedEndpoints {
-		redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
-	}
 	var firstErr model.RetVal
 	tryDelete := func(ret model.RetVal) {
 		if !ret.OK && firstErr.OK {
@@ -414,19 +414,33 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		}
 	}
 	firstErr = model.SuccessRetVal()
+	// Stop VM controllers before their Pods; retain CNI and NetworkPolicies until
+	// every workload (including FRP/capture sidecars) has disappeared.
+	tryDelete(DeleteVMCollection(ctx, labels))
+	tryDelete(DeletePodCollection(ctx, labels))
+	if !firstErr.OK {
+		return firstErr
+	}
+	if ret := WaitVictimPodsDeleted(ctx, victim); !ret.OK {
+		return ret
+	}
+	tryDelete(DeleteServiceCollection(ctx, labels))
+	tryDelete(DeleteEndpointCollection(ctx, labels))
+	tryDelete(DeleteConfigMapCollection(ctx, labels))
+	tryDelete(DeleteNetworkPolicyCollection(ctx, labels))
 	tryDelete(DeleteSubnetCollection(ctx, labels))
 	tryDelete(DeleteNetAttachDefCollection(ctx, globalNamespace, labels))
 	tryDelete(DeleteVPCCollection(ctx, labels))
-	tryDelete(DeleteConfigMapCollection(ctx, labels))
-	tryDelete(DeleteNetworkPolicyCollection(ctx, labels))
-	tryDelete(DeleteEndpointCollection(ctx, labels))
-	tryDelete(DeleteServiceCollection(ctx, labels))
-	tryDelete(DeletePodCollection(ctx, labels))
-	tryDelete(DeleteVMCollection(ctx, labels))
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
-		tryDelete(DeleteIPCollection(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
+		if subnet != nil {
+			tryDelete(DeleteIPCollection(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
+		}
 	}
-	tryDelete(WaitVictimPodsDeleted(ctx, victim))
+	if firstErr.OK {
+		for _, endpoint := range victim.ExposedEndpoints {
+			redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
+		}
+	}
 	if firstErr.OK {
 		log.Logger.Debugf("Deleted victim k8s resources: victim_id=%d", victim.ID)
 	} else {
@@ -436,7 +450,7 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 }
 
 func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVal {
-	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag})
+	labels := VictimLabels(victim)
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 	for {
@@ -444,7 +458,20 @@ func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVa
 		if !ret.OK {
 			return ret
 		}
-		if len(podList.Items) == 0 {
+		vmsGone := true
+		for _, pod := range victim.Pods {
+			if len(pod.Spec.Containers) == 0 || !pod.Spec.Containers[0].KubeVirt {
+				continue
+			}
+			_, ret := GetVM(ctx, pod.Name)
+			if !ret.OK && ret.Msg != i18n.K8S.NotFound {
+				return ret
+			}
+			if ret.OK {
+				vmsGone = false
+			}
+		}
+		if len(podList.Items) == 0 && vmsGone {
 			return model.SuccessRetVal()
 		}
 		select {

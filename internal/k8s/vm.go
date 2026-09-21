@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"go.yaml.in/yaml/v4"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	v1 "kubevirt.io/api/core/v1"
 )
 
@@ -89,6 +91,7 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 			RunStrategy: new(v1.RunStrategyAlways),
 			Template: &v1.VirtualMachineInstanceTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
+					Labels: options.Labels,
 					Annotations: func() map[string]string {
 						annotations := make(map[string]string)
 						for _, network := range options.Networks {
@@ -100,7 +103,6 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 						}
 						return annotations
 					}(),
-					Labels: options.Labels,
 				},
 				Spec: v1.VirtualMachineInstanceSpec{
 					Domain: v1.DomainSpec{
@@ -190,11 +192,23 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 	}
 	vm, err = virtClient.KubevirtV1().VirtualMachines(globalNamespace).Create(ctx, vm, metav1.CreateOptions{})
 	if err != nil {
-		if apierror.IsAlreadyExists(err) {
-			return GetVM(ctx, options.Name)
-		}
 		log.Logger.Warningf("Failed to create virtual machine: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
+	}
+	// API acceptance does not mean the VM is ready for connections.
+	err = wait.PollUntilContextCancel(ctx, time.Second, true, func(ctx context.Context) (bool, error) {
+		current, getErr := virtClient.KubevirtV1().VirtualMachines(globalNamespace).Get(ctx, options.Name, metav1.GetOptions{})
+		if getErr != nil {
+			return false, getErr
+		}
+		if current.UID != vm.UID || current.DeletionTimestamp != nil {
+			return false, fmt.Errorf("VM %s was deleted or replaced", options.Name)
+		}
+		vm = current
+		return vm.Status.Ready, nil
+	})
+	if err != nil {
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
 	}
 	return vm, model.SuccessRetVal()
 }
@@ -222,7 +236,7 @@ func DeleteVMCollection(ctx context.Context, labels ...map[string]string) model.
 			LabelSelector: strings.TrimSuffix(selector.String(), ","),
 		}
 	}
-	err := virtClient.KubevirtV1().VirtualMachines(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	err := virtClient.KubevirtV1().VirtualMachines(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{PropagationPolicy: new(metav1.DeletePropagationForeground)}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete VirtualMachines: %s", err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}

@@ -21,6 +21,7 @@ import (
 func GeneratorLabels(generator model.Generator, tags ...map[string]string) map[string]string {
 	labels := map[string]string{
 		"challenge_id": strconv.Itoa(int(generator.ChallengeID)),
+		"generator_id": strconv.Itoa(int(generator.ID)),
 	}
 	if len(tags) > 0 {
 		maps.Copy(labels, tags[0])
@@ -90,7 +91,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 
 func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal {
 	log.Logger.Debugf("Deleting generator k8s resources: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
-	if ret := DeletePod(ctx, generator.Name); !ret.OK {
+	if ret := DeletePodAndWait(ctx, generator.Name); !ret.OK {
 		return ret
 	}
 	labels := GeneratorLabels(generator, map[string]string{RoleLabel: GeneratorPodTag})
