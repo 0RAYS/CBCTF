@@ -150,7 +150,9 @@ func stopGeneratorResources(tx *gorm.DB, options db.GetOptions) model.RetVal {
 }
 
 func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model.Generator, string, model.RetVal) {
-	generator, lockToken, err := redis.LockAvailableGenerator(context.Background(), contestID, challenge.ID)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	generator, lockToken, err := redis.LockAvailableGenerator(ctx, contestID, challenge.ID)
 	if err == nil {
 		return generator, lockToken, model.SuccessRetVal()
 	}
@@ -161,6 +163,8 @@ func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model
 		}}
 		if contestID > 0 {
 			options.Conditions["contest_id"] = contestID
+		} else {
+			options.Conditions["contest_id"] = nil
 		}
 		generators, _, ret := db.InitGeneratorRepo(tx).List(-1, -1, options)
 		if !ret.OK {
@@ -174,7 +178,7 @@ func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model
 				return model.Generator{}, "", model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 			}
 		}
-		generator, lockToken, err = redis.LockAvailableGenerator(context.Background(), contestID, challenge.ID)
+		generator, lockToken, err = redis.LockAvailableGenerator(ctx, contestID, challenge.ID)
 		if err == nil {
 			return generator, lockToken, model.SuccessRetVal()
 		}
