@@ -5,6 +5,7 @@ import {
   stopContestGenerators,
   getContestChallenges,
   getContestGeneratorLogs,
+  getContestGeneratorStatus,
 } from '../../../api/admin/contest';
 import GeneratorManagement from '../../../components/features/Admin/generators/GeneratorManagement';
 
@@ -15,6 +16,7 @@ export default function ContestGenerators() {
     challenges: (params) => getContestChallenges(contestId, params),
     start: (challenges) => startContestGenerators(contestId, challenges),
     stop: (ids) => stopContestGenerators(contestId, ids),
+    status: (id, signal) => getContestGeneratorStatus(contestId, id, signal),
     logs: (id, lines) => getContestGeneratorLogs(contestId, id, lines),
   };
 

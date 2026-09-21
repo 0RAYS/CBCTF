@@ -40,7 +40,7 @@ function fixture(t, kind) {
   // Match the page adapters: neither victim page unwraps data or rejects business errors.
   const scope = {
     translationKey,
-    loadPods: kind === 'contest-victim' ? (victimId) => getContestVictimPods(7, victimId) : getVictimPods,
+    loadPods: kind === 'contest-victim' ? (victimId, signal) => getContestVictimPods(7, victimId, signal) : getVictimPods,
     loadLogs:
       kind === 'contest-victim'
         ? (victimId, pod, container, lines) => getContestVictimPodLogs(7, victimId, pod, container, lines)
@@ -164,7 +164,8 @@ for (const kind of ['generator', 'victim', 'contest-victim']) {
       params: kind === 'generator' ? { lines: 1000 } : { pod_name: 'pod-a', container: 'web', lines: 1000 },
     });
     if (kind !== 'generator') {
-      assert.deepEqual(requests[0].config, { url: `${base}/pods`, method: 'GET' });
+      assert.deepEqual(requests[0].config, { url: `${base}/pods`, method: 'GET', signal: requests[0].config.signal, noLoading: true, noToast: true });
+      assert.equal(requests[0].config.signal.aborted, false);
       assert.deepEqual(f.value.pods, pods);
     }
     const content = '\u001b[32mready\u001b[0m\nsecond line\n';
@@ -234,3 +235,45 @@ test('victim: pod/container selection loads immediately and invalidates the prev
   await f.resolve(3, { logs: 'worker logs' });
   assert.equal(f.value.content, 'worker logs');
 });
+
+for (const kind of ['victim', 'contest-victim']) {
+  test(`${kind}: status polling preserves selection, never overlaps, and aborts on close`, async (t) => {
+    const f = fixture(t, kind);
+    await f.ready();
+    f.value.selectContainer('sidecar');
+    await f.host.flush();
+    await f.tick(0);
+    await f.resolve(2, { logs: 'sidecar logs' });
+    await f.tick(5000);
+    const statusIndex = requests.length - 1;
+    assert.match(requests[statusIndex].config.url, /\/pods$/);
+    f.value.refreshStatus();
+    await f.tick(20000);
+    assert.equal(requests.length, statusIndex + 1, 'no overlapping status requests');
+    await f.resolve(statusIndex, { pods: pods.map((pod) => ({ ...pod, ready: true })) });
+    assert.equal(f.value.containerName, 'sidecar');
+    assert.equal(f.value.content, 'sidecar logs');
+    assert.equal(f.value.pods[0].ready, true);
+    f.value.refreshStatus();
+    await f.host.flush();
+    const last = requests.at(-1);
+    await f.close();
+    assert.equal(last.config.signal.aborted, true);
+    last.resolve({ code: 200, data: { pods } });
+    await f.host.flush();
+    await f.tick(10000);
+    assert.equal(f.value.pods.length, 0);
+    assert.equal(f.host.lateUpdates, 0);
+  });
+
+  test(`${kind}: a disappeared Pod clears old log content and selection`, async (t) => {
+    const f = fixture(t, kind);
+    const index = await f.ready();
+    await f.resolve(index, { logs: 'old logs' });
+    await f.tick(5000);
+    await f.resolve(index + 1, { pods: [] });
+    assert.equal(f.value.podName, '');
+    assert.equal(f.value.containerName, '');
+    assert.equal(f.value.content, '');
+  });
+}

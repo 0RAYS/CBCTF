@@ -1,11 +1,17 @@
 import { useTranslation } from 'react-i18next';
 import { AnsiLog, Modal } from '../../../common';
+import PodDiagnostics from '../workloads/PodDiagnostics';
 import useVictimLogSession from './useVictimLogSession';
 
 export default function VictimLogDialog({ victim, onClose, loadPods, loadLogs, translationKey }) {
   const { t } = useTranslation();
   // Keep the session outside Modal's retained exit subtree so closing invalidates requests immediately.
-  const log = useVictimLogSession({ victim, loadPods, loadLogs, translationKey });
+  const log = useVictimLogSession({
+    victim,
+    loadPods,
+    loadLogs,
+    translationKey,
+  });
   return (
     <Modal
       isOpen={!!victim}
@@ -15,6 +21,7 @@ export default function VictimLogDialog({ victim, onClose, loadPods, loadLogs, t
       className="!max-w-[95vw]"
       bodyClassName="p-4 flex flex-col gap-3 max-h-[90vh] overflow-y-auto"
     >
+      <PodDiagnostics {...log} />
       {log.podsLoading ? (
         <div className="flex justify-center py-12 text-neutral-400 text-sm">{t('common.loading')}</div>
       ) : log.pods.length === 0 ? (
@@ -55,12 +62,23 @@ export default function VictimLogDialog({ victim, onClose, loadPods, loadLogs, t
               <input
                 type="number"
                 min={1}
+                max={10000}
                 step={100}
                 value={log.lines}
-                onChange={(event) => log.setLines(Math.max(1, Number.parseInt(event.target.value, 10) || 1000))}
+                onChange={(event) =>
+                  log.setLines(Math.min(10000, Math.max(1, Number.parseInt(event.target.value, 10) || 1000)))
+                }
                 className="bg-neutral-800 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-200 focus:outline-none focus:border-geek-400"
               />
             </div>
+            <button
+              type="button"
+              onClick={log.refreshLogs}
+              disabled={log.loading}
+              className="text-xs text-geek-400 disabled:opacity-50 pb-1"
+            >
+              {t('admin.workloads.refreshLogs')}
+            </button>
             {log.loading && <span className="text-xs text-neutral-500 font-mono pb-1">{t('common.loading')}</span>}
           </div>
           <AnsiLog

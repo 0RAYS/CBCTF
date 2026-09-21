@@ -33,9 +33,15 @@ export default function useGeneratorLogs(api, generatorId, text) {
   }, [generatorId, query]);
 
   const changeLines = (value) => {
-    const lines = Math.max(1, Number.parseInt(value, 10) || 1000);
+    const lines = Math.min(10000, Math.max(1, Number.parseInt(value, 10) || 1000));
     setQuery((previous) => (previous.lines === lines ? previous : { lines, delay: 500 }));
   };
 
-  return { lines: query.lines, changeLines, content, loading };
+  return {
+    lines: query.lines,
+    changeLines,
+    content,
+    loading,
+    refreshLogs: () => setQuery((previous) => ({ ...previous, delay: 0 })),
+  };
 }

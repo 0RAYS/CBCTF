@@ -295,10 +295,11 @@ var RoutePermissions = map[string]string{
 	"GET /admin/victims/:victimID/pods":             PermAdminVictimControl,
 	"GET /admin/victims/:victimID/pods/logs":        PermAdminVictimControl,
 
-	"GET /admin/generators":                   PermAdminGeneratorControl,
-	"POST /admin/generators":                  PermAdminGeneratorControl,
-	"DELETE /admin/generators":                PermAdminGeneratorControl,
-	"GET /admin/generators/:generatorID/logs": PermAdminGeneratorControl,
+	"GET /admin/generators":                     PermAdminGeneratorControl,
+	"POST /admin/generators":                    PermAdminGeneratorControl,
+	"DELETE /admin/generators":                  PermAdminGeneratorControl,
+	"GET /admin/generators/:generatorID/logs":   PermAdminGeneratorControl,
+	"GET /admin/generators/:generatorID/status": PermAdminGeneratorControl,
 
 	// /admin/images
 	"GET /admin/images":  PermAdminImagePull,
@@ -370,10 +371,11 @@ var RoutePermissions = map[string]string{
 	"GET /admin/contests/:contestID/victims/:victimID/pods/logs": PermAdminContestVictimControl,
 
 	// /admin/contests/:contestID/generators
-	"GET /admin/contests/:contestID/generators":                   PermAdminContestGeneratorControl,
-	"POST /admin/contests/:contestID/generators":                  PermAdminContestGeneratorControl,
-	"DELETE /admin/contests/:contestID/generators":                PermAdminContestGeneratorControl,
-	"GET /admin/contests/:contestID/generators/:generatorID/logs": PermAdminContestGeneratorControl,
+	"GET /admin/contests/:contestID/generators":                     PermAdminContestGeneratorControl,
+	"POST /admin/contests/:contestID/generators":                    PermAdminContestGeneratorControl,
+	"DELETE /admin/contests/:contestID/generators":                  PermAdminContestGeneratorControl,
+	"GET /admin/contests/:contestID/generators/:generatorID/logs":   PermAdminContestGeneratorControl,
+	"GET /admin/contests/:contestID/generators/:generatorID/status": PermAdminContestGeneratorControl,
 
 	// /admin/files
 	"GET /admin/files":         PermAdminFileList,

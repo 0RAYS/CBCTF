@@ -74,12 +74,43 @@ func GetGeneratorLogs(ctx *gin.Context) {
 		return
 	}
 
-	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctxTimeout, cancel := context.WithTimeout(ctx.Request.Context(), 30*time.Second)
 	defer cancel()
-	logs, ret := k8s.GetPodLogs(ctxTimeout, generator.Name, "", form.Lines)
+	pod, ret := k8s.GetPod(ctxTimeout, generator.Name)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	if !k8s.GeneratorOwnsPod(generator, pod) {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		return
+	}
+	logs, ret := k8s.GetPodLogs(ctxTimeout, generator.Name, "generator", form.Lines)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"logs": logs}))
+}
+
+// GetGeneratorStatus shares the admin/contest authorization chain with logs.
+func GetGeneratorStatus(ctx *gin.Context) {
+	generator := middleware.GetGenerator(ctx)
+	timeout, cancel := context.WithTimeout(ctx.Request.Context(), 15*time.Second)
+	defer cancel()
+	pod, ret := k8s.GetPod(timeout, generator.Name)
+	pods := []k8s.PodDiagnostics{}
+	if !ret.OK {
+		if ret.Msg != i18n.K8S.NotFound {
+			resp.JSON(ctx, ret)
+			return
+		}
+	} else {
+		if !k8s.GeneratorOwnsPod(generator, pod) {
+			resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+			return
+		}
+		pods = append(pods, k8s.DescribePod(pod))
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"pods": pods}))
 }

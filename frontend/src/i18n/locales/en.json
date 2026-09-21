@@ -134,6 +134,28 @@
     "branding": "BRANDING"
   },
   "admin": {
+    "workloads": {
+      "title": "Kubernetes status",
+      "polling": "Refreshes every 5 seconds",
+      "updated": "Updated {{time}}",
+      "refresh": "Refresh status",
+      "refreshLogs": "Refresh logs",
+      "failed": "Status refresh failed. Displayed data may be stale.",
+      "noPods": "No Pod found yet, or cleanup has completed.",
+      "ready": "Ready",
+      "notReady": "Not ready",
+      "terminating": "Terminating",
+      "restarts": "Restarts: {{count}}",
+      "exit": "Exit code: {{code}}",
+      "lastExit": "Previous exit: {{code}}",
+      "logLimit": "Logs are a snapshot, limited to 10,000 lines / 1 MiB per request.",
+      "state": {
+        "unknown": "Not started",
+        "waiting": "Waiting",
+        "running": "Running",
+        "terminated": "Terminated"
+      }
+    },
     "title": "Admin Center",
     "navigation": "Navigation",
     "contest": "Contest",
@@ -1524,7 +1546,7 @@
           "plainTextPasswd": "Plain text password",
           "members": "Group member username",
           "path": "/etc/example.conf",
-            "content": "File content, supports static{} / leet{} / uuid{}",
+          "content": "File content, supports static{} / leet{} / uuid{}",
           "owner": "root:root",
           "permissions": "0644",
           "encoding": "text/plain",

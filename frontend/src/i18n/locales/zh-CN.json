@@ -134,6 +134,28 @@
     "branding": "品牌"
   },
   "admin": {
+    "workloads": {
+      "title": "Kubernetes 资源状态",
+      "polling": "每 5 秒自动刷新",
+      "updated": "更新于 {{time}}",
+      "refresh": "刷新状态",
+      "refreshLogs": "刷新日志",
+      "failed": "状态刷新失败，当前显示的可能是旧数据。",
+      "noPods": "尚未发现 Pod，或资源已清理完成。",
+      "ready": "已就绪",
+      "notReady": "未就绪",
+      "terminating": "正在终止",
+      "restarts": "重启次数：{{count}}",
+      "exit": "退出码：{{code}}",
+      "lastExit": "上次退出码：{{code}}",
+      "logLimit": "日志为快照，单次读取最多 10,000 行 / 1 MiB。",
+      "state": {
+        "unknown": "尚未启动",
+        "waiting": "等待中",
+        "running": "运行中",
+        "terminated": "已终止"
+      }
+    },
     "title": "管理中心",
     "navigation": "导航",
     "contest": "赛事",
@@ -1524,7 +1546,7 @@
           "plainTextPasswd": "明文密码",
           "members": "组成员用户名",
           "path": "/etc/example.conf",
-            "content": "文件内容, 可包含 static{} / leet{} / uuid{}",
+          "content": "文件内容, 可包含 static{} / leet{} / uuid{}",
           "owner": "root:root",
           "permissions": "0644",
           "encoding": "text/plain",

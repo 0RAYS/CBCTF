@@ -333,6 +333,7 @@ func Init() *gin.Engine {
 			adminGenerator.POST("", middleware.RateLimit("test_generators", 1, time.Minute), StartGenerator)
 			adminGenerator.DELETE("", StopGenerator)
 			adminGenerator.GET("/:generatorID/logs", middleware.SetGenerator, GetGeneratorLogs)
+			adminGenerator.GET("/:generatorID/status", middleware.SetGenerator, GetGeneratorStatus)
 		}
 
 		adminImages := admin.Group("/images")
@@ -445,6 +446,7 @@ func Init() *gin.Engine {
 				adminContestGenerator.POST("", middleware.RateLimit("warmup_generators", 1, time.Minute), StartGenerator)
 				adminContestGenerator.DELETE("", StopGenerator)
 				adminContestGenerator.GET("/:generatorID/logs", middleware.SetGenerator, GetGeneratorLogs)
+				adminContestGenerator.GET("/:generatorID/status", middleware.SetGenerator, GetGeneratorStatus)
 			}
 		}
 
