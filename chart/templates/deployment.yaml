@@ -27,6 +27,7 @@ spec:
         {{- end }}
     spec:
       enableServiceLinks: false
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- with include "cbctf.imagePullSecrets" . }}
       {{- . | nindent 6 }}
       {{- end }}
@@ -56,6 +57,10 @@ spec:
           {{- end }}
 
           # ── Liveness / Readiness probes ────────────────────────────────────
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           livenessProbe:
             tcpSocket:
               port: http

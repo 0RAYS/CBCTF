@@ -108,8 +108,9 @@ func Stop() {
 
 func newServerConfig(queue string, concurrency int) asynq.Config {
 	cfg := asynq.Config{
-		Concurrency: concurrency,
-		Logger:      log.Logger.WithField("Type", log.TaskLogType).WithField("Queue", queue),
+		Concurrency:     concurrency,
+		ShutdownTimeout: 30 * time.Second,
+		Logger:          log.Logger.WithField("Type", log.TaskLogType).WithField("Queue", queue),
 		Queues: map[string]int{
 			queue: 1,
 		},
