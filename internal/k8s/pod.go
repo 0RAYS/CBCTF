@@ -9,12 +9,12 @@ import (
 	"io"
 	"maps"
 	"strings"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
-	apiwatch "k8s.io/apimachinery/pkg/watch"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 type Network struct {
@@ -37,12 +37,8 @@ type CreatePodOptions struct {
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, model.RetVal) {
 	var (
 		pod *corev1.Pod
-		ret model.RetVal
 		err error
 	)
-	if _, ret = GetPod(ctx, options.Name); !ret.OK {
-		DeletePod(ctx, options.Name)
-	}
 	pod = &corev1.Pod{
 		Name:      options.Name,
 		Namespace: globalNamespace,
@@ -78,66 +74,13 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		log.Logger.Warningf("Failed to create Pod: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
-	checkPod := func(pod *corev1.Pod) (*corev1.Pod, bool, model.RetVal) {
-		if pod == nil {
-			return nil, true, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}}
-		}
-		if pod.Status.Phase == corev1.PodRunning {
-			return pod, true, model.SuccessRetVal()
-		}
-		if pod.Status.Phase == "" || pod.Status.Phase == corev1.PodPending {
-			return pod, false, model.SuccessRetVal()
-		}
-		log.Logger.Warningf("Failed to run Pod %s: phase=%s, reason=%s", pod.Name, pod.Status.Phase, pod.Status.Reason)
-		return nil, true, model.RetVal{Msg: i18n.K8S.PodRunError, Attr: map[string]any{"Pod": pod.Name, "Phase": pod.Status.Phase, "Reason": pod.Status.Reason}}
+	ready, err := waitPodReady(ctx, pod)
+	if err != nil {
+		return nil, model.RetVal{Msg: i18n.K8S.PodRunError, Attr: map[string]any{
+			"Pod": pod.Name, "Phase": pod.Status.Phase, "Reason": err.Error(), "Error": err.Error(),
+		}}
 	}
-	if pod, done, ret := checkPod(pod); done {
-		return pod, ret
-	}
-	selector := fields.OneTermEqualSelector("metadata.name", options.Name).String()
-	for {
-		watcher, err := kubeClient.CoreV1().Pods(globalNamespace).Watch(ctx, metav1.ListOptions{
-			FieldSelector:   selector,
-			ResourceVersion: pod.ResourceVersion,
-		})
-		if err != nil {
-			log.Logger.Warningf("Failed to watch Pod %s: %s", options.Name, err)
-			return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
-		}
-		for event := range watcher.ResultChan() {
-			switch event.Type {
-			case apiwatch.Error:
-				watcher.Stop()
-				return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": apierror.FromObject(event.Object).Error()}}
-			case apiwatch.Deleted:
-				watcher.Stop()
-				return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}}
-			case apiwatch.Added, apiwatch.Modified:
-				updatedPod, ok := event.Object.(*corev1.Pod)
-				if !ok {
-					continue
-				}
-				pod = updatedPod
-				if pod, done, ret := checkPod(pod); done {
-					watcher.Stop()
-					return pod, ret
-				}
-			}
-		}
-		watcher.Stop()
-		select {
-		case <-ctx.Done():
-			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": ctx.Err().Error()}}
-		default:
-		}
-		pod, ret = GetPod(ctx, options.Name)
-		if !ret.OK {
-			return nil, ret
-		}
-		if pod, done, ret := checkPod(pod); done {
-			return pod, ret
-		}
-	}
+	return ready, model.SuccessRetVal()
 }
 
 // GetPod 依据 name 获取 Pod
@@ -218,6 +161,24 @@ func DeletePodCollection(ctx context.Context, labels ...map[string]string) model
 	err := kubeClient.CoreV1().Pods(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Pod: %s", err)
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
+// Delete acceptance is not deletion completion (PVC mounts and exec may still be active).
+func DeletePodAndWait(ctx context.Context, name string) model.RetVal {
+	if ret := DeletePod(ctx, name); !ret.OK {
+		return ret
+	}
+	err := wait.PollUntilContextCancel(ctx, 500*time.Millisecond, true, func(ctx context.Context) (bool, error) {
+		_, err := kubeClient.CoreV1().Pods(globalNamespace).Get(ctx, name, metav1.GetOptions{})
+		if apierror.IsNotFound(err) {
+			return true, nil
+		}
+		return false, err
+	})
+	if err != nil {
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
 	return model.SuccessRetVal()

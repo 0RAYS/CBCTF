@@ -177,6 +177,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	wg := utils.NewGroup(ctx)
 	for _, name := range frpcPodNameL {
 		wg.Go(func() error {
+			ctx := wg.Context()
 			fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
 				Name:   fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
 				Labels: labels,
@@ -274,7 +275,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				TTY:   true,
 			}
 			command := "rustnet -i any --pcap-export /root/mnt/frpc.pcap"
-			if _, err = os.Stat(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")); err == nil {
+			if _, err := os.Stat(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")); err == nil {
 				command = "rustnet -i any --geoip-city /root/GeoLite2-City.mmdb  --pcap-export /root/mnt/frpc.pcap"
 				capture.VolumeMounts = append(capture.VolumeMounts, corev1.VolumeMount{
 					Name:      nfsVolumeName,
