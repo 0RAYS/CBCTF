@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/util/flowcontrol"
 
 	netattclient "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
 	ovnclient "github.com/kubeovn/kube-ovn/pkg/client/clientset/versioned"
@@ -50,8 +51,7 @@ func initClients() {
 	if err != nil {
 		log.Logger.Fatalf("Failed to create in-cluster Kubernetes config: %s", err)
 	}
-	kubeConfig.QPS = 100
-	kubeConfig.Burst = 150
+	configureClientRateLimit(kubeConfig)
 	log.Logger.Info("Admin config loaded")
 	kubeClient, err = kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
@@ -69,4 +69,13 @@ func initClients() {
 	if err != nil {
 		log.Logger.Fatalf("Failed to init KubeVirt client: %s", err)
 	}
+}
+
+func configureClientRateLimit(config *rest.Config) {
+	config.QPS = 100
+	config.Burst = 150
+	// Share one process budget across core, Multus, Kube-OVN and KubeVirt clients.
+	// Otherwise each independently creates a limiter, multiplying API-server bursts.
+	config.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(config.QPS, config.Burst)
+	rest.AddUserAgent(config, "cbctf")
 }

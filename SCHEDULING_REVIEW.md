@@ -1,4 +1,4 @@
-# Scheduling review ? 2026-09-21
+# Scheduling review - 2026-09-21
 
 ## Scope and approach
 
@@ -127,3 +127,19 @@ checks for successful tests. No live Kubernetes/Redis/PostgreSQL cluster is assu
 - Helm lint passed. Go regression tests render default and custom-service-account
   charts, compare RBAC against backend permission checks, reject wildcard/namespace
   leakage and verify configurable startup/shutdown settings. No live install performed.
+
+## Completed: destructive API and client/job hardening
+
+- Every batch-delete helper requires a validated non-empty workload ownership selector;
+  missing/empty/ambiguous filters, role-only filters and invalid IDs fail before API calls.
+  Kube-OVN IP deletion additionally permits an explicit subnet owner selector.
+- Generator cleanup validates ownership before deletion, including name collisions.
+  Single-Pod cleanup and orphan-generator deletion pin the observed UID; a replacement
+  Pod prevents cleanup completion rather than silently releasing dependent resources.
+- Core/Multus/Kube-OVN/KubeVirt clients share the existing 100-QPS / 150-burst budget
+  instead of independently multiplying bursts. Requests carry a CBCTF user agent.
+- Image pre-pull Jobs do not mount a service-account token or inject service links,
+  have a ten-minute active deadline and retain results for five minutes before TTL GC.
+  Operators with exceptionally slow image pulls may need a different policy later.
+- Focused tests passed for all ten batch-delete entrypoints, ownership/UID protection,
+  image-job defaults and shared client configuration. These are not load benchmarks.

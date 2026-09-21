@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"fmt"
-	"strings"
 
 	kubeovnv1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
@@ -64,15 +63,9 @@ func GetSubnet(ctx context.Context, name string) (*kubeovnv1.Subnet, model.RetVa
 }
 
 func DeleteSubnetCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector strings.Builder
-		for k, v := range labels[0] {
-			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector.String(), ","),
-		}
+	options, ret := deleteCollectionOptions("Subnet", labels...)
+	if !ret.OK {
+		return ret
 	}
 	err := ovnClient.KubeovnV1().Subnets().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {

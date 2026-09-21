@@ -5,23 +5,15 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
-	"fmt"
-	"strings"
 
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func DeleteEndpointCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector strings.Builder
-		for k, v := range labels[0] {
-			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector.String(), ","),
-		}
+	options, ret := deleteCollectionOptions("EndpointSlice", labels...)
+	if !ret.OK {
+		return ret
 	}
 	err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {

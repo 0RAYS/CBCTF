@@ -32,13 +32,16 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 		Labels:    options.Labels,
 		Spec: batchv1.JobSpec{
 			BackoffLimit:            new(int32(0)),
-			TTLSecondsAfterFinished: new(int32),
+			TTLSecondsAfterFinished: new(int32(300)),
+			ActiveDeadlineSeconds:   new(int64(600)),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      fmt.Sprintf("image-puller-%s", utils.RandHexStr(5)),
 					Namespace: globalNamespace,
 				},
 				Spec: corev1.PodSpec{
+					AutomountServiceAccountToken: new(false),
+					EnableServiceLinks:           new(false),
 					NodeSelector: func() map[string]string {
 						if options.SelectedNode != "" {
 							return map[string]string{"kubernetes.io/hostname": options.SelectedNode}

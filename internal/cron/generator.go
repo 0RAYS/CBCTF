@@ -31,7 +31,7 @@ func stopUnCtrlGeneratorTask() model.RetVal {
 	for _, pod := range pods.Items {
 		if !known[pod.Name] {
 			ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-			if ret = k8s.DeletePod(ctx, pod.Name); ret.OK {
+			if ret = k8s.DeletePod(ctx, pod.Name, pod.UID); ret.OK {
 				log.Logger.Infof("Deleted uncontrolled generator pod: pod=%s", pod.Name)
 			} else {
 				log.Logger.Warningf("Failed to delete uncontrolled generator pod: pod=%s reason=%s", pod.Name, ret.Msg)
