@@ -15,6 +15,8 @@
 
 `WarmChallengeImages` Cron 默认每 15 分钟复查一次，也覆盖新加入的节点。预热任务在 `tasks:prepull` 队列中执行，可在任务日志中查看结果。手动预热也走同一套结果记录流程；指定 `Always` 时会重新访问镜像仓库。
 
+预热 Job 设置 `ttlSecondsAfterFinished: 3600`，成功或失败进入终止状态后保留 1 小时，再由 Kubernetes TTL Controller 回收 Job，并级联清理所属 Pod，平台不主动删除这些资源。`ImagePullBackOff` 等尚未终止的 Job 受 `activeDeadlineSeconds: 600` 限制，超时转为失败后同样保留 1 小时再回收。预热结果在创建 Job 前就通过共享 Pod informer 订阅，已观察到的结果保留到任务消费，避免资源被回收后漏掉结果。
+
 预热成功不构成节点永久保留镜像的承诺：kubelet 镜像 GC、节点重建或镜像标签变化仍可能产生冷启动。比赛镜像宜使用固定版本或 digest。
 
 ## 靶机创建与就绪
@@ -126,7 +128,7 @@ cbctf:
       attachment: 32
 ```
 
-Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。直接部署时在配置文件中设置 `k8s.worker_image`。上述抓包开关、PriorityClass、worker 镜像和池容量是部署配置，修改后重启平台生效。
+Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、Pod PriorityClass、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
 
 ## 独立构建 worker 镜像
 
