@@ -45,7 +45,7 @@ type Challenge struct {
 	BaseModel
 }
 
-// Cache generations include the exact ordered team flags and source revision.
+// AttachmentCachePath Cache generations include the exact ordered team flags and source revision.
 // Old and new flags never publish to the same path, even during a reset race.
 func (c Challenge) AttachmentCachePath(teamID uint, flags []string) string {
 	return c.AttachmentCachePathForRevision(teamID, flags, worker.SourceRevision(c.GeneratorPath()))

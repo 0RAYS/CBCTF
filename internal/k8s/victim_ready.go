@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// Readiness is evaluated from shared caches; start workers only submit objects.
+// VictimReady Readiness is evaluated from shared caches; start workers only submit objects.
 func VictimReady(ctx context.Context, victim *model.Victim) (bool, error) {
 	if !victim.Resources.Submitted {
 		return false, nil
@@ -41,7 +41,7 @@ func VictimReady(ctx context.Context, victim *model.Victim) (bool, error) {
 			return false, nil
 		}
 		if string(pod.UID) != uid {
-			return false, fmt.Errorf("Pod %s replaced", record.Name)
+			return false, fmt.Errorf("pod %s replaced", record.Name)
 		}
 		ready, err := podStartupComplete(pod)
 		if err != nil || !ready {

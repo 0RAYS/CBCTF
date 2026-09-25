@@ -25,8 +25,22 @@ func TestWorkerPublishesOnlyCompletedZipWithoutExec(t *testing.T) {
 	previousConfig, previousHTTP := config.Env, workerHTTP
 	config.Env = &config.Config{Path: t.TempDir()}
 	t.Cleanup(func() { config.Env = previousConfig; workerHTTP = previousHTTP })
-	generator := model.Generator{BaseModel: model.BaseModel{ID: 9}, Name: "generator", ChallengeID: 3, WorkerToken: "test-token"}
-	pod := &corev1.Pod{Name: generator.Name, Namespace: "test", Labels: GeneratorLabels(generator, map[string]string{RoleLabel: GeneratorPodTag}), Status: corev1.PodStatus{PodIP: "192.0.2.1", Phase: corev1.PodRunning, Conditions: []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}}}}
+	generator := model.Generator{ID: 9, Name: "generator", ChallengeID: 3, WorkerToken: "test-token"}
+	pod := &corev1.Pod{
+		Name:      generator.Name,
+		Namespace: "test",
+		Labels:    GeneratorLabels(generator, map[string]string{RoleLabel: GeneratorPodTag}),
+		Status: corev1.PodStatus{
+			PodIP: "192.0.2.1",
+			Phase: corev1.PodRunning,
+			Conditions: []corev1.PodCondition{
+				{
+					Type:   corev1.PodReady,
+					Status: corev1.ConditionTrue,
+				},
+			},
+		},
+	}
 	client := useFakePods(t, pod)
 	t.Cleanup(Stop)
 	var output bytes.Buffer
@@ -57,7 +71,7 @@ func TestWorkerPublishesOnlyCompletedZipWithoutExec(t *testing.T) {
 		}
 		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(data))}, nil
 	})}
-	challenge := model.Challenge{BaseModel: model.BaseModel{ID: 3}}
+	challenge := model.Challenge{ID: 3}
 	flags := []string{"flag{test}"}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

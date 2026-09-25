@@ -168,8 +168,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				})
 			}
 			capture.Command = append(capture.Command, command)
-			containers := []corev1.Container{}
-			volumes := []corev1.Volume{}
+			var containers []corev1.Container
+			var volumes []corev1.Volume
 			if config.Env.K8S.CaptureEnabled {
 				containers = append(containers, capture)
 				volumes = append(volumes, corev1.Volume{

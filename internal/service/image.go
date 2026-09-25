@@ -17,7 +17,7 @@ import (
 )
 
 func ChallengeImages(challenge model.Challenge) []string {
-	sidecars := []string{}
+	var sidecars []string
 	if challenge.Type == model.DynamicChallengeType {
 		sidecars = append(sidecars, config.Env.K8S.WorkerImage)
 	}
