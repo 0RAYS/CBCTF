@@ -38,4 +38,4 @@ rules:
     verbs: ["create", "get", "deletecollection"]
   - apiGroups: ["kubevirt.io"]
     resources: ["virtualmachines"]
-    verbs: ["create", "get", "deletecollection"]
+    verbs: ["create", "get", "list", "watch", "deletecollection"]

@@ -78,6 +78,7 @@ func stop() {
 
 	cron.Stop()
 	task.Stop()
+	k8s.Stop()
 	cron.FlushBufferedLogs()
 	redis.Stop()
 	db.Stop()

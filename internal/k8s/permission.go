@@ -60,6 +60,8 @@ func buildPermissionChecks() []permissionCheck {
 		// KubeVirt: VirtualMachines
 		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "create", Namespace: ns},
 		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "get", Namespace: ns},
+		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "list", Namespace: ns},
+		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "watch", Namespace: ns},
 		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "deletecollection", Namespace: ns},
 		// KubeOVN: Subnets (集群级别)
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "create"},

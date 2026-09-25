@@ -20,6 +20,7 @@ import (
 )
 
 type CreateVMOptions struct {
+	SubmitOnly  bool
 	Name        string
 	Labels      map[string]string
 	Image       string
@@ -201,10 +202,16 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
 	}
 	// API acceptance does not mean the VM is ready for connections.
+	if options.SubmitOnly {
+		return vm, model.SuccessRetVal()
+	}
 	err = wait.PollUntilContextCancel(ctx, time.Second, true, func(ctx context.Context) (bool, error) {
-		current, getErr := virtClient.KubevirtV1().VirtualMachines(globalNamespace).Get(ctx, options.Name, metav1.GetOptions{})
+		current, getErr := cachedVM(ctx, options.Name)
 		if getErr != nil {
 			return false, getErr
+		}
+		if current == nil {
+			return false, nil
 		}
 		if current.UID != vm.UID || current.DeletionTimestamp != nil {
 			return false, fmt.Errorf("VM %s was deleted or replaced", options.Name)

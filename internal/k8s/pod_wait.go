@@ -1,17 +1,12 @@
 package k8s
 
 import (
+	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/tools/cache"
-	watchtools "k8s.io/client-go/tools/watch"
 )
 
 func podReady(pod *corev1.Pod) bool {
@@ -78,46 +73,35 @@ func waitPodReady(ctx context.Context, created *corev1.Pod) (*corev1.Pod, error)
 	if done, err := podStartupComplete(last); done || err != nil {
 		return last, err
 	}
-	selector := fields.OneTermEqualSelector("metadata.name", created.Name).String()
-	pods := kubeClient.CoreV1().Pods(globalNamespace)
-	lw := &cache.ListWatch{
-		ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
-			options.FieldSelector = selector
-			return pods.List(ctx, options)
-		},
-		WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
-			options.FieldSelector = selector
-			return pods.Watch(ctx, options)
-		},
-	}
-	check := func(pod *corev1.Pod) (bool, error) {
-		if pod.UID != created.UID {
-			return false, fmt.Errorf("pod %s was replaced", created.Name)
-		}
-		last = pod
-		return podStartupComplete(pod)
-	}
-	_, err := watchtools.UntilWithSync(ctx, lw, &corev1.Pod{}, func(store cache.Store) (bool, error) {
-		obj, exists, err := store.GetByKey(globalNamespace + "/" + created.Name)
-		if err != nil {
-			return false, err
-		}
-		if !exists {
-			return false, fmt.Errorf("pod %s was deleted", created.Name)
-		}
-		return check(obj.(*corev1.Pod))
-	}, func(event watch.Event) (bool, error) {
-		if event.Type == watch.Deleted {
-			return false, fmt.Errorf("pod %s was deleted", created.Name)
-		}
-		pod, ok := event.Object.(*corev1.Pod)
-		if !ok {
-			return false, nil
-		}
-		return check(pod)
-	})
+	c, err := cachedObjects(ctx, "pods")
 	if err != nil {
 		return nil, fmt.Errorf("waiting for pod %s (%s): %w", created.Name, podSummary(last), err)
 	}
-	return last, nil
+	for {
+		changed := c.changes()
+		pod, err := cachedPod(ctx, created.Name)
+		if err != nil {
+			return nil, err
+		}
+		if pod == nil {
+			// A create response can precede its watch event; confirm absence.
+			var ret model.RetVal
+			pod, ret = GetPod(ctx, created.Name)
+			if !ret.OK {
+				return nil, fmt.Errorf("pod %s was deleted or unavailable: %s", created.Name, ret.Msg)
+			}
+		}
+		if pod.UID != created.UID {
+			return nil, fmt.Errorf("pod %s was replaced", created.Name)
+		}
+		last = pod
+		if done, err := podStartupComplete(pod); done || err != nil {
+			return pod, err
+		}
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("waiting for pod %s (%s): %w", created.Name, podSummary(last), ctx.Err())
+		case <-changed:
+		}
+	}
 }

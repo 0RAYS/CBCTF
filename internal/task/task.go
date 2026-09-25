@@ -94,9 +94,14 @@ func Start() {
 		}
 	}
 	log.Logger.Infof("Task servers started: %d", len(servers))
+	startReadinessController()
 }
 
 func Stop() {
+	if readinessCancel != nil {
+		readinessCancel()
+		<-readinessDone
+	}
 	var wg sync.WaitGroup
 	wg.Add(len(servers))
 	for _, srv := range servers {

@@ -134,15 +134,17 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	// 添加一个独立tag, 防止受 NetworkPolicy 影响
 	frpc := newFrpcConfig(frps.Host, frps.Port, frps.Token)
 	nginx := nginxConfig{}
-	for _, endpoint := range victim.Endpoints {
+	victim.ExposedEndpoints = nil
+	for index, endpoint := range victim.Endpoints {
 		exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
 		if !ret.OK {
 			return victim, ret
 		}
 		// 对于 TCP 协议, 启用 proxy_protocol
 		if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
-			addFrpcProxy(&frpc, protocol, "127.0.0.1", endpoint.Port, exposedPort, true)
-			nginx.Streams = append(nginx.Streams, nginxStream{Name: utils.RandHexStr(10), TargetIP: endpoint.IP, TargetPort: endpoint.Port, ListenPort: endpoint.Port})
+			listenPort := int32(10000 + index)
+			addFrpcProxy(&frpc, protocol, "127.0.0.1", listenPort, exposedPort, true)
+			nginx.Streams = append(nginx.Streams, nginxStream{Name: fmt.Sprintf("upstream_%d", index), TargetIP: endpoint.IP, TargetPort: endpoint.Port, ListenPort: listenPort})
 		} else {
 			addFrpcProxy(&frpc, protocol, endpoint.IP, endpoint.Port, exposedPort, false)
 		}
@@ -152,6 +154,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			Port:     exposedPort,
 			Protocol: endpoint.Protocol,
 		})
+		victim.ExposedEndpoints = newEndpoints
 		log.Logger.Debugf("Reserved frpc endpoint: victim_id=%d %s:%d -> %s:%d protocol=%s", victim.ID, frps.Host, exposedPort, endpoint.IP, endpoint.Port, endpoint.Protocol)
 	}
 	frpcConfigData, err := frpc.String()
@@ -288,18 +291,21 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				volumes = append(volumes, nfsVolume)
 			}
 			options := CreatePodOptions{
+				SubmitOnly:        true,
 				PriorityClassName: config.Env.K8S.PriorityClassName,
 				Name:              name,
 				Labels:            labels,
 				Containers:        containers,
 				Volumes:           volumes,
 			}
-			if _, ret = CreatePod(ctx, options); !ret.OK {
+			p, ret := CreatePod(ctx, options)
+			if !ret.OK {
 				if err, ok := ret.Attr["Error"].(string); ok {
 					return fmt.Errorf("%s", err)
 				}
 				return fmt.Errorf("create frpc pod failed: %s", ret.Msg)
 			}
+			victim.Resources.UIDs[name] = string(p.UID)
 			return nil
 		})
 	}
