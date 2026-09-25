@@ -20,6 +20,7 @@ var (
 	c           *cron.Cron
 	taskEntries sync.Map
 	taskMap     = map[string]taskDefinition{
+		model.WarmChallengeImagesCronJob:  {name: model.WarmChallengeImagesCronJob, run: warmChallengeImagesTask},
 		model.CloseTimeoutVictimsCronJob:  {name: model.CloseTimeoutVictimsCronJob, run: closeTimeoutVictimsTask},
 		model.CloseUnCtrlVictimsCronJob:   {name: model.CloseUnCtrlVictimsCronJob, run: closeUnCtrlVictimsTask},
 		model.SyncFrpsPortLocksCronJob:    {name: model.SyncFrpsPortLocksCronJob, run: syncFrpsPortLocksTask},
