@@ -185,6 +185,7 @@ test('extracted business models/parsers/serializers stay isolated from runtime l
   // helpers here after review. Loaders and effectful session controllers are not models.
   const pureModules = new Set([
     'config/contest.js',
+    'config/workload.js',
     'components/features/Admin/SystemConfig/configNormalizer.js',
     'components/features/Admin/SystemConfig/configPayloadBuilder.js',
     'components/features/Scoreboard/scoreboardModel.js',

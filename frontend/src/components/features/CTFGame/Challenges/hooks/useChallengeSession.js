@@ -13,6 +13,7 @@ import {
 import { toast } from '../../../../../utils/toast';
 import { downloadBlobResponse } from '../../../../../utils/fileDownload';
 import { isInstanceTransitioning, mapChallengeStatusToViewModel } from '../models/challengeViewModel';
+import { POLL_TIMEOUT } from '../../../../../config/workload.js';
 
 export default function useChallengeSession(contestId, { updateChallenge, onSolved }) {
   const { t } = useTranslation();
@@ -58,6 +59,7 @@ export default function useChallengeSession(contestId, { updateChallenge, onSolv
           applyStatus(challenge);
           if (
             (targetStatus === 'running' && challenge.instanceStatus === 'running') ||
+            (targetStatus === 'attachment' && Boolean(challenge.attachment)) ||
             (targetStatus === 'stopped' &&
               challenge.instanceStatus !== 'running' &&
               !isInstanceTransitioning(challenge.instanceStatus))
@@ -71,7 +73,7 @@ export default function useChallengeSession(contestId, { updateChallenge, onSolv
       if (isCurrent()) pollingIntervalRef.current = setTimeout(poll, 5000);
     };
     pollingIntervalRef.current = setTimeout(poll, 5000);
-    pollingTimeoutRef.current = setTimeout(stopPolling, 3 * 60 * 1000);
+    pollingTimeoutRef.current = setTimeout(stopPolling, POLL_TIMEOUT[targetStatus]);
   };
 
   const closeChallenge = () => {
@@ -154,6 +156,27 @@ export default function useChallengeSession(contestId, { updateChallenge, onSolv
       startPolling(id, 'stopped', selection);
     });
 
+  const refreshGeneratedAttachment = async (challengeId, selection) => {
+    if (selectionRef.current !== selection || selectedChallengeRef.current?.id !== challengeId) return;
+    if (selectedChallengeRef.current.type === 'dynamic') {
+      stopPolling();
+      statusRequestRef.current += 1;
+      applyStatus({ ...selectedChallengeRef.current, attachment: '' });
+    }
+    await refreshChallengeStatus(challengeId, selection);
+    if (selectedChallengeRef.current?.type === 'dynamic' && !selectedChallengeRef.current.attachment) {
+      startPolling(challengeId, 'attachment', selection);
+    }
+  };
+
+  const handleResetChallenge = (challengeId) =>
+    runMutation(challengeId, resetChallenge, 'reset', async (id, selection) => {
+      await refreshGeneratedAttachment(id, selection);
+      if (selectedChallengeRef.current?.type === 'pods' && selectedChallengeRef.current.instanceStatus) {
+        startPolling(id, 'stopped', selection);
+      }
+    });
+
   const handleSubmitFlag = async (challengeId, value) => {
     const scope = scopeRef.current;
     const selection = selectionRef.current;
@@ -190,6 +213,8 @@ export default function useChallengeSession(contestId, { updateChallenge, onSolv
       setSelectedChallenge(updated);
       if (isInstanceTransitioning(updated.instanceStatus)) {
         startPolling(challenge.id, updated.instanceStatus === 'terminating' ? 'stopped' : 'running', selection);
+      } else if (updated.type === 'dynamic' && updated.isInitialized && !updated.attachment) {
+        startPolling(challenge.id, 'attachment', selection);
       }
     } catch (error) {
       if (!isCurrent()) return;
@@ -226,8 +251,8 @@ export default function useChallengeSession(contestId, { updateChallenge, onSolv
       challenge: selectedChallenge,
       isOpen: !!selectedChallenge,
       onClose: closeChallenge,
-      onInitialize: (id) => runMutation(id, initChallenge, 'init'),
-      onReset: (id) => runMutation(id, resetChallenge, 'reset'),
+      onInitialize: (id) => runMutation(id, initChallenge, 'init', refreshGeneratedAttachment),
+      onReset: handleResetChallenge,
       onLaunchInstance: handleLaunchInstance,
       onExtendInstance: (id) => runMutation(id, extendContainerTime, 'extend'),
       onDestroyInstance: handleDestroyInstance,

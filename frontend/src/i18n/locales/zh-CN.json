@@ -2668,6 +2668,7 @@
         "show": "显示提示",
         "hide": "隐藏提示"
       },
+      "attachmentPending": "附件尚未就绪，请等待生成完成，也可重新打开题目刷新状态。",
       "instance": {
         "waiting": "等待启动队列",
         "pending": "启动中",
