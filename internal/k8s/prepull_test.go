@@ -15,12 +15,13 @@ func TestWarmupOnlyExcludesFailedNodes(t *testing.T) {
 		t.Fatal("unexpected positive preference")
 	}
 	terms := node.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms
-	if len(terms) != 1 || len(terms[0].MatchExpressions) != 0 || len(terms[0].MatchFields) != 1 {
+	if len(terms) != 1 || len(terms[0].MatchExpressions) != 0 || len(terms[0].MatchFields) != 2 {
 		t.Fatalf("unexpected exclusion: %+v", terms)
 	}
-	rule := terms[0].MatchFields[0]
-	if rule.Key != "metadata.name" || rule.Operator != corev1.NodeSelectorOpNotIn || len(rule.Values) != 2 {
-		t.Fatalf("not an exclusion: %+v", rule)
+	for _, rule := range terms[0].MatchFields {
+		if rule.Key != "metadata.name" || rule.Operator != corev1.NodeSelectorOpNotIn || len(rule.Values) != 1 {
+			t.Fatalf("invalid field exclusion: %+v", rule)
+		}
 	}
 	if imageFailureKey("nginx") != imageFailureKey("docker.io/library/nginx:latest") {
 		t.Fatal("image aliases do not share failure state")

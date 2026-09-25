@@ -9,6 +9,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 // Pool admission is serialized across platform replicas; capacity is reserved
@@ -27,14 +28,25 @@ func EnsureGeneratorPool(ctx context.Context, contestID uint, challenge model.Ch
 		if !ret.OK {
 			return taskResourceError("list generator pool", ret)
 		}
+		capacity := 0
 		for _, generator := range generators {
+			if generator.Status == model.PendingGeneratorStatus && time.Since(generator.UpdatedAt) > 3*time.Minute {
+				if err := EnqueueStopGeneratorTask(generator); err != nil {
+					return err
+				}
+				if ret := repo.UpdateIfStatus(generator.ID, model.PendingGeneratorStatus, db.UpdateGeneratorOptions{Status: new(model.TerminatingGeneratorStatus)}); !ret.OK {
+					return taskResourceError("retire stalled generator", ret)
+				}
+				continue
+			}
+			capacity++
 			if generator.Status == model.RunningGeneratorStatus {
 				if err := redis.RegisterGenerator(ctx, generator); err != nil {
 					return err
 				}
 			}
 		}
-		for i := len(generators); i < config.Env.K8S.GeneratorPoolSize; i++ {
+		for i := capacity; i < config.Env.K8S.GeneratorPoolSize; i++ {
 			generator, ret := repo.Create(model.Generator{ChallengeID: challenge.ID, ChallengeName: challenge.Name, ContestID: sql.Null[uint]{V: contestID, Valid: contestID > 0}, Name: fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandHexStr(12)), WorkerToken: utils.RandHexStr(64), Image: challenge.GeneratorImage, Status: model.WaitingGeneratorStatus})
 			if !ret.OK {
 				return taskResourceError("create generator pool member", ret)

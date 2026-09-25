@@ -179,18 +179,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					},
 				})
 			}
-			fileData := make(map[string]string)
+			fileData, fileMounts := challengeFileMounts(pod.Spec.Containers)
 			for containerIndex, container := range pod.Spec.Containers {
-				volumeMounts := make([]corev1.VolumeMount, 0)
-				for fileIndex, volumeMount := range container.VolumeMounts {
-					key := fmt.Sprintf("c%d-f%d", containerIndex, fileIndex)
-					fileData[key] = volumeMount.Content
-					volumeMounts = append(volumeMounts, corev1.VolumeMount{
-						Name:      "challenge-files",
-						MountPath: volumeMount.Path,
-						SubPath:   key,
-					})
-				}
 				envs := make([]corev1.EnvVar, 0, len(container.Environment))
 				for key, value := range container.Environment {
 					envs = append(envs, corev1.EnvVar{Name: key, Value: value})
@@ -215,10 +205,10 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					ImagePullPolicy: corev1.PullIfNotPresent,
 					Env:             envs,
 					Ports:           ports,
-					VolumeMounts:    volumeMounts,
+					VolumeMounts:    fileMounts[containerIndex],
 					Resources: corev1.ResourceRequirements{
 						Limits:   limit,
-						Requests: limit.DeepCopy(),
+						Requests: workloadRequests(limit),
 					},
 				}
 				if len(container.Command) > 0 {

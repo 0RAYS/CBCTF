@@ -49,11 +49,15 @@ func excludedNodeAffinity(excluded []string) *corev1.Affinity {
 		return nil
 	}
 	slices.Sort(excluded)
+	// MatchFields supports one value per requirement; requirements within a
+	// term are ANDed, excluding every failed node without selecting a good one.
+	fields := make([]corev1.NodeSelectorRequirement, 0, len(excluded))
+	for _, node := range slices.Compact(excluded) {
+		fields = append(fields, corev1.NodeSelectorRequirement{Key: "metadata.name", Operator: corev1.NodeSelectorOpNotIn, Values: []string{node}})
+	}
 	return &corev1.Affinity{NodeAffinity: &corev1.NodeAffinity{
 		RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
-			NodeSelectorTerms: []corev1.NodeSelectorTerm{{MatchFields: []corev1.NodeSelectorRequirement{{
-				Key: "metadata.name", Operator: corev1.NodeSelectorOpNotIn, Values: excluded,
-			}}}},
+			NodeSelectorTerms: []corev1.NodeSelectorTerm{{MatchFields: fields}},
 		},
 	}}
 }
