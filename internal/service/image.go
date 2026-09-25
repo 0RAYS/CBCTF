@@ -1,10 +1,13 @@
 package service
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
 	"context"
 	"fmt"
@@ -14,6 +17,19 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 )
+
+func warmChallengeImages(challenge model.Challenge) {
+	sidecars := []string{}
+	if challenge.Type == model.PodsChallengeType {
+		sidecars = append(sidecars, config.Env.K8S.CaptureImage)
+		if config.Env.K8S.Frp.On {
+			sidecars = append(sidecars, config.Env.K8S.Frp.FrpcImage, config.Env.K8S.Frp.NginxImage)
+		}
+	}
+	if err := task.EnqueuePrepullTask(k8s.ChallengeImages(challenge, sidecars...)); err != nil {
+		log.Logger.Warningf("Failed to enqueue image warmup: challenge_id=%d error=%v", challenge.ID, err)
+	}
+}
 
 func ListNodeImages() (map[string][]string, model.RetVal) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)

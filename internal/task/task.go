@@ -73,6 +73,7 @@ func Init() {
 	addServer(sendEmailTaskType, config.Env.AsyncQ.Queues.Email)
 	addServer(webhookTaskType, config.Env.AsyncQ.Queues.Webhook)
 	addServer(resizeImageTaskType, config.Env.AsyncQ.Queues.Image)
+	addServer(prepullTaskType, 2)
 
 	mux.HandleFunc(sendEmailTaskType, wrapHandler(sendEmailTaskType, HandleSendEmailTask))
 	mux.HandleFunc(startGeneratorTaskType, wrapHandler(startGeneratorTaskType, HandleStartGeneratorTask))
@@ -83,6 +84,7 @@ func Init() {
 	mux.HandleFunc(loadTrafficTaskType, wrapHandler(loadTrafficTaskType, HandleLoadTrafficTask))
 	mux.HandleFunc(webhookTaskType, wrapHandler(webhookTaskType, HandleWebhookTask))
 	mux.HandleFunc(resizeImageTaskType, wrapHandler(resizeImageTaskType, HandleResizeImageTask))
+	mux.HandleFunc(prepullTaskType, wrapHandler(prepullTaskType, HandlePrepullTask))
 }
 
 func Start() {

@@ -28,9 +28,16 @@ func ListSchedulableNodes(ctx context.Context) ([]*corev1.Node, model.RetVal) {
 	}
 	nodes := make([]*corev1.Node, 0)
 	for _, node := range allNodes.Items {
-		schedulable := true
+		schedulable := !node.Spec.Unschedulable
+		ready := false
+		for _, condition := range node.Status.Conditions {
+			if condition.Type == corev1.NodeReady && condition.Status == corev1.ConditionTrue {
+				ready = true
+			}
+		}
+		schedulable = schedulable && ready
 		for _, taint := range node.Spec.Taints {
-			if taint.Effect == corev1.TaintEffectNoSchedule {
+			if taint.Effect == corev1.TaintEffectNoSchedule || taint.Effect == corev1.TaintEffectNoExecute {
 				schedulable = false
 				break
 			}
