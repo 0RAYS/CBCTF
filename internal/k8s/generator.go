@@ -59,6 +59,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 		Containers: []corev1.Container{
 			{
 				Name:            "generator",
+				Resources:       corev1.ResourceRequirements{Requests: workloadRequests(nil)},
 				Image:           challenge.GeneratorImage,
 				ImagePullPolicy: corev1.PullIfNotPresent,
 				Env:             []corev1.EnvVar{{Name: "CBCTF_WORKER_TOKEN", Value: generator.WorkerToken}},

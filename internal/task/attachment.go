@@ -105,7 +105,10 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 		return taskResourceError("get attachment generator", ret)
 	}
 	if current.Status != model.RunningGeneratorStatus {
-		return fmt.Errorf("generator %d is not running", current.ID)
+		if err := redis.UnregisterGenerator(ctx, current); err != nil {
+			return err
+		}
+		return redis.ErrNoAvailableGenerator
 	}
 	if current.Image != payload.Challenge.GeneratorImage {
 		if err := redis.UnregisterGenerator(ctx, current); err != nil {

@@ -29,7 +29,7 @@ func EnqueueStartVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 		return nil, err
 	}
 	task := asynq.NewTask(startVictimTaskType, payload)
-	return enqueueTask(startVictimTaskType, task, asynq.MaxRetry(0), asynq.Timeout(4*time.Minute))
+	return enqueueTask(startVictimTaskType, task, asynq.MaxRetry(3), asynq.Timeout(4*time.Minute))
 }
 
 func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {

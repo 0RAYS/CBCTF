@@ -52,7 +52,7 @@ func (c Challenge) AttachmentCachePath(teamID uint, flags []string) string {
 }
 
 func (c Challenge) AttachmentCachePathForRevision(teamID uint, flags []string, revision string) string {
-	data, _ := json.Marshal([]any{c.ID, teamID, c.UpdatedAt, c.GeneratorImage, revision, flags})
+	data, _ := json.Marshal([]any{c.ID, teamID, c.UpdatedAt.UnixNano(), c.GeneratorImage, revision, flags})
 	hash := sha256.Sum256(data)
 	return filepath.Join(c.BasicDir(), "cache", fmt.Sprintf("%d-%x.zip", teamID, hash))
 }

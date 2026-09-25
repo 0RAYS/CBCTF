@@ -71,6 +71,7 @@ func Serve(token string) error {
 	if err := os.MkdirAll("/root/mnt/attachments", 0700); err != nil {
 		return err
 	}
+	loadedRevision := SourceRevision("/root/mnt/generator.zip")
 	if _, err := os.Stat("/root/mnt/generator.zip"); err == nil {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		err = exec.CommandContext(ctx, "unzip", "-o", "/root/mnt/generator.zip", "-d", "/root").Run()
@@ -78,11 +79,13 @@ func Serve(token string) error {
 		if err != nil {
 			return fmt.Errorf("unpack generator: %w", err)
 		}
+		if SourceRevision("/root/mnt/generator.zip") != loadedRevision {
+			return fmt.Errorf("generator archive changed while unpacking")
+		}
 	} else if !os.IsNotExist(err) {
 		return err
 	}
 	var mu sync.Mutex
-	loadedRevision := SourceRevision("/root/mnt/generator.zip")
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /ready", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusNoContent) })
 	mux.HandleFunc("POST /generate", func(w http.ResponseWriter, r *http.Request) {
@@ -114,6 +117,10 @@ func Serve(token string) error {
 			}
 			if err := exec.CommandContext(ctx, "unzip", "-o", "/root/mnt/generator.zip", "-d", "/root").Run(); err != nil {
 				http.Error(w, "unpack generator failed", 500)
+				return
+			}
+			if SourceRevision("/root/mnt/generator.zip") != archiveRevision {
+				http.Error(w, "generator archive changed while unpacking", http.StatusConflict)
 				return
 			}
 			loadedRevision = archiveRevision

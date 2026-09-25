@@ -197,6 +197,7 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 			},
 		},
 	}
+	vm.Spec.Template.Spec.Domain.Resources.Requests = workloadRequests(vm.Spec.Template.Spec.Domain.Resources.Limits)
 	vm, err = virtClient.KubevirtV1().VirtualMachines(globalNamespace).Create(ctx, vm, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create virtual machine: %s", err)
