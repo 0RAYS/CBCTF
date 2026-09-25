@@ -89,9 +89,10 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
 	}
 	vm = &v1.VirtualMachine{
-		Name:      options.Name,
-		Namespace: globalNamespace,
-		Labels:    options.Labels,
+		OwnerReferences: resourceOwners(ctx),
+		Name:            options.Name,
+		Namespace:       globalNamespace,
+		Labels:          options.Labels,
 		Spec: v1.VirtualMachineSpec{
 			RunStrategy: new(v1.RunStrategyAlways),
 			Template: &v1.VirtualMachineInstanceTemplateSpec{

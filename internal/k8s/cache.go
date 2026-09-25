@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	ovnv1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -87,6 +88,23 @@ func cachedObjects(ctx context.Context, kind string) (*objectCache, error) {
 			object = &virtv1.VirtualMachine{}
 			list = func(ctx context.Context, o metav1.ListOptions) (runtime.Object, error) { return client.List(ctx, o) }
 			watchFn = client.Watch
+		case "configmaps":
+			client := kubeClient.CoreV1().ConfigMaps(globalNamespace)
+			object = &corev1.ConfigMap{}
+			list = func(ctx context.Context, o metav1.ListOptions) (runtime.Object, error) { return client.List(ctx, o) }
+			watchFn = client.Watch
+		case "vpcs":
+			client := ovnClient.KubeovnV1().Vpcs()
+			object = &ovnv1.Vpc{}
+			selector := "cbctf.io/namespace=" + globalNamespace
+			list = func(ctx context.Context, o metav1.ListOptions) (runtime.Object, error) {
+				o.LabelSelector = selector
+				return client.List(ctx, o)
+			}
+			watchFn = func(ctx context.Context, o metav1.ListOptions) (watch.Interface, error) {
+				o.LabelSelector = selector
+				return client.Watch(ctx, o)
+			}
 		default:
 			cacheMu.Unlock()
 			return nil, fmt.Errorf("unknown informer resource %s", kind)

@@ -20,10 +20,12 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func VictimLabels(victim model.Victim, tags ...map[string]string) map[string]string {
 	labels := map[string]string{
+		"cbctf.io/namespace":   globalNamespace,
 		"victim_id":            strconv.Itoa(int(victim.ID)),
 		"user_id":              strconv.Itoa(int(victim.UserID)),
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
@@ -61,12 +63,21 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	)
 	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag})
 	victim.Resources.UIDs = make(model.StringMap)
+	workloadCtx, ret := createVictimRoot(ctx, victim, "workloads")
+	if !ret.OK {
+		return victim, ret
+	}
+	networkCtx, ret := createVictimRoot(ctx, victim, "network")
+	if !ret.OK {
+		return victim, ret
+	}
 
-	subnetMap, netAttachDefMap, endpoints, ret := createVictimNetworkResources(ctx, &victim, labels)
+	subnetMap, netAttachDefMap, endpoints, ret := createVictimNetworkResources(networkCtx, &victim, labels)
 	if !ret.OK {
 		return victim, ret
 	}
 	victim.Endpoints = endpoints
+	ctx = workloadCtx
 
 	endpointsMutex := &sync.Mutex{}
 	pods := append([]model.Pod(nil), victim.Pods...)
@@ -358,18 +369,15 @@ func createVictimNetworkResources(
 		return subnetMap, netAttachDefMap, endpoints, model.SuccessRetVal()
 	}
 
-	wg.Go(func() error {
-		ctx := wg.Context()
-		_, ret := CreateVPC(ctx, CreateVPCOptions{
-			Name:   victim.Spec.NetworkPlan.Name,
-			Labels: labels,
-		})
-		if !ret.OK {
-			return resourceError(ret)
-		}
-		log.Logger.Debugf("Created victim vpc: victim_id=%d vpc=%s", victim.ID, victim.Spec.NetworkPlan.Name)
-		return nil
+	vpc, ret := CreateVPC(ctx, CreateVPCOptions{
+		Name:   victim.Spec.NetworkPlan.Name,
+		Labels: labels,
 	})
+	if !ret.OK {
+		_ = wg.Wait()
+		return nil, nil, nil, ret
+	}
+	subnetCtx := withResourceOwner(wg.Context(), metav1.OwnerReference{APIVersion: "kubeovn.io/v1", Kind: "Vpc", Name: vpc.Name, UID: vpc.UID})
 
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 		if subnet == nil {
@@ -392,8 +400,7 @@ func createVictimNetworkResources(
 		})
 
 		wg.Go(func() error {
-			ctx := wg.Context()
-			_, ret := CreateSubnet(ctx, CreateSubnetOptions{
+			_, ret := CreateSubnet(subnetCtx, CreateSubnetOptions{
 				Name:         subnet.Name,
 				Labels:       labels,
 				VPC:          victim.Spec.NetworkPlan.Name,
@@ -422,7 +429,6 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		"Deleting victim k8s resources: victim_id=%d team_id=%d challenge_id=%d exposed_endpoints=%d",
 		victim.ID, victim.TeamID.V, victim.ChallengeID, len(victim.ExposedEndpoints),
 	)
-	labels := VictimLabels(victim)
 	var firstErr model.RetVal
 	tryDelete := func(ret model.RetVal) {
 		if !ret.OK && firstErr.OK {
@@ -432,25 +438,25 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	firstErr = model.SuccessRetVal()
 	// Stop VM controllers before their Pods; retain CNI and NetworkPolicies until
 	// every workload (including FRP/capture sidecars) has disappeared.
-	tryDelete(DeleteVMCollection(ctx, labels))
-	tryDelete(DeletePodCollection(ctx, labels))
-	if !firstErr.OK {
-		return firstErr
+	if err := deleteVictimRoot(ctx, victim, "workloads"); err != nil {
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Victim", "Error": err.Error()}}
 	}
 	if ret := WaitVictimPodsDeleted(ctx, victim); !ret.OK {
 		return ret
 	}
-	tryDelete(DeleteServiceCollection(ctx, labels))
-	tryDelete(DeleteEndpointCollection(ctx, labels))
-	tryDelete(DeleteConfigMapCollection(ctx, labels))
-	tryDelete(DeleteNetworkPolicyCollection(ctx, labels))
-	tryDelete(DeleteSubnetCollection(ctx, labels))
-	tryDelete(DeleteNetAttachDefCollection(ctx, globalNamespace, labels))
-	tryDelete(DeleteVPCCollection(ctx, labels))
+	if err := deleteVictimRoot(ctx, victim, "network"); err != nil {
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VictimNetwork", "Error": err.Error()}}
+	}
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 		if subnet != nil {
 			tryDelete(DeleteIPCollection(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
 		}
+	}
+	if !firstErr.OK {
+		return firstErr
+	}
+	if err := deleteVictimVPC(ctx, victim); err != nil {
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
 	}
 	if firstErr.OK {
 		for _, endpoint := range victim.ExposedEndpoints {

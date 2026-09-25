@@ -48,9 +48,10 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 		return ingress, egress
 	}(options.Policies)
 	networkPolicy = &netv1.NetworkPolicy{
-		Name:      options.Name,
-		Namespace: globalNamespace,
-		Labels:    options.Labels,
+		OwnerReferences: resourceOwners(ctx),
+		Name:            options.Name,
+		Namespace:       globalNamespace,
+		Labels:          options.Labels,
 		Spec: netv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
 				MatchLabels: options.Labels,

@@ -28,8 +28,9 @@ func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.
 		err    error
 	)
 	subnet = &kubeovnv1.Subnet{
-		Name:   options.Name,
-		Labels: options.Labels,
+		OwnerReferences: resourceOwners(ctx),
+		Name:            options.Name,
+		Labels:          options.Labels,
 		Spec: kubeovnv1.SubnetSpec{
 			Vpc:        options.VPC,
 			Protocol:   "IPv4",
@@ -41,9 +42,6 @@ func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.
 	}
 	subnet, err = ovnClient.KubeovnV1().Subnets().Create(ctx, subnet, metav1.CreateOptions{})
 	if err != nil {
-		if apierror.IsAlreadyExists(err) {
-			return GetSubnet(ctx, options.Name)
-		}
 		log.Logger.Warningf("Failed to create Subnet: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Subnet", "Error": err.Error()}}
 	}

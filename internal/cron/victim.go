@@ -39,29 +39,29 @@ func closeTimeoutVictimsTask() model.RetVal {
 // closeUnCtrlVictimsTask 关闭数据库中记录关闭, 但仍在运行的靶机
 func closeUnCtrlVictimsTask() model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	pods, ret := k8s.ListPods(ctx)
+	roots, err := k8s.ListVictimRoots(ctx)
 	cancel()
-	if !ret.OK {
-		return ret
+	if err != nil {
+		return model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VictimRoot", "Error": err.Error()}}
 	}
-	if pods == nil {
-		return model.SuccessRetVal()
-	}
-	idL, ret := orphanVictimIDs(pods.Items, func(id uint) model.RetVal {
-		_, ret := db.InitVictimRepo(db.CronDB).GetByID(id)
-		return ret
-	})
-	if !ret.OK {
-		return ret
-	}
-	for _, id := range idL {
-		ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-		if ret = k8s.DeletePodCollection(ctx, map[string]string{"victim_id": id}); ret.OK {
-			log.Logger.Infof("Deleted uncontrolled victim pods: victim_id=%s", id)
-		} else {
-			log.Logger.Warningf("Failed to delete uncontrolled victim pods: victim_id=%s reason=%s", id, ret.Msg)
+	var orphans []model.Victim
+	for _, victim := range roots {
+		_, ret := db.InitVictimRepo(db.CronDB).GetByID(victim.ID)
+		if !ret.OK && ret.Msg != i18n.Model.NotFound {
+			return ret
 		}
+		if !ret.OK {
+			orphans = append(orphans, victim)
+		}
+	}
+	for _, victim := range orphans {
+		ctx, cancel = context.WithTimeout(context.Background(), 2*time.Minute)
+		ret := k8s.StopVictim(ctx, victim)
 		cancel()
+		if !ret.OK {
+			return ret
+		}
+		log.Logger.Infof("Deleted uncontrolled victim resource tree: victim_id=%d", victim.ID)
 	}
 	return model.SuccessRetVal()
 }

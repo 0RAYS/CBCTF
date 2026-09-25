@@ -23,10 +23,11 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 		err       error
 	)
 	configMap = &corev1.ConfigMap{
-		Name:      options.Name,
-		Namespace: globalNamespace,
-		Labels:    options.Labels,
-		Data:      options.Data,
+		OwnerReferences: resourceOwners(ctx),
+		Name:            options.Name,
+		Namespace:       globalNamespace,
+		Labels:          options.Labels,
+		Data:            options.Data,
 	}
 	configMap, err = kubeClient.CoreV1().ConfigMaps(globalNamespace).Create(ctx, configMap, metav1.CreateOptions{})
 	if err != nil {

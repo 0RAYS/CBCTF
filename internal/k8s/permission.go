@@ -37,6 +37,10 @@ func buildPermissionChecks() []permissionCheck {
 		{Resource: "services", Verb: "delete", Namespace: ns},
 		// Core: ConfigMaps
 		{Resource: "configmaps", Verb: "create", Namespace: ns},
+		{Resource: "configmaps", Verb: "get", Namespace: ns},
+		{Resource: "configmaps", Verb: "list", Namespace: ns},
+		{Resource: "configmaps", Verb: "watch", Namespace: ns},
+		{Resource: "configmaps", Verb: "delete", Namespace: ns},
 		{Resource: "configmaps", Verb: "deletecollection", Namespace: ns},
 		// Core: PersistentVolumeClaims
 		{Resource: "persistentvolumeclaims", Verb: "get", Namespace: ns},
@@ -69,6 +73,10 @@ func buildPermissionChecks() []permissionCheck {
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "deletecollection"},
 		// KubeOVN: VPCs (集群级别)
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "create"},
+		{Group: "kubeovn.io", Resource: "vpcs", Verb: "get"},
+		{Group: "kubeovn.io", Resource: "vpcs", Verb: "list"},
+		{Group: "kubeovn.io", Resource: "vpcs", Verb: "watch"},
+		{Group: "kubeovn.io", Resource: "vpcs", Verb: "delete"},
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "deletecollection"},
 		// KubeOVN: IPs (集群级别)
 		{Group: "kubeovn.io", Resource: "ips", Verb: "deletecollection"},

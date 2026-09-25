@@ -30,18 +30,16 @@ func CreateNetAttachDef(ctx context.Context, options CreateNetAttachDefOptions) 
 		err          error
 	)
 	netAttachDef = &netattv1.NetworkAttachmentDefinition{
-		Name:      options.Name,
-		Namespace: globalNamespace,
-		Labels:    options.Labels,
+		OwnerReferences: resourceOwners(ctx),
+		Name:            options.Name,
+		Namespace:       globalNamespace,
+		Labels:          options.Labels,
 		Spec: netattv1.NetworkAttachmentDefinitionSpec{
 			Config: fmt.Sprintf(OVNNetworkConfigTmpl, options.Name, globalNamespace),
 		},
 	}
 	netAttachDef, err = netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(globalNamespace).Create(ctx, netAttachDef, metav1.CreateOptions{})
 	if err != nil {
-		if apierror.IsAlreadyExists(err) {
-			return GetNetAttachDef(ctx, options.Name, globalNamespace)
-		}
 		log.Logger.Warningf("Failed to create NetworkAttachmentDefinition: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "NetworkAttachmentDefinition", "Error": err.Error()}}
 	}
