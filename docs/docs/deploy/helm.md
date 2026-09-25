@@ -126,6 +126,7 @@ JWT、PostgreSQL 和 Redis 密钥会写入 `/app/config.yaml`。
 | `cbctf.k8s.capture`     | 流量捕获镜像                | `ghcr.io/domcyrus/rustnet:latest` |
 | `cbctf.k8s.captureEnabled` | 是否开启抓包容器 | `true` |
 | `cbctf.k8s.priorityClassName` | 已有工作负载 PriorityClass | `""` |
+| `cbctf.k8s.workerImage` | 独立 worker 镜像地址，与主程序版本分开配置 | `ghcr.io/0rays/cbctf-worker:latest` |
 | `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量 | `2` |
 | `cbctf.k8s.frp.on`      | 是否启用 FRP 端口暴露         | `false`                           |
 | `cbctf.k8s.frp.frpc`    | FRP client 镜像         | `ghcr.io/fatedier/frpc:v0.69.0`   |

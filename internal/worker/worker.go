@@ -1,6 +1,6 @@
-// Package generatorworker is the small, statically linked runtime injected into
+// Package worker is the small, statically linked runtime injected into
 // generator images. It has no Kubernetes, database or Redis credentials.
-package generatorworker
+package worker
 
 import (
 	"context"

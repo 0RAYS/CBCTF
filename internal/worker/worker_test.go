@@ -1,4 +1,4 @@
-package generatorworker
+package worker
 
 import (
 	"encoding/base64"

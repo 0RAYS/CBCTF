@@ -89,7 +89,7 @@ data:
       capture: {{ .Values.cbctf.k8s.capture | quote }}
       capture_enabled: {{ .Values.cbctf.k8s.captureEnabled }}
       priority_class_name: {{ .Values.cbctf.k8s.priorityClassName | quote }}
-      worker_image: {{ printf "%s:%s" .Values.image.repository (.Values.image.tag | default .Chart.AppVersion) | quote }}
+      worker_image: {{ .Values.cbctf.k8s.workerImage | quote }}
       generator_pool_size: {{ .Values.cbctf.k8s.generatorPoolSize }}
       frp:
         on: {{ .Values.cbctf.k8s.frp.on }}

@@ -2,10 +2,10 @@ package k8s
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/generatorworker"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/worker"
 	"archive/zip"
 	"bytes"
 	"context"
@@ -53,7 +53,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 		Labels:            labels,
 		InitContainers: []corev1.Container{{
 			Name: "worker-install", Image: config.Env.K8S.WorkerImage, ImagePullPolicy: corev1.PullIfNotPresent,
-			Command:      []string{"/app/generator-worker", "--install", "/worker/generator-worker"},
+			Command:      []string{"/app/worker", "--install", "/worker/worker"},
 			VolumeMounts: []corev1.VolumeMount{{Name: "worker", MountPath: "/worker"}}, Resources: sidecarResources(),
 		}},
 		Containers: []corev1.Container{
@@ -63,7 +63,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 				Image:           challenge.GeneratorImage,
 				ImagePullPolicy: corev1.PullIfNotPresent,
 				Env:             []corev1.EnvVar{{Name: "CBCTF_WORKER_TOKEN", Value: generator.WorkerToken}},
-				ReadinessProbe:  &corev1.Probe{ProbeHandler: corev1.ProbeHandler{HTTPGet: &corev1.HTTPGetAction{Path: "/ready", Port: intstr.FromInt(generatorworker.Port)}}, PeriodSeconds: 1, TimeoutSeconds: 1},
+				ReadinessProbe:  &corev1.Probe{ProbeHandler: corev1.ProbeHandler{HTTPGet: &corev1.HTTPGetAction{Path: "/ready", Port: intstr.FromInt(worker.Port)}}, PeriodSeconds: 1, TimeoutSeconds: 1},
 				VolumeMounts: []corev1.VolumeMount{
 					{Name: "worker", MountPath: "/worker", ReadOnly: true},
 					{Name: "output", MountPath: "/root/mnt/attachments"},
@@ -76,7 +76,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 					},
 				},
 				WorkingDir: "/root",
-				Command:    []string{"/worker/generator-worker"},
+				Command:    []string{"/worker/worker"},
 			},
 		},
 		Volumes: []corev1.Volume{
@@ -133,7 +133,7 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, generator mod
 	return model.SuccessRetVal()
 }
 
-var generatorHTTP = &http.Client{Timeout: 90 * time.Second, Transport: &http.Transport{Proxy: nil, MaxIdleConns: 100, MaxIdleConnsPerHost: 2, IdleConnTimeout: time.Minute}}
+var workerHTTP = &http.Client{Timeout: 90 * time.Second, Transport: &http.Transport{Proxy: nil, MaxIdleConns: 100, MaxIdleConnsPerHost: 2, IdleConnTimeout: time.Minute}}
 var errGeneratorMissing = errors.New("generator pod is missing")
 
 func generateAttachment(ctx context.Context, challenge model.Challenge, generator model.Generator, teamID uint, flags []string) error {
@@ -150,19 +150,19 @@ func generateAttachment(ctx context.Context, challenge model.Challenge, generato
 	if generator.WorkerToken == "" {
 		return fmt.Errorf("generator has no worker token")
 	}
-	revision := generatorworker.SourceRevision(challenge.GeneratorPath())
+	revision := worker.SourceRevision(challenge.GeneratorPath())
 	destination := challenge.AttachmentCachePathForRevision(teamID, flags, revision)
-	body, err := json.Marshal(generatorworker.Request{TeamID: teamID, Flags: flags, SourceRevision: revision})
+	body, err := json.Marshal(worker.Request{TeamID: teamID, Flags: flags, SourceRevision: revision})
 	if err != nil {
 		return err
 	}
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://"+net.JoinHostPort(pod.Status.PodIP, strconv.Itoa(generatorworker.Port))+"/generate", bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://"+net.JoinHostPort(pod.Status.PodIP, strconv.Itoa(worker.Port))+"/generate", bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
 	request.Header.Set("Authorization", "Bearer "+generator.WorkerToken)
 	request.Header.Set("Content-Type", "application/json")
-	response, err := generatorHTTP.Do(request)
+	response, err := workerHTTP.Do(request)
 	if err != nil {
 		return err
 	}
