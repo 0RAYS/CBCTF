@@ -1,6 +1,13 @@
 package router
 
 import (
+	"net/http"
+	"slices"
+	"strings"
+	"time"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
@@ -14,12 +21,6 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
-	"net/http"
-	"slices"
-	"strings"
-	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 // setAuthCookie 写入 httpOnly 认证 cookie

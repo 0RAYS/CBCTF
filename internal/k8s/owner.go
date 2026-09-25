@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/model"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -14,6 +13,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	"CBCTF/internal/model"
 )
 
 type resourceOwnerKey struct{}
@@ -31,15 +32,26 @@ func resourceOwners(ctx context.Context) []metav1.OwnerReference {
 	return []metav1.OwnerReference{owner}
 }
 
-func victimRootName(id uint, kind string) string { return fmt.Sprintf("victim-%d-%s", id, kind) }
+func victimRootName(id uint, kind string) string {
+	return fmt.Sprintf("victim-%d-%s", id, kind)
+}
 
 func createVictimRoot(ctx context.Context, victim model.Victim, kind string) (context.Context, model.RetVal) {
 	plan, _ := json.Marshal(victim.Spec.NetworkPlan)
-	root, ret := CreateConfigMap(ctx, CreateConfigMapOptions{Name: victimRootName(victim.ID, kind), Labels: VictimLabels(victim, map[string]string{"cbctf.io/root": kind}), Data: map[string]string{"network_plan": string(plan)}})
+	root, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
+		Name:   victimRootName(victim.ID, kind),
+		Labels: VictimLabels(victim, map[string]string{"cbctf.io/root": kind}),
+		Data:   map[string]string{"network_plan": string(plan)},
+	})
 	if !ret.OK {
 		return ctx, ret
 	}
-	return withResourceOwner(ctx, metav1.OwnerReference{APIVersion: "v1", Kind: "ConfigMap", Name: root.Name, UID: root.UID}), ret
+	return withResourceOwner(ctx, metav1.OwnerReference{
+		APIVersion: "v1",
+		Kind:       "ConfigMap",
+		Name:       root.Name,
+		UID:        root.UID,
+	}), ret
 }
 
 // ListVictimRoots Roots remain discoverable even if startup failed before creating a Pod.
@@ -70,7 +82,23 @@ func ListVictimRoots(ctx context.Context) ([]model.Victim, error) {
 		if seen[ids["victim_id"]] {
 			continue
 		}
-		victim := model.Victim{ID: ids["victim_id"], UserID: ids["user_id"], ChallengeID: ids["challenge_id"], TeamID: sql.Null[uint]{V: ids["team_id"], Valid: ids["team_id"] > 0}, ContestID: sql.Null[uint]{V: ids["contest_id"], Valid: ids["contest_id"] > 0}, ContestChallengeID: sql.Null[uint]{V: ids["contest_challenge_id"], Valid: ids["contest_challenge_id"] > 0}}
+		victim := model.Victim{
+			ID:          ids["victim_id"],
+			UserID:      ids["user_id"],
+			ChallengeID: ids["challenge_id"],
+			TeamID: sql.Null[uint]{
+				V:     ids["team_id"],
+				Valid: ids["team_id"] > 0,
+			},
+			ContestID: sql.Null[uint]{
+				V:     ids["contest_id"],
+				Valid: ids["contest_id"] > 0,
+			},
+			ContestChallengeID: sql.Null[uint]{
+				V:     ids["contest_challenge_id"],
+				Valid: ids["contest_challenge_id"] > 0,
+			},
+		}
 		if err := json.Unmarshal([]byte(root.Data["network_plan"]), &victim.Spec.NetworkPlan); err != nil {
 			return nil, fmt.Errorf("invalid network plan on %s: %w", root.Name, err)
 		}
@@ -96,7 +124,10 @@ func deleteVictimRoot(ctx context.Context, victim model.Victim, kind string) err
 		return fmt.Errorf("root %s is not owned by victim %d", name, victim.ID)
 	}
 	uid := root.UID
-	err = client.Delete(ctx, name, metav1.DeleteOptions{Preconditions: &metav1.Preconditions{UID: &uid}, PropagationPolicy: new(metav1.DeletePropagationForeground)})
+	err = client.Delete(ctx, name, metav1.DeleteOptions{
+		Preconditions:     &metav1.Preconditions{UID: &uid},
+		PropagationPolicy: new(metav1.DeletePropagationForeground),
+	})
 	if err != nil && !apierror.IsNotFound(err) {
 		return err
 	}
@@ -137,7 +168,10 @@ func deleteVictimVPC(ctx context.Context, victim model.Victim) error {
 		return fmt.Errorf("VPC %s is not owned by victim %d", name, victim.ID)
 	}
 	uid := vpc.UID
-	if err = client.Delete(ctx, name, metav1.DeleteOptions{Preconditions: &metav1.Preconditions{UID: &uid}, PropagationPolicy: new(metav1.DeletePropagationForeground)}); err != nil && !apierror.IsNotFound(err) {
+	if err = client.Delete(ctx, name, metav1.DeleteOptions{
+		Preconditions:     &metav1.Preconditions{UID: &uid},
+		PropagationPolicy: new(metav1.DeletePropagationForeground),
+	}); err != nil && !apierror.IsNotFound(err) {
 		return err
 	}
 	c, err := cachedObjects(ctx, "vpcs")

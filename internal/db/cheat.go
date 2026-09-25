@@ -1,9 +1,6 @@
 package db
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"crypto/md5"
 	"errors"
 	"fmt"
@@ -14,6 +11,10 @@ import (
 	"sync"
 
 	"gorm.io/gorm"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 type CheatRepo struct {

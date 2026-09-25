@@ -1,6 +1,8 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
@@ -9,8 +11,6 @@ import (
 	"CBCTF/internal/oa"
 	"CBCTF/internal/utils"
 	"CBCTF/internal/view"
-
-	"gorm.io/gorm"
 )
 
 func BuildUserView(tx *gorm.DB, user model.User, includeCounts bool) view.UserView {

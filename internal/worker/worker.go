@@ -161,6 +161,13 @@ func Serve(token string) error {
 		w.Header().Set("Content-Length", strconv.FormatInt(info.Size(), 10))
 		_, _ = io.Copy(w, file)
 	})
-	server := &http.Server{Addr: fmt.Sprintf(":%d", Port), Handler: mux, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 2 * time.Minute, IdleTimeout: 30 * time.Second}
+	server := &http.Server{
+		Addr:              fmt.Sprintf(":%d", Port),
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      2 * time.Minute,
+		IdleTimeout:       30 * time.Second,
+	}
 	return server.ListenAndServe()
 }

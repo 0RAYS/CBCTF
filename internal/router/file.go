@@ -1,6 +1,15 @@
 package router
 
 import (
+	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
@@ -13,14 +22,6 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
-	"fmt"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 var DefaultPicture = map[string][]byte{

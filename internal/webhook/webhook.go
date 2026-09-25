@@ -1,9 +1,6 @@
 package webhook
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"bytes"
 	"encoding/json"
 	"io"
@@ -12,6 +9,10 @@ import (
 	"slices"
 	"sync"
 	"time"
+
+	"CBCTF/internal/db"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 type Payload struct {
@@ -113,9 +114,15 @@ func SendPayload(event model.Event, target model.Webhook) error {
 	options.Success = resp.StatusCode >= 200 && resp.StatusCode < 300
 	if !options.Success {
 		options.Error = resp.Status
-		log.Logger.Warningf("Webhook returned non-success status: event_id=%d webhook_id=%d method=%s url=%s status=%s duration=%s", event.ID, target.ID, target.Method, logURL(target.URL), resp.Status, duration)
+		log.Logger.Warningf(
+			"Webhook returned non-success status: event_id=%d webhook_id=%d method=%s url=%s status=%s duration=%s",
+			event.ID, target.ID, target.Method, logURL(target.URL), resp.Status, duration,
+		)
 	} else {
-		log.Logger.Debugf("Webhook sent: event_id=%d webhook_id=%d method=%s url=%s status=%d duration=%s", event.ID, target.ID, target.Method, logURL(target.URL), resp.StatusCode, duration)
+		log.Logger.Debugf(
+			"Webhook sent: event_id=%d webhook_id=%d method=%s url=%s status=%d duration=%s",
+			event.ID, target.ID, target.Method, logURL(target.URL), resp.StatusCode, duration,
+		)
 	}
 	db.InitWebhookHistoryRepo(db.TaskDB).Create(options)
 	return nil

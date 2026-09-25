@@ -1,8 +1,9 @@
 package email
 
 import (
-	"CBCTF/internal/config"
 	"fmt"
+
+	"CBCTF/internal/config"
 )
 
 const VerifyEmailSubject = "Verify Your Email Address"

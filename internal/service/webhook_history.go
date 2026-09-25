@@ -1,11 +1,11 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 func ListWebhookHistories(tx *gorm.DB, webhook model.Webhook, form dto.ListModelsForm) ([]model.WebhookHistory, int64, model.RetVal) {

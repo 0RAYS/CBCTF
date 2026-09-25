@@ -1,9 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
-	"CBCTF/internal/utils"
 	"context"
 	"crypto/sha256"
 	"fmt"
@@ -12,6 +9,10 @@ import (
 
 	"github.com/distribution/reference"
 	corev1 "k8s.io/api/core/v1"
+
+	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
+	"CBCTF/internal/utils"
 )
 
 func imageFailureKey(image string) string {
@@ -53,13 +54,19 @@ func excludedNodeAffinity(excluded []string) *corev1.Affinity {
 	// term are ANDed, excluding every failed node without selecting a good one.
 	fields := make([]corev1.NodeSelectorRequirement, 0, len(excluded))
 	for _, node := range slices.Compact(excluded) {
-		fields = append(fields, corev1.NodeSelectorRequirement{Key: "metadata.name", Operator: corev1.NodeSelectorOpNotIn, Values: []string{node}})
+		fields = append(fields, corev1.NodeSelectorRequirement{
+			Key:      "metadata.name",
+			Operator: corev1.NodeSelectorOpNotIn,
+			Values:   []string{node},
+		})
 	}
-	return &corev1.Affinity{NodeAffinity: &corev1.NodeAffinity{
-		RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
-			NodeSelectorTerms: []corev1.NodeSelectorTerm{{MatchFields: fields}},
+	return &corev1.Affinity{
+		NodeAffinity: &corev1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+				NodeSelectorTerms: []corev1.NodeSelectorTerm{{MatchFields: fields}},
+			},
 		},
-	}}
+	}
 }
 
 // PrepullImages submits all nodes before observing completion, so a slow node
@@ -108,8 +115,11 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 		for i := 0; i < len(missing); i += 5 {
 			chunk := missing[i:min(i+5, len(missing))]
 			_, ret = CreateJob(ctx, CreateJobOptions{
-				Name: "prepull-" + utils.RandHexStr(20), Labels: selector,
-				Images: chunk, PullPolicy: pullPolicy, SelectedNode: node.Name,
+				Name:         "prepull-" + utils.RandHexStr(20),
+				Labels:       selector,
+				Images:       chunk,
+				PullPolicy:   pullPolicy,
+				SelectedNode: node.Name,
 			})
 			if !ret.OK {
 				return resourceError(ret)
@@ -145,7 +155,10 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 						return err
 					}
 					delete(pending, key)
-				} else if waiting := status.State.Waiting; waiting != nil && (waiting.Reason == "ErrImagePull" || waiting.Reason == "ImagePullBackOff" || waiting.Reason == "InvalidImageName") {
+				} else if waiting := status.State.Waiting; waiting != nil &&
+					(waiting.Reason == "ErrImagePull" ||
+						waiting.Reason == "ImagePullBackOff" ||
+						waiting.Reason == "InvalidImageName") {
 					if err := redis.RDB.HSet(ctx, imageFailureKey(image), pod.Spec.NodeName, waiting.Reason).Err(); err != nil {
 						return err
 					}

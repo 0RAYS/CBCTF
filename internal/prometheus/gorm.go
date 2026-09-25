@@ -1,10 +1,10 @@
 package prometheus
 
 import (
+	"github.com/prometheus/client_golang/prometheus"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
-
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 // GormCollector exports database/sql connection pool statistics for GORM.

@@ -1,12 +1,13 @@
 package k8s
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/model"
 	"strconv"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/model"
 )
 
 // DeleteCollection must never silently become a namespace/cluster-wide delete.
@@ -14,7 +15,13 @@ import (
 // and validate selector syntax. The single selector argument is mandatory.
 func deleteCollectionOptions(resource string, filter map[string]string) (metav1.ListOptions, model.RetVal) {
 	invalid := func() (metav1.ListOptions, model.RetVal) {
-		return metav1.ListOptions{}, model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": resource, "Error": "refusing deletion without a valid, non-empty workload ownership selector"}}
+		return metav1.ListOptions{}, model.RetVal{
+			Msg: i18n.K8S.DeleteError,
+			Attr: map[string]any{
+				"Model": resource,
+				"Error": "refusing deletion without a valid, non-empty workload ownership selector",
+			},
+		}
 	}
 	if len(filter) == 0 {
 		return invalid()

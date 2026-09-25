@@ -1,12 +1,13 @@
 package cron
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/model"
 	"testing"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/model"
 )
 
 func TestVictimExpiryRequiresRunning(t *testing.T) {

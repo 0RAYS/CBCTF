@@ -1,6 +1,11 @@
 package service
 
 import (
+	"fmt"
+	"strings"
+
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
@@ -8,10 +13,6 @@ import (
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
 	"CBCTF/internal/view"
-	"fmt"
-	"strings"
-
-	"gorm.io/gorm"
 )
 
 func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.RetVal {

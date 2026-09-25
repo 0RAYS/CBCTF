@@ -1,10 +1,10 @@
 package resp
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/model"
 	"CBCTF/internal/view"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetContestResp(contestView view.ContestView, admin bool) gin.H {

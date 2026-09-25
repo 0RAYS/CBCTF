@@ -1,9 +1,9 @@
 package oa
 
 import (
-	"CBCTF/internal/model"
-
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/model"
 )
 
 // Protocol describes the handshake of a single external authentication

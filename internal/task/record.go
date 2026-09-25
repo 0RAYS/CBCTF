@@ -1,7 +1,6 @@
 package task
 
 import (
-	"CBCTF/internal/model"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -11,6 +10,8 @@ import (
 
 	"github.com/hibiken/asynq"
 	"github.com/vmihailenco/msgpack/v5"
+
+	"CBCTF/internal/model"
 )
 
 var (

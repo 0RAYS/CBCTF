@@ -1,10 +1,10 @@
 package db
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 type BrandingRepo struct {

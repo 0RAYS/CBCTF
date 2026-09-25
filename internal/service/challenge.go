@@ -1,12 +1,6 @@
 package service
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/dto"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"fmt"
 	"net"
 	"net/netip"
@@ -16,6 +10,13 @@ import (
 
 	"github.com/compose-spec/compose-go/v2/types"
 	"gorm.io/gorm"
+
+	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 )
 
 var (

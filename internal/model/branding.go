@@ -1,10 +1,11 @@
 package model
 
 import (
-	"CBCTF/internal/config"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+
+	"CBCTF/internal/config"
 )
 
 const DefaultBrandingCode = "default"

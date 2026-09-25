@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/config"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -17,6 +16,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
+
+	"CBCTF/internal/config"
 )
 
 func TestPermissionChecksUseScopedSubresources(t *testing.T) {
@@ -129,7 +130,8 @@ func TestHelmRuntimeRBAC(t *testing.T) {
 			if cfg.K8S.WorkerImage != wantWorker {
 				t.Fatalf("worker image is not independently configured: %q", cfg.K8S.WorkerImage)
 			}
-			if role.Namespace != globalNamespace || binding.Namespace != globalNamespace || binding.RoleRef.Kind != "Role" || binding.RoleRef.Name != role.Name {
+			if role.Namespace != globalNamespace || binding.Namespace != globalNamespace ||
+				binding.RoleRef.Kind != "Role" || binding.RoleRef.Name != role.Name {
 				t.Fatalf("bad Role binding: %+v", binding)
 			}
 			if clusterBinding.RoleRef.Kind != "ClusterRole" || clusterBinding.RoleRef.Name != cluster.Name {
@@ -166,7 +168,10 @@ func TestHelmRuntimeRBAC(t *testing.T) {
 				}
 				found := false
 				for _, rule := range rules {
-					if slices.Contains(rule.APIGroups, check.Group) && slices.Contains(rule.Resources, resource) && slices.Contains(rule.Verbs, check.Verb) && (len(rule.ResourceNames) == 0 || slices.Contains(rule.ResourceNames, check.Name)) {
+					if slices.Contains(rule.APIGroups, check.Group) &&
+						slices.Contains(rule.Resources, resource) &&
+						slices.Contains(rule.Verbs, check.Verb) &&
+						(len(rule.ResourceNames) == 0 || slices.Contains(rule.ResourceNames, check.Name)) {
 						found = true
 					}
 				}

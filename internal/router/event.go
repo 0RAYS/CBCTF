@@ -1,10 +1,10 @@
 package router
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetEventTypes(ctx *gin.Context) {

@@ -1,10 +1,6 @@
 package db
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"errors"
 	"fmt"
 	"slices"
@@ -12,6 +8,11 @@ import (
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 )
 
 type BaseRepo[M model.Model] struct {

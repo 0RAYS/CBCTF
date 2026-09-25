@@ -1,11 +1,12 @@
 package cron
 
 import (
+	"math"
+	"time"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
-	"math"
-	"time"
 )
 
 // updateTeamRankingTask 全量更新 model.Team 的分数和排名

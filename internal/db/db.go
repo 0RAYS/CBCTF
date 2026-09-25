@@ -1,16 +1,17 @@
 package db
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"fmt"
 	"strings"
 	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 var (

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -9,8 +11,6 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
-
-	"gorm.io/gorm"
 )
 
 func SendEmail(user model.User) model.RetVal {

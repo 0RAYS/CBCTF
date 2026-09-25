@@ -1,8 +1,9 @@
 package router
 
 import (
-	"CBCTF/internal/model"
 	"testing"
+
+	"CBCTF/internal/model"
 )
 
 func TestGeneratorStatusRequiresSamePermissionAsLogs(t *testing.T) {

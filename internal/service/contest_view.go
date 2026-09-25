@@ -1,12 +1,12 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
 	"CBCTF/internal/view"
-
-	"gorm.io/gorm"
 )
 
 func BuildContestView(tx *gorm.DB, contest model.Contest) view.ContestView {

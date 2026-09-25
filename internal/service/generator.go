@@ -1,6 +1,14 @@
 package service
 
 import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+	"time"
+
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -10,13 +18,6 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
-	"context"
-	"database/sql"
-	"errors"
-	"fmt"
-	"time"
-
-	"gorm.io/gorm"
 )
 
 func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) model.RetVal {
@@ -63,7 +64,10 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 				failedEnqueue++
 				log.Logger.Warningf("Failed to enqueue start generator task: generator_id=%d name=%s challenge_id=%d error=%v", generator.ID, generator.Name, challenge.ID, err)
 				if ret := generatorRepo.Delete(generator.ID); !ret.OK {
-					log.Logger.Warningf("Failed to delete generator after enqueue failure: generator_id=%d name=%s challenge_id=%d reason=%s", generator.ID, generator.Name, challenge.ID, ret.Msg)
+					log.Logger.Warningf(
+						"Failed to delete generator after enqueue failure: generator_id=%d name=%s challenge_id=%d reason=%s",
+						generator.ID, generator.Name, challenge.ID, ret.Msg,
+					)
 				}
 				continue
 			}

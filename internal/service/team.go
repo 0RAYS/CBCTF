@@ -1,17 +1,18 @@
 package service
 
 import (
+	"math"
+	"sync"
+	"time"
+
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"CBCTF/internal/view"
-	"math"
-	"sync"
-	"time"
-
-	"gorm.io/gorm"
 )
 
 func UpdateTeam(tx *gorm.DB, team model.Team, form dto.UpdateTeamForm) model.RetVal {

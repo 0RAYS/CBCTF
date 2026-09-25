@@ -1,8 +1,9 @@
 package oa
 
 import (
-	"CBCTF/internal/model"
 	"net/http"
+
+	"CBCTF/internal/model"
 )
 
 type ProviderCallback func(provider model.Oauth, client *http.Client, response map[string]any) error

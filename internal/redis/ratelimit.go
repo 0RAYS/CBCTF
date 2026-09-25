@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"CBCTF/internal/config"
 	"context"
 	"errors"
 	"fmt"
@@ -11,6 +10,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+
+	"CBCTF/internal/config"
 )
 
 const redisRateLimitScript = `

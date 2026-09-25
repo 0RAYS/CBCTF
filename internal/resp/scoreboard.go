@@ -1,9 +1,9 @@
 package resp
 
 import (
-	"CBCTF/internal/view"
-
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/view"
 )
 
 func GetSolvedStateViewResp(states []view.ScoreboardSolvedStateView) []gin.H {

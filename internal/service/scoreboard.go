@@ -1,15 +1,16 @@
 package service
 
 import (
+	"slices"
+	"strings"
+
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
 	"CBCTF/internal/view"
-	"slices"
-	"strings"
-
-	"gorm.io/gorm"
 )
 
 func UpdateTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([]model.Team, int64, model.RetVal) {

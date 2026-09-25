@@ -1,9 +1,10 @@
 package k8s
 
 import (
-	"CBCTF/internal/log"
 	"context"
 	"time"
+
+	"CBCTF/internal/log"
 )
 
 func checkResources() {

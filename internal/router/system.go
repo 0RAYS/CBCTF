@@ -1,6 +1,14 @@
 package router
 
 import (
+	"maps"
+	"os"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+	"github.com/oschwald/geoip2-golang/v2"
+	"github.com/shirou/gopsutil/net"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
@@ -12,13 +20,6 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/sys"
-	"maps"
-	"os"
-	"path/filepath"
-
-	"github.com/gin-gonic/gin"
-	"github.com/oschwald/geoip2-golang/v2"
-	"github.com/shirou/gopsutil/net"
 )
 
 func HomePage(ctx *gin.Context) {

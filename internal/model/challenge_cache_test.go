@@ -1,9 +1,10 @@
 package model
 
 import (
-	"CBCTF/internal/config"
 	"testing"
 	"time"
+
+	"CBCTF/internal/config"
 )
 
 func TestAttachmentGenerationsAreIsolated(t *testing.T) {

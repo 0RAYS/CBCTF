@@ -1,11 +1,11 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 func ListPermissions(tx *gorm.DB, form dto.ListModelsForm) ([]model.Permission, int64, model.RetVal) {

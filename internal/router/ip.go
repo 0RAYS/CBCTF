@@ -1,17 +1,18 @@
 package router
 
 import (
+	"fmt"
+	"path/filepath"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/utils"
-	"fmt"
-	"path/filepath"
-	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 func SearchIP(ctx *gin.Context) {

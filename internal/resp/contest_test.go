@@ -1,14 +1,15 @@
 package resp
 
 import (
-	"CBCTF/internal/model"
-	"CBCTF/internal/view"
 	"encoding/json"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 )
 
 func TestGetContestRespCollections(t *testing.T) {

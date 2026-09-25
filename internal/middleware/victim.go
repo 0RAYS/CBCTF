@@ -1,13 +1,13 @@
 package middleware
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func CheckTeamVictimCount(ctx *gin.Context) {

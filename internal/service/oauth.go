@@ -1,6 +1,12 @@
 package service
 
 import (
+	"encoding/json"
+	"fmt"
+	"slices"
+
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -8,11 +14,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
-	"encoding/json"
-	"fmt"
-	"slices"
-
-	"gorm.io/gorm"
 )
 
 func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (model.User, model.RetVal) {

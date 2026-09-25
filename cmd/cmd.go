@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"flag"
 	"fmt"
 	"os"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 )
 
 var path string

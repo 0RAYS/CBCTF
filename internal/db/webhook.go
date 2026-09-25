@@ -1,10 +1,11 @@
 package db
 
 import (
-	"CBCTF/internal/model"
 	"time"
 
 	"gorm.io/gorm"
+
+	"CBCTF/internal/model"
 )
 
 type WebhookRepo struct {

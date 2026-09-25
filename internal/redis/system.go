@@ -1,8 +1,6 @@
 package redis
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/log"
 	"context"
 	"encoding/json"
 	"time"
@@ -10,6 +8,9 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/log"
 )
 
 const systemMetricsKey = "system:metrics"

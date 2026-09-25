@@ -1,8 +1,6 @@
 package oa
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/model"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -11,6 +9,9 @@ import (
 	"strings"
 
 	"golang.org/x/oauth2/github"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/model"
 )
 
 // Download from: https://github.com/logos

@@ -1,6 +1,12 @@
 package service
 
 import (
+	"context"
+	"os"
+	"time"
+
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
@@ -8,11 +14,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/view"
-	"context"
-	"os"
-	"time"
-
-	"gorm.io/gorm"
 )
 
 // GenTestAttachment 不使用任务队列生成附件, 直接生成

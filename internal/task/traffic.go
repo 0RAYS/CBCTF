@@ -1,11 +1,6 @@
 package task
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"context"
 	"fmt"
 	"slices"
@@ -14,6 +9,12 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/vmihailenco/msgpack/v5"
 	"gorm.io/gorm"
+
+	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 )
 
 const loadTrafficTaskType = "tasks:traffic:load"

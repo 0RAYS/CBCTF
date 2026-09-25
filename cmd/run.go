@@ -1,6 +1,13 @@
 package cmd
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"os"
+	"time"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/cron"
 	"CBCTF/internal/db"
@@ -13,12 +20,6 @@ import (
 	"CBCTF/internal/sys"
 	"CBCTF/internal/task"
 	"CBCTF/internal/webhook"
-	"context"
-	"errors"
-	"fmt"
-	"net/http"
-	"os"
-	"time"
 )
 
 var server *http.Server

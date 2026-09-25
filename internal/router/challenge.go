@@ -1,6 +1,10 @@
 package router
 
 import (
+	"os"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -9,9 +13,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"os"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetChallenge(ctx *gin.Context) {

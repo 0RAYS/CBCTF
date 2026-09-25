@@ -1,8 +1,6 @@
 package config
 
 import (
-	"CBCTF/internal/log"
-	"CBCTF/internal/utils"
 	"bytes"
 	_ "embed"
 	"errors"
@@ -10,6 +8,9 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
+
+	"CBCTF/internal/log"
+	"CBCTF/internal/utils"
 )
 
 type FrpsConfig struct {

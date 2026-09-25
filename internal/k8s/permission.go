@@ -1,13 +1,14 @@
 package k8s
 
 import (
-	"CBCTF/internal/log"
 	"context"
 	"fmt"
 	"time"
 
 	authorizationv1 "k8s.io/api/authorization/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"CBCTF/internal/log"
 )
 
 type permissionCheck struct {

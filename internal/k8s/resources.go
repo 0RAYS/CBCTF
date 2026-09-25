@@ -1,11 +1,12 @@
 package k8s
 
 import (
-	"CBCTF/internal/model"
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	"CBCTF/internal/model"
 )
 
 func workloadRequests(limits corev1.ResourceList) corev1.ResourceList {
@@ -29,7 +30,11 @@ func challengeFileMounts(containers []model.VictimContainerSpec) (map[string]str
 		for j, file := range container.VolumeMounts {
 			key := fmt.Sprintf("c%d-f%d", i, j)
 			data[key] = file.Content
-			mounts[i] = append(mounts[i], corev1.VolumeMount{Name: "challenge-files", MountPath: file.Path, SubPath: key})
+			mounts[i] = append(mounts[i], corev1.VolumeMount{
+				Name:      "challenge-files",
+				MountPath: file.Path,
+				SubPath:   key,
+			})
 		}
 	}
 	return data, mounts
@@ -37,7 +42,13 @@ func challengeFileMounts(containers []model.VictimContainerSpec) (map[string]str
 
 func sidecarResources() corev1.ResourceRequirements {
 	return corev1.ResourceRequirements{
-		Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("10m"), corev1.ResourceMemory: resource.MustParse("32Mi")},
-		Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("500m"), corev1.ResourceMemory: resource.MustParse("256Mi")},
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("10m"),
+			corev1.ResourceMemory: resource.MustParse("32Mi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("500m"),
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		},
 	}
 }

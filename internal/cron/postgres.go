@@ -1,11 +1,12 @@
 package cron
 
 import (
+	"context"
+	"database/sql"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"context"
-	"database/sql"
 )
 
 const reindexPostgresLockKey = "cbctf:reindex_postgres"

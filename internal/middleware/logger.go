@@ -1,10 +1,6 @@
 package middleware
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/resp"
 	"database/sql"
 	"net/http"
 	"slices"
@@ -14,6 +10,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
 )
 
 var TotalDuration atomic.Int64

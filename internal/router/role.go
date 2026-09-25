@@ -1,6 +1,8 @@
 package router
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
@@ -8,8 +10,6 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetRole(ctx *gin.Context) {

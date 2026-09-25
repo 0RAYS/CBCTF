@@ -1,12 +1,13 @@
 package db
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/model"
 	"errors"
 	"time"
 
 	"gorm.io/gorm"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/model"
 )
 
 type CronJobRepo struct {

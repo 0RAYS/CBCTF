@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"CBCTF/internal/utils"
-
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/utils"
 )
 
 // SetTrace 设置 trace, 方便追踪日志

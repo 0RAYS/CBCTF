@@ -1,11 +1,6 @@
 package router
 
 import (
-	"CBCTF/frontend"
-	"CBCTF/internal/config"
-	"CBCTF/internal/log"
-	"CBCTF/internal/middleware"
-	"CBCTF/internal/model"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -14,6 +9,12 @@ import (
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/frontend"
+	"CBCTF/internal/config"
+	"CBCTF/internal/log"
+	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 )
 
 func Init() *gin.Engine {

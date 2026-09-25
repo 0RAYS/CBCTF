@@ -1,6 +1,8 @@
 package router
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/cron"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
@@ -8,8 +10,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetCronJobs(ctx *gin.Context) {

@@ -1,12 +1,6 @@
 package task
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/k8s"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
 	"context"
 	"crypto/sha256"
 	"errors"
@@ -17,6 +11,13 @@ import (
 
 	"github.com/hibiken/asynq"
 	"github.com/vmihailenco/msgpack/v5"
+
+	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 )
 
 const genAttachmentTaskType = "tasks:attachment"
@@ -60,7 +61,13 @@ func EnqueueGenAttachmentTask(userID, contestID uint, challenge model.Challenge,
 	}
 	id := fmt.Sprintf("attachment-%x", sha256.Sum256([]byte(path)))
 	task := asynq.NewTask(genAttachmentTaskType, payload)
-	_, err = enqueueTask(genAttachmentTaskType, task, asynq.TaskID(id), asynq.MaxRetry(300), asynq.Deadline(time.Now().Add(30*time.Minute)), asynq.Timeout(90*time.Second))
+	_, err = enqueueTask(
+		genAttachmentTaskType, task,
+		asynq.TaskID(id),
+		asynq.MaxRetry(300),
+		asynq.Deadline(time.Now().Add(30*time.Minute)),
+		asynq.Timeout(90*time.Second),
+	)
 	if errors.Is(err, asynq.ErrTaskIDConflict) {
 		info, inspectErr := inspector.GetTaskInfo(genAttachmentTaskType, id)
 		if inspectErr != nil {
@@ -70,7 +77,13 @@ func EnqueueGenAttachmentTask(userID, contestID uint, challenge model.Challenge,
 			if err := inspector.DeleteTask(genAttachmentTaskType, id); err != nil {
 				return err
 			}
-			_, err = enqueueTask(genAttachmentTaskType, task, asynq.TaskID(id), asynq.MaxRetry(300), asynq.Deadline(time.Now().Add(30*time.Minute)), asynq.Timeout(90*time.Second))
+			_, err = enqueueTask(
+				genAttachmentTaskType, task,
+				asynq.TaskID(id),
+				asynq.MaxRetry(300),
+				asynq.Deadline(time.Now().Add(30*time.Minute)),
+				asynq.Timeout(90*time.Second),
+			)
 			if errors.Is(err, asynq.ErrTaskIDConflict) {
 				return nil
 			}
@@ -142,7 +155,10 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 		}
 		return taskResourceError("generate attachment failed", ret)
 	}
-	log.Logger.Infof("Attachment generated: user_id=%d team_id=%d challenge_id=%d generator_id=%d", payload.UserID, payload.TeamID, payload.Challenge.ID, generator.ID)
+	log.Logger.Infof(
+		"Attachment generated: user_id=%d team_id=%d challenge_id=%d generator_id=%d",
+		payload.UserID, payload.TeamID, payload.Challenge.ID, generator.ID,
+	)
 	return nil
 }
 

@@ -1,9 +1,6 @@
 package redis
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"context"
 	"errors"
 	"fmt"
@@ -11,6 +8,10 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 const (

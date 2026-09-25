@@ -1,11 +1,11 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 func GetDefaultBranding(tx *gorm.DB) (model.Branding, model.RetVal) {

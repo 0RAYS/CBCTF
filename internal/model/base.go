@@ -1,11 +1,12 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"time"
 
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
+
+	"CBCTF/internal/i18n"
 )
 
 type BaseModel struct {

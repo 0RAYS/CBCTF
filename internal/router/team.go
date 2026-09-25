@@ -1,6 +1,8 @@
 package router
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
@@ -8,8 +10,6 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetTeam(ctx *gin.Context) {

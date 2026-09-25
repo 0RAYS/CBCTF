@@ -1,12 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
-	"CBCTF/internal/utils"
 	"bytes"
 	"context"
 	"crypto/rand"
@@ -20,6 +14,13 @@ import (
 
 	"github.com/BurntSushi/toml"
 	corev1 "k8s.io/api/core/v1"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
+	"CBCTF/internal/utils"
 )
 
 type frpcConfig struct {
@@ -144,7 +145,12 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 		if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
 			listenPort := int32(10000 + index)
 			addFrpcProxy(&frpc, protocol, "127.0.0.1", listenPort, exposedPort, true)
-			nginx.Streams = append(nginx.Streams, nginxStream{Name: fmt.Sprintf("upstream_%d", index), TargetIP: endpoint.IP, TargetPort: endpoint.Port, ListenPort: listenPort})
+			nginx.Streams = append(nginx.Streams, nginxStream{
+				Name:       fmt.Sprintf("upstream_%d", index),
+				TargetIP:   endpoint.IP,
+				TargetPort: endpoint.Port,
+				ListenPort: listenPort,
+			})
 		} else {
 			addFrpcProxy(&frpc, protocol, endpoint.IP, endpoint.Port, exposedPort, false)
 		}
@@ -155,7 +161,10 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			Protocol: endpoint.Protocol,
 		})
 		victim.ExposedEndpoints = newEndpoints
-		log.Logger.Debugf("Reserved frpc endpoint: victim_id=%d %s:%d -> %s:%d protocol=%s", victim.ID, frps.Host, exposedPort, endpoint.IP, endpoint.Port, endpoint.Protocol)
+		log.Logger.Debugf(
+			"Reserved frpc endpoint: victim_id=%d %s:%d -> %s:%d protocol=%s",
+			victim.ID, frps.Host, exposedPort, endpoint.IP, endpoint.Port, endpoint.Protocol,
+		)
 	}
 	frpcConfigData, err := frpc.String()
 	if err != nil {
@@ -312,7 +321,10 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	if err = wg.Wait(); err != nil {
 		return victim, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	log.Logger.Debugf("Created frpc resources: victim_id=%d frpc_pods=%d exposed_endpoints=%d", victim.ID, len(frpcPodNameL), len(victim.ExposedEndpoints))
+	log.Logger.Debugf(
+		"Created frpc resources: victim_id=%d frpc_pods=%d exposed_endpoints=%d",
+		victim.ID, len(frpcPodNameL), len(victim.ExposedEndpoints),
+	)
 	return victim, model.SuccessRetVal()
 }
 

@@ -1,10 +1,10 @@
 package service
 
 import (
+	"github.com/compose-spec/compose-go/v2/types"
+
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-
-	"github.com/compose-spec/compose-go/v2/types"
 )
 
 func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.ChallengeFlag) string {

@@ -1,13 +1,14 @@
 package redis
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/log"
 	"context"
 	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/log"
 )
 
 var RDB *redis.Client

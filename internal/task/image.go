@@ -1,14 +1,15 @@
 package task
 
 import (
-	"CBCTF/internal/log"
-	"CBCTF/internal/utils"
 	"context"
 	"fmt"
 	"time"
 
 	"github.com/hibiken/asynq"
 	"github.com/vmihailenco/msgpack/v5"
+
+	"CBCTF/internal/log"
+	"CBCTF/internal/utils"
 )
 
 const resizeImageTaskType = "tasks:image"

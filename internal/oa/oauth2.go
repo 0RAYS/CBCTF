@@ -1,12 +1,6 @@
 package oa
 
 import (
-	"CBCTF/internal/dto"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
-	"CBCTF/internal/utils"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,6 +10,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
+
+	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
+	"CBCTF/internal/utils"
 )
 
 type oauth2Protocol struct{}

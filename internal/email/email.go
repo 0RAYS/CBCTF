@@ -1,9 +1,6 @@
 package email
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"crypto/rand"
 	"fmt"
 	"math/big"
@@ -12,6 +9,10 @@ import (
 	"time"
 
 	"gopkg.in/gomail.v2"
+
+	"CBCTF/internal/db"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 type Sender struct {

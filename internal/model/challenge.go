@@ -1,8 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/worker"
 	"crypto/sha256"
 	"database/sql/driver"
 	"encoding/json"
@@ -13,6 +11,9 @@ import (
 	"strconv"
 
 	netv1 "k8s.io/api/networking/v1"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/worker"
 )
 
 type ChallengeType string

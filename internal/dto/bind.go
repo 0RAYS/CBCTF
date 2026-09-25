@@ -1,11 +1,11 @@
 package dto
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-
-	"github.com/gin-gonic/gin"
 )
 
 // Validator is an optional interface that DTOs can implement

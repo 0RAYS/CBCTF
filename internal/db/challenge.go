@@ -1,11 +1,11 @@
 package db
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 type ChallengeRepo struct {
@@ -68,7 +68,12 @@ func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.R
 	return categories, model.SuccessRetVal()
 }
 
-func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset int, name, description, category string, t model.ChallengeType) ([]model.Challenge, int64, model.RetVal) {
+func (c *ChallengeRepo) ListChallengesNotInContest(
+	contestID uint,
+	limit, offset int,
+	name, description, category string,
+	t model.ChallengeType,
+) ([]model.Challenge, int64, model.RetVal) {
 	tx := c.DB.Model(&model.Challenge{}).
 		Where("NOT EXISTS (?)", c.DB.Model(&model.ContestChallenge{}).
 			Select("1").

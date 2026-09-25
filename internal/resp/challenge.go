@@ -1,9 +1,9 @@
 package resp
 
 import (
-	"CBCTF/internal/view"
-
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/view"
 )
 
 func GetChallengeResp(challengeView view.ChallengeView) gin.H {

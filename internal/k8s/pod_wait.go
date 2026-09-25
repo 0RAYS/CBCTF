@@ -1,12 +1,13 @@
 package k8s
 
 import (
-	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
+
+	"CBCTF/internal/model"
 )
 
 func podReady(pod *corev1.Pod) bool {

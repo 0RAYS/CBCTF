@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/model"
 	"context"
 	"encoding/json"
 	"io"
@@ -13,22 +12,63 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	"CBCTF/internal/model"
 )
 
 func TestPodDiagnosticsAllowlist(t *testing.T) {
-	pod := &corev1.Pod{Name: "test", Spec: corev1.PodSpec{Containers: []corev1.Container{
-		{Name: "web", Env: []corev1.EnvVar{{Name: "FLAG", Value: "secret-marker"}}, Args: []string{"secret-marker"}}, {Name: CaptureContainerName},
-	}, InitContainers: []corev1.Container{{Name: "init"}}}, Status: corev1.PodStatus{
-		Phase: corev1.PodPending, Message: "secret-marker",
-		Conditions:        []corev1.PodCondition{{Type: corev1.PodScheduled, Status: corev1.ConditionFalse, Reason: "Unschedulable", Message: "secret-marker"}},
-		ContainerStatuses: []corev1.ContainerStatus{{Name: "web", RestartCount: 3, State: corev1.ContainerState{Waiting: &corev1.ContainerStateWaiting{Reason: "CrashLoopBackOff", Message: "secret-marker"}}, LastTerminationState: corev1.ContainerState{Terminated: &corev1.ContainerStateTerminated{ExitCode: 137, Reason: "OOMKilled", Message: "secret-marker"}}}},
-	}}
+	pod := &corev1.Pod{
+		Name: "test",
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name: "web",
+					Env:  []corev1.EnvVar{{Name: "FLAG", Value: "secret-marker"}},
+					Args: []string{"secret-marker"},
+				},
+				{Name: CaptureContainerName},
+			},
+			InitContainers: []corev1.Container{{Name: "init"}},
+		},
+		Status: corev1.PodStatus{
+			Phase:   corev1.PodPending,
+			Message: "secret-marker",
+			Conditions: []corev1.PodCondition{
+				{
+					Type:    corev1.PodScheduled,
+					Status:  corev1.ConditionFalse,
+					Reason:  "Unschedulable",
+					Message: "secret-marker",
+				},
+			},
+			ContainerStatuses: []corev1.ContainerStatus{
+				{
+					Name:         "web",
+					RestartCount: 3,
+					State: corev1.ContainerState{
+						Waiting: &corev1.ContainerStateWaiting{
+							Reason:  "CrashLoopBackOff",
+							Message: "secret-marker",
+						},
+					},
+					LastTerminationState: corev1.ContainerState{
+						Terminated: &corev1.ContainerStateTerminated{
+							ExitCode: 137,
+							Reason:   "OOMKilled",
+							Message:  "secret-marker",
+						},
+					},
+				},
+			},
+		},
+	}
 	result := DescribePod(pod)
 	if result.Ready || len(result.ContainerStatuses) != 2 || !result.ContainerStatuses[0].Init {
 		t.Fatalf("bad status: %+v", result)
 	}
 	web := result.ContainerStatuses[1]
-	if web.Reason != "CrashLoopBackOff" || web.Restarts != 3 || web.LastExitCode == nil || *web.LastExitCode != 137 || web.LastReason != "OOMKilled" {
+	if web.Reason != "CrashLoopBackOff" || web.Restarts != 3 ||
+		web.LastExitCode == nil || *web.LastExitCode != 137 || web.LastReason != "OOMKilled" {
 		t.Fatalf("missing detail: %+v", web)
 	}
 	raw, err := json.Marshal(result)

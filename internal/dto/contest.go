@@ -1,11 +1,12 @@
 package dto
 
 import (
-	"CBCTF/internal/model"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/model"
 )
 
 // CreateContestForm for create contest

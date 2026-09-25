@@ -1,16 +1,17 @@
 package middleware
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
-	"CBCTF/internal/resp"
 	"net"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
+	"CBCTF/internal/resp"
 )
 
 func MetricsWhitelist(ctx *gin.Context) {

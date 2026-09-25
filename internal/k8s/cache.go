@@ -81,17 +81,23 @@ func cachedObjects(ctx context.Context, kind string) (*objectCache, error) {
 		case "pods":
 			client := kubeClient.CoreV1().Pods(globalNamespace)
 			object = &corev1.Pod{}
-			list = func(ctx context.Context, o metav1.ListOptions) (runtime.Object, error) { return client.List(ctx, o) }
+			list = func(ctx context.Context, o metav1.ListOptions) (runtime.Object, error) {
+				return client.List(ctx, o)
+			}
 			watchFn = client.Watch
 		case "vms":
 			client := virtClient.KubevirtV1().VirtualMachines(globalNamespace)
 			object = &virtv1.VirtualMachine{}
-			list = func(ctx context.Context, o metav1.ListOptions) (runtime.Object, error) { return client.List(ctx, o) }
+			list = func(ctx context.Context, o metav1.ListOptions) (runtime.Object, error) {
+				return client.List(ctx, o)
+			}
 			watchFn = client.Watch
 		case "configmaps":
 			client := kubeClient.CoreV1().ConfigMaps(globalNamespace)
 			object = &corev1.ConfigMap{}
-			list = func(ctx context.Context, o metav1.ListOptions) (runtime.Object, error) { return client.List(ctx, o) }
+			list = func(ctx context.Context, o metav1.ListOptions) (runtime.Object, error) {
+				return client.List(ctx, o)
+			}
 			watchFn = client.Watch
 		case "vpcs":
 			client := ovnClient.KubeovnV1().Vpcs()
@@ -110,13 +116,25 @@ func cachedObjects(ctx context.Context, kind string) (*objectCache, error) {
 			return nil, fmt.Errorf("unknown informer resource %s", kind)
 		}
 		lifecycle, cancel := context.WithCancel(context.Background())
-		c = &objectCache{cancel: cancel, done: make(chan struct{}), changed: make(chan struct{})}
-		c.informer = cache.NewSharedIndexInformer(&cache.ListWatch{ListWithContextFunc: list, WatchFuncWithContext: watchFn}, object, 0, cache.Indexers{})
+		c = &objectCache{
+			cancel:  cancel,
+			done:    make(chan struct{}),
+			changed: make(chan struct{}),
+		}
+		c.informer = cache.NewSharedIndexInformer(&cache.ListWatch{
+			ListWithContextFunc:  list,
+			WatchFuncWithContext: watchFn,
+		}, object, 0, cache.Indexers{})
 		_, _ = c.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-			AddFunc: func(any) { c.notify() }, UpdateFunc: func(any, any) { c.notify() }, DeleteFunc: func(any) { c.notify() },
+			AddFunc:    func(any) { c.notify() },
+			UpdateFunc: func(any, any) { c.notify() },
+			DeleteFunc: func(any) { c.notify() },
 		})
 		objectCaches[key] = c
-		go func() { defer close(c.done); c.informer.RunWithContext(lifecycle) }()
+		go func() {
+			defer close(c.done)
+			c.informer.RunWithContext(lifecycle)
+		}()
 	}
 	cacheMu.Unlock()
 	if !cache.WaitForCacheSync(ctx.Done(), c.informer.HasSynced) {

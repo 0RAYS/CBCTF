@@ -1,9 +1,10 @@
 package main
 
 import (
-	"CBCTF/internal/worker"
 	"log"
 	"os"
+
+	"CBCTF/internal/worker"
 )
 
 func main() {

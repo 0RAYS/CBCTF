@@ -1,10 +1,10 @@
 package dto
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
-
-	"github.com/gin-gonic/gin"
 )
 
 // GetChallengesForm for get challenges list

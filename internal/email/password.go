@@ -1,8 +1,9 @@
 package email
 
 import (
-	"CBCTF/internal/config"
 	"fmt"
+
+	"CBCTF/internal/config"
 )
 
 const ResetPasswordEmailSubject = "Reset Your Password"

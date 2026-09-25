@@ -1,16 +1,17 @@
 package service
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/db"
-	"CBCTF/internal/dto"
-	"CBCTF/internal/model"
-	"CBCTF/internal/view"
 	"os"
 	"sort"
 	"time"
 
 	"gorm.io/gorm"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
+	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 )
 
 func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateContestChallengeForm) ([]model.ContestChallenge, []string, model.RetVal) {

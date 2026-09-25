@@ -1,15 +1,16 @@
 package middleware
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/resp"
 	"fmt"
 	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
 )
 
 func Recovery(ctx *gin.Context) {

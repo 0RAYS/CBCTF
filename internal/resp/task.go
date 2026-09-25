@@ -1,13 +1,14 @@
 package resp
 
 import (
-	"CBCTF/internal/model"
 	"encoding/json"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hibiken/asynq"
 	"github.com/vmihailenco/msgpack/v5"
+
+	"CBCTF/internal/model"
 )
 
 func compactJSON(value any) any {

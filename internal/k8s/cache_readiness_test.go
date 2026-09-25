@@ -1,25 +1,43 @@
 package k8s
 
 import (
-	"CBCTF/internal/model"
 	"context"
 	"testing"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+
+	"CBCTF/internal/model"
 )
 
 func TestSharedPodCacheAndVictimReadiness(t *testing.T) {
-	pod := &corev1.Pod{Name: "web", Namespace: "test", UID: "first", Status: corev1.PodStatus{
-		Phase: corev1.PodRunning, HostIP: "192.0.2.10", Conditions: []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}},
-	}}
+	pod := &corev1.Pod{
+		Name:      "web",
+		Namespace: "test",
+		UID:       "first",
+		Status: corev1.PodStatus{
+			Phase:      corev1.PodRunning,
+			HostIP:     "192.0.2.10",
+			Conditions: []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}},
+		},
+	}
 	client := useFakePods(t, pod)
 	t.Cleanup(Stop)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	victim := model.Victim{Pods: []model.Pod{{Name: "web"}}, Resources: model.VictimResources{
-		Submitted: true, UIDs: model.StringMap{"web": "first"}, NodePorts: []model.NodePortEndpoint{{PodName: "web", Endpoint: model.Endpoint{Port: 30001, Protocol: "TCP"}}},
-	}}
+	victim := model.Victim{
+		Pods: []model.Pod{{Name: "web"}},
+		Resources: model.VictimResources{
+			Submitted: true,
+			UIDs:      model.StringMap{"web": "first"},
+			NodePorts: []model.NodePortEndpoint{
+				{
+					PodName:  "web",
+					Endpoint: model.Endpoint{Port: 30001, Protocol: "TCP"},
+				},
+			},
+		},
+	}
 	for range 10 {
 		ready, err := VictimReady(ctx, &victim)
 		if err != nil || !ready {
