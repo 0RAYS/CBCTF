@@ -155,6 +155,7 @@ networks:
 - 容器必须包含 `sleep` 和 `unzip`
 - 脚本路径固定为 `/root/run.sh <team_id> <base64_encoded_flags>`
 - 产物须写入 `/root/mnt/attachments/{id}.zip`
+- 平台注入常驻 worker，输出目录使用 Pod 本地存储；脚本完成后，worker 将 ZIP 返回平台写入版本化缓存
 - 禁止使用 `latest` 镜像标签
 
 > 完整示例：[example/dynamic/README.md](https://github.com/0RAYS/CBCTF/blob/main/example/dynamic/README.md)
