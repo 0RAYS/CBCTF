@@ -83,6 +83,10 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
 	}
 
+	affinity, err := imageFailureAffinity(ctx, []string{options.Image})
+	if err != nil {
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
+	}
 	vm = &v1.VirtualMachine{
 		Name:      options.Name,
 		Namespace: globalNamespace,
@@ -105,6 +109,7 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 					}(),
 				},
 				Spec: v1.VirtualMachineInstanceSpec{
+					Affinity: affinity,
 					Domain: v1.DomainSpec{
 						Firmware: &v1.Firmware{
 							Bootloader: func() *v1.Bootloader {

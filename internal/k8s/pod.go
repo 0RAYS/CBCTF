@@ -40,6 +40,10 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		pod *corev1.Pod
 		err error
 	)
+	affinity, err := imageFailureAffinity(ctx, containerImages(options.Containers))
+	if err != nil {
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+	}
 	pod = &corev1.Pod{
 		Name:      options.Name,
 		Namespace: globalNamespace,
@@ -62,6 +66,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 			return annotations
 		}(),
 		Spec: corev1.PodSpec{
+			Affinity:                      affinity,
 			EnableServiceLinks:            new(false),
 			AutomountServiceAccountToken:  new(false),
 			Containers:                    options.Containers,

@@ -477,12 +477,20 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 	default:
 		return model.Challenge{}, model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
 	}
+	warmChallengeImages(challenge)
 	return challengeRepo.GetByID(challenge.ID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
 	})
 }
 
-func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChallengeForm) model.RetVal {
+func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChallengeForm) (result model.RetVal) {
+	defer func() {
+		if result.OK {
+			if updated, ret := db.InitChallengeRepo(tx).GetByID(challenge.ID); ret.OK {
+				warmChallengeImages(updated)
+			}
+		}
+	}()
 	switch challenge.Type {
 	case model.StaticChallengeType, model.DynamicChallengeType:
 		oldChallengeFlagID := make([]uint, 0)

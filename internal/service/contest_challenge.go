@@ -74,6 +74,9 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 		if !ret.OK {
 			failedL = append(failedL, challengeRandID)
 		}
+		if ret.OK {
+			warmChallengeImages(challenge)
+		}
 	}
 	return contestChallengeL, failedL, model.SuccessRetVal()
 }
@@ -220,7 +223,7 @@ func GetContestChallengeStatus(tx *gorm.DB, team model.Team, challenge model.Cha
 }
 
 func UpdateContestChallenge(tx *gorm.DB, contestChallenge model.ContestChallenge, form dto.UpdateContestChallengeForm) model.RetVal {
-	return db.InitContestChallengeRepo(tx).Update(contestChallenge.ID, db.UpdateContestChallengeOptions{
+	ret := db.InitContestChallengeRepo(tx).Update(contestChallenge.ID, db.UpdateContestChallengeOptions{
 		Name:        form.Name,
 		Description: form.Description,
 		Hidden:      form.Hidden,
@@ -228,6 +231,12 @@ func UpdateContestChallenge(tx *gorm.DB, contestChallenge model.ContestChallenge
 		Hints:       form.Hints,
 		Tags:        form.Tags,
 	})
+	if ret.OK && form.Hidden != nil && !*form.Hidden {
+		if challenge, getRet := db.InitChallengeRepo(tx).GetByID(contestChallenge.ChallengeID); getRet.OK {
+			warmChallengeImages(challenge)
+		}
+	}
+	return ret
 }
 
 func DeleteContestChallenge(tx *gorm.DB, contestChallenge model.ContestChallenge) model.RetVal {

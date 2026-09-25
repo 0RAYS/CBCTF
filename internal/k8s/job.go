@@ -36,15 +36,16 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 			ActiveDeadlineSeconds:   new(int64(600)),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
+					Labels:    options.Labels,
 					Name:      fmt.Sprintf("image-puller-%s", utils.RandHexStr(5)),
 					Namespace: globalNamespace,
 				},
 				Spec: corev1.PodSpec{
 					AutomountServiceAccountToken: new(false),
 					EnableServiceLinks:           new(false),
-					NodeSelector: func() map[string]string {
+					Affinity: func() *corev1.Affinity {
 						if options.SelectedNode != "" {
-							return map[string]string{"kubernetes.io/hostname": options.SelectedNode}
+							return &corev1.Affinity{NodeAffinity: &corev1.NodeAffinity{RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{NodeSelectorTerms: []corev1.NodeSelectorTerm{{MatchFields: []corev1.NodeSelectorRequirement{{Key: "metadata.name", Operator: corev1.NodeSelectorOpIn, Values: []string{options.SelectedNode}}}}}}}}
 						}
 						return nil
 					}(),
