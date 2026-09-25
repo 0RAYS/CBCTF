@@ -38,7 +38,7 @@ import { Steps } from '@rspress/core/theme';
 
 ### 容器启动方式
 
-平台通过 init container 注入静态 `generator-worker`，并以它覆盖镜像入口。worker 保持常驻并串行执行生成请求。题目镜像继续提供 `sleep` 和 `unzip`，无需安装 Redis 客户端或 Kubernetes 工具。
+平台通过使用独立 worker 镜像的 init container 注入静态 `worker`，并以它覆盖题目镜像入口。worker 保持常驻并串行执行生成请求。题目镜像继续提供 `sleep` 和 `unzip`，无需安装 Redis 客户端或 Kubernetes 工具。worker 镜像通过 `k8s.worker_image` 配置，Helm 对应 `cbctf.k8s.workerImage`。
 
 ### 可选上传 `generator.zip`
 

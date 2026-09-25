@@ -75,7 +75,7 @@ Redis 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务�
 | `k8s.capture`   | 流量捕获 sidecar 镜像                             | `ghcr.io/domcyrus/rustnet:latest` |
 | `k8s.capture_enabled` | 是否创建抓包容器及相关挂载 | `true` |
 | `k8s.priority_class_name` | 工作负载使用的已有 PriorityClass | `""` |
-| `k8s.worker_image` | 含 `/app/generator-worker` 的平台镜像 | `ghcr.io/0rays/cbctf:latest` |
+| `k8s.worker_image` | 含 `/app/worker` 的独立 worker 镜像 | `ghcr.io/0rays/cbctf-worker:latest` |
 | `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量 | `2` |
 | `k8s.frp.on`    | 是否启用 FRP 暴露靶机端口                             | `false`                           |
 | `k8s.frp.frpc`  | FRP client 镜像                               | `ghcr.io/fatedier/frpc:v0.69.0`   |

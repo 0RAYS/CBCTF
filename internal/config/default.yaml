@@ -73,7 +73,7 @@ k8s:
   capture: ghcr.io/domcyrus/rustnet:latest
   capture_enabled: true
   priority_class_name: ""
-  worker_image: ghcr.io/0rays/cbctf:latest
+  worker_image: ghcr.io/0rays/cbctf-worker:latest
   generator_pool_size: 2
   frp:
     on: false

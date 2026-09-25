@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"CBCTF/internal/config"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
@@ -53,10 +55,13 @@ func TestHelmRuntimeRBAC(t *testing.T) {
 	t.Cleanup(func() { globalNamespace = old })
 	for _, custom := range []bool{false, true} {
 		t.Run(map[bool]string{false: "default", true: "existing-service-account"}[custom], func(t *testing.T) {
-			args := []string{"template", "review", filepath.Join("..", "..", "chart"), "--namespace", globalNamespace}
+			args := []string{"template", "review", filepath.Join("..", "..", "chart"), "--namespace", globalNamespace, "--set", "image.tag=platform-only"}
 			account := "review-cbctf"
+			wantWorker := "ghcr.io/0rays/cbctf-worker:latest"
 			if custom {
 				args = append(args, "--set", "serviceAccount.create=false,serviceAccount.name=existing-sa,startupProbe.failureThreshold=90,terminationGracePeriodSeconds=180")
+				wantWorker = "registry.example/worker:v2"
+				args = append(args, "--set", "cbctf.k8s.workerImage="+wantWorker)
 				account = "existing-sa"
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -71,6 +76,7 @@ func TestHelmRuntimeRBAC(t *testing.T) {
 			var binding rbacv1.RoleBinding
 			var clusterBinding rbacv1.ClusterRoleBinding
 			var deployment appsv1.Deployment
+			var settings corev1.ConfigMap
 			for {
 				var raw json.RawMessage
 				if err := decoder.Decode(&raw); err == io.EOF {
@@ -86,6 +92,8 @@ func TestHelmRuntimeRBAC(t *testing.T) {
 				}
 				var target any
 				switch meta.Kind {
+				case "ConfigMap":
+					target = &settings
 				case "Role":
 					target = &role
 				case "ClusterRole":
@@ -109,6 +117,17 @@ func TestHelmRuntimeRBAC(t *testing.T) {
 				if err := json.Unmarshal(raw, target); err != nil {
 					t.Fatal(err)
 				}
+			}
+			data, err := yaml.ToJSON([]byte(settings.Data["config.yaml"]))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var cfg config.Config
+			if err := json.Unmarshal(data, &cfg); err != nil {
+				t.Fatal(err)
+			}
+			if cfg.K8S.WorkerImage != wantWorker {
+				t.Fatalf("worker image is not independently configured: %q", cfg.K8S.WorkerImage)
 			}
 			if role.Namespace != globalNamespace || binding.Namespace != globalNamespace || binding.RoleRef.Kind != "Role" || binding.RoleRef.Name != role.Name {
 				t.Fatalf("bad Role binding: %+v", binding)

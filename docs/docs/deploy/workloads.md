@@ -63,7 +63,7 @@ NetworkPolicy 先于工作负载创建，避免引入未隔离窗口。VPC 模�
 
 ### 运行方式
 
-平台镜像包含静态二进制 `/app/generator-worker`。generator Pod 的 init container 将其复制到 EmptyDir，题目容器运行该 worker。worker 在容器内部解压 `generator.zip` 并调用：
+独立镜像 `ghcr.io/0rays/cbctf-worker` 基于 `scratch`，只包含静态二进制 `/app/worker`。generator Pod 的 init container 使用此镜像，将二进制复制到 EmptyDir 的 `/worker/worker`，题目容器运行该 worker。worker 在容器内部解压 `generator.zip` 并调用：
 
 ```text
 /root/run.sh <team_id> <base64_encoded_flags>
@@ -120,6 +120,7 @@ cbctf:
   k8s:
     captureEnabled: false
     priorityClassName: ""
+    workerImage: ghcr.io/0rays/cbctf-worker:your-worker-tag
     generatorPoolSize: 4
   asynq:
     queues:
@@ -128,6 +129,18 @@ cbctf:
       attachment: 32
 ```
 
-Chart 将同一个平台镜像地址写入 `k8s.worker_image`。直接部署时，需在配置文件中指定包含该 worker 二进制的镜像。上述抓包开关、PriorityClass、worker 镜像和池容量是部署配置，修改后重启平台生效。
+Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。直接部署时在配置文件中设置 `k8s.worker_image`。上述抓包开关、PriorityClass、worker 镜像和池容量是部署配置，修改后重启平台生效。
+
+## 独立构建 worker 镜像
+
+从仓库根目录构建：
+
+```bash
+docker build -f worker/Dockerfile -t ghcr.io/0rays/cbctf-worker:your-worker-tag .
+```
+
+该构建只编译 `worker/main.go` 和 `internal/worker`，不构建前端或主程序，也不安装 CGO/libpcap。主程序 Dockerfile 不再打包 worker 二进制。
+
+`.github/workflows/worker.yaml` 独立发布 worker 镜像，监听 worker 源码和构建配置变化，生成时间戳标签与 `latest` 标签。主程序和 worker 可以分别构建、发布和指定版本。
 
 秒级启动与附件生成时长需要在实际集群中测量；创建阶段解耦提升吞吐，但不会缩短题目进程自身的初始化或脚本执行时间。

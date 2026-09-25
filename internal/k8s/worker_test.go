@@ -2,8 +2,8 @@ package k8s
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/generatorworker"
 	"CBCTF/internal/model"
+	"CBCTF/internal/worker"
 	"archive/zip"
 	"bytes"
 	"context"
@@ -22,9 +22,9 @@ type workerRoundTrip func(*http.Request) (*http.Response, error)
 func (f workerRoundTrip) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
 
 func TestWorkerPublishesOnlyCompletedZipWithoutExec(t *testing.T) {
-	previousConfig, previousHTTP := config.Env, generatorHTTP
+	previousConfig, previousHTTP := config.Env, workerHTTP
 	config.Env = &config.Config{Path: t.TempDir()}
-	t.Cleanup(func() { config.Env = previousConfig; generatorHTTP = previousHTTP })
+	t.Cleanup(func() { config.Env = previousConfig; workerHTTP = previousHTTP })
 	generator := model.Generator{BaseModel: model.BaseModel{ID: 9}, Name: "generator", ChallengeID: 3, WorkerToken: "test-token"}
 	pod := &corev1.Pod{Name: generator.Name, Namespace: "test", Labels: GeneratorLabels(generator, map[string]string{RoleLabel: GeneratorPodTag}), Status: corev1.PodStatus{PodIP: "192.0.2.1", Phase: corev1.PodRunning, Conditions: []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}}}}
 	client := useFakePods(t, pod)
@@ -40,11 +40,11 @@ func TestWorkerPublishesOnlyCompletedZipWithoutExec(t *testing.T) {
 		t.Fatal(err)
 	}
 	valid := false
-	generatorHTTP = &http.Client{Transport: workerRoundTrip(func(r *http.Request) (*http.Response, error) {
+	workerHTTP = &http.Client{Transport: workerRoundTrip(func(r *http.Request) (*http.Response, error) {
 		if r.Header.Get("Authorization") != "Bearer test-token" {
 			t.Fatal("worker request has no instance authentication")
 		}
-		var request generatorworker.Request
+		var request worker.Request
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			t.Fatal(err)
 		}

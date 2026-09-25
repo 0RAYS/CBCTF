@@ -2,7 +2,7 @@ package model
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/generatorworker"
+	"CBCTF/internal/worker"
 	"crypto/sha256"
 	"database/sql/driver"
 	"encoding/json"
@@ -48,7 +48,7 @@ type Challenge struct {
 // Cache generations include the exact ordered team flags and source revision.
 // Old and new flags never publish to the same path, even during a reset race.
 func (c Challenge) AttachmentCachePath(teamID uint, flags []string) string {
-	return c.AttachmentCachePathForRevision(teamID, flags, generatorworker.SourceRevision(c.GeneratorPath()))
+	return c.AttachmentCachePathForRevision(teamID, flags, worker.SourceRevision(c.GeneratorPath()))
 }
 
 func (c Challenge) AttachmentCachePathForRevision(teamID uint, flags []string, revision string) string {

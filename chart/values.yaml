@@ -160,6 +160,7 @@ cbctf:
     capture: "ghcr.io/domcyrus/rustnet:latest"
     captureEnabled: true
     priorityClassName: ""
+    workerImage: "ghcr.io/0rays/cbctf-worker:latest"
     generatorPoolSize: 2
     frp:
       "on": false
