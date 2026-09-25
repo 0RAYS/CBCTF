@@ -1,12 +1,16 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"k8s.io/apimachinery/pkg/util/validation"
 
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
@@ -76,6 +80,11 @@ func GetSystemStatus(tx *gorm.DB) map[string]any {
 }
 
 func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal {
+	if name := form.K8SPriorityClassName; name != nil && *name != "" {
+		if errors := validation.IsDNS1123Subdomain(*name); len(errors) > 0 {
+			return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": strings.Join(errors, "; ")}}
+		}
+	}
 	if form.K8SFrpFrps != nil {
 		for i, server := range *form.K8SFrpFrps {
 			if server.Token != "" {
@@ -121,12 +130,16 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.GinMetricsWhitelistSettingKey:   form.GinMetricsWhitelist,
 		model.GinPProfWhitelistSettingKey:     form.GinPProfWhitelist,
 
-		model.K8SNamespaceSettingKey:     form.K8SNamespace,
-		model.K8SCaptureImageSettingKey:  form.K8SCaptureImage,
-		model.K8SFrpOnSettingKey:         form.K8SFrpOn,
-		model.K8SFrpFrpcImageSettingKey:  form.K8SFrpFrpcImage,
-		model.K8SFrpNginxImageSettingKey: form.K8SFrpNginxImage,
-		model.K8SFrpFrpsSettingKey:       form.K8SFrpFrps,
+		model.K8SNamespaceSettingKey:         form.K8SNamespace,
+		model.K8SCaptureImageSettingKey:      form.K8SCaptureImage,
+		model.K8SCaptureEnabledSettingKey:    form.K8SCaptureEnabled,
+		model.K8SPriorityClassSettingKey:     form.K8SPriorityClassName,
+		model.K8SWorkerImageSettingKey:       form.K8SWorkerImage,
+		model.K8SGeneratorPoolSizeSettingKey: form.K8SGeneratorPoolSize,
+		model.K8SFrpOnSettingKey:             form.K8SFrpOn,
+		model.K8SFrpFrpcImageSettingKey:      form.K8SFrpFrpcImage,
+		model.K8SFrpNginxImageSettingKey:     form.K8SFrpNginxImage,
+		model.K8SFrpFrpsSettingKey:           form.K8SFrpFrps,
 
 		model.CheatIPWhitelistSettingKey:         form.CheatIPWhitelist,
 		model.WebhookWhitelistSettingKey:         form.WebhookWhitelist,

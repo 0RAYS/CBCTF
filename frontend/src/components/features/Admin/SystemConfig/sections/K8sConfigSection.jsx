@@ -28,6 +28,54 @@ export function K8sConfigSection({ config, updateConfig }) {
           })
         }
       />
+      <ConfigField
+        label={t('admin.system.labels.k8sCaptureEnabled')}
+        type="boolean"
+        value={config.k8s.capture_enabled}
+        options={[
+          { value: 'true', label: t('common.yes') },
+          { value: 'false', label: t('common.no') },
+        ]}
+        description={t('admin.system.hints.k8sCaptureEnabled')}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.k8s.capture_enabled = value;
+          })
+        }
+      />
+      <ConfigField
+        label={t('admin.system.labels.k8sPriorityClassName')}
+        value={config.k8s.priority_class_name}
+        description={t('admin.system.hints.k8sPriorityClassName')}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.k8s.priority_class_name = value;
+          })
+        }
+      />
+      <ConfigField
+        label={t('admin.system.labels.k8sWorkerImage')}
+        value={config.k8s.worker_image}
+        description={t('admin.system.hints.k8sWorkerImage')}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.k8s.worker_image = value;
+          })
+        }
+      />
+      <ConfigField
+        label={t('admin.system.labels.k8sGeneratorPoolSize')}
+        type="number"
+        min={0}
+        step={1}
+        value={config.k8s.generator_pool_size}
+        description={t('admin.system.hints.k8sGeneratorPoolSize')}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.k8s.generator_pool_size = Number(value);
+          })
+        }
+      />
 
       <div className="border-b border-neutral-300/20" />
 

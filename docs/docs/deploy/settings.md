@@ -13,7 +13,6 @@ CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲�
 - Redis 连接信息：`redis.*`
 - 数据存储目录：`path`
 - Gin 监听地址和端口：`gin.host`、`gin.port`
-- 工作负载部署参数：`k8s.capture_enabled`、`k8s.priority_class_name`、`k8s.worker_image`、`k8s.generator_pool_size`
 
 其他配置首次启动时写入 `settings`；之后以数据库值为准。系统配置不会写回 `config.yaml`。
 
@@ -81,6 +80,8 @@ Redis 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务�
 | `k8s.frp.frpc`  | FRP client 镜像                               | `ghcr.io/fatedier/frpc:v0.69.0`   |
 | `k8s.frp.nginx` | FRP 辅助 Nginx 镜像                             | `nginx:latest`                    |
 | `k8s.frp.frps`  | FRPS 地址、端口、token、端口池                        | `host: frps.example.com`          |
+
+抓包开关、Pod PriorityClass、worker 镜像和生成器池容量均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
 
 预热、调度、缓存与回收机制见[工作负载调度](./workloads)。启用 FRP 时使用 ClusterIP，否则使用 NodePort。
 

@@ -2256,7 +2256,7 @@
       "update": {
         "title": "Confirm Update",
         "prompt": "You are about to update system configuration. Continue?",
-        "warning": "These settings are saved to the database and affect runtime policy immediately. Confirm before continuing.",
+        "warning": "Settings are saved to the database. Workload settings apply to newly created instances; task concurrency and startup settings require a restart. Other platform replicas must reload the settings.",
         "confirm": "Update",
         "cancel": "Cancel"
       },
@@ -2296,7 +2296,7 @@
         "ginUploadPicture": "Picture Upload Size (MB)",
         "ginUploadChallenge": "Challenge Attachment Upload Size (MB)",
         "ginUploadWriteup": "Writeup Upload Size (MB)",
-        "ginGlobalRate": "Global Rate Limit (RPS)",
+        "ginGlobalRate": "Global Rate Limit (requests/minute)",
         "ginProxies": "Trusted Proxy List",
         "ginLogWhitelist": "Request Log Filter Whitelist",
         "ginRateWhitelist": "IP Rate Limit Whitelist",
@@ -2316,6 +2316,10 @@
         "redisPassword": "Password",
         "k8sNamespace": "Namespace",
         "k8sCapture": "Capture Image",
+        "k8sCaptureEnabled": "Enable Traffic Capture",
+        "k8sPriorityClassName": "Pod PriorityClass",
+        "k8sWorkerImage": "Worker Image",
+        "k8sGeneratorPoolSize": "Generator Pool Size",
         "frpOn": "Use Frp to Expose Victims",
         "frpc": "Frpc Image",
         "nginx": "Nginx Image",
@@ -2332,6 +2336,10 @@
         "registrationDefaultGroupNone": "None"
       },
       "hints": {
+        "k8sCaptureEnabled": "Applies to new victim and FRPC Pods. Disabling capture removes their capture container and related storage mounts.",
+        "k8sPriorityClassName": "Name of an existing Kubernetes PriorityClass for new Pods. Leave empty to use the cluster default.",
+        "k8sWorkerImage": "Independent image containing /app/worker, such as ghcr.io/0rays/cbctf-worker:latest. Applies to new generators.",
+        "k8sGeneratorPoolSize": "Target pool capacity per contest and dynamic challenge. 0 disables automatic provisioning. Changes apply when pools are provisioned or replenished; existing instances are not automatically stopped.",
         "uploadGeoCityDB": "The file is always saved as GeoLite2-City.mmdb under the data path."
       },
       "k8s": {

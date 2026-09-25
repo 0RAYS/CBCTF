@@ -129,7 +129,7 @@ cbctf:
       attachment: 32
 ```
 
-Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。直接部署时在配置文件中设置 `k8s.worker_image`。上述抓包开关、PriorityClass、worker 镜像和池容量是部署配置，修改后重启平台生效。
+Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、Pod PriorityClass、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
 
 ## 独立构建 worker 镜像
 
