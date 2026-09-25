@@ -24,7 +24,7 @@ func TryWithWorkloadLock(ctx context.Context, root *gorm.DB, kind string, id uin
 }
 
 func withWorkloadLock(ctx context.Context, root *gorm.DB, kind string, id uint, try bool, fn func() error) error {
-	if root == nil || id == 0 || (kind != "victim" && kind != "generator") {
+	if root == nil || id == 0 || (kind != "victim" && kind != "generator" && kind != "generator-pool") {
 		return fmt.Errorf("invalid workload lock")
 	}
 	pool, err := root.DB()

@@ -47,6 +47,8 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 		}
 		for range challengeCount[challenge.RandID] {
 			generator, ret := generatorRepo.Create(model.Generator{
+				WorkerToken:   utils.RandHexStr(64),
+				Image:         challenge.GeneratorImage,
 				ChallengeID:   challenge.ID,
 				ChallengeName: challenge.Name,
 				ContestID:     sql.Null[uint]{V: contestID, Valid: contestID > 0},
@@ -73,6 +75,14 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 		contestID, len(form.Challenges), len(challenges), queued, failedCreate, failedEnqueue,
 	)
 	return model.SuccessRetVal()
+}
+
+func warmGeneratorPool(contestID uint, challenge model.Challenge) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := task.EnsureGeneratorPool(ctx, contestID, challenge); err != nil {
+		log.Logger.Warningf("Failed to warm generator pool: challenge_id=%d error=%v", challenge.ID, err)
+	}
 }
 
 func StopGenerators(tx *gorm.DB, contestID uint, form dto.StopGeneratorsForm) model.RetVal {

@@ -32,6 +32,9 @@ func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 	return func(ctx context.Context, t *asynq.Task) error {
 		start := time.Now()
 		err := h(ctx, t)
+		if errors.Is(err, redis.ErrGeneratorPoolEmpty) || errors.Is(err, redis.ErrNoAvailableGenerator) {
+			return err
+		}
 		if err == nil {
 			recordTaskExecution(ctx, t, model.TaskSuccessStatus, nil, nil)
 		} else if shouldRecordFailure(ctx, err) {
@@ -115,6 +118,15 @@ func Stop() {
 
 func newServerConfig(queue string, concurrency int) asynq.Config {
 	cfg := asynq.Config{
+		RetryDelayFunc: func(n int, err error, t *asynq.Task) time.Duration {
+			if errors.Is(err, redis.ErrGeneratorPoolEmpty) || errors.Is(err, redis.ErrNoAvailableGenerator) {
+				return 2 * time.Second
+			}
+			return asynq.DefaultRetryDelayFunc(n, err, t)
+		},
+		IsFailure: func(err error) bool {
+			return !errors.Is(err, redis.ErrGeneratorPoolEmpty) && !errors.Is(err, redis.ErrNoAvailableGenerator)
+		},
 		Concurrency:     concurrency,
 		ShutdownTimeout: 30 * time.Second,
 		Logger:          log.Logger.WithField("Type", log.TaskLogType).WithField("Queue", queue),

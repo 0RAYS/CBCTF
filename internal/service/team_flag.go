@@ -29,17 +29,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 				return ret
 			}
 			if contestChallenge.Type == model.DynamicChallengeType {
-				generator, lockToken, ret := GetGenerator(tx2, contest.ID, contestChallenge.Challenge)
-				if !ret.OK {
-					return model.RetVal{
-						Msg: i18n.Model.CreateError,
-						Attr: map[string]any{
-							"Model": model.Name(model.TeamFlag{}),
-							"Error": fmt.Sprintf("generate attachment failed: %s", ret.Msg),
-						},
-					}
-				}
-				if err := task.EnqueueGenAttachmentTask(team.CaptainID, generator, lockToken, contestChallenge.Challenge, team.ID, teamFlags); err != nil {
+				if err := task.EnqueueGenAttachmentTask(team.CaptainID, contest.ID, contestChallenge.Challenge, team.ID, teamFlags); err != nil {
 					log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 					return model.RetVal{
 						Msg: i18n.Model.CreateError,
@@ -223,11 +213,7 @@ func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest mo
 			return model.SuccessRetVal()
 		}
 
-		generator, lockToken, generatorRet := GetGenerator(tx2, contest.ID, challenge)
-		if !generatorRet.OK {
-			return generatorRet
-		}
-		if err := task.EnqueueGenAttachmentTask(user.ID, generator, lockToken, challenge, team.ID, teamFlags); err != nil {
+		if err := task.EnqueueGenAttachmentTask(user.ID, contest.ID, challenge, team.ID, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 		}
@@ -252,11 +238,7 @@ func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest m
 			return model.SuccessRetVal()
 		}
 
-		generator, lockToken, generatorRet := GetGenerator(tx2, contest.ID, challenge)
-		if !generatorRet.OK {
-			return generatorRet
-		}
-		if err := task.EnqueueGenAttachmentTask(user.ID, generator, lockToken, challenge, team.ID, teamFlags); err != nil {
+		if err := task.EnqueueGenAttachmentTask(user.ID, contest.ID, challenge, team.ID, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 		}

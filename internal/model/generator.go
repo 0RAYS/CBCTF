@@ -17,6 +17,8 @@ const (
 // BelongsTo Challenge
 // BelongsTo Contest
 type Generator struct {
+	WorkerToken   string         `json:"-"`
+	Image         string         `json:"image"`
 	ChallengeID   uint           `gorm:"index" json:"challenge_id"`
 	ChallengeName string         `json:"challenge_name"`
 	Challenge     Challenge      `json:"-"`

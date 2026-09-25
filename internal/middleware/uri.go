@@ -287,7 +287,11 @@ func SetAttachmentFile(test bool) gin.HandlerFunc {
 				return
 			}
 		}
-		path := challenge.AttachmentPath(GetTeam(ctx).ID)
+		path, pathRet := service.AttachmentPath(db.DB, challenge, GetTeam(ctx).ID)
+		if !pathRet.OK {
+			resp.AbortJSON(ctx, pathRet)
+			return
+		}
 		record, ret := db.InitFileRepo(db.DB).Get(db.GetOptions{
 			Conditions: map[string]any{"model": model.Name(challenge), "model_id": challenge.ID, "type": model.ChallengeFileType}},
 		)
