@@ -21,7 +21,9 @@ import (
 func warmChallengeImages(challenge model.Challenge) {
 	sidecars := []string{}
 	if challenge.Type == model.PodsChallengeType {
-		sidecars = append(sidecars, config.Env.K8S.CaptureImage)
+		if config.Env.K8S.CaptureEnabled {
+			sidecars = append(sidecars, config.Env.K8S.CaptureImage)
+		}
 		if config.Env.K8S.Frp.On {
 			sidecars = append(sidecars, config.Env.K8S.Frp.FrpcImage, config.Env.K8S.Frp.NginxImage)
 		}

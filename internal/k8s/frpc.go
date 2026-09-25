@@ -130,7 +130,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	frpcPodNameL := make([]string, 0)
 	podFrpcConfigMap := make(map[string]string)
 	podNginxConfigMap := make(map[string]string)
-	podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6))
+	podName := fmt.Sprintf("frpc-%d", victim.ID)
 	// 添加一个独立tag, 防止受 NetworkPolicy 影响
 	frpc := newFrpcConfig(frps.Host, frps.Port, frps.Token)
 	nginx := nginxConfig{}
@@ -179,26 +179,15 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 		wg.Go(func() error {
 			ctx := wg.Context()
 			fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-				Name:   fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
+				Name:   name,
 				Labels: labels,
-				Data:   map[string]string{"frpc.toml": podFrpcConfigMap[name]},
+				Data:   map[string]string{"frpc.toml": podFrpcConfigMap[name], "nginx.conf": podNginxConfigMap[name]},
 			})
 			if !ret.OK || fcm == nil {
 				if err, ok := ret.Attr["Error"].(string); ok {
 					return fmt.Errorf("%s", err)
 				}
 				return fmt.Errorf("create frpc configmap failed: %s", ret.Msg)
-			}
-			ncm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-				Name:   fmt.Sprintf("nginx-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
-				Labels: labels,
-				Data:   map[string]string{"nginx.conf": podNginxConfigMap[name]},
-			})
-			if !ret.OK || ncm == nil {
-				if err, ok := ret.Attr["Error"].(string); ok {
-					return fmt.Errorf("%s", err)
-				}
-				return fmt.Errorf("create nginx configmap failed: %s", ret.Msg)
 			}
 			fcmVolume := corev1.Volume{
 				Name: "frpc-volume",
@@ -209,7 +198,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			ncmVolume := corev1.Volume{
 				Name: "nginx-volume",
 				ConfigMap: &corev1.ConfigMapVolumeSource{
-					Name: ncm.Name,
+					Name: fcm.Name,
 				},
 			}
 			nfsVolume := corev1.Volume{
@@ -221,6 +210,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			containers := []corev1.Container{
 				{
 					Name:            FrpcContainerName,
+					Resources:       sidecarResources(),
 					Image:           config.Env.K8S.Frp.FrpcImage,
 					ImagePullPolicy: corev1.PullIfNotPresent,
 					Args:            []string{"-c", "/etc/frp/frpc.toml"},
@@ -234,6 +224,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				},
 				{
 					Name:            NginxContainerName,
+					Resources:       sidecarResources(),
 					Image:           config.Env.K8S.Frp.NginxImage,
 					ImagePullPolicy: corev1.PullIfNotPresent,
 					VolumeMounts: []corev1.VolumeMount{
@@ -246,6 +237,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				},
 			}
 			capture := corev1.Container{
+				Resources:       sidecarResources(),
 				Name:            CaptureContainerName,
 				Image:           config.Env.K8S.CaptureImage,
 				ImagePullPolicy: corev1.PullIfNotPresent,
@@ -285,12 +277,22 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				})
 			}
 			capture.Command = append(capture.Command, command)
-			containers = append(containers, capture)
+			volumes := []corev1.Volume{fcmVolume}
+			if len(nginx.Streams) > 0 {
+				volumes = append(volumes, ncmVolume)
+			} else {
+				containers = containers[:1]
+			}
+			if config.Env.K8S.CaptureEnabled {
+				containers = append(containers, capture)
+				volumes = append(volumes, nfsVolume)
+			}
 			options := CreatePodOptions{
-				Name:       name,
-				Labels:     labels,
-				Containers: containers,
-				Volumes:    []corev1.Volume{fcmVolume, ncmVolume, nfsVolume},
+				PriorityClassName: config.Env.K8S.PriorityClassName,
+				Name:              name,
+				Labels:            labels,
+				Containers:        containers,
+				Volumes:           volumes,
 			}
 			if _, ret = CreatePod(ctx, options); !ret.OK {
 				if err, ok := ret.Attr["Error"].(string); ok {

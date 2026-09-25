@@ -75,9 +75,11 @@ type Config struct {
 		} `mapstructure:"metrics" json:"metrics"`
 	} `mapstructure:"gin" json:"gin"`
 	K8S struct {
-		Namespace    string `mapstructure:"namespace" json:"namespace"`
-		CaptureImage string `mapstructure:"capture" json:"capture"`
-		Frp          struct {
+		Namespace         string `mapstructure:"namespace" json:"namespace"`
+		CaptureImage      string `mapstructure:"capture" json:"capture"`
+		CaptureEnabled    bool   `mapstructure:"capture_enabled" json:"capture_enabled"`
+		PriorityClassName string `mapstructure:"priority_class_name" json:"priority_class_name"`
+		Frp               struct {
 			On         bool         `mapstructure:"on" json:"on"`
 			FrpcImage  string       `mapstructure:"frpc" json:"frpc"`
 			NginxImage string       `mapstructure:"nginx" json:"nginx"`
