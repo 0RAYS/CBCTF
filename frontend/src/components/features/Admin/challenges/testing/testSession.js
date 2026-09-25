@@ -1,3 +1,5 @@
+import { POLL_TIMEOUT } from '../../../../../config/workload.js';
+
 export const normalizeInstanceStatus = (status) => {
   const normalized = typeof status === 'string' ? status.toLowerCase() : '';
   return ['waiting', 'pending', 'terminating', 'running'].includes(normalized) ? normalized : '';
@@ -41,12 +43,9 @@ export function createTestSession({ challengeId, api, onChange, notify }) {
 
   function startPolling(target, version, immediate = false) {
     // The deadline is independent of request completion, including hung requests.
-    deadlineTimer = setTimeout(
-      () => {
-        if (isCurrent(version)) finishPolling();
-      },
-      3 * 60 * 1000
-    );
+    deadlineTimer = setTimeout(() => {
+      if (isCurrent(version)) finishPolling();
+    }, POLL_TIMEOUT[target]);
 
     async function poll(showLoading = false) {
       if (!isCurrent(version)) return;
@@ -121,7 +120,7 @@ export function createTestSession({ challengeId, api, onChange, notify }) {
         notify('success', 'actionSuccess');
         startPolling('running', version);
       } else {
-        // Stop is synchronous on the backend; refresh immediately, then confirm if needed.
+        // Stop is queued on the backend; refresh immediately, then confirm completion.
         notify('success', 'actionSuccess');
         await startPolling('stopped', version, true);
       }

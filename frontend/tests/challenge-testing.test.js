@@ -102,19 +102,32 @@ test('polling waits five seconds after completion and never overlaps slow reques
   assert.equal(getStatus.mock.callCount(), 2);
 });
 
-test('the three-minute deadline clears loading and rejects late poll responses', async (t) => {
+test('the five-minute startup deadline clears loading and rejects late poll responses', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
   const pending = Promise.withResolvers();
   const h = setup(t, { getTestChallengeStatus: () => pending.promise });
   await h.session.start();
   t.mock.timers.tick(5000);
-  t.mock.timers.tick(175000);
+  t.mock.timers.tick(295000);
   assert.equal(h.state().loading.starting, false);
   const count = h.changes.length;
   pending.resolve(response('running'));
   await flush();
   assert.equal(h.changes.length, count);
   assert.equal(h.state().testStatus.remote.status, 'waiting');
+});
+
+test('startup keeps waiting beyond three minutes and receives readiness within the backend window', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const pending = Promise.withResolvers();
+  const h = setup(t, { getTestChallengeStatus: () => pending.promise });
+  await h.session.start();
+  t.mock.timers.tick(210000);
+  assert.equal(h.state().loading.starting, true);
+  pending.resolve(response('running'));
+  await flush();
+  assert.equal(h.state().testStatus.remote.status, 'running');
+  assert.equal(h.state().loading.starting, false);
 });
 
 test('stop refreshes immediately and does not poll once the instance is stopped', async (t) => {

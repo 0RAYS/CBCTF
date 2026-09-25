@@ -204,6 +204,11 @@ function ChallengeModal({
               </Button>
             </div>
           </div>
+          {challenge.hasAttachments && !challenge.attachment && (
+            <p role="status" className="text-sm leading-relaxed text-neutral-400">
+              {t('game.challengeModal.attachmentPending')}
+            </p>
+          )}
           {challenge.attachment && (
             <div className="space-y-1.5">
               <h3 className="text-neutral-400 font-mono text-sm">{t('game.challengeModal.sections.attachments')}</h3>

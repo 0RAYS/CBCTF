@@ -2669,6 +2669,7 @@
         "show": "Show Hint",
         "hide": "Hide Hint"
       },
+      "attachmentPending": "The attachment is not ready yet. Wait for generation to finish, or reopen this challenge to refresh its status.",
       "instance": {
         "waiting": "WAITING",
         "pending": "STARTING",
