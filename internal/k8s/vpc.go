@@ -22,10 +22,9 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, m
 		err error
 	)
 	vpc = &kubeovnv1.Vpc{
-		Name:      options.Name,
-		Namespace: globalNamespace,
-		Labels:    options.Labels,
-		Spec:      kubeovnv1.VpcSpec{},
+		Name:   options.Name,
+		Labels: options.Labels,
+		Spec:   kubeovnv1.VpcSpec{},
 	}
 	vpc, err = ovnClient.KubeovnV1().Vpcs().Create(ctx, vpc, metav1.CreateOptions{})
 	if err != nil {

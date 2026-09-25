@@ -20,7 +20,7 @@ rules:
     verbs: ["create", "get", "deletecollection"]
   - apiGroups: ["kubeovn.io"]
     resources: ["vpcs"]
-    verbs: ["create", "deletecollection"]
+    verbs: ["create", "get", "list", "watch", "delete", "deletecollection"]
   - apiGroups: ["kubeovn.io"]
     resources: ["ips"]
     verbs: ["deletecollection"]

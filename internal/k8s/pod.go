@@ -49,9 +49,10 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
 	pod = &corev1.Pod{
-		Name:      options.Name,
-		Namespace: globalNamespace,
-		Labels:    options.Labels,
+		OwnerReferences: resourceOwners(ctx),
+		Name:            options.Name,
+		Namespace:       globalNamespace,
+		Labels:          options.Labels,
 		Annotations: func() map[string]string {
 			annotations := make(map[string]string)
 			maps.Copy(annotations, options.Annotations)

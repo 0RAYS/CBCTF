@@ -29,9 +29,10 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 		err     error
 	)
 	service = &corev1.Service{
-		Name:      options.Name,
-		Namespace: globalNamespace,
-		Labels:    options.Labels,
+		OwnerReferences: resourceOwners(ctx),
+		Name:            options.Name,
+		Namespace:       globalNamespace,
+		Labels:          options.Labels,
 		Spec: corev1.ServiceSpec{
 			Selector: options.Selector,
 			Ports: func() []corev1.ServicePort {
