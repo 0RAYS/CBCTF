@@ -97,8 +97,8 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 		results: make(map[pullTarget]pullResult),
 		changed: make(chan struct{}, 1),
 	}
-	// Subscribe before creating Jobs so immediate TTL collection cannot race
-	// result observation. This handler shares the namespace's existing watch.
+	// Subscribe before creating Jobs to retain outcomes when Pods leave the
+	// cache. This handler shares the namespace's existing watch.
 	handler, err := pods.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    observed.observe,
 		UpdateFunc: func(_, current any) { observed.observe(current) },
