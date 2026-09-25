@@ -20,8 +20,8 @@ type pullResult struct {
 	reason string
 }
 
-// Keep observed outcomes until the task consumes them. TTL-zero Jobs and their
-// Pods can disappear from the informer store before the task reads that store.
+// Keep observed outcomes until the task consumes them, even if their Pods
+// have already disappeared from the informer store.
 type pullResults struct {
 	batch   string
 	mu      sync.Mutex

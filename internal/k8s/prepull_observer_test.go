@@ -86,7 +86,7 @@ func (h *pullRedisHook) ProcessHook(_ goredis.ProcessHook) goredis.ProcessHook {
 	}
 }
 
-func TestPrepullObservesResultsBeforeImmediateTTLCollection(t *testing.T) {
+func TestPrepullRetainsResultsAfterControllerCollection(t *testing.T) {
 	for _, tc := range []struct {
 		name     string
 		imageID  string
@@ -134,8 +134,8 @@ func TestPrepullObservesResultsBeforeImmediateTTLCollection(t *testing.T) {
 					return true, nil, fmt.Errorf("Pod watch was not established")
 				}
 				job := action.(ktesting.CreateAction).GetObject().(*batchv1.Job)
-				if job.Spec.TTLSecondsAfterFinished == nil || *job.Spec.TTLSecondsAfterFinished != 0 {
-					return true, nil, fmt.Errorf("Job is missing immediate TTL collection")
+				if job.Spec.TTLSecondsAfterFinished == nil || *job.Spec.TTLSecondsAfterFinished != 3600 {
+					return true, nil, fmt.Errorf("Job is missing one-hour TTL collection")
 				}
 				job.UID = "job-uid"
 				pod := &corev1.Pod{
@@ -166,8 +166,8 @@ func TestPrepullObservesResultsBeforeImmediateTTLCollection(t *testing.T) {
 				if err := client.Tracker().Update(pods, pod, pod.Namespace); err != nil {
 					return true, nil, err
 				}
-				// Simulate TTL-controller/GC removal before Create returns. No cleanup
-				// requests are issued by the application; the fake client has no GC.
+				// Simulate controller removal before results are consumed. The fake
+				// client has no TTL clock or GC; application cleanup calls are forbidden.
 				if err := client.Tracker().Delete(pods, pod.Namespace, pod.Name); err != nil {
 					return true, nil, err
 				}
