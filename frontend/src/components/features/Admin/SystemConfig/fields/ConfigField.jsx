@@ -17,6 +17,9 @@ export function ConfigField({
   options = [],
   placeholder = '',
   disabled = false,
+  description,
+  min,
+  step,
 }) {
   const handleChange = (event) => {
     const newValue = event.target.value;
@@ -46,8 +49,11 @@ export function ConfigField({
           onChange={handleChange}
           placeholder={placeholder}
           disabled={disabled}
+          min={min}
+          step={step}
         />
       )}
+      {description && <p className="text-xs leading-relaxed text-neutral-500">{description}</p>}
     </div>
   );
 }

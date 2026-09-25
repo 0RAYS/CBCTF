@@ -27,12 +27,16 @@ type UpdateSettingForm struct {
 	GinMetricsWhitelist   *[]string `form:"gin_metrics_whitelist" json:"gin_metrics_whitelist" binding:"omitempty,dive,ip|cidr"`
 	GinPProfWhitelist     *[]string `form:"gin_pprof_whitelist" json:"gin_pprof_whitelist" binding:"omitempty,dive,ip|cidr"`
 
-	K8SNamespace     *string              `form:"k8s_namespace" json:"k8s_namespace" binding:"omitempty,min=1,alphanum"`
-	K8SCaptureImage  *string              `form:"k8s_capture" json:"k8s_capture" binding:"omitempty,min=1"`
-	K8SFrpOn         *bool                `form:"k8s_frp_on" json:"k8s_frp_on"`
-	K8SFrpFrpcImage  *string              `form:"k8s_frp_frpc" json:"k8s_frp_frpc" binding:"omitempty,min=1"`
-	K8SFrpNginxImage *string              `form:"k8s_frp_nginx" json:"k8s_frp_nginx" binding:"omitempty,min=1"`
-	K8SFrpFrps       *[]config.FrpsConfig `form:"k8s_frp_frps" json:"k8s_frp_frps" binding:"omitempty,dive"`
+	K8SNamespace         *string              `form:"k8s_namespace" json:"k8s_namespace" binding:"omitempty,min=1,alphanum"`
+	K8SCaptureImage      *string              `form:"k8s_capture" json:"k8s_capture" binding:"omitempty,min=1"`
+	K8SCaptureEnabled    *bool                `form:"k8s_capture_enabled" json:"k8s_capture_enabled"`
+	K8SPriorityClassName *string              `form:"k8s_priority_class_name" json:"k8s_priority_class_name" binding:"omitempty,max=253"`
+	K8SWorkerImage       *string              `form:"k8s_worker_image" json:"k8s_worker_image" binding:"omitempty,min=1"`
+	K8SGeneratorPoolSize *int                 `form:"k8s_generator_pool_size" json:"k8s_generator_pool_size" binding:"omitempty,gte=0"`
+	K8SFrpOn             *bool                `form:"k8s_frp_on" json:"k8s_frp_on"`
+	K8SFrpFrpcImage      *string              `form:"k8s_frp_frpc" json:"k8s_frp_frpc" binding:"omitempty,min=1"`
+	K8SFrpNginxImage     *string              `form:"k8s_frp_nginx" json:"k8s_frp_nginx" binding:"omitempty,min=1"`
+	K8SFrpFrps           *[]config.FrpsConfig `form:"k8s_frp_frps" json:"k8s_frp_frps" binding:"omitempty,dive"`
 
 	CheatIPWhitelist         *[]string `form:"cheat_ip_whitelist" json:"cheat_ip_whitelist" binding:"omitempty,dive,ip|cidr"`
 	WebhookWhitelist         *[]string `form:"webhook_whitelist" json:"webhook_whitelist" binding:"omitempty,dive,ip|cidr|hostname|hostname_port"`

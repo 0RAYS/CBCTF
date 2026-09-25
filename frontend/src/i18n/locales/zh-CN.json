@@ -2255,7 +2255,7 @@
       "update": {
         "title": "更新配置确认",
         "prompt": "即将更新系统配置, 是否继续？",
-        "warning": "这些配置会立即保存到数据库并影响运行时策略, 请确认后继续",
+        "warning": "配置将保存到数据库。工作负载配置对新建实例生效；任务并发及启动时配置需要重启。其他平台副本也需重新加载配置。",
         "confirm": "继续更新",
         "cancel": "取消"
       },
@@ -2295,7 +2295,7 @@
         "ginUploadPicture": "图片上传大小 (MB)",
         "ginUploadChallenge": "题目附件上传大小 (MB)",
         "ginUploadWriteup": "题解上传大小 (MB)",
-        "ginGlobalRate": "全局频率限制 (RPS)",
+        "ginGlobalRate": "全局频率限制（次/分钟）",
         "ginProxies": "信任上游代理列表",
         "ginLogWhitelist": "请求日志白名单路径",
         "ginRateWhitelist": "IP 速率限制白名单",
@@ -2315,6 +2315,10 @@
         "redisPassword": "密码",
         "k8sNamespace": "命名空间",
         "k8sCapture": "流量捕获容器镜像",
+        "k8sCaptureEnabled": "启用流量抓包",
+        "k8sPriorityClassName": "Pod 优先级类",
+        "k8sWorkerImage": "Worker 镜像",
+        "k8sGeneratorPoolSize": "生成器池容量",
         "frpOn": "是否启用 Frp 暴露靶机",
         "frpc": "Frpc 容器镜像",
         "nginx": "Nginx 容器镜像",
@@ -2331,6 +2335,10 @@
         "registrationDefaultGroupNone": "无"
       },
       "hints": {
+        "k8sCaptureEnabled": "对新建靶机和 FRPC Pod 生效。关闭后不创建抓包容器及其存储挂载。",
+        "k8sPriorityClassName": "新建 Pod 使用的已有 Kubernetes PriorityClass 名称，留空使用集群默认值。",
+        "k8sWorkerImage": "包含 /app/worker 的独立镜像，例如 ghcr.io/0rays/cbctf-worker:latest，对新建生成器生效。",
+        "k8sGeneratorPoolSize": "每场比赛、每道动态题的目标池容量。0 表示关闭自动预建；修改在预建或补池时生效，不会自动停止已有实例。",
         "uploadGeoCityDB": "文件将固定保存到数据目录下的 GeoLite2-City.mmdb。"
       },
       "k8s": {
