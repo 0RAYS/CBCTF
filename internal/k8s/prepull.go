@@ -5,10 +5,10 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"slices"
-	"time"
 
 	"github.com/distribution/reference"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/cache"
 
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -87,8 +87,31 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 		}
 	}
 	batch := utils.RandHexStr(16)
-	selector := map[string]string{"cbctf.io/prepull": batch}
-	pending := make(map[string]bool)
+	selector := map[string]string{prepullLabel: batch}
+	pods, err := cachedObjects(ctx, "pods")
+	if err != nil {
+		return err
+	}
+	observed := &pullResults{
+		batch:   batch,
+		results: make(map[pullTarget]pullResult),
+		changed: make(chan struct{}, 1),
+	}
+	// Subscribe before creating Jobs so immediate TTL collection cannot race
+	// result observation. This handler shares the namespace's existing watch.
+	handler, err := pods.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    observed.observe,
+		UpdateFunc: func(_, current any) { observed.observe(current) },
+		DeleteFunc: observed.observe,
+	})
+	if err != nil {
+		return err
+	}
+	defer func() { _ = pods.informer.RemoveEventHandler(handler) }()
+	if !cache.WaitForCacheSync(ctx.Done(), handler.HasSynced) {
+		return fmt.Errorf("sync image warmup observer: %w", ctx.Err())
+	}
+	pending := make(map[pullTarget]bool)
 	for _, node := range nodes {
 		if len(selectedNodes) > 0 && !slices.Contains(selectedNodes, node.Name) {
 			continue
@@ -126,47 +149,27 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 				return resourceError(ret)
 			}
 			for _, image := range chunk {
-				pending[node.Name+"\x00"+image] = true
+				pending[pullTarget{node: node.Name, image: image}] = true
 			}
 		}
 	}
-	ticker := time.NewTicker(2 * time.Second)
-	defer ticker.Stop()
 	failures := 0
 	for len(pending) > 0 {
-		pods, ret := ListPods(ctx, selector)
-		if !ret.OK {
-			return resourceError(ret)
-		}
-		for _, pod := range pods.Items {
-			for _, status := range pod.Status.ContainerStatuses {
-				image := ""
-				for _, container := range pod.Spec.Containers {
-					if container.Name == status.Name {
-						image = container.Image
-						break
-					}
-				}
-				key := pod.Spec.NodeName + "\x00" + image
-				if !pending[key] {
-					continue
-				}
-				if status.ImageID != "" {
-					if err := redis.RDB.HDel(ctx, imageFailureKey(image), pod.Spec.NodeName).Err(); err != nil {
-						return err
-					}
-					delete(pending, key)
-				} else if waiting := status.State.Waiting; waiting != nil &&
-					(waiting.Reason == "ErrImagePull" ||
-						waiting.Reason == "ImagePullBackOff" ||
-						waiting.Reason == "InvalidImageName") {
-					if err := redis.RDB.HSet(ctx, imageFailureKey(image), pod.Spec.NodeName, waiting.Reason).Err(); err != nil {
-						return err
-					}
-					delete(pending, key)
-					failures++
-				}
+		for target, result := range observed.snapshot() {
+			if !pending[target] {
+				continue
 			}
+			if result.pulled {
+				if err := redis.RDB.HDel(ctx, imageFailureKey(target.image), target.node).Err(); err != nil {
+					return err
+				}
+			} else {
+				if err := redis.RDB.HSet(ctx, imageFailureKey(target.image), target.node, result.reason).Err(); err != nil {
+					return err
+				}
+				failures++
+			}
+			delete(pending, target)
 		}
 		if len(pending) == 0 {
 			if failures > 0 {
@@ -177,7 +180,7 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("image warmup incomplete (%d node/image pairs): %w", len(pending), ctx.Err())
-		case <-ticker.C:
+		case <-observed.changed:
 		}
 	}
 	return nil
