@@ -1,15 +1,15 @@
 package service
 
 import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
-
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func GetHomePageData(tx *gorm.DB) gin.H {

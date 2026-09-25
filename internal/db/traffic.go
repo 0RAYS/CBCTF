@@ -1,13 +1,14 @@
 package db
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"time"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 type TrafficRepo struct {

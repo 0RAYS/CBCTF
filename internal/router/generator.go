@@ -1,6 +1,11 @@
 package router
 
 import (
+	"context"
+	"time"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -9,10 +14,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"context"
-	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetGenerators(ctx *gin.Context) {

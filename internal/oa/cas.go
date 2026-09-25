@@ -1,10 +1,6 @@
 package oa
 
 import (
-	"CBCTF/internal/dto"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -16,6 +12,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 type casProtocol struct{}

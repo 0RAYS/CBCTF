@@ -1,12 +1,13 @@
 package resp
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/model"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/model"
 )
 
 const (

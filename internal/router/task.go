@@ -1,14 +1,14 @@
 package router
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/task"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetTasks(ctx *gin.Context) {

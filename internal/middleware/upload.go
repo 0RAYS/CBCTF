@@ -1,15 +1,16 @@
 package middleware
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/model"
-	"CBCTF/internal/resp"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
 )
 
 const multipartFormMemory = 32 << 20

@@ -1,12 +1,13 @@
 package prometheus
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/db"
 	"database/sql"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/db"
 )
 
 const postgresMetricPrefix = "postgres_"
@@ -137,7 +138,9 @@ func (c *PostgresCollector) Collect(ch chan<- prometheus.Metric) {
 
 func (c *PostgresCollector) collectReplicationLag(ch chan<- prometheus.Metric) {
 	var lag float64
-	if err := db.DB.Raw("SELECT CASE WHEN NOT pg_is_in_recovery() THEN 0 ELSE GREATEST(0, EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))) END AS lag").Scan(&lag).Error; err != nil {
+	if err := db.DB.Raw(
+		"SELECT CASE WHEN NOT pg_is_in_recovery() THEN 0 ELSE GREATEST(0, EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))) END AS lag",
+	).Scan(&lag).Error; err != nil {
 		return
 	}
 	ch <- prometheus.MustNewConstMetric(c.replicationLagDesc, prometheus.GaugeValue, lag)

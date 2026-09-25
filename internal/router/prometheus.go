@@ -1,13 +1,13 @@
 package router
 
 import (
-	"CBCTF/internal/middleware"
-	p "CBCTF/internal/prometheus"
-
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"CBCTF/internal/middleware"
+	p "CBCTF/internal/prometheus"
 )
 
 func RegisterMetricsRouter(router *gin.Engine) {

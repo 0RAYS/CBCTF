@@ -1,15 +1,16 @@
 package task
 
 import (
-	"CBCTF/internal/email"
-	"CBCTF/internal/log"
-	"CBCTF/internal/prometheus"
 	"context"
 	"fmt"
 	"time"
 
 	"github.com/hibiken/asynq"
 	"github.com/vmihailenco/msgpack/v5"
+
+	"CBCTF/internal/email"
+	"CBCTF/internal/log"
+	"CBCTF/internal/prometheus"
 )
 
 const sendEmailTaskType = "tasks:email"

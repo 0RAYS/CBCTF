@@ -1,9 +1,9 @@
 package resp
 
 import (
-	"CBCTF/internal/model"
-
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/model"
 )
 
 func GetWebhookHistoryResp(history model.WebhookHistory) gin.H {

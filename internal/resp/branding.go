@@ -1,9 +1,9 @@
 package resp
 
 import (
-	"CBCTF/internal/model"
-
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/model"
 )
 
 func GetBrandingResp(branding model.Branding) gin.H {

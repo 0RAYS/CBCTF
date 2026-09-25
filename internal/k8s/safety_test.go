@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/model"
 	"context"
 	"strings"
 	"testing"
@@ -12,13 +11,21 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	ktesting "k8s.io/client-go/testing"
+
+	"CBCTF/internal/model"
 )
 
 func TestCollectionDeletionRequiresOwner(t *testing.T) {
 	operations := map[string]func(context.Context, map[string]string) model.RetVal{
-		"Pod": DeletePodCollection, "Service": DeleteServiceCollection, "EndpointSlice": DeleteEndpointCollection,
-		"ConfigMap": DeleteConfigMapCollection, "NetworkPolicy": DeleteNetworkPolicyCollection,
-		"Subnet": DeleteSubnetCollection, "VPC": DeleteVPCCollection, "IP": DeleteIPCollection, "VM": DeleteVMCollection,
+		"Pod":           DeletePodCollection,
+		"Service":       DeleteServiceCollection,
+		"EndpointSlice": DeleteEndpointCollection,
+		"ConfigMap":     DeleteConfigMapCollection,
+		"NetworkPolicy": DeleteNetworkPolicyCollection,
+		"Subnet":        DeleteSubnetCollection,
+		"VPC":           DeleteVPCCollection,
+		"IP":            DeleteIPCollection,
+		"VM":            DeleteVMCollection,
 		"NAD": func(ctx context.Context, labels map[string]string) model.RetVal {
 			return DeleteNetAttachDefCollection(ctx, "test", labels)
 		},
@@ -26,7 +33,16 @@ func TestCollectionDeletionRequiresOwner(t *testing.T) {
 	for name, operation := range operations {
 		t.Run(name, func(t *testing.T) {
 			// These must return before touching a client. Several clients are nil in tests.
-			for _, filters := range []map[string]string{nil, {}, {"role": "victim"}, {"victim_id": ""}, {"victim_id": "0"}, {"victim_id": "-1"}, {"victim_id": "7", "bad key": "x"}, {"victim_id": "7,role=other"}} {
+			for _, filters := range []map[string]string{
+				nil,
+				{},
+				{"role": "victim"},
+				{"victim_id": ""},
+				{"victim_id": "0"},
+				{"victim_id": "-1"},
+				{"victim_id": "7", "bad key": "x"},
+				{"victim_id": "7,role=other"},
+			} {
 				if ret := operation(context.Background(), filters); ret.OK {
 					t.Fatalf("unsafe selector accepted: %v", filters)
 				}
@@ -53,7 +69,12 @@ func TestCollectionDeletionRequiresOwner(t *testing.T) {
 }
 
 func TestGeneratorCleanupRejectsForeignPod(t *testing.T) {
-	pod := &corev1.Pod{Name: "collision", Namespace: "test", UID: "other", Labels: map[string]string{"challenge_id": "9", "generator_id": "8", RoleLabel: GeneratorPodTag}}
+	pod := &corev1.Pod{
+		Name:      "collision",
+		Namespace: "test",
+		UID:       "other",
+		Labels:    map[string]string{"challenge_id": "9", "generator_id": "8", RoleLabel: GeneratorPodTag},
+	}
 	client := useFakePods(t, pod)
 	ret := StopGenerator(context.Background(), model.Generator{ID: 7, ChallengeID: 9, Name: pod.Name})
 	if ret.OK {
@@ -67,7 +88,12 @@ func TestGeneratorCleanupRejectsForeignPod(t *testing.T) {
 }
 
 func TestGeneratorCleanupRejectsMissingOwnerLabel(t *testing.T) {
-	pod := &corev1.Pod{Name: "unlabelled", Namespace: "test", UID: "old", Labels: map[string]string{"challenge_id": "9", RoleLabel: GeneratorPodTag}}
+	pod := &corev1.Pod{
+		Name:      "unlabelled",
+		Namespace: "test",
+		UID:       "old",
+		Labels:    map[string]string{"challenge_id": "9", RoleLabel: GeneratorPodTag},
+	}
 	client := useFakePods(t, pod)
 	generator := model.Generator{ID: 7, ChallengeID: 9, Name: pod.Name}
 	if ret := StopGenerator(context.Background(), generator); ret.OK {
@@ -120,15 +146,21 @@ func TestPodDeletionPinsUIDAndRejectsReplacement(t *testing.T) {
 
 func TestImagePullJobHasBoundedLifetimeAndNoCredentials(t *testing.T) {
 	useFakePods(t)
-	job, ret := CreateJob(context.Background(), CreateJobOptions{Name: "pull-test", Images: []string{"test-image"}, PullPolicy: "Always"})
+	job, ret := CreateJob(context.Background(), CreateJobOptions{
+		Name:       "pull-test",
+		Images:     []string{"test-image"},
+		PullPolicy: "Always",
+	})
 	if !ret.OK {
 		t.Fatal(ret)
 	}
 	pod := job.Spec.Template.Spec
-	if pod.AutomountServiceAccountToken == nil || *pod.AutomountServiceAccountToken || pod.EnableServiceLinks == nil || *pod.EnableServiceLinks {
+	if pod.AutomountServiceAccountToken == nil || *pod.AutomountServiceAccountToken ||
+		pod.EnableServiceLinks == nil || *pod.EnableServiceLinks {
 		t.Fatal("image-pull Pod exposes credentials/service env")
 	}
-	if job.Spec.ActiveDeadlineSeconds == nil || *job.Spec.ActiveDeadlineSeconds != 600 || job.Spec.TTLSecondsAfterFinished == nil || *job.Spec.TTLSecondsAfterFinished != 300 {
+	if job.Spec.ActiveDeadlineSeconds == nil || *job.Spec.ActiveDeadlineSeconds != 600 ||
+		job.Spec.TTLSecondsAfterFinished == nil || *job.Spec.TTLSecondsAfterFinished != 300 {
 		t.Fatal("job lifetime is unbounded")
 	}
 }
@@ -136,7 +168,8 @@ func TestImagePullJobHasBoundedLifetimeAndNoCredentials(t *testing.T) {
 func TestClientConfigurationSharesRateLimiter(t *testing.T) {
 	config := &rest.Config{}
 	configureClientRateLimit(config)
-	if config.RateLimiter == nil || rest.CopyConfig(config).RateLimiter != config.RateLimiter || config.RateLimiter.QPS() != 100 || config.Burst != 150 {
+	if config.RateLimiter == nil || rest.CopyConfig(config).RateLimiter != config.RateLimiter ||
+		config.RateLimiter.QPS() != 100 || config.Burst != 150 {
 		t.Fatal("missing shared API request budget")
 	}
 	if !strings.Contains(config.UserAgent, "cbctf") {

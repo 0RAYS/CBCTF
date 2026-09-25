@@ -1,13 +1,13 @@
 package router
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetTraffics(ctx *gin.Context) {

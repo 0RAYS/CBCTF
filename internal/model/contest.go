@@ -1,11 +1,12 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"CBCTF/internal/i18n"
 )
 
 var (

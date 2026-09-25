@@ -1,10 +1,10 @@
 package resp
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/model"
 	"CBCTF/internal/view"
-
-	"github.com/gin-gonic/gin"
 )
 
 func GetVictimStatusResp(status view.VictimStatusView) gin.H {

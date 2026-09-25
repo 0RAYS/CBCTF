@@ -1,13 +1,14 @@
 package task
 
 import (
+	"context"
+	"fmt"
+	"time"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"context"
-	"fmt"
-	"time"
 )
 
 var readinessCancel context.CancelFunc
@@ -26,14 +27,18 @@ func startReadinessController() {
 				return
 			case <-ticker.C:
 			}
-			victims, _, ret := db.InitVictimRepo(db.TaskDB.WithContext(ctx)).List(-1, -1, db.GetOptions{Conditions: map[string]any{"status": model.PendingVictimStatus}})
+			victims, _, ret := db.InitVictimRepo(db.TaskDB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+				Conditions: map[string]any{"status": model.PendingVictimStatus},
+			})
 			if !ret.OK {
 				log.Logger.Warningf("List pending victims failed: %s", ret.Msg)
 				continue
 			}
 			for _, victim := range victims {
 				checkCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-				err := db.TryWithWorkloadLock(checkCtx, db.WorkloadLockDB, "victim", victim.ID, func() error { return reconcileVictim(checkCtx, victim.ID) })
+				err := db.TryWithWorkloadLock(checkCtx, db.WorkloadLockDB, "victim", victim.ID, func() error {
+					return reconcileVictim(checkCtx, victim.ID)
+				})
 				if err != nil && checkCtx.Err() == nil {
 					log.Logger.Warningf("Reconcile victim %d: %v", victim.ID, err)
 				}
@@ -70,7 +75,12 @@ func reconcileVictim(ctx context.Context, id uint) error {
 	if !ready {
 		return nil
 	}
-	ret = repo.UpdateIfStatus(id, model.PendingVictimStatus, db.UpdateVictimOptions{Status: new(model.RunningVictimStatus), Start: new(time.Now()), Endpoints: &victim.Endpoints, ExposedEndpoints: &victim.ExposedEndpoints})
+	ret = repo.UpdateIfStatus(id, model.PendingVictimStatus, db.UpdateVictimOptions{
+		Status:           new(model.RunningVictimStatus),
+		Start:            new(time.Now()),
+		Endpoints:        &victim.Endpoints,
+		ExposedEndpoints: &victim.ExposedEndpoints,
+	})
 	if !ret.OK {
 		return fmt.Errorf("mark running: %s", ret.Msg)
 	}

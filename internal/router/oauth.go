@@ -1,6 +1,12 @@
 package router
 
 import (
+	"fmt"
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
@@ -14,11 +20,6 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
-	"fmt"
-	"net/http"
-	"sync"
-
-	"github.com/gin-gonic/gin"
 )
 
 var (

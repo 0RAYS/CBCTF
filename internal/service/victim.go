@@ -1,15 +1,6 @@
 package service
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/db"
-	"CBCTF/internal/dto"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/task"
-	"CBCTF/internal/utils"
-	"CBCTF/internal/view"
 	"crypto/rand"
 	"database/sql"
 	"fmt"
@@ -20,6 +11,16 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/task"
+	"CBCTF/internal/utils"
+	"CBCTF/internal/view"
 )
 
 func shuffleTeams(teams []model.Team) model.RetVal {
@@ -386,7 +387,10 @@ func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	victim.Status = model.TerminatingVictimStatus
 	err := task.EnqueueStopVictimTask(victim)
 	if err != nil {
-		log.Logger.Warningf("Failed to enqueue stop victim task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err)
+		log.Logger.Warningf(
+			"Failed to enqueue stop victim task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v",
+			victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err,
+		)
 		_ = repo.UpdateIfStatus(victim.ID, model.TerminatingVictimStatus, db.UpdateVictimOptions{Status: new(originalStatus)})
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}

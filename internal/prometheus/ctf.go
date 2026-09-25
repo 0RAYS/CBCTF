@@ -1,11 +1,12 @@
 package prometheus
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/model"
 	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
+
+	"CBCTF/internal/db"
+	"CBCTF/internal/model"
 )
 
 // CTFCollector implements prometheus.Collector and reads metrics from DB state.

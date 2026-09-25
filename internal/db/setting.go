@@ -1,14 +1,15 @@
 package db
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"encoding/json"
 	"reflect"
 
 	"gorm.io/gorm"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 type SettingRepo struct {

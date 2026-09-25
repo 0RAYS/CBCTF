@@ -1,11 +1,11 @@
 package db
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 func AppendUserToTeam(tx *gorm.DB, user model.User, team model.Team) model.RetVal {

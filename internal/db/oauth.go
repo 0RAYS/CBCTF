@@ -1,10 +1,10 @@
 package db
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/model"
 	"CBCTF/internal/oa"
-
-	"gorm.io/gorm"
 )
 
 type OauthRepo struct {

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/config"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
@@ -12,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"CBCTF/internal/config"
 )
 
 const (

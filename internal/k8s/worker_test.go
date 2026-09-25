@@ -1,9 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/model"
-	"CBCTF/internal/worker"
 	"archive/zip"
 	"bytes"
 	"context"
@@ -15,6 +12,10 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/model"
+	"CBCTF/internal/worker"
 )
 
 type workerRoundTrip func(*http.Request) (*http.Response, error)

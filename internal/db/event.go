@@ -1,9 +1,9 @@
 package db
 
 import (
-	"CBCTF/internal/model"
-
 	"gorm.io/gorm"
+
+	"CBCTF/internal/model"
 )
 
 type EventRepo struct {

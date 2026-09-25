@@ -1,19 +1,28 @@
 package service
 
 import (
+	"sync"
+
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
-	"sync"
-
-	"gorm.io/gorm"
 )
 
 var SolvedMutex sync.Map
 
-func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge, form dto.SubmitFlagForm, ip string) (model.Submission, model.RetVal) {
+func Submit(
+	tx *gorm.DB,
+	user model.User,
+	team model.Team,
+	contest model.Contest,
+	contestChallenge model.ContestChallenge,
+	form dto.SubmitFlagForm,
+	ip string,
+) (model.Submission, model.RetVal) {
 	submissionRepo := db.InitSubmissionRepo(tx)
 	if contestChallenge.Attempt != 0 {
 		if ret := submissionRepo.LockAttemptScope(team.ID, contestChallenge.ID); !ret.OK {

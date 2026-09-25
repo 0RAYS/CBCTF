@@ -1,12 +1,12 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge, value string) (bool, model.ContestFlag, model.TeamFlag, model.RetVal) {
@@ -46,7 +46,16 @@ func CalcContestFlagState(tx *gorm.DB, contestFlag model.ContestFlag) (int64, fl
 	return solvers, contestFlag.CalcScore(solvers - 1), model.SuccessRetVal()
 }
 
-func SubmitContestFlag(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, challenge model.Challenge, contestChallenge model.ContestChallenge, form dto.SubmitFlagForm, ip string) model.RetVal {
+func SubmitContestFlag(
+	tx *gorm.DB,
+	user model.User,
+	team model.Team,
+	contest model.Contest,
+	challenge model.Challenge,
+	contestChallenge model.ContestChallenge,
+	form dto.SubmitFlagForm,
+	ip string,
+) model.RetVal {
 	var solved bool
 	ret := db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
 		_, submitRet := Submit(tx2, user, team, contest, contestChallenge, form, ip)

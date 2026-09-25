@@ -1,10 +1,11 @@
 package cron
 
 import (
+	"time"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
-	"time"
 )
 
 func checkCheatTask() model.RetVal {

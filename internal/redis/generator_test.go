@@ -1,8 +1,6 @@
 package redis
 
 import (
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"context"
 	"errors"
 	"fmt"
@@ -12,6 +10,9 @@ import (
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"
+
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 func TestGeneratorKeyContract(t *testing.T) {

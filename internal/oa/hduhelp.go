@@ -1,10 +1,11 @@
 package oa
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/model"
 	"embed"
 	"fmt"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/model"
 )
 
 var (

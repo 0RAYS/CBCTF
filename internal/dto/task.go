@@ -1,9 +1,9 @@
 package dto
 
 import (
-	"CBCTF/internal/model"
-
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/model"
 )
 
 type ListTasksForm struct {

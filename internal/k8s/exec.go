@@ -1,13 +1,14 @@
 package k8s
 
 import (
-	"CBCTF/internal/log"
 	"context"
 	"io"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
+
+	"CBCTF/internal/log"
 )
 
 // Exec executes an argument vector (without a shell) in a Pod, draining output without buffering it.

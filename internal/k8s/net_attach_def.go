@@ -1,15 +1,16 @@
 package k8s
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"context"
 	"fmt"
 
 	netattv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 const OVNNetworkConfigTmpl = `{
@@ -63,7 +64,13 @@ func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*ne
 
 func DeleteNetAttachDefCollection(ctx context.Context, namespace string, labels map[string]string) model.RetVal {
 	if namespace == "" {
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "NetworkAttachmentDefinition", "Error": "refusing deletion without a namespace"}}
+		return model.RetVal{
+			Msg: i18n.K8S.DeleteError,
+			Attr: map[string]any{
+				"Model": "NetworkAttachmentDefinition",
+				"Error": "refusing deletion without a namespace",
+			},
+		}
 	}
 	options, ret := deleteCollectionOptions("NetworkAttachmentDefinition", labels)
 	if !ret.OK {

@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/log"
 	"context"
 	"strings"
 	"testing"
@@ -14,6 +13,8 @@ import (
 	clientfeaturestesting "k8s.io/client-go/features/testing"
 	"k8s.io/client-go/kubernetes/fake"
 	ktesting "k8s.io/client-go/testing"
+
+	"CBCTF/internal/log"
 )
 
 func TestPodStartupComplete(t *testing.T) {
@@ -24,11 +25,44 @@ func TestPodStartupComplete(t *testing.T) {
 	}{
 		{name: "pending", status: corev1.PodStatus{Phase: corev1.PodPending}},
 		{name: "running is not ready", status: corev1.PodStatus{Phase: corev1.PodRunning}},
-		{name: "ready", status: corev1.PodStatus{Phase: corev1.PodRunning, Conditions: []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}}}, ready: true},
+		{
+			name: "ready",
+			status: corev1.PodStatus{
+				Phase:      corev1.PodRunning,
+				Conditions: []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}},
+			},
+			ready: true,
+		},
 		{name: "completed workload", status: corev1.PodStatus{Phase: corev1.PodSucceeded}, failed: true},
 		{name: "failed", status: corev1.PodStatus{Phase: corev1.PodFailed}, failed: true},
-		{name: "sidecar hides workload exit", status: corev1.PodStatus{Phase: corev1.PodRunning, ContainerStatuses: []corev1.ContainerStatus{{Name: "web", State: corev1.ContainerState{Terminated: &corev1.ContainerStateTerminated{ExitCode: 1}}}}}, failed: true},
-		{name: "image pull is retryable", status: corev1.PodStatus{Phase: corev1.PodPending, ContainerStatuses: []corev1.ContainerStatus{{State: corev1.ContainerState{Waiting: &corev1.ContainerStateWaiting{Reason: "ImagePullBackOff"}}}}}},
+		{
+			name: "sidecar hides workload exit",
+			status: corev1.PodStatus{
+				Phase: corev1.PodRunning,
+				ContainerStatuses: []corev1.ContainerStatus{
+					{
+						Name: "web",
+						State: corev1.ContainerState{
+							Terminated: &corev1.ContainerStateTerminated{ExitCode: 1},
+						},
+					},
+				},
+			},
+			failed: true,
+		},
+		{
+			name: "image pull is retryable",
+			status: corev1.PodStatus{
+				Phase: corev1.PodPending,
+				ContainerStatuses: []corev1.ContainerStatus{
+					{
+						State: corev1.ContainerState{
+							Waiting: &corev1.ContainerStateWaiting{Reason: "ImagePullBackOff"},
+						},
+					},
+				},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			ready, err := podStartupComplete(&corev1.Pod{Status: tc.status})
@@ -70,7 +104,10 @@ func TestWaitPodReadyTracksUIDAndLatestState(t *testing.T) {
 			client := useFakePods(t)
 			if tc.exists {
 				current := created.DeepCopy()
-				current.Status = corev1.PodStatus{Phase: corev1.PodRunning, Conditions: []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}}}
+				current.Status = corev1.PodStatus{
+					Phase:      corev1.PodRunning,
+					Conditions: []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}},
+				}
 				if tc.replaced {
 					current.UID = "replacement"
 				}
@@ -95,7 +132,22 @@ func TestWaitPodReadyTracksUIDAndLatestState(t *testing.T) {
 }
 
 func TestWaitPodReadyTimeoutRetainsDiagnostics(t *testing.T) {
-	pod := &corev1.Pod{Name: "slow", Namespace: "test", UID: "uid", Status: corev1.PodStatus{Phase: corev1.PodPending, ContainerStatuses: []corev1.ContainerStatus{{Name: "generator", State: corev1.ContainerState{Waiting: &corev1.ContainerStateWaiting{Reason: "ImagePullBackOff"}}}}}}
+	pod := &corev1.Pod{
+		Name:      "slow",
+		Namespace: "test",
+		UID:       "uid",
+		Status: corev1.PodStatus{
+			Phase: corev1.PodPending,
+			ContainerStatuses: []corev1.ContainerStatus{
+				{
+					Name: "generator",
+					State: corev1.ContainerState{
+						Waiting: &corev1.ContainerStateWaiting{Reason: "ImagePullBackOff"},
+					},
+				},
+			},
+		},
+	}
 	useFakePods(t, pod)
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	defer cancel()
@@ -140,7 +192,10 @@ func TestWaitPodReadyRelistsAfterExpiredWatch(t *testing.T) {
 		}
 		first = false
 		ready := pod.DeepCopy()
-		ready.Status = corev1.PodStatus{Phase: corev1.PodRunning, Conditions: []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}}}
+		ready.Status = corev1.PodStatus{
+			Phase:      corev1.PodRunning,
+			Conditions: []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}},
+		}
 		if err := client.Tracker().Update(corev1.SchemeGroupVersion.WithResource("pods"), ready, "test"); err != nil {
 			return true, nil, err
 		}

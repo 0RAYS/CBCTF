@@ -1,17 +1,18 @@
 package task
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/k8s"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"time"
 
 	"github.com/hibiken/asynq"
 	"github.com/vmihailenco/msgpack/v5"
+
+	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 const (
@@ -39,17 +40,27 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	}
 	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "victim", payload.Victim.ID, func() error {
 		victim := payload.Victim
-		log.Logger.Debugf("Start victim task received: victim_id=%d user_id=%d team_id=%d challenge_id=%d pods=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods))
+		log.Logger.Debugf(
+			"Start victim task received: victim_id=%d user_id=%d team_id=%d challenge_id=%d pods=%d",
+			victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods),
+		)
 		cleanupQueued := false
 		claimed := false
 		cleanupFailedStart := func(reason error) error {
 			victimRepo := db.InitVictimRepo(db.TaskDB)
 			// The stop worker shares our lock; persist partial allocation even if a
 			// stop request already changed status while Kubernetes was provisioning.
-			_ = victimRepo.Update(victim.ID, db.UpdateVictimOptions{Resources: &victim.Resources, ExposedEndpoints: &victim.ExposedEndpoints})
+			_ = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
+				Resources:        &victim.Resources,
+				ExposedEndpoints: &victim.ExposedEndpoints,
+			})
 			expectedStatus := victim.Status
 			victim.Status = model.TerminatingVictimStatus
-			if ret := victimRepo.UpdateIfStatus(victim.ID, expectedStatus, db.UpdateVictimOptions{Status: new(model.TerminatingVictimStatus), Resources: &victim.Resources, ExposedEndpoints: &victim.ExposedEndpoints}); !ret.OK {
+			if ret := victimRepo.UpdateIfStatus(victim.ID, expectedStatus, db.UpdateVictimOptions{
+				Status:           new(model.TerminatingVictimStatus),
+				Resources:        &victim.Resources,
+				ExposedEndpoints: &victim.ExposedEndpoints,
+			}); !ret.OK {
 				log.Logger.Warningf("Failed to mark victim terminating after start failure: victim_id=%d reason=%s", victim.ID, ret.Msg)
 			}
 			if enqueueErr := EnqueueStopVictimTask(victim); enqueueErr == nil {
@@ -90,7 +101,10 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			}
 			victim = currentVictim
 			victim.Resources.ReadyDeadline = time.Now().Add(4 * time.Minute)
-			if ret = victimRepo.UpdateIfStatus(victim.ID, model.WaitingVictimStatus, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus), Resources: &victim.Resources}); !ret.OK {
+			if ret = victimRepo.UpdateIfStatus(victim.ID, model.WaitingVictimStatus, db.UpdateVictimOptions{
+				Status:    new(model.PendingVictimStatus),
+				Resources: &victim.Resources,
+			}); !ret.OK {
 				if ret.Msg == i18n.Model.Victim.NotStartable {
 					log.Logger.Infof("Start victim skipped: victim_id=%d status changed before provisioning", victim.ID)
 					return nil
@@ -100,7 +114,10 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			claimed = true
 			victim.Status = model.PendingVictimStatus
 			basePodCount := len(victim.Pods)
-			log.Logger.Infof("Starting victim provisioning: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
+			log.Logger.Infof(
+				"Starting victim provisioning: victim_id=%d user_id=%d team_id=%d challenge_id=%d",
+				victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID,
+			)
 			victim, ret = k8s.StartVictim(ctx, victim)
 			if !ret.OK {
 				return taskResourceError("start victim failed", ret)
@@ -183,7 +200,10 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 			return fmt.Errorf("stop victim failed: %s", ret.Msg)
 		}
 		if _, err := EnqueueLoadTrafficTask(victim); err != nil {
-			log.Logger.Warningf("Failed to enqueue load traffic task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err)
+			log.Logger.Warningf(
+				"Failed to enqueue load traffic task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v",
+				victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err,
+			)
 		}
 		ret = db.WithTransactionDB(db.TaskDB, func(tx *db.Tx) model.RetVal {
 			if ret = db.InitVictimRepo(tx).Update(victim.ID, db.UpdateVictimOptions{

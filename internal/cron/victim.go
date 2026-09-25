@@ -1,17 +1,18 @@
 package cron
 
 import (
+	"context"
+	"strconv"
+	"time"
+
+	corev1 "k8s.io/api/core/v1"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
-	"context"
-	"strconv"
-	"time"
-
-	corev1 "k8s.io/api/core/v1"
 )
 
 // closeTimeoutVictimsTask 关闭超时的靶机

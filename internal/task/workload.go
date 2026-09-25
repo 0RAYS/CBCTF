@@ -1,8 +1,9 @@
 package task
 
 import (
-	"CBCTF/internal/model"
 	"fmt"
+
+	"CBCTF/internal/model"
 )
 
 func taskResourceError(operation string, ret model.RetVal) error {

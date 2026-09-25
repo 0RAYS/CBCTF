@@ -1,14 +1,15 @@
 package middleware
 
 import (
+	"fmt"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
-	"fmt"
-
-	"github.com/gin-gonic/gin"
 )
 
 func CheckPermission(ctx *gin.Context) {

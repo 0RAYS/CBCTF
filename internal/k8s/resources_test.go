@@ -1,11 +1,12 @@
 package k8s
 
 import (
-	"CBCTF/internal/model"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	"CBCTF/internal/model"
 )
 
 func TestMergedFilesPreserveSameBasenameAndContainerPaths(t *testing.T) {

@@ -1,11 +1,12 @@
 package model
 
 import (
-	"CBCTF/internal/config"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"CBCTF/internal/config"
 )
 
 type FileURL string

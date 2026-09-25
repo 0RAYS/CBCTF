@@ -1,10 +1,11 @@
 package cron
 
 import (
+	"time"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"time"
 )
 
 func clearEmptyTeamTask() model.RetVal {

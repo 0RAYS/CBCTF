@@ -1,16 +1,17 @@
 package k8s
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"context"
 	"fmt"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 )
 
 type CreateJobOptions struct {
@@ -45,7 +46,23 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 					EnableServiceLinks:           new(false),
 					Affinity: func() *corev1.Affinity {
 						if options.SelectedNode != "" {
-							return &corev1.Affinity{NodeAffinity: &corev1.NodeAffinity{RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{NodeSelectorTerms: []corev1.NodeSelectorTerm{{MatchFields: []corev1.NodeSelectorRequirement{{Key: "metadata.name", Operator: corev1.NodeSelectorOpIn, Values: []string{options.SelectedNode}}}}}}}}
+							return &corev1.Affinity{
+								NodeAffinity: &corev1.NodeAffinity{
+									RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+										NodeSelectorTerms: []corev1.NodeSelectorTerm{
+											{
+												MatchFields: []corev1.NodeSelectorRequirement{
+													{
+														Key:      "metadata.name",
+														Operator: corev1.NodeSelectorOpIn,
+														Values:   []string{options.SelectedNode},
+													},
+												},
+											},
+										},
+									},
+								},
+							}
 						}
 						return nil
 					}(),

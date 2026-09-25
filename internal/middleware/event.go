@@ -1,14 +1,15 @@
 package middleware
 
 import (
+	"maps"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
 	"CBCTF/internal/webhook"
-	"maps"
-
-	"github.com/gin-gonic/gin"
 )
 
 const (

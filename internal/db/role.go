@@ -1,13 +1,14 @@
 package db
 
 import (
+	"slices"
+
+	"gorm.io/gorm"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"slices"
-
-	"gorm.io/gorm"
 )
 
 type RoleRepo struct {

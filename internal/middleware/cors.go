@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"CBCTF/internal/config"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/config"
 )
 
 // Cors 跨域中间件

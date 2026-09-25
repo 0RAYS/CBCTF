@@ -1,6 +1,13 @@
 package service
 
 import (
+	"context"
+	"fmt"
+	"strings"
+	"time"
+
+	corev1 "k8s.io/api/core/v1"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -8,12 +15,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
-	"context"
-	"fmt"
-	"strings"
-	"time"
-
-	corev1 "k8s.io/api/core/v1"
 )
 
 func ChallengeImages(challenge model.Challenge) []string {

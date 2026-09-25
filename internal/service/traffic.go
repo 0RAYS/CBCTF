@@ -1,13 +1,6 @@
 package service
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/dto"
-	"CBCTF/internal/k8s"
-	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
-	"CBCTF/internal/resp"
-	"CBCTF/internal/utils"
 	"fmt"
 	"net/netip"
 	"slices"
@@ -15,6 +8,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
+	"CBCTF/internal/k8s"
+	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
+	"CBCTF/internal/resp"
+	"CBCTF/internal/utils"
 )
 
 type trafficNodeAggregate struct {

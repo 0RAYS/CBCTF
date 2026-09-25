@@ -1,13 +1,14 @@
 package middleware
 
 import (
+	"net"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-	"net"
-
-	"github.com/gin-gonic/gin"
 )
 
 func PProfWhitelist(ctx *gin.Context) {

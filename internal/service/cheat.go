@@ -1,11 +1,6 @@
 package service
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/db"
-	"CBCTF/internal/dto"
-	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"fmt"
 	"maps"
 	"net/netip"
@@ -15,6 +10,12 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
+	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 )
 
 func ListCheats(tx *gorm.DB, contest model.Contest, form dto.GetCheatsForm) ([]model.Cheat, int64, int64, model.RetVal) {

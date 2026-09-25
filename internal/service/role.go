@@ -1,12 +1,12 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 func GetRolePermissions(tx *gorm.DB, role model.Role) ([]model.Permission, model.RetVal) {

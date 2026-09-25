@@ -1,14 +1,15 @@
 package cron
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"sync"
 	"time"
 
 	"github.com/robfig/cron/v3"
+
+	"CBCTF/internal/db"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 )
 
 type taskDefinition struct {

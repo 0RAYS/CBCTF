@@ -1,12 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
-	"CBCTF/internal/utils"
 	"context"
 	"fmt"
 	"maps"
@@ -21,6 +15,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
+	"CBCTF/internal/utils"
 )
 
 func VictimLabels(victim model.Victim, tags ...map[string]string) map[string]string {

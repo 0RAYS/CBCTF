@@ -1,12 +1,13 @@
 package cron
 
 import (
+	"context"
+	"time"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"context"
-	"time"
 )
 
 // stopUnCtrlGenerator 关闭不受控的 model.Generator

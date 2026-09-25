@@ -1,14 +1,6 @@
 package service
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/db"
-	"CBCTF/internal/dto"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
-	"CBCTF/internal/utils"
 	"fmt"
 	"mime/multipart"
 	"path/filepath"
@@ -18,6 +10,15 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
+	"CBCTF/internal/utils"
 )
 
 func SavePicture(tx *gorm.DB, modelName string, modelID uint, file *multipart.FileHeader) (model.File, model.RetVal) {

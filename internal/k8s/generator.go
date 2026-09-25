@@ -1,11 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/worker"
 	"archive/zip"
 	"bytes"
 	"context"
@@ -24,6 +19,12 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/worker"
 )
 
 func GeneratorLabels(generator model.Generator, tags ...map[string]string) map[string]string {
@@ -46,16 +47,24 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 	if challenge.GeneratorImage == "" {
 		return nil, model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
 	}
-	log.Logger.Debugf("Creating generator pod: generator_id=%d name=%s challenge_id=%d image=%s", generator.ID, generator.Name, challenge.ID, challenge.GeneratorImage)
+	log.Logger.Debugf(
+		"Creating generator pod: generator_id=%d name=%s challenge_id=%d image=%s",
+		generator.ID, generator.Name, challenge.ID, challenge.GeneratorImage,
+	)
 	pod, ret = CreatePod(ctx, CreatePodOptions{
 		PriorityClassName: config.Env.K8S.PriorityClassName,
 		Name:              generator.Name,
 		Labels:            labels,
-		InitContainers: []corev1.Container{{
-			Name: "worker-install", Image: config.Env.K8S.WorkerImage, ImagePullPolicy: corev1.PullIfNotPresent,
-			Command:      []string{"/app/worker", "--install", "/worker/worker"},
-			VolumeMounts: []corev1.VolumeMount{{Name: "worker", MountPath: "/worker"}}, Resources: sidecarResources(),
-		}},
+		InitContainers: []corev1.Container{
+			{
+				Name:            "worker-install",
+				Image:           config.Env.K8S.WorkerImage,
+				ImagePullPolicy: corev1.PullIfNotPresent,
+				Command:         []string{"/app/worker", "--install", "/worker/worker"},
+				VolumeMounts:    []corev1.VolumeMount{{Name: "worker", MountPath: "/worker"}},
+				Resources:       sidecarResources(),
+			},
+		},
 		Containers: []corev1.Container{
 			{
 				Name:            "generator",
@@ -66,7 +75,8 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 				ReadinessProbe: &corev1.Probe{
 					HTTPGet: &corev1.HTTPGetAction{
 						Path: "/ready",
-						Port: intstr.FromInt32(worker.Port)},
+						Port: intstr.FromInt32(worker.Port),
+					},
 					PeriodSeconds:  1,
 					TimeoutSeconds: 1,
 				},
@@ -104,14 +114,23 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 }
 
 func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal {
-	log.Logger.Debugf("Deleting generator k8s resources: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
+	log.Logger.Debugf(
+		"Deleting generator k8s resources: generator_id=%d name=%s challenge_id=%d",
+		generator.ID, generator.Name, generator.ChallengeID,
+	)
 	pod, ret := GetPod(ctx, generator.Name)
 	if !ret.OK && ret.Msg != i18n.K8S.NotFound {
 		return ret
 	}
 	if ret.OK {
 		if !GeneratorOwnsPod(generator, pod) {
-			return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": "refusing to delete a Pod not owned by this generator"}}
+			return model.RetVal{
+				Msg: i18n.K8S.DeleteError,
+				Attr: map[string]any{
+					"Model": "Pod",
+					"Error": "refusing to delete a Pod not owned by this generator",
+				},
+			}
 		}
 		if ret := DeletePodAndWait(ctx, generator.Name, pod.UID); !ret.OK {
 			return ret
@@ -121,7 +140,10 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 	if ret := DeleteServiceCollection(ctx, labels); !ret.OK {
 		return ret
 	}
-	log.Logger.Debugf("Deleted generator k8s resources: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
+	log.Logger.Debugf(
+		"Deleted generator k8s resources: generator_id=%d name=%s challenge_id=%d",
+		generator.ID, generator.Name, generator.ChallengeID,
+	)
 	return model.SuccessRetVal()
 }
 
@@ -139,7 +161,15 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, generator mod
 	return model.SuccessRetVal()
 }
 
-var workerHTTP = &http.Client{Timeout: 90 * time.Second, Transport: &http.Transport{Proxy: nil, MaxIdleConns: 100, MaxIdleConnsPerHost: 2, IdleConnTimeout: time.Minute}}
+var workerHTTP = &http.Client{
+	Timeout: 90 * time.Second,
+	Transport: &http.Transport{
+		Proxy:               nil,
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 2,
+		IdleConnTimeout:     time.Minute,
+	},
+}
 var errGeneratorMissing = errors.New("generator pod is missing")
 
 func generateAttachment(ctx context.Context, challenge model.Challenge, generator model.Generator, teamID uint, flags []string) error {
@@ -158,11 +188,20 @@ func generateAttachment(ctx context.Context, challenge model.Challenge, generato
 	}
 	revision := worker.SourceRevision(challenge.GeneratorPath())
 	destination := challenge.AttachmentCachePathForRevision(teamID, flags, revision)
-	body, err := json.Marshal(worker.Request{TeamID: teamID, Flags: flags, SourceRevision: revision})
+	body, err := json.Marshal(worker.Request{
+		TeamID:         teamID,
+		Flags:          flags,
+		SourceRevision: revision,
+	})
 	if err != nil {
 		return err
 	}
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://"+net.JoinHostPort(pod.Status.PodIP, strconv.Itoa(worker.Port))+"/generate", bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		"http://"+net.JoinHostPort(pod.Status.PodIP, strconv.Itoa(worker.Port))+"/generate",
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return err
 	}

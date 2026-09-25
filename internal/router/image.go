@@ -1,15 +1,16 @@
 package router
 
 import (
+	"sort"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"sort"
-
-	"github.com/gin-gonic/gin"
 )
 
 func formatNodeImages(nodeImageMap map[string][]string) []gin.H {

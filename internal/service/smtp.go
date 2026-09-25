@@ -1,12 +1,12 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/email"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 func ListSmtps(tx *gorm.DB, form dto.ListModelsForm) ([]model.Smtp, int64, model.RetVal) {

@@ -1,11 +1,11 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 func ListNotices(tx *gorm.DB, contest model.Contest, form dto.ListModelsForm) ([]model.Notice, int64, model.RetVal) {

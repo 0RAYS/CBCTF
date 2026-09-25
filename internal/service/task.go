@@ -1,11 +1,11 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
-
-	"gorm.io/gorm"
 )
 
 func ListTasks(tx *gorm.DB, form dto.ListTasksForm) ([]model.Task, int64, []string, model.RetVal) {

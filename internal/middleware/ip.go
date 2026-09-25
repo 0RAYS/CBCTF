@@ -1,15 +1,16 @@
 package middleware
 
 import (
+	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
-	"strconv"
-	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFunc {

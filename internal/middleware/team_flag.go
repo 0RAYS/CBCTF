@@ -1,13 +1,13 @@
 package middleware
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 // CheckIfGenerated model.Team 是否初始化 model.TeamFlag

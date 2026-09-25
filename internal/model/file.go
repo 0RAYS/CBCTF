@@ -1,11 +1,12 @@
 package model
 
 import (
-	"CBCTF/internal/config"
 	"database/sql/driver"
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"CBCTF/internal/config"
 )
 
 type FileType string

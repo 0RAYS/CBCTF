@@ -1,12 +1,13 @@
 package k8s
 
 import (
-	"CBCTF/internal/model"
 	"strconv"
 	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+
+	"CBCTF/internal/model"
 )
 
 // PodDiagnostics is deliberately an allowlist. In particular, Kubernetes status
@@ -77,7 +78,11 @@ func DescribePod(pod *corev1.Pod) PodDiagnostics {
 	appendContainers(pod.Spec.InitContainers, pod.Status.InitContainerStatuses, true)
 	appendContainers(pod.Spec.Containers, pod.Status.ContainerStatuses, false)
 	for _, condition := range pod.Status.Conditions {
-		result.Conditions = append(result.Conditions, ConditionDiagnostics{Type: condition.Type, Status: condition.Status, Reason: diagnosticReason(condition.Reason)})
+		result.Conditions = append(result.Conditions, ConditionDiagnostics{
+			Type:   condition.Type,
+			Status: condition.Status,
+			Reason: diagnosticReason(condition.Reason),
+		})
 	}
 	return result
 }

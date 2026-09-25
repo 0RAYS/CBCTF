@@ -1,12 +1,13 @@
 package resp
 
 import (
-	"CBCTF/internal/model"
-	"CBCTF/internal/view"
 	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+
+	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 )
 
 // GetSolvedStateResp model.ContestFlag Preload model.ContestChallenge

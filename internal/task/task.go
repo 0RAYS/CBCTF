@@ -1,11 +1,6 @@
 package task
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
-	"CBCTF/internal/redis"
 	"context"
 	"errors"
 	"strings"
@@ -13,6 +8,12 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
+
+	"CBCTF/internal/config"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
+	"CBCTF/internal/redis"
 )
 
 var (

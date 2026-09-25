@@ -1,8 +1,9 @@
 package view
 
 import (
-	"CBCTF/internal/model"
 	"time"
+
+	"CBCTF/internal/model"
 )
 
 type VictimStatusView struct {

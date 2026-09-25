@@ -1,13 +1,13 @@
 package db
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/oa"
 	"CBCTF/internal/utils"
-
-	"gorm.io/gorm"
 )
 
 type UserRepo struct {

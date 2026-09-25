@@ -1,13 +1,13 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/view"
-
-	"gorm.io/gorm"
 )
 
 func BuildGroupView(tx *gorm.DB, group model.Group) view.GroupView {

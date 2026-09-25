@@ -1,11 +1,12 @@
 package cron
 
 import (
+	"sync"
+	"time"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
-	"sync"
-	"time"
 )
 
 // updateFlagScore 依据数据库, 更新 model.Flag 的分数和解题人数

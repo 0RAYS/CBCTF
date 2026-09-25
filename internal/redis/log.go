@@ -1,15 +1,16 @@
 package redis
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"context"
 	"encoding/json"
 	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 const logKey = "logs"

@@ -1,11 +1,11 @@
 package dto
 
 import (
+	"github.com/gin-gonic/gin"
+
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
-
-	"github.com/gin-gonic/gin"
 )
 
 // LoginForm for user or admin login

@@ -1,9 +1,6 @@
 package router
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/redis"
 	"context"
 	"encoding/json"
 	"errors"
@@ -15,6 +12,10 @@ import (
 	"github.com/gin-gonic/gin"
 	goredis "github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/redis"
 )
 
 type systemLogsRedisHook struct {

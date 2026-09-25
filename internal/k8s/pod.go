@@ -1,9 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"io"
@@ -17,6 +14,10 @@ import (
 	labelselector "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 type Network struct {
@@ -183,7 +184,13 @@ func GetPodLogs(ctx context.Context, podName, containerName string, lines int64)
 // 依据 name 删除 Pod
 func DeletePod(ctx context.Context, name string, uid types.UID) model.RetVal {
 	if name == "" || uid == "" {
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": "refusing deletion without a Pod name and observed UID"}}
+		return model.RetVal{
+			Msg: i18n.K8S.DeleteError,
+			Attr: map[string]any{
+				"Model": "Pod",
+				"Error": "refusing deletion without a Pod name and observed UID",
+			},
+		}
 	}
 	options := metav1.DeleteOptions{Preconditions: &metav1.Preconditions{UID: &uid}}
 	err := kubeClient.CoreV1().Pods(globalNamespace).Delete(ctx, name, options)
