@@ -160,7 +160,7 @@ func TestImagePullJobHasBoundedLifetimeAndNoCredentials(t *testing.T) {
 		t.Fatal("image-pull Pod exposes credentials/service env")
 	}
 	if job.Spec.ActiveDeadlineSeconds == nil || *job.Spec.ActiveDeadlineSeconds != 600 ||
-		job.Spec.TTLSecondsAfterFinished == nil || *job.Spec.TTLSecondsAfterFinished != 300 {
+		job.Spec.TTLSecondsAfterFinished == nil || *job.Spec.TTLSecondsAfterFinished != 0 {
 		t.Fatal("job lifetime is unbounded")
 	}
 }
