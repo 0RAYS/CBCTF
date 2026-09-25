@@ -41,8 +41,9 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 	}
 	log.Logger.Debugf("Creating generator pod: generator_id=%d name=%s challenge_id=%d image=%s", generator.ID, generator.Name, challenge.ID, challenge.GeneratorImage)
 	pod, ret = CreatePod(ctx, CreatePodOptions{
-		Name:   generator.Name,
-		Labels: labels,
+		PriorityClassName: config.Env.K8S.PriorityClassName,
+		Name:              generator.Name,
+		Labels:            labels,
 		Containers: []corev1.Container{
 			{
 				Name:            "generator",

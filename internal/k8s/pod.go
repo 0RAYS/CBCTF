@@ -27,12 +27,13 @@ type Network struct {
 }
 
 type CreatePodOptions struct {
-	Name        string
-	Labels      map[string]string
-	Annotations map[string]string
-	Networks    []Network
-	Containers  []corev1.Container
-	Volumes     []corev1.Volume
+	PriorityClassName string
+	Name              string
+	Labels            map[string]string
+	Annotations       map[string]string
+	Networks          []Network
+	Containers        []corev1.Container
+	Volumes           []corev1.Volume
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, model.RetVal) {
@@ -66,6 +67,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 			return annotations
 		}(),
 		Spec: corev1.PodSpec{
+			PriorityClassName:             options.PriorityClassName,
 			Affinity:                      affinity,
 			EnableServiceLinks:            new(false),
 			AutomountServiceAccountToken:  new(false),

@@ -112,6 +112,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				return nil
 			}
 			capture := corev1.Container{
+				Resources:       sidecarResources(),
 				Name:            CaptureContainerName,
 				Image:           config.Env.K8S.CaptureImage,
 				ImagePullPolicy: corev1.PullIfNotPresent,
@@ -151,39 +152,27 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				})
 			}
 			capture.Command = append(capture.Command, command)
-			containers := []corev1.Container{capture}
-			volumes := []corev1.Volume{
-				{
+			containers := []corev1.Container{}
+			volumes := []corev1.Volume{}
+			if config.Env.K8S.CaptureEnabled {
+				containers = append(containers, capture)
+				volumes = append(volumes, corev1.Volume{
 					Name: nfsVolumeName,
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 						ClaimName: nfsVolumeName,
 					},
-				},
+				})
 			}
-			// 兼容非 VPC 模式下, 一个 Pod 多个 Container, 使用循环来处理
-			for _, container := range pod.Spec.Containers {
+			fileData := make(map[string]string)
+			for containerIndex, container := range pod.Spec.Containers {
 				volumeMounts := make([]corev1.VolumeMount, 0)
-				for _, volumeMount := range container.VolumeMounts {
-					filename := volumeMount.Path[strings.LastIndex(volumeMount.Path, "/")+1:]
-					cm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-						Name:   fmt.Sprintf("vol-%s", utils.RandHexStr(20)),
-						Labels: labels,
-						Data:   map[string]string{filename: volumeMount.Content},
-					})
-					if !ret.OK {
-						return resourceError(ret)
-					}
-					volumeName := fmt.Sprintf("vol-%s", utils.RandHexStr(10))
+				for fileIndex, volumeMount := range container.VolumeMounts {
+					key := fmt.Sprintf("c%d-f%d", containerIndex, fileIndex)
+					fileData[key] = volumeMount.Content
 					volumeMounts = append(volumeMounts, corev1.VolumeMount{
-						Name:      volumeName,
+						Name:      "challenge-files",
 						MountPath: volumeMount.Path,
-						SubPath:   filename,
-					})
-					volumes = append(volumes, corev1.Volume{
-						Name: volumeName,
-						ConfigMap: &corev1.ConfigMapVolumeSource{
-							Name: cm.Name,
-						},
+						SubPath:   key,
 					})
 				}
 				envs := make([]corev1.EnvVar, 0, len(container.Environment))
@@ -212,7 +201,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Ports:           ports,
 					VolumeMounts:    volumeMounts,
 					Resources: corev1.ResourceRequirements{
-						Limits: limit,
+						Limits:   limit,
+						Requests: limit.DeepCopy(),
 					},
 				}
 				if len(container.Command) > 0 {
@@ -223,13 +213,23 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				}
 				containers = append(containers, tmp)
 			}
+			if len(fileData) > 0 {
+				cm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
+					Name: victimResourceName("vol", victim.ID, pod.Spec.Key), Labels: labels, Data: fileData,
+				})
+				if !ret.OK {
+					return resourceError(ret)
+				}
+				volumes = append(volumes, corev1.Volume{Name: "challenge-files", ConfigMap: &corev1.ConfigMapVolumeSource{Name: cm.Name}})
+			}
 
 			pOptions := CreatePodOptions{
-				Name:       pod.Name,
-				Labels:     podLabels,
-				Networks:   networks,
-				Containers: containers,
-				Volumes:    volumes,
+				PriorityClassName: config.Env.K8S.PriorityClassName,
+				Name:              pod.Name,
+				Labels:            podLabels,
+				Networks:          networks,
+				Containers:        containers,
+				Volumes:           volumes,
 			}
 
 			p, ret := CreatePod(ctx, pOptions)
@@ -239,7 +239,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 
 			if len(pod.Spec.ServicePorts) > 0 {
 				service, ret := CreateService(ctx, CreateServiceOptions{
-					Name:     fmt.Sprintf("svc-%s", utils.RandHexStr(20)),
+					Name:     victimResourceName("svc", victim.ID, pod.Spec.Key),
 					Ports:    pod.Spec.ServicePorts,
 					Labels:   labels,
 					Selector: podLabels,
@@ -298,7 +298,7 @@ func createVictimNetworkResources(
 	wg := utils.NewGroup(ctx)
 
 	createNetworkPolicy := func(labels map[string]string, policies model.NetworkPolicies) error {
-		name := fmt.Sprintf("np-%s", utils.RandHexStr(20))
+		name := victimResourceName("np", victim.ID, labels[ServiceLabel])
 		_, ret := CreateNetworkPolicy(wg.Context(), CreateNetworkPolicyOptions{
 			Name:     name,
 			Labels:   labels,

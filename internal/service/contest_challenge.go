@@ -102,7 +102,9 @@ func ListContestChallengeImages(tx *gorm.DB, contest model.Contest) ([]string, m
 	}
 
 	if hasPodChallenges {
-		addImage(config.Env.K8S.CaptureImage)
+		if config.Env.K8S.CaptureEnabled {
+			addImage(config.Env.K8S.CaptureImage)
+		}
 		if config.Env.K8S.Frp.On {
 			addImage(config.Env.K8S.Frp.FrpcImage)
 			addImage(config.Env.K8S.Frp.NginxImage)

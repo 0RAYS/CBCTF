@@ -71,6 +71,8 @@ k8s:
   namespace: cbctf
   # Docker image
   capture: ghcr.io/domcyrus/rustnet:latest
+  capture_enabled: true
+  priority_class_name: ""
   frp:
     on: false
     # Docker image
