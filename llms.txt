@@ -12,6 +12,7 @@
 - [K8s 集群搭建](/deploy/cluster.md): 搭建满足 CBCTF 动态附件、动态容器和 KubeVirt 靶机要求的 Kubernetes 集群。
 - [Helm 部署](/deploy/helm.md): 通过 Helm Chart 安装 CBCTF，并配置镜像、Ingress、存储、数据库和 Redis。
 - [配置说明](/deploy/settings.md): 说明 CBCTF 配置来源、Helm values、配置文件和数据库运行时设置。
+- [工作负载调度](/deploy/workloads.md): 说明全节点镜像预热、失败节点排除、共享 informer、靶机异步就绪、附件 worker 池与资源树回收。
 - [前后端分离](/deploy/separation.md): 配置 CBCTF 前后端分离部署、反向代理、静态资源和 API 地址。
 - [常见问题](/deploy/troubleshooting.md): 排查 CBCTF 部署、集群组件、容器靶机、动态附件和网络访问问题。
 

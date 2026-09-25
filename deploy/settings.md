@@ -10,6 +10,7 @@ CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲�
 - Redis 连接信息：`redis.*`
 - 数据存储目录：`path`
 - Gin 监听地址和端口：`gin.host`、`gin.port`
+- 工作负载部署参数：`k8s.capture_enabled`、`k8s.priority_class_name`、`k8s.worker_image`、`k8s.generator_pool_size`
 
 其他配置首次启动时写入 `settings`；之后以数据库值为准。系统配置不会写回 `config.yaml`。
 
@@ -50,29 +51,35 @@ CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲�
 
 Redis 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务并发：
 
-| 配置项                       | 说明            | 示例        |
-| ------------------------- | ------------- | --------- |
-| `asynq.log.level`         | Asynq 日志级别    | `warning` |
-| `asynq.queues.victim`     | 靶机启停任务并发      | `2`       |
-| `asynq.queues.traffic`    | 靶机流量解析任务并发    | `2`       |
-| `asynq.queues.generator`  | 动态附件生成器启停任务并发 | `3`       |
-| `asynq.queues.attachment` | 附件生成任务并发      | `10`      |
-| `asynq.queues.email`      | 邮件任务并发        | `10`      |
-| `asynq.queues.webhook`    | Webhook 任务并发  | `15`      |
-| `asynq.queues.image`      | 图片处理任务并发      | `10`      |
+| 配置项                       | 说明               | 示例        |
+| ------------------------- | ---------------- | --------- |
+| `asynq.log.level`         | Asynq 日志级别       | `warning` |
+| `asynq.queues.victim`     | 靶机启动、停止各自的任务并发   | `8`       |
+| `asynq.queues.traffic`    | 靶机流量解析任务并发       | `2`       |
+| `asynq.queues.generator`  | 动态附件生成器启停任务并发    | `3`       |
+| `asynq.queues.attachment` | 附件 worker 分发并发上限 | `32`      |
+| `asynq.queues.email`      | 邮件任务并发           | `10`      |
+| `asynq.queues.webhook`    | Webhook 任务并发     | `15`      |
+| `asynq.queues.image`      | 图片处理任务并发         | `10`      |
 
 当靶机启动、附件生成或邮件发送堆积时，先检查 Redis 状态和任务日志，再根据资源情况调整对应队列并发。
 
 ## Kubernetes 配置
 
-| 配置项             | 说明                   | 示例                                |
-| --------------- | -------------------- | --------------------------------- |
-| `k8s.namespace` | 靶机、生成器等资源所在命名空间      | `cbctf`                           |
-| `k8s.capture`   | 流量捕获 sidecar 镜像      | `ghcr.io/domcyrus/rustnet:latest` |
-| `k8s.frp.on`    | 是否启用 FRP 暴露靶机端口      | `false`                           |
-| `k8s.frp.frpc`  | FRP client 镜像        | `ghcr.io/fatedier/frpc:v0.69.0`   |
-| `k8s.frp.nginx` | FRP 辅助 Nginx 镜像      | `nginx:latest`                    |
-| `k8s.frp.frps`  | FRPS 地址、端口、token、端口池 | `host: frps.example.com`          |
+| 配置项                       | 说明                            | 示例                                  |
+| ------------------------- | ----------------------------- | ----------------------------------- |
+| `k8s.namespace`           | 靶机、生成器等资源所在命名空间               | `cbctf`                             |
+| `k8s.capture`             | 流量捕获 sidecar 镜像               | `ghcr.io/domcyrus/rustnet:latest`   |
+| `k8s.capture_enabled`     | 是否创建抓包容器及相关挂载                 | `true`                              |
+| `k8s.priority_class_name` | 工作负载使用的已有 PriorityClass       | `""`                                |
+| `k8s.worker_image`        | 含 `/app/worker` 的独立 worker 镜像 | `ghcr.io/0rays/cbctf-worker:latest` |
+| `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量     | `2`                                 |
+| `k8s.frp.on`              | 是否启用 FRP 暴露靶机端口               | `false`                             |
+| `k8s.frp.frpc`            | FRP client 镜像                 | `ghcr.io/fatedier/frpc:v0.69.0`     |
+| `k8s.frp.nginx`           | FRP 辅助 Nginx 镜像               | `nginx:latest`                      |
+| `k8s.frp.frps`            | FRPS 地址、端口、token、端口池          | `host: frps.example.com`            |
+
+预热、调度、缓存与回收机制见[工作负载调度](/deploy/workloads.md)。启用 FRP 时使用 ClusterIP，否则使用 NodePort。
 
 ## Helm 与配置文件的关系
 

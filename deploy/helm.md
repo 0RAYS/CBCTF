@@ -117,25 +117,28 @@ JWT、PostgreSQL 和 Redis 密钥会写入 `/app/config.yaml`。
 
 ## Kubernetes 靶机配置
 
-| 配置项                     | 说明                    | 示例                                |
-| ----------------------- | --------------------- | --------------------------------- |
-| `serviceAccount.create` | 是否创建应用 ServiceAccount | `true`                            |
-| `cbctf.k8s.capture`     | 流量捕获镜像                | `ghcr.io/domcyrus/rustnet:latest` |
-| `cbctf.k8s.frp.on`      | 是否启用 FRP 端口暴露         | `false`                           |
-| `cbctf.k8s.frp.frpc`    | FRP client 镜像         | `ghcr.io/fatedier/frpc:v0.69.0`   |
-| `cbctf.k8s.frp.nginx`   | FRP 转发辅助 Nginx 镜像     | `nginx:latest`                    |
-| `cbctf.k8s.frp.frps`    | FRPS 服务端、token 和端口池   | `host: frps.example.com`          |
+| 配置项                           | 说明                        | 示例                                  |
+| ----------------------------- | ------------------------- | ----------------------------------- |
+| `serviceAccount.create`       | 是否创建应用 ServiceAccount     | `true`                              |
+| `cbctf.k8s.capture`           | 流量捕获镜像                    | `ghcr.io/domcyrus/rustnet:latest`   |
+| `cbctf.k8s.captureEnabled`    | 是否开启抓包容器                  | `true`                              |
+| `cbctf.k8s.priorityClassName` | 已有工作负载 PriorityClass      | `""`                                |
+| `cbctf.k8s.workerImage`       | 独立 worker 镜像地址，与主程序版本分开配置 | `ghcr.io/0rays/cbctf-worker:latest` |
+| `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量           | `2`                                 |
+| `cbctf.k8s.frp.on`            | 是否启用 FRP 端口暴露             | `false`                             |
+| `cbctf.k8s.frp.frpc`          | FRP client 镜像             | `ghcr.io/fatedier/frpc:v0.69.0`     |
+| `cbctf.k8s.frp.nginx`         | FRP 转发辅助 Nginx 镜像         | `nginx:latest`                      |
+| `cbctf.k8s.frp.frps`          | FRPS 服务端、token 和端口池       | `host: frps.example.com`            |
 
-Chart 创建的 ClusterRole 包含 Pod、Service、Job、NetworkPolicy、EndpointSlice、Multus NAD、KubeVirt VirtualMachine、Kube-OVN
-Subnet/VPC/IP 等资源权限。Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
+Chart 使用命名空间 Role 管理 Pod、Service、Job、NetworkPolicy、ConfigMap、Multus NAD 和 VM，使用 ClusterRole 管理节点读取及 Kube-OVN 集群级资源。Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
 
 | API group              | Resources                        | Verbs                                                          | 用途                           |
 | ---------------------- | -------------------------------- | -------------------------------------------------------------- | ---------------------------- |
 | core                   | `pods`                           | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 创建靶机、生成器、FRPC Pod，并等待状态和清理   |
-| core                   | `pods/exec`                      | `create`                                                       | 在动态附件生成器 Pod 中执行命令           |
+| core                   | `pods/exec`                      | `create`                                                       | Pod 终端操作；附件 worker 不使用 Exec  |
 | core                   | `pods/log`                       | `get`                                                          | 读取 Pod 日志                    |
-| core                   | `services`                       | `create`, `list`, `delete`                                     | 创建和清理 NodePort 暴露            |
-| core                   | `configmaps`                     | `create`, `deletecollection`                                   | 写入文件挂载、FRPC 和 Nginx 配置       |
+| core                   | `services`                       | `create`, `list`, `delete`                                     | 创建 ClusterIP / NodePort 暴露   |
+| core                   | `configmaps`                     | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 文件配置、共享根对象缓存与 foreground GC  |
 | core                   | `persistentvolumeclaims`         | `get`                                                          | 启动时检查共享 PVC                  |
 | core                   | `namespaces`                     | `get`                                                          | 启动时检查靶机命名空间                  |
 | core                   | `nodes`                          | `list`                                                         | 枚举节点镜像和预拉取目标节点               |
@@ -144,9 +147,9 @@ Subnet/VPC/IP 等资源权限。Chart 不会安装 KubeVirt、Kube-OVN 或 Multu
 | `discovery.k8s.io`     | `endpointslices`                 | `deletecollection`                                             | 清理 Service 产生的 EndpointSlice |
 | `authorization.k8s.io` | `selfsubjectaccessreviews`       | `create`                                                       | 启动时执行权限自检                    |
 | `k8s.cni.cncf.io`      | `network-attachment-definitions` | `create`, `get`, `deletecollection`                            | VPC 模式下创建和清理 Multus NAD      |
-| `kubevirt.io`          | `virtualmachines`                | `create`, `get`, `deletecollection`                            | VM 靶机模式创建和清理 VM              |
+| `kubevirt.io`          | `virtualmachines`                | `create`, `get`, `list`, `watch`, `deletecollection`           | VM 创建、共享就绪缓存及清理              |
 | `kubeovn.io`           | `subnets`                        | `create`, `get`, `deletecollection`                            | VPC 模式下创建和清理 Kube-OVN 子网     |
-| `kubeovn.io`           | `vpcs`                           | `create`, `deletecollection`                                   | VPC 模式下创建和清理 Kube-OVN VPC    |
+| `kubeovn.io`           | `vpcs`                           | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | VPC 资源树及级联删除确认               |
 | `kubeovn.io`           | `ips`                            | `deletecollection`                                             | 清理 Kube-OVN IP 分配            |
 
 Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
