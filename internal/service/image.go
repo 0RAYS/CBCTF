@@ -8,17 +8,15 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
-	"CBCTF/internal/utils"
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 )
 
-func warmChallengeImages(challenge model.Challenge) {
+func ChallengeImages(challenge model.Challenge) []string {
 	sidecars := []string{}
 	if challenge.Type == model.DynamicChallengeType {
 		sidecars = append(sidecars, config.Env.K8S.WorkerImage)
@@ -31,7 +29,11 @@ func warmChallengeImages(challenge model.Challenge) {
 			sidecars = append(sidecars, config.Env.K8S.Frp.FrpcImage, config.Env.K8S.Frp.NginxImage)
 		}
 	}
-	if err := task.EnqueuePrepullTask(k8s.ChallengeImages(challenge, sidecars...)); err != nil {
+	return k8s.ChallengeImages(challenge, sidecars...)
+}
+
+func warmChallengeImages(challenge model.Challenge) {
+	if err := task.EnqueuePrepullTask(ChallengeImages(challenge)); err != nil {
 		log.Logger.Warningf("Failed to enqueue image warmup: challenge_id=%d error=%v", challenge.ID, err)
 	}
 }
@@ -71,15 +73,6 @@ func PullContestChallengeImage(form dto.PullImageForm) model.RetVal {
 			return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": fmt.Sprintf("Unknown node: %s", nodeName)}}
 		}
 
-		if corev1.PullPolicy(form.PullPolicy) != corev1.PullAlways && slices.ContainsFunc(node.Status.Images, func(image corev1.ContainerImage) bool {
-			if slices.Contains(image.Names, imageName) {
-				return true
-			}
-			return false
-		}) {
-			continue
-		}
-
 		if _, ok = seen[nodeName]; !ok {
 			seen[nodeName] = make(map[string]struct{})
 		}
@@ -91,20 +84,8 @@ func PullContestChallengeImage(form dto.PullImageForm) model.RetVal {
 	}
 
 	for nodeName, images := range targetImages {
-		var chunks [][]string
-		for i := 0; i < len(images); i += 5 {
-			end := min(i+5, len(images))
-			chunks = append(chunks, images[i:end])
-		}
-		for _, chunk := range chunks {
-			if _, ret = k8s.CreateJob(ctx, k8s.CreateJobOptions{
-				Name:         fmt.Sprintf("image-puller-%s", utils.RandHexStr(5)),
-				Images:       chunk,
-				PullPolicy:   form.PullPolicy,
-				SelectedNode: nodeName,
-			}); !ret.OK {
-				return ret
-			}
+		if err := task.EnqueuePrepullTargets(images, []string{nodeName}, form.PullPolicy); err != nil {
+			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 		}
 	}
 	return model.SuccessRetVal()

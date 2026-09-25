@@ -10,11 +10,20 @@ import (
 	"slices"
 	"time"
 
+	"github.com/distribution/reference"
 	corev1 "k8s.io/api/core/v1"
 )
 
 func imageFailureKey(image string) string {
-	return fmt.Sprintf("prepull:%s:%x", globalNamespace, sha256.Sum256([]byte(image)))
+	return fmt.Sprintf("prepull:%s:%x", globalNamespace, sha256.Sum256([]byte(normalizedImage(image))))
+}
+
+func normalizedImage(image string) string {
+	name, err := reference.ParseNormalizedNamed(image)
+	if err != nil {
+		return image
+	}
+	return reference.TagNameOnly(name).String()
 }
 
 // Only confirmed pull failures exclude a node. An absent/truncated Node image
@@ -32,8 +41,12 @@ func imageFailureAffinity(ctx context.Context, images []string) (*corev1.Affinit
 			}
 		}
 	}
+	return excludedNodeAffinity(excluded), nil
+}
+
+func excludedNodeAffinity(excluded []string) *corev1.Affinity {
 	if len(excluded) == 0 {
-		return nil, nil
+		return nil
 	}
 	slices.Sort(excluded)
 	return &corev1.Affinity{NodeAffinity: &corev1.NodeAffinity{
@@ -42,13 +55,13 @@ func imageFailureAffinity(ctx context.Context, images []string) (*corev1.Affinit
 				Key: "metadata.name", Operator: corev1.NodeSelectorOpNotIn, Values: excluded,
 			}}}},
 		},
-	}}, nil
+	}}
 }
 
 // PrepullImages submits all nodes before observing completion, so a slow node
 // does not delay warming other nodes. ImageID, not command exit status, proves
 // a successful pull (VM/distroless images need not contain echo or a shell).
-func PrepullImages(ctx context.Context, images []string) error {
+func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPolicy string) error {
 	nodes, ret := ListSchedulableNodes(ctx)
 	if !ret.OK {
 		return resourceError(ret)
@@ -56,15 +69,43 @@ func PrepullImages(ctx context.Context, images []string) error {
 	if len(nodes) == 0 {
 		return fmt.Errorf("no schedulable nodes for image warmup")
 	}
+	for _, name := range selectedNodes {
+		if !slices.ContainsFunc(nodes, func(n *corev1.Node) bool { return n.Name == name }) {
+			return fmt.Errorf("node %s is no longer schedulable", name)
+		}
+	}
 	batch := utils.RandHexStr(16)
 	selector := map[string]string{"cbctf.io/prepull": batch}
 	pending := make(map[string]bool)
 	for _, node := range nodes {
-		for i := 0; i < len(images); i += 5 {
-			chunk := images[i:min(i+5, len(images))]
+		if len(selectedNodes) > 0 && !slices.Contains(selectedNodes, node.Name) {
+			continue
+		}
+		missing := []string{}
+		for _, image := range images {
+			present := false
+			if pullPolicy != string(corev1.PullAlways) {
+				for _, entry := range node.Status.Images {
+					for _, name := range entry.Names {
+						if normalizedImage(name) == normalizedImage(image) {
+							present = true
+						}
+					}
+				}
+			}
+			if present {
+				if err := redis.RDB.HDel(ctx, imageFailureKey(image), node.Name).Err(); err != nil {
+					return err
+				}
+			} else {
+				missing = append(missing, image)
+			}
+		}
+		for i := 0; i < len(missing); i += 5 {
+			chunk := missing[i:min(i+5, len(missing))]
 			_, ret = CreateJob(ctx, CreateJobOptions{
 				Name: "prepull-" + utils.RandHexStr(20), Labels: selector,
-				Images: chunk, PullPolicy: string(corev1.PullIfNotPresent), SelectedNode: node.Name,
+				Images: chunk, PullPolicy: pullPolicy, SelectedNode: node.Name,
 			})
 			if !ret.OK {
 				return resourceError(ret)
@@ -76,6 +117,7 @@ func PrepullImages(ctx context.Context, images []string) error {
 	}
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
+	failures := 0
 	for len(pending) > 0 {
 		pods, ret := ListPods(ctx, selector)
 		if !ret.OK {
@@ -103,10 +145,15 @@ func PrepullImages(ctx context.Context, images []string) error {
 					if err := redis.RDB.HSet(ctx, imageFailureKey(image), pod.Spec.NodeName, waiting.Reason).Err(); err != nil {
 						return err
 					}
+					delete(pending, key)
+					failures++
 				}
 			}
 		}
 		if len(pending) == 0 {
+			if failures > 0 {
+				return fmt.Errorf("image warmup failed for %d node/image pairs", failures)
+			}
 			return nil
 		}
 		select {
