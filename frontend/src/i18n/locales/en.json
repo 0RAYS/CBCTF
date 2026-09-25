@@ -1128,6 +1128,7 @@
         "columns": {
           "id": "ID",
           "name": "Pod Name",
+          "image": "Image",
           "contestId": "Contest ID",
           "challengeId": "Challenge",
           "success": "Successes",
@@ -1252,6 +1253,7 @@
       "columns": {
         "id": "ID",
         "name": "Pod Name",
+        "image": "Image",
         "contestId": "Contest ID",
         "challengeId": "Challenge",
         "success": "Successes",

@@ -24,7 +24,7 @@ export function mapChallengeStatusToViewModel(challenge, statusData = null) {
     ...challenge,
     title: challenge.title || challenge.name,
     attachments: challenge.attachments || [],
-    attachment: statusData?.file ?? challenge.attachment ?? '',
+    attachment: statusData?.file ?? challenge.attachment ?? challenge.file ?? '',
     hasInstance: challenge.hasInstance ?? challenge.type === 'pods',
     hasAttachments: challenge.hasAttachments ?? challenge.type === 'dynamic',
     instanceStatus,

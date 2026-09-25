@@ -148,6 +148,14 @@ test('node normalization trims, filters, deduplicates, and sorts without changin
   assert.deepEqual(normalizeNodes({}), []);
 });
 
+test('canonical and digest image inventory from warmup is retained and does not appear missing', () => {
+  const digest = `ghcr.io/0rays/cbctf-worker@sha256:${'a'.repeat(64)}`;
+  const images = ['docker.io/library/nginx:latest', digest];
+  const payload = normalizePayload({ nodes: [{ node: 'worker-a', images }], target_images: images });
+  assert.deepEqual(payload.targetImages, images);
+  assert.deepEqual(missingTargetKeys(payload.nodes, payload.targetImages), []);
+});
+
 test('image payloads support node arrays and explicit contest targets, including an empty target list', () => {
   const nodes = [
     { node: 'a', images: ['a:1'] },

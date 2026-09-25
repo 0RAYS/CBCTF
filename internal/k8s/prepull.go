@@ -16,10 +16,11 @@ import (
 )
 
 func imageFailureKey(image string) string {
-	return fmt.Sprintf("prepull:%s:%x", globalNamespace, sha256.Sum256([]byte(normalizedImage(image))))
+	return fmt.Sprintf("prepull:%s:%x", globalNamespace, sha256.Sum256([]byte(NormalizeImage(image))))
 }
 
-func normalizedImage(image string) string {
+// NormalizeImage uses one identity for warmup, failure tracking and image inventories.
+func NormalizeImage(image string) string {
 	name, err := reference.ParseNormalizedNamed(image)
 	if err != nil {
 		return image
@@ -98,7 +99,7 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 			if pullPolicy != string(corev1.PullAlways) {
 				for _, entry := range node.Status.Images {
 					for _, name := range entry.Names {
-						if normalizedImage(name) == normalizedImage(image) {
+						if NormalizeImage(name) == NormalizeImage(image) {
 							present = true
 						}
 					}
@@ -200,6 +201,9 @@ func ChallengeImages(challenge model.Challenge, sidecars ...string) []string {
 		for _, container := range pod.Containers {
 			images = append(images, container.Image)
 		}
+	}
+	for i, image := range images {
+		images[i] = NormalizeImage(image)
 	}
 	slices.Sort(images)
 	return slices.DeleteFunc(slices.Compact(images), func(image string) bool { return image == "" })
