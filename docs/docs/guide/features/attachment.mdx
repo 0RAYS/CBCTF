@@ -16,38 +16,36 @@ import { Steps } from '@rspress/core/theme';
 
 ## 工作流程
 
-动态附件不会根据配置自动常驻启动生成器池。当前实现是：
+动态题加入比赛和发布时，平台按 `k8s.generator_pool_size` 预建常驻 worker 池；该配置默认是 `2`。管理员也可以在后台增加实例。
 
 <Steps>
 
-### 管理员先在后台启动生成器 Pod
+### 平台预热镜像并启动 generator worker 池
 
-### 队伍初始化或重置题目时，平台从可用生成器中随机选择一个
+### 队伍初始化或重置题目时，提交按团队 flag 和源文件版本去重的任务
 
-### 平台在容器内执行 `./run.sh {team_id} {flags}`
+### 任务执行时领取空闲 worker，由 worker 在容器内执行 `/root/run.sh {team_id} {flags}`
 
-### 等待输出文件写入共享卷
+### worker 在本地目录生成 ZIP，再通过完成响应流式返回平台
 
-### 将 `{team_id}.zip` 提供给队伍下载
+### 平台校验并原子发布版本化缓存，为队伍提供下载
 
 </Steps>
 
-:::warning
-如果没有提前启动生成器，动态附件题会因"无可用生成器"而无法初始化。
-:::
+池繁忙时任务在 Redis/Asynq 中等待，不提前占用 generator。没有可用池时会自动补齐配置容量；缓存命中则无需重新运行脚本。详细参数见[工作负载调度](../../deploy/workloads)。
 
 ## 生成器要求
 
 ### 容器启动方式
 
-平台会以 `sleep infinity` 覆盖镜像入口，保持生成器容器常驻。因此镜像内**必须存在 `sleep` 命令**。
+平台通过 init container 注入静态 `generator-worker`，并以它覆盖镜像入口。worker 保持常驻并串行执行生成请求。题目镜像继续提供 `sleep` 和 `unzip`，无需安装 Redis 客户端或 Kubernetes 工具。
 
 ### 可选上传 `generator.zip`
 
 若题目上传了 `generator.zip`，平台会在容器内执行：
 
 ```bash
-unzip /root/mnt/generator.zip -d /root
+unzip -o /root/mnt/generator.zip -d /root
 ```
 
 因此镜像还**必须包含 `unzip`**。
@@ -57,7 +55,7 @@ unzip /root/mnt/generator.zip -d /root
 平台执行命令：
 
 ```bash
-./run.sh {team_id} {base64(base64(flag1),base64(flag2),...)}
+/root/run.sh {team_id} {base64(base64(flag1),base64(flag2),...)}
 ```
 
 参数说明：
@@ -73,7 +71,7 @@ unzip /root/mnt/generator.zip -d /root
 /root/mnt/attachments/{team_id}.zip
 ```
 
-平台只会读取这个固定路径。
+worker 只读取这个固定路径。该输出目录是 Pod 本地 EmptyDir，不是共享卷。脚本需同步完成 ZIP 写入，运行时间限制为 1 分钟；worker 完成传输后清理本地产物。平台缓存使用独立的版本化路径，下载文件名为 `attachment.zip`。
 
 ## 示例脚本
 
@@ -95,7 +93,7 @@ zip -j /root/mnt/attachments/${TEAM_ID}.zip /tmp/challenge/*
 ## 注意事项
 
 1. 镜像必须包含 `sleep` 与 `unzip`
-2. 脚本入口固定为 `/root/run.sh` 或当前工作目录下的 `./run.sh`
+2. 脚本入口固定为 `/root/run.sh`，工作目录为 `/root`
 3. 输出文件必须是 `/root/mnt/attachments/{team_id}.zip`
 4. 动态 Flag 的实际结果可能与模板字符表现不同，题目逻辑不要依赖固定字符形态
 5. 共享存储不可用时，动态附件无法生成
@@ -107,4 +105,4 @@ zip -j /root/mnt/attachments/${TEAM_ID}.zip /tmp/challenge/*
 - **全局生成器**：`/admin/generators`，仅用于全局管理和测试附件生成，此处启动的生成器无法被赛事用于生成附件
 - **比赛专用生成器**：`/admin/contests/{contestID}/generators`，可被全局管理关闭和查看
 
-须在比赛开始前，通过赛事专用生成器管理启动动态附件题所需的生成器实例。
+比赛开始前可通过赛事专用生成器管理检查自动预建的实例是否 Ready，并按附件计算量增加实例。将 `k8s.generator_pool_size` 设为 `0` 时，实例完全由管理员手动管理。

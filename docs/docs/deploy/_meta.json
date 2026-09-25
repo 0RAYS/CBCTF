@@ -2,6 +2,7 @@
   "cluster",
   "helm",
   "settings",
+  "workloads",
   "separation",
   "troubleshooting"
 ]
