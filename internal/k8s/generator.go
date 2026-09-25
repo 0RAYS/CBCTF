@@ -2,20 +2,28 @@ package k8s
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/generatorworker"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"archive/zip"
+	"bytes"
 	"context"
-	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"maps"
+	"net"
+	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func GeneratorLabels(generator model.Generator, tags ...map[string]string) map[string]string {
@@ -33,7 +41,6 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 	var (
 		pod    *corev1.Pod
 		ret    model.RetVal
-		err    error
 		labels = GeneratorLabels(generator, map[string]string{RoleLabel: GeneratorPodTag})
 	)
 	if challenge.GeneratorImage == "" {
@@ -44,12 +51,21 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 		PriorityClassName: config.Env.K8S.PriorityClassName,
 		Name:              generator.Name,
 		Labels:            labels,
+		InitContainers: []corev1.Container{{
+			Name: "worker-install", Image: config.Env.K8S.WorkerImage, ImagePullPolicy: corev1.PullIfNotPresent,
+			Command:      []string{"/app/generator-worker", "--install", "/worker/generator-worker"},
+			VolumeMounts: []corev1.VolumeMount{{Name: "worker", MountPath: "/worker"}}, Resources: sidecarResources(),
+		}},
 		Containers: []corev1.Container{
 			{
 				Name:            "generator",
 				Image:           challenge.GeneratorImage,
 				ImagePullPolicy: corev1.PullIfNotPresent,
+				Env:             []corev1.EnvVar{{Name: "CBCTF_WORKER_TOKEN", Value: generator.WorkerToken}},
+				ReadinessProbe:  &corev1.Probe{ProbeHandler: corev1.ProbeHandler{HTTPGet: &corev1.HTTPGetAction{Path: "/ready", Port: intstr.FromInt(generatorworker.Port)}}, PeriodSeconds: 1, TimeoutSeconds: 1},
 				VolumeMounts: []corev1.VolumeMount{
+					{Name: "worker", MountPath: "/worker", ReadOnly: true},
+					{Name: "output", MountPath: "/root/mnt/attachments"},
 					{
 						Name:      nfsVolumeName,
 						MountPath: "/root/mnt",
@@ -59,10 +75,12 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 					},
 				},
 				WorkingDir: "/root",
-				Command:    []string{"sleep", "infinity"},
+				Command:    []string{"/worker/generator-worker"},
 			},
 		},
 		Volumes: []corev1.Volume{
+			{Name: "worker", EmptyDir: &corev1.EmptyDirVolumeSource{}},
+			{Name: "output", EmptyDir: &corev1.EmptyDirVolumeSource{}},
 			{
 				Name: nfsVolumeName,
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
@@ -73,13 +91,6 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 	})
 	if !ret.OK {
 		return nil, ret
-	}
-	if _, err = os.Stat(challenge.GeneratorPath()); err == nil {
-		if err = Exec(ctx, generator.Name, "generator", "unzip", "-o", "/root/mnt/generator.zip", "-d", "/root"); err != nil {
-			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
-		}
-	} else if !os.IsNotExist(err) {
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	log.Logger.Debugf("Created generator pod: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
 	return pod, model.SuccessRetVal()
@@ -107,44 +118,81 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 	return model.SuccessRetVal()
 }
 
-// GenAttachment 附加容器命令, 生成附件
+// GenAttachment streams a completed artifact directly from the worker into an
+// immutable cache path. The worker's output directory is local EmptyDir, so
+// completion never depends on an NFS client's negative/attribute cache.
 func GenAttachment(ctx context.Context, challenge model.Challenge, generator model.Generator, teamID uint, flags []string) model.RetVal {
-	var err error
 	log.Logger.Debugf("Running attachment generator: team_id=%d challenge_id=%d generator_id=%d", teamID, challenge.ID, generator.ID)
-	pod, ret := GetPod(ctx, generator.Name)
-	if !ret.OK {
-		return ret
-	}
-	if !podReady(pod) {
-		return model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Generator", "Error": podSummary(pod)}}
-	}
-	var flag string
-	for _, value := range flags {
-		flag += fmt.Sprintf("%s,", base64.StdEncoding.EncodeToString([]byte(value)))
-	}
-	flag = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flag, ",")))
-	filepath := challenge.AttachmentPath(teamID)
-	if err = os.Remove(filepath); err != nil && !os.IsNotExist(err) {
+	if err := generateAttachment(ctx, challenge, generator, teamID, flags); err != nil {
+		if errors.Is(err, errGeneratorMissing) {
+			return model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Generator"}}
+		}
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	log.Logger.Debugf("Executing attachment command: generator=%s team_id=%d challenge_id=%d", generator.Name, teamID, challenge.ID)
-	if err = Exec(ctx, generator.Name, "generator", "/root/run.sh", strconv.FormatUint(uint64(teamID), 10), flag); err != nil {
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
-	}
-	ticker := time.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
-	for {
-		// NFS 延迟写入, 主动触发读取
-		_, _ = os.ReadDir(path.Dir(filepath))
-		if _, err = os.Stat(filepath); err == nil {
-			break
-		}
-		select {
-		case <-ctx.Done():
-			return model.RetVal{Msg: i18n.K8S.AttachmentTimeout}
-		case <-ticker.C:
-		}
-	}
-	log.Logger.Debugf("Attachment file is ready: team_id=%d challenge_id=%d path=%s", teamID, challenge.ID, filepath)
 	return model.SuccessRetVal()
+}
+
+var generatorHTTP = &http.Client{Timeout: 90 * time.Second, Transport: &http.Transport{Proxy: nil, MaxIdleConns: 100, MaxIdleConnsPerHost: 2, IdleConnTimeout: time.Minute}}
+var errGeneratorMissing = errors.New("generator pod is missing")
+
+func generateAttachment(ctx context.Context, challenge model.Challenge, generator model.Generator, teamID uint, flags []string) error {
+	pod, err := cachedPod(ctx, generator.Name)
+	if err != nil {
+		return err
+	}
+	if pod == nil {
+		return errGeneratorMissing
+	}
+	if !GeneratorOwnsPod(generator, pod) || !podReady(pod) {
+		return fmt.Errorf("generator is not ready")
+	}
+	if generator.WorkerToken == "" {
+		return fmt.Errorf("generator has no worker token")
+	}
+	revision := generatorworker.SourceRevision(challenge.GeneratorPath())
+	destination := challenge.AttachmentCachePathForRevision(teamID, flags, revision)
+	body, err := json.Marshal(generatorworker.Request{TeamID: teamID, Flags: flags, SourceRevision: revision})
+	if err != nil {
+		return err
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://"+net.JoinHostPort(pod.Status.PodIP, strconv.Itoa(generatorworker.Port))+"/generate", bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Authorization", "Bearer "+generator.WorkerToken)
+	request.Header.Set("Content-Type", "application/json")
+	response, err := generatorHTTP.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("generator returned HTTP %d", response.StatusCode)
+	}
+	if err := os.MkdirAll(filepath.Dir(destination), 0700); err != nil {
+		return err
+	}
+	file, err := os.CreateTemp(filepath.Dir(destination), ".attachment-*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(file.Name())
+	defer file.Close()
+	if _, err = io.Copy(file, response.Body); err != nil {
+		return err
+	}
+	if err = file.Sync(); err != nil {
+		return err
+	}
+	if err = file.Close(); err != nil {
+		return err
+	}
+	archive, err := zip.OpenReader(file.Name())
+	if err != nil {
+		return fmt.Errorf("invalid generated ZIP: %w", err)
+	}
+	if err = archive.Close(); err != nil {
+		return err
+	}
+	return os.Rename(file.Name(), destination)
 }

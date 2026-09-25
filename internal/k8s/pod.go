@@ -35,6 +35,7 @@ type CreatePodOptions struct {
 	Annotations       map[string]string
 	Networks          []Network
 	Containers        []corev1.Container
+	InitContainers    []corev1.Container
 	Volumes           []corev1.Volume
 }
 
@@ -43,7 +44,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		pod *corev1.Pod
 		err error
 	)
-	affinity, err := imageFailureAffinity(ctx, containerImages(options.Containers))
+	affinity, err := imageFailureAffinity(ctx, append(containerImages(options.Containers), containerImages(options.InitContainers)...))
 	if err != nil {
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
@@ -74,6 +75,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 			EnableServiceLinks:            new(false),
 			AutomountServiceAccountToken:  new(false),
 			Containers:                    options.Containers,
+			InitContainers:                options.InitContainers,
 			Volumes:                       options.Volumes,
 			TerminationGracePeriodSeconds: new(int64(3)),
 			RestartPolicy:                 corev1.RestartPolicyNever,

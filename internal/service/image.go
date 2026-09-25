@@ -20,6 +20,9 @@ import (
 
 func warmChallengeImages(challenge model.Challenge) {
 	sidecars := []string{}
+	if challenge.Type == model.DynamicChallengeType {
+		sidecars = append(sidecars, config.Env.K8S.WorkerImage)
+	}
 	if challenge.Type == model.PodsChallengeType {
 		if config.Env.K8S.CaptureEnabled {
 			sidecars = append(sidecars, config.Env.K8S.CaptureImage)

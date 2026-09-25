@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/view"
 	"context"
+	"os"
 	"time"
 
 	"gorm.io/gorm"
@@ -18,6 +19,7 @@ import (
 func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	challengeFlags, _, ret := db.InitChallengeFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID},
+		Sort:       []string{"id ASC"},
 	})
 	if !ret.OK {
 		return ret
@@ -25,6 +27,9 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	var flags []string
 	for _, flag := range challengeFlags {
 		flags = append(flags, flag.Value)
+	}
+	if info, err := os.Stat(challenge.AttachmentCachePath(0, flags)); err == nil && info.Size() > 0 {
+		return model.SuccessRetVal()
 	}
 	generator, lockToken, ret := GetGenerator(tx, 0, challenge)
 	if !ret.OK {
@@ -40,6 +45,11 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 			log.Logger.Warningf("Failed to unlock test generator attachment: generator_id=%d error=%v", generator.ID, err)
 		}
 	}()
+	current, getRet := db.InitGeneratorRepo(tx).GetByID(generator.ID)
+	if !getRet.OK {
+		return getRet
+	}
+	generator = current
 	log.Logger.Infof("Generating test attachment: challenge_id=%d generator_id=%d", challenge.ID, generator.ID)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	ret = k8s.GenAttachment(ctx, challenge, generator, 0, flags)

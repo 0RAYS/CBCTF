@@ -76,6 +76,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 		}
 		if ret.OK {
 			warmChallengeImages(challenge)
+			warmGeneratorPool(contest.ID, challenge)
 		}
 	}
 	return contestChallengeL, failedL, model.SuccessRetVal()
@@ -115,7 +116,10 @@ func ListContestChallengeImages(tx *gorm.DB, contest model.Contest) ([]string, m
 }
 
 func buildContestChallengeFileName(tx *gorm.DB, challenge model.Challenge, teamID uint) string {
-	path := challenge.AttachmentPath(teamID)
+	path, ret := AttachmentPath(tx, challenge, teamID)
+	if !ret.OK {
+		return ""
+	}
 	record, _ := db.InitFileRepo(tx).Get(db.GetOptions{
 		Conditions: map[string]any{
 			"model":    model.Name(challenge),
@@ -141,10 +145,14 @@ func BuildContestChallengeRuntimeView(tx *gorm.DB, team model.Team, contestChall
 		Solved:           CheckIfSolved(tx, team, contestChallenge.ContestFlags),
 		Remote:           GetVictimStatus(tx, team.ID, contestChallenge.Challenge),
 		FileName: func() string {
-			if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
+			path, ret := AttachmentPath(tx, contestChallenge.Challenge, team.ID)
+			if !ret.OK {
 				return ""
 			}
-			return contestChallenge.Challenge.AttachmentPath(team.ID)
+			if _, err := os.Stat(path); err != nil {
+				return ""
+			}
+			return path
 		}(),
 	}
 }
@@ -236,6 +244,7 @@ func UpdateContestChallenge(tx *gorm.DB, contestChallenge model.ContestChallenge
 	if ret.OK && form.Hidden != nil && !*form.Hidden {
 		if challenge, getRet := db.InitChallengeRepo(tx).GetByID(contestChallenge.ChallengeID); getRet.OK {
 			warmChallengeImages(challenge)
+			warmGeneratorPool(contestChallenge.ContestID, challenge)
 		}
 	}
 	return ret

@@ -2,6 +2,8 @@ package model
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/generatorworker"
+	"crypto/sha256"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -41,6 +43,18 @@ type Challenge struct {
 	NetworkPolicies   NetworkPolicies    `gorm:"type:jsonb" json:"network_policies"`
 	Template          ChallengeTemplate  `gorm:"type:jsonb" json:"-"`
 	BaseModel
+}
+
+// Cache generations include the exact ordered team flags and source revision.
+// Old and new flags never publish to the same path, even during a reset race.
+func (c Challenge) AttachmentCachePath(teamID uint, flags []string) string {
+	return c.AttachmentCachePathForRevision(teamID, flags, generatorworker.SourceRevision(c.GeneratorPath()))
+}
+
+func (c Challenge) AttachmentCachePathForRevision(teamID uint, flags []string, revision string) string {
+	data, _ := json.Marshal([]any{c.ID, teamID, c.UpdatedAt, c.GeneratorImage, revision, flags})
+	hash := sha256.Sum256(data)
+	return filepath.Join(c.BasicDir(), "cache", fmt.Sprintf("%d-%x.zip", teamID, hash))
 }
 
 func (c Challenge) BasicDir() string {
