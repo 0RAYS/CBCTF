@@ -1128,6 +1128,7 @@
         "columns": {
           "id": "ID",
           "name": "Pod 名称",
+          "image": "镜像",
           "contestId": "赛事 ID",
           "challengeId": "题目",
           "success": "成功次数",
@@ -1252,6 +1253,7 @@
       "columns": {
         "id": "ID",
         "name": "Pod名称",
+        "image": "镜像",
         "contestId": "比赛 ID",
         "challengeId": "题目",
         "success": "成功次数",

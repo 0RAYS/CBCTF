@@ -92,6 +92,16 @@ test('status response false, zero and empty values override previous state', () 
   assert.equal(model.hasAttachments, false);
 });
 
+test('cached attachments from the list appear immediately and can be cleared by status refresh', () => {
+  const source = Object.freeze({ id: 'dynamic-challenge', type: 'dynamic', file: 'attachment.zip' });
+  const initial = mapChallengeStatusToViewModel(source);
+  assert.equal(initial.attachment, 'attachment.zip');
+  const reset = mapChallengeStatusToViewModel(initial, { file: '' });
+  assert.equal(reset.attachment, '');
+  assert.equal(mapChallengeStatusToViewModel(reset).attachment, '');
+  assert.equal(source.file, 'attachment.zip');
+});
+
 test('incorrect flag status refresh updates attempts without dropping description or attachment', () => {
   const challenge = {
     id: 1,

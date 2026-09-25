@@ -79,11 +79,23 @@ func GetSystemStatus(tx *gorm.DB) map[string]any {
 	return ret
 }
 
-func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal {
+func validateK8sSettings(form dto.UpdateSettingForm) model.RetVal {
+	if name := form.K8SNamespace; name != nil {
+		if errors := validation.IsDNS1123Label(*name); len(errors) > 0 {
+			return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": strings.Join(errors, "; ")}}
+		}
+	}
 	if name := form.K8SPriorityClassName; name != nil && *name != "" {
 		if errors := validation.IsDNS1123Subdomain(*name); len(errors) > 0 {
 			return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": strings.Join(errors, "; ")}}
 		}
+	}
+	return model.SuccessRetVal()
+}
+
+func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal {
+	if ret := validateK8sSettings(form); !ret.OK {
+		return ret
 	}
 	if form.K8SFrpFrps != nil {
 		for i, server := range *form.K8SFrpFrps {

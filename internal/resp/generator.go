@@ -13,6 +13,7 @@ func GetGeneratorResp(generator model.Generator) gin.H {
 		"challenge_name": generator.ChallengeName,
 		"contest_id":     generator.ContestID.V,
 		"name":           generator.Name,
+		"image":          generator.Image,
 		"start_time":     generator.CreatedAt,
 		"success":        generator.Success,
 		"success_last":   generator.SuccessLast,

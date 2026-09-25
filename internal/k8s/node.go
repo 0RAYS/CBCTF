@@ -60,9 +60,11 @@ func ListNodeImages(ctx context.Context) (map[string][]string, model.RetVal) {
 		images[node.Name] = make([]string, 0)
 		for _, containerImage := range node.Status.Images {
 			for _, name := range containerImage.Names {
-				if strings.TrimSpace(name) == "" || strings.Contains(name, "@sha256:") {
+				name = strings.TrimSpace(name)
+				if name == "" {
 					continue
 				}
+				name = NormalizeImage(name)
 				if !slices.Contains(images[node.Name], name) {
 					images[node.Name] = append(images[node.Name], name)
 				}

@@ -2,12 +2,11 @@ package service
 
 import (
 	"os"
-	"sort"
+	"slices"
 	"time"
 
 	"gorm.io/gorm"
 
-	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
@@ -84,36 +83,19 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 }
 
 func ListContestChallengeImages(tx *gorm.DB, contest model.Contest) ([]string, model.RetVal) {
-	images, hasPodChallenges, ret := db.InitContestChallengeRepo(tx).ListContestImages(contest.ID)
+	challenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Preloads:   map[string]db.GetOptions{"Challenge": {}},
+	})
 	if !ret.OK {
 		return nil, ret
 	}
-	imageSet := make(map[string]struct{}, len(images))
-	for _, image := range images {
-		imageSet[image] = struct{}{}
+	images := make([]string, 0)
+	for _, challenge := range challenges {
+		images = append(images, ChallengeImages(challenge.Challenge)...)
 	}
-	addImage := func(image string) {
-		if image == "" {
-			return
-		}
-		if _, ok := imageSet[image]; ok {
-			return
-		}
-		imageSet[image] = struct{}{}
-		images = append(images, image)
-	}
-
-	if hasPodChallenges {
-		if config.Env.K8S.CaptureEnabled {
-			addImage(config.Env.K8S.CaptureImage)
-		}
-		if config.Env.K8S.Frp.On {
-			addImage(config.Env.K8S.Frp.FrpcImage)
-			addImage(config.Env.K8S.Frp.NginxImage)
-		}
-	}
-	sort.Strings(images)
-	return images, model.SuccessRetVal()
+	slices.Sort(images)
+	return slices.Compact(images), model.SuccessRetVal()
 }
 
 func buildContestChallengeFileName(tx *gorm.DB, challenge model.Challenge, teamID uint) string {
@@ -145,16 +127,7 @@ func BuildContestChallengeRuntimeView(tx *gorm.DB, team model.Team, contestChall
 		Init:             CheckIfGenerated(tx, team, contestChallenge.ContestFlags),
 		Solved:           CheckIfSolved(tx, team, contestChallenge.ContestFlags),
 		Remote:           GetVictimStatus(tx, team.ID, contestChallenge.Challenge),
-		FileName: func() string {
-			path, ret := AttachmentPath(tx, contestChallenge.Challenge, team.ID)
-			if !ret.OK {
-				return ""
-			}
-			if _, err := os.Stat(path); err != nil {
-				return ""
-			}
-			return path
-		}(),
+		FileName:         buildContestChallengeFileName(tx, contestChallenge.Challenge, team.ID),
 	}
 }
 

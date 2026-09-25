@@ -14,6 +14,7 @@ const STATUS_STYLES = {
 const COLUMNS = [
   'id',
   'name',
+  'image',
   'contestId',
   'challengeId',
   'success',
@@ -77,6 +78,11 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
                   </td>
                   <td className="py-3 px-4 font-mono text-xs text-neutral-500">{generator.id}</td>
                   <td className="py-3 px-4 font-mono text-xs text-neutral-200">{generator.name}</td>
+                  <td className="py-3 px-4 font-mono text-xs text-neutral-400">
+                    <span className="block max-w-64 truncate" title={generator.image}>
+                      {generator.image || '\u2014'}
+                    </span>
+                  </td>
                   <td className="py-3 px-4 text-neutral-400">{generator.contest_id}</td>
                   <td className="py-3 px-4 text-neutral-400">{generator.challenge_name || generator.challenge_id}</td>
                   <td className="py-3 px-4 text-green-400">{generator.success ?? 0}</td>
