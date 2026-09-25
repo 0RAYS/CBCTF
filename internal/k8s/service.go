@@ -16,10 +16,11 @@ import (
 )
 
 type CreateServiceOptions struct {
-	Name     string
-	Labels   map[string]string
-	Ports    model.Exposes
-	Selector map[string]string
+	ClusterIP bool
+	Name      string
+	Labels    map[string]string
+	Ports     model.Exposes
+	Selector  map[string]string
 }
 
 func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.Service, model.RetVal) {
@@ -48,6 +49,10 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 			Type:                  corev1.ServiceTypeNodePort,
 			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
 		},
+	}
+	if options.ClusterIP {
+		service.Spec.Type = corev1.ServiceTypeClusterIP
+		service.Spec.ExternalTrafficPolicy = ""
 	}
 	service, err = kubeClient.CoreV1().Services(globalNamespace).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {

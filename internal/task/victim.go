@@ -89,7 +89,8 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 				return nil
 			}
 			victim = currentVictim
-			if ret = victimRepo.UpdateIfStatus(victim.ID, model.WaitingVictimStatus, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
+			victim.Resources.ReadyDeadline = time.Now().Add(4 * time.Minute)
+			if ret = victimRepo.UpdateIfStatus(victim.ID, model.WaitingVictimStatus, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus), Resources: &victim.Resources}); !ret.OK {
 				if ret.Msg == i18n.Model.Victim.NotStartable {
 					log.Logger.Infof("Start victim skipped: victim_id=%d status changed before provisioning", victim.ID)
 					return nil
@@ -119,19 +120,18 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 				}
 				victim.Pods = append(append([]model.Pod(nil), victim.Pods[:basePodCount]...), persistedFrpcPods...)
 			}
+			victim.Resources.Submitted = true
 			ret = victimRepo.UpdateIfStatus(victim.ID, model.PendingVictimStatus, db.UpdateVictimOptions{
 				Spec:             &victim.Spec,
 				Resources:        &victim.Resources,
 				Endpoints:        &victim.Endpoints,
 				ExposedEndpoints: &victim.ExposedEndpoints,
-				Start:            new(time.Now()),
-				Status:           new(model.RunningVictimStatus),
 			})
 			if !ret.OK {
 				return fmt.Errorf("update victim after start failed: %s", ret.Msg)
 			}
 			log.Logger.Infof(
-				"Victim is running: victim_id=%d user_id=%d team_id=%d challenge_id=%d endpoints=%d exposed_endpoints=%d",
+				"Victim resources submitted: victim_id=%d user_id=%d team_id=%d challenge_id=%d endpoints=%d exposed_endpoints=%d",
 				victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, len(victim.Endpoints), len(victim.ExposedEndpoints),
 			)
 			return nil

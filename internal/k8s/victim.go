@@ -60,6 +60,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 		victim.ID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods), victim.Spec.NetworkPlan.Name != "", config.Env.K8S.Frp.On,
 	)
 	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag})
+	victim.Resources.UIDs = make(model.StringMap)
 
 	subnetMap, netAttachDefMap, endpoints, ret := createVictimNetworkResources(ctx, &victim, labels)
 	if !ret.OK {
@@ -94,7 +95,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			// 当 VPC 模式下, 一个 Pod 只有一个 Container
 			if victim.Spec.NetworkPlan.Name != "" && pod.Spec.Containers[0].KubeVirt {
 				container := pod.Spec.Containers[0]
-				_, ret := CreateVM(ctx, CreateVMOptions{
+				vm, ret := CreateVM(ctx, CreateVMOptions{
+					SubmitOnly:  true,
 					Name:        pod.Name,
 					Labels:      podLabels,
 					Image:       container.Image,
@@ -108,6 +110,9 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				if !ret.OK {
 					return resourceError(ret)
 				}
+				endpointsMutex.Lock()
+				victim.Resources.UIDs[pod.Name] = string(vm.UID)
+				endpointsMutex.Unlock()
 				log.Logger.Debugf("Created victim vm: victim_id=%d vm=%s", victim.ID, pod.Name)
 				return nil
 			}
@@ -224,6 +229,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			}
 
 			pOptions := CreatePodOptions{
+				SubmitOnly:        true,
 				PriorityClassName: config.Env.K8S.PriorityClassName,
 				Name:              pod.Name,
 				Labels:            podLabels,
@@ -236,13 +242,17 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			if !ret.OK {
 				return resourceError(ret)
 			}
+			endpointsMutex.Lock()
+			victim.Resources.UIDs[pod.Name] = string(p.UID)
+			endpointsMutex.Unlock()
 
 			if len(pod.Spec.ServicePorts) > 0 {
 				service, ret := CreateService(ctx, CreateServiceOptions{
-					Name:     victimResourceName("svc", victim.ID, pod.Spec.Key),
-					Ports:    pod.Spec.ServicePorts,
-					Labels:   labels,
-					Selector: podLabels,
+					ClusterIP: victim.Spec.FrpEnabled,
+					Name:      victimResourceName("svc", victim.ID, pod.Spec.Key),
+					Ports:     pod.Spec.ServicePorts,
+					Labels:    labels,
+					Selector:  podLabels,
 				})
 				if !ret.OK {
 					return resourceError(ret)
@@ -254,6 +264,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 						IP:       p.Status.HostIP,
 						Port:     port.NodePort,
 						Protocol: string(port.Protocol),
+					}
+					if victim.Spec.FrpEnabled {
+						endpoint.IP, endpoint.Port = service.Spec.ClusterIP, port.Port
+					} else {
+						victim.Resources.NodePorts = append(victim.Resources.NodePorts, model.NodePortEndpoint{PodName: pod.Name, Endpoint: endpoint})
+						continue
 					}
 					if !slices.ContainsFunc(victim.Endpoints, func(e model.Endpoint) bool {
 						return e.IP == endpoint.IP && e.Port == endpoint.Port && strings.EqualFold(e.Protocol, endpoint.Protocol)
@@ -279,7 +295,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 		victim.Resources.PodNames = append(victim.Resources.PodNames, pod.Name)
 	}
 	victim.ExposedEndpoints = append(model.Endpoints(nil), victim.Endpoints...)
-	if config.Env.K8S.Frp.On {
+	if victim.Spec.FrpEnabled {
 		return AddFrpc(ctx, victim)
 	}
 
@@ -463,16 +479,31 @@ func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVa
 			if len(pod.Spec.Containers) == 0 || !pod.Spec.Containers[0].KubeVirt {
 				continue
 			}
-			_, ret := GetVM(ctx, pod.Name)
-			if !ret.OK && ret.Msg != i18n.K8S.NotFound {
-				return ret
+			vm, err := cachedVM(ctx, pod.Name)
+			if err != nil {
+				return model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
 			}
-			if ret.OK {
+			if vm != nil {
 				vmsGone = false
+			} else {
+				_, ret := GetVM(ctx, pod.Name)
+				if !ret.OK && ret.Msg != i18n.K8S.NotFound {
+					return ret
+				}
+				if ret.OK {
+					vmsGone = false
+				}
 			}
 		}
 		if len(podList.Items) == 0 && vmsGone {
-			return model.SuccessRetVal()
+			// Cache absence alone cannot prove deletion after a recent create.
+			direct, ret := listPodsDirect(ctx, labels)
+			if !ret.OK {
+				return ret
+			}
+			if len(direct.Items) == 0 {
+				return model.SuccessRetVal()
+			}
 		}
 		select {
 		case <-ctx.Done():

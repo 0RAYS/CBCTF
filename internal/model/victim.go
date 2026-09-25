@@ -131,7 +131,7 @@ type Endpoints []Endpoint
 
 func (e Endpoints) Value() (driver.Value, error) {
 	return json.Marshal(slices.DeleteFunc(e, func(e Endpoint) bool {
-		if _, err := netip.ParseAddr(e.IP); err != nil {
+		if strings.TrimSpace(e.IP) == "" {
 			return true
 		}
 		if e.Port < 0 || e.Port > 65535 {

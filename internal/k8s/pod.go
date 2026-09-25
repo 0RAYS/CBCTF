@@ -14,6 +14,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	labelselector "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -27,6 +28,7 @@ type Network struct {
 }
 
 type CreatePodOptions struct {
+	SubmitOnly        bool
 	PriorityClassName string
 	Name              string
 	Labels            map[string]string
@@ -82,6 +84,9 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		log.Logger.Warningf("Failed to create Pod: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
+	if options.SubmitOnly {
+		return pod, model.SuccessRetVal()
+	}
 	ready, err := waitPodReady(ctx, pod)
 	if err != nil {
 		return nil, model.RetVal{Msg: i18n.K8S.PodRunError, Attr: map[string]any{
@@ -105,6 +110,25 @@ func GetPod(ctx context.Context, name string) (*corev1.Pod, model.RetVal) {
 }
 
 func ListPods(ctx context.Context, labels ...map[string]string) (*corev1.PodList, model.RetVal) {
+	c, err := cachedObjects(ctx, "pods")
+	if err != nil {
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+	}
+	selector := labelselector.Everything()
+	if len(labels) > 0 {
+		selector = labelselector.SelectorFromSet(labels[0])
+	}
+	list := &corev1.PodList{}
+	for _, obj := range c.informer.GetStore().List() {
+		pod := obj.(*corev1.Pod)
+		if selector.Matches(labelselector.Set(pod.Labels)) {
+			list.Items = append(list.Items, *pod.DeepCopy())
+		}
+	}
+	return list, model.SuccessRetVal()
+}
+
+func listPodsDirect(ctx context.Context, labels ...map[string]string) (*corev1.PodList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector strings.Builder
@@ -186,11 +210,12 @@ func DeletePodAndWait(ctx context.Context, name string, uid types.UID) model.Ret
 		return ret
 	}
 	err := wait.PollUntilContextCancel(ctx, 500*time.Millisecond, true, func(ctx context.Context) (bool, error) {
-		pod, err := kubeClient.CoreV1().Pods(globalNamespace).Get(ctx, name, metav1.GetOptions{})
-		if apierror.IsNotFound(err) {
-			return true, nil
+		pod, err := cachedPod(ctx, name)
+		if err == nil && pod == nil {
+			_, err = kubeClient.CoreV1().Pods(globalNamespace).Get(ctx, name, metav1.GetOptions{})
+			return apierror.IsNotFound(err), errUnlessNotFound(err)
 		}
-		if err == nil && pod.UID != uid {
+		if err == nil && pod != nil && pod.UID != uid {
 			return false, fmt.Errorf("pod %s was replaced during cleanup", name)
 		}
 		return false, err

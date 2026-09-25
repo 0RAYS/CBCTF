@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"go.yaml.in/yaml/v4"
 )
@@ -228,15 +229,21 @@ func (v *VictimSpec) Scan(value any) error {
 }
 
 type VictimResources struct {
-	NetworkPlan  VPC        `json:"network_plan"`
-	PodNames     StringList `json:"pod_names"`
-	FrpcPodNames StringList `json:"frpc_pod_names"`
+	Submitted     bool               `json:"submitted"`
+	ReadyDeadline time.Time          `json:"ready_deadline"`
+	UIDs          StringMap          `json:"uids"`
+	NodePorts     []NodePortEndpoint `json:"node_ports"`
+	NetworkPlan   VPC                `json:"network_plan"`
+	PodNames      StringList         `json:"pod_names"`
+	FrpcPodNames  StringList         `json:"frpc_pod_names"`
+}
+
+type NodePortEndpoint struct {
+	PodName  string   `json:"pod_name"`
+	Endpoint Endpoint `json:"endpoint"`
 }
 
 func (v VictimResources) Value() (driver.Value, error) {
-	if v.NetworkPlan.Name == "" && len(v.PodNames) == 0 && len(v.FrpcPodNames) == 0 {
-		return nil, nil
-	}
 	return json.Marshal(v)
 }
 
