@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// Pool admission is serialized across platform replicas; capacity is reserved
+// EnsureGeneratorPool Pool admission is serialized across platform replicas; capacity is reserved
 // by waiting/pending records before a start task is enqueued.
 func EnsureGeneratorPool(ctx context.Context, contestID uint, challenge model.Challenge) error {
 	if challenge.Type != model.DynamicChallengeType || config.Env.K8S.GeneratorPoolSize <= 0 {

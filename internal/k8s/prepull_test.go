@@ -1,8 +1,9 @@
 package k8s
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	"testing"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 func TestWarmupOnlyExcludesFailedNodes(t *testing.T) {

@@ -18,7 +18,7 @@ func WithWorkloadLock(ctx context.Context, root *gorm.DB, kind string, id uint, 
 	return withWorkloadLock(ctx, root, kind, id, false, fn)
 }
 
-// Reconciliation must skip a busy workload instead of queuing behind startup.
+// TryWithWorkloadLock Reconciliation must skip a busy workload instead of queuing behind startup.
 func TryWithWorkloadLock(ctx context.Context, root *gorm.DB, kind string, id uint, fn func() error) error {
 	return withWorkloadLock(ctx, root, kind, id, true, fn)
 }

@@ -42,14 +42,14 @@ func createVictimRoot(ctx context.Context, victim model.Victim, kind string) (co
 	return withResourceOwner(ctx, metav1.OwnerReference{APIVersion: "v1", Kind: "ConfigMap", Name: root.Name, UID: root.UID}), ret
 }
 
-// Roots remain discoverable even if startup failed before creating a Pod.
+// ListVictimRoots Roots remain discoverable even if startup failed before creating a Pod.
 func ListVictimRoots(ctx context.Context) ([]model.Victim, error) {
 	c, err := cachedObjects(ctx, "configmaps")
 	if err != nil {
 		return nil, err
 	}
 	seen := make(map[uint]bool)
-	victims := []model.Victim{}
+	var victims []model.Victim
 	for _, obj := range c.informer.GetStore().List() {
 		root := obj.(*corev1.ConfigMap)
 		kind := root.Labels["cbctf.io/root"]
@@ -70,7 +70,7 @@ func ListVictimRoots(ctx context.Context) ([]model.Victim, error) {
 		if seen[ids["victim_id"]] {
 			continue
 		}
-		victim := model.Victim{BaseModel: model.BaseModel{ID: ids["victim_id"]}, UserID: ids["user_id"], ChallengeID: ids["challenge_id"], TeamID: sql.Null[uint]{V: ids["team_id"], Valid: ids["team_id"] > 0}, ContestID: sql.Null[uint]{V: ids["contest_id"], Valid: ids["contest_id"] > 0}, ContestChallengeID: sql.Null[uint]{V: ids["contest_challenge_id"], Valid: ids["contest_challenge_id"] > 0}}
+		victim := model.Victim{ID: ids["victim_id"], UserID: ids["user_id"], ChallengeID: ids["challenge_id"], TeamID: sql.Null[uint]{V: ids["team_id"], Valid: ids["team_id"] > 0}, ContestID: sql.Null[uint]{V: ids["contest_id"], Valid: ids["contest_id"] > 0}, ContestChallengeID: sql.Null[uint]{V: ids["contest_challenge_id"], Valid: ids["contest_challenge_id"] > 0}}
 		if err := json.Unmarshal([]byte(root.Data["network_plan"]), &victim.Spec.NetworkPlan); err != nil {
 			return nil, fmt.Errorf("invalid network plan on %s: %w", root.Name, err)
 		}

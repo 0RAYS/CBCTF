@@ -51,7 +51,9 @@ func Install(destination string) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func(in *os.File) {
+		_ = in.Close()
+	}(in)
 	out, err := os.OpenFile(destination, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
 	if err != nil {
 		return err
@@ -131,7 +133,9 @@ func Serve(token string) error {
 			http.Error(w, "remove previous output", 500)
 			return
 		}
-		defer os.Remove(output)
+		defer func(name string) {
+			_ = os.Remove(name)
+		}(output)
 		command := exec.CommandContext(ctx, "/root/run.sh", team, EncodeFlags(request.Flags))
 		command.Dir = "/root"
 		// Discard script output, which can contain flags. Only the completed ZIP
@@ -145,7 +149,9 @@ func Serve(token string) error {
 			http.Error(w, "generator did not produce an attachment", 500)
 			return
 		}
-		defer file.Close()
+		defer func(file *os.File) {
+			_ = file.Close()
+		}(file)
 		info, err := file.Stat()
 		if err != nil || !info.Mode().IsRegular() || info.Size() == 0 {
 			http.Error(w, "invalid attachment", 500)

@@ -10,8 +10,8 @@ func TestAttachmentGenerationsAreIsolated(t *testing.T) {
 	previous := config.Env
 	config.Env = &config.Config{Path: t.TempDir()}
 	t.Cleanup(func() { config.Env = previous })
-	challenge := Challenge{BaseModel: BaseModel{ID: 12}, GeneratorImage: "example/generator:v1"}
-	challenge.UpdatedAt = time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	challenge := Challenge{ID: 12, GeneratorImage: "example/generator:v1",
+		UpdatedAt: time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)}
 	base := challenge.AttachmentCachePathForRevision(7, []string{"flag{a}"}, "source-a")
 	if base != challenge.AttachmentCachePathForRevision(7, []string{"flag{a}"}, "source-a") {
 		t.Fatal("unstable cache identity")

@@ -63,7 +63,13 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 				Image:           challenge.GeneratorImage,
 				ImagePullPolicy: corev1.PullIfNotPresent,
 				Env:             []corev1.EnvVar{{Name: "CBCTF_WORKER_TOKEN", Value: generator.WorkerToken}},
-				ReadinessProbe:  &corev1.Probe{ProbeHandler: corev1.ProbeHandler{HTTPGet: &corev1.HTTPGetAction{Path: "/ready", Port: intstr.FromInt(worker.Port)}}, PeriodSeconds: 1, TimeoutSeconds: 1},
+				ReadinessProbe: &corev1.Probe{
+					HTTPGet: &corev1.HTTPGetAction{
+						Path: "/ready",
+						Port: intstr.FromInt32(worker.Port)},
+					PeriodSeconds:  1,
+					TimeoutSeconds: 1,
+				},
 				VolumeMounts: []corev1.VolumeMount{
 					{Name: "worker", MountPath: "/worker", ReadOnly: true},
 					{Name: "output", MountPath: "/root/mnt/attachments"},
@@ -166,19 +172,25 @@ func generateAttachment(ctx context.Context, challenge model.Challenge, generato
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(response.Body)
 	if response.StatusCode != http.StatusOK {
 		return fmt.Errorf("generator returned HTTP %d", response.StatusCode)
 	}
-	if err := os.MkdirAll(filepath.Dir(destination), 0700); err != nil {
+	if err = os.MkdirAll(filepath.Dir(destination), 0700); err != nil {
 		return err
 	}
 	file, err := os.CreateTemp(filepath.Dir(destination), ".attachment-*")
 	if err != nil {
 		return err
 	}
-	defer os.Remove(file.Name())
-	defer file.Close()
+	defer func(name string) {
+		_ = os.Remove(name)
+	}(file.Name())
+	defer func(file *os.File) {
+		_ = file.Close()
+	}(file)
 	if _, err = io.Copy(file, response.Body); err != nil {
 		return err
 	}

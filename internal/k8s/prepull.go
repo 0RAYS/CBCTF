@@ -85,7 +85,7 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 		if len(selectedNodes) > 0 && !slices.Contains(selectedNodes, node.Name) {
 			continue
 		}
-		missing := []string{}
+		var missing []string
 		for _, image := range images {
 			present := false
 			if pullPolicy != string(corev1.PullAlways) {
