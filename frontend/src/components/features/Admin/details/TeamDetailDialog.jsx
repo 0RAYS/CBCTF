@@ -40,12 +40,6 @@ function AdminTeamDetailDialog({
 
   if (!team) return null;
 
-  // Map dialog tab key to AdminContestTeamDetail tab key
-  const mapTabKey = (tab) => {
-    if (tab === 'containers') return 'traffic';
-    return tab;
-  };
-
   const handleTeamDetailTabChange = (teamDetailTab) => {
     if (teamDetailTab === 'traffic') {
       onTabChange('containers');
@@ -175,7 +169,7 @@ function AdminTeamDetailDialog({
   const renderDataTab = () => (
     <AdminContestTeamDetail
       hideTabs
-      activeTab={mapTabKey(activeTab)}
+      activeTab={activeTab === 'containers' ? 'traffic' : activeTab}
       onTabChange={handleTeamDetailTabChange}
       detailFlags={detailFlags}
       detailFlagsLoading={detailFlagsLoading}
@@ -197,11 +191,6 @@ function AdminTeamDetailDialog({
       canViewTraffic={canViewTraffic}
     />
   );
-
-  const renderTabContent = () => {
-    if (activeTab === 'info') return renderInfoTab();
-    return renderDataTab();
-  };
 
   return (
     <>
@@ -231,7 +220,7 @@ function AdminTeamDetailDialog({
         </div>
 
         {/* Tab content */}
-        {renderTabContent()}
+        {activeTab === 'info' ? renderInfoTab() : renderDataTab()}
       </Modal>
 
       {renderUserDetailDialog()}

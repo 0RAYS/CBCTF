@@ -33,27 +33,32 @@ func BuildUserViews(tx *gorm.DB, users []model.User, includeCounts bool) []view.
 	return views
 }
 
-func CreateUser(tx *gorm.DB, form dto.RegisterForm) (model.User, model.RetVal) {
-	user, ret := db.InitUserRepo(tx).Create(model.User{
-		Name:           form.Name,
-		Password:       utils.HashPassword(form.Password),
-		Email:          form.Email,
-		Provider:       oa.LocalProvider,
-		ProviderUserID: utils.UUID(),
-		OauthRaw:       "{}",
-	})
-	if !ret.OK {
-		return model.User{}, ret
-	}
-	if config.Env.Registration.DefaultGroup != 0 {
-		defaultGroup, groupRet := db.InitGroupRepo(tx).GetByID(config.Env.Registration.DefaultGroup)
-		if groupRet.OK {
-			if ret = db.AppendUserToGroup(tx, user, defaultGroup); !ret.OK {
-				return model.User{}, ret
+func RegisterUser(tx *gorm.DB, form dto.RegisterForm) (model.User, model.RetVal) {
+	var result model.User
+	ret := db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
+		user, ret := db.InitUserRepo(tx).Create(model.User{
+			Name:           form.Name,
+			Password:       utils.HashPassword(form.Password),
+			Email:          form.Email,
+			Provider:       oa.LocalProvider,
+			ProviderUserID: utils.UUID(),
+			OauthRaw:       "{}",
+		})
+		if !ret.OK {
+			return ret
+		}
+		if config.Env.Registration.DefaultGroup != 0 {
+			defaultGroup, groupRet := db.InitGroupRepo(tx).GetByID(config.Env.Registration.DefaultGroup)
+			if groupRet.OK {
+				if ret = db.AppendUserToGroup(tx, user, defaultGroup); !ret.OK {
+					return ret
+				}
 			}
 		}
-	}
-	return user, model.SuccessRetVal()
+		result = user
+		return model.SuccessRetVal()
+	})
+	return result, ret
 }
 
 func AdminCreateUser(tx *gorm.DB, form dto.CreateUserForm) (model.User, model.RetVal) {
@@ -134,41 +139,17 @@ func DeleteSelf(tx *gorm.DB, user model.User, form dto.DeleteSelfForm) model.Ret
 }
 
 func DeleteUser(tx *gorm.DB, user model.User) model.RetVal {
-	repo := db.InitUserRepo(tx)
-	count, ret := repo.CountContests(user.ID)
-	if !ret.OK {
-		return ret
-	}
-	if count > 0 {
-		return model.RetVal{Msg: i18n.Model.User.InContest}
-	}
-	return repo.Delete(user.ID)
-}
-
-func RegisterUser(tx *gorm.DB, form dto.RegisterForm) (model.User, model.RetVal) {
-	var user model.User
-	ret := db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		var createRet model.RetVal
-		user, createRet = CreateUser(tx2, form)
-		return createRet
+	return db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
+		repo := db.InitUserRepo(tx)
+		count, ret := repo.CountContests(user.ID)
+		if !ret.OK {
+			return ret
+		}
+		if count > 0 {
+			return model.RetVal{Msg: i18n.Model.User.InContest}
+		}
+		return repo.Delete(user.ID)
 	})
-	return user, ret
-}
-
-func DeleteSelfWithTransaction(tx *gorm.DB, user model.User, form dto.DeleteSelfForm) model.RetVal {
-	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		return DeleteSelf(tx2, user, form)
-	})
-}
-
-func DeleteUserWithTransaction(tx *gorm.DB, user model.User) model.RetVal {
-	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		return DeleteUser(tx2, user)
-	})
-}
-
-func GetUserView(tx *gorm.DB, user model.User, includeCounts bool) view.UserView {
-	return BuildUserView(tx, user, includeCounts)
 }
 
 func ListUsers(tx *gorm.DB, form dto.ListUsersForm) ([]view.UserView, int64, model.RetVal) {

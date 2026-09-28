@@ -14,7 +14,7 @@ import (
 
 func GetTeam(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
-	view := service.GetTeamView(db.DB, team)
+	view := service.BuildTeamView(db.DB, team)
 	solvedFlagL, contestFlagL, ret := service.GetTeamSolvedFlags(db.DB, middleware.GetContest(ctx), team)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
@@ -104,7 +104,7 @@ func UpdateCaptcha(ctx *gin.Context) {
 
 func DeleteTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteTeamEventType)
-	ret := service.DeleteTeamWithTransaction(db.DB, middleware.GetTeam(ctx))
+	ret := service.DeleteTeam(db.DB, middleware.GetTeam(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -120,7 +120,7 @@ func KickMember(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.KickMemberEventType)
-	ret := service.KickMember(db.DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), form.UserID)
+	ret := service.LeaveTeam(db.DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), form.UserID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -137,7 +137,7 @@ func JoinTeam(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.JoinTeamEventType)
-	team, ret := service.JoinTeamWithTransaction(db.DB, middleware.GetContest(ctx), middleware.GetSelf(ctx), form)
+	team, ret := service.JoinTeam(db.DB, middleware.GetContest(ctx), middleware.GetSelf(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -154,7 +154,7 @@ func CreateTeam(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateTeamEventType)
-	team, ret := service.CreateTeamWithTransaction(db.DB, middleware.GetContest(ctx), middleware.GetSelf(ctx), form)
+	team, ret := service.CreateTeam(db.DB, middleware.GetContest(ctx), middleware.GetSelf(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -166,7 +166,7 @@ func CreateTeam(ctx *gin.Context) {
 
 func LeaveTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.LeaveTeamEventType)
-	ret := service.LeaveTeamWithTransaction(db.DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), middleware.GetSelf(ctx).ID)
+	ret := service.LeaveTeam(db.DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), middleware.GetSelf(ctx).ID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

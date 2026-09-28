@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import UsersTab from './rbac/UsersTab';
-import RolesTab from './rbac/RolesTab';
-import GroupsTab from './rbac/GroupsTab';
-import PermissionsTab from './rbac/PermissionsTab';
+import UsersManager from '../../components/features/Admin/rbac/UsersManager';
+import RolesManager from '../../components/features/Admin/rbac/RolesManager';
+import GroupsManager from '../../components/features/Admin/rbac/GroupsManager';
+import PermissionsManager from '../../components/features/Admin/rbac/PermissionsManager';
 import { useTranslation } from 'react-i18next';
 import { Tabs } from '../../components/common';
 
@@ -21,10 +21,10 @@ function RbacManagement() {
     <>
       <Tabs items={tabs} value={activeTab} onChange={setActiveTab} />
 
-      {activeTab === 'users' && <UsersTab />}
-      {activeTab === 'roles' && <RolesTab />}
-      {activeTab === 'groups' && <GroupsTab />}
-      {activeTab === 'permissions' && <PermissionsTab />}
+      {activeTab === 'users' && <UsersManager />}
+      {activeTab === 'roles' && <RolesManager />}
+      {activeTab === 'groups' && <GroupsManager />}
+      {activeTab === 'permissions' && <PermissionsManager />}
     </>
   );
 }

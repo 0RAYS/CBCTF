@@ -18,24 +18,16 @@ func BuildGroupView(tx *gorm.DB, group model.Group) view.GroupView {
 	}
 }
 
-func BuildGroupViews(tx *gorm.DB, groups []model.Group) []view.GroupView {
-	views := make([]view.GroupView, 0, len(groups))
-	for _, group := range groups {
-		views = append(views, BuildGroupView(tx, group))
-	}
-	return views
-}
-
-func GetGroupView(tx *gorm.DB, group model.Group) view.GroupView {
-	return BuildGroupView(tx, group)
-}
-
 func ListGroups(tx *gorm.DB, form dto.ListModelsForm) ([]view.GroupView, int64, model.RetVal) {
 	groups, count, ret := db.InitGroupRepo(tx).List(form.Limit, form.Offset)
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	return BuildGroupViews(tx, groups), count, model.SuccessRetVal()
+	views := make([]view.GroupView, 0, len(groups))
+	for _, group := range groups {
+		views = append(views, BuildGroupView(tx, group))
+	}
+	return views, count, model.SuccessRetVal()
 }
 
 func ListGroupUsers(tx *gorm.DB, group model.Group, form dto.ListModelsForm) ([]view.UserView, int64, model.RetVal) {

@@ -28,11 +28,6 @@ func invalidComposeYamlRetVal(err string) model.RetVal {
 	return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err}}
 }
 
-func serviceKubeVirt(service types.ServiceConfig) bool {
-	kubeVirt, _ := service.Extensions[model.XKubeVirtExtension].(bool)
-	return kubeVirt
-}
-
 func validateChallengeCompose(config *types.Project) model.RetVal {
 	if len(config.Services) == 0 {
 		return invalidComposeYamlRetVal("At least one service is required")
@@ -96,7 +91,7 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 		if strings.TrimSpace(service.Image) == "" {
 			return model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
 		}
-		kubeVirt := serviceKubeVirt(service)
+		kubeVirt, _ := service.Extensions[model.XKubeVirtExtension].(bool)
 		if kubeVirt && !hasVpcNetworks {
 			return invalidComposeYamlRetVal(fmt.Sprintf("%s x-kubevirt requires VPC networks", label))
 		}
@@ -202,27 +197,6 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 		return invalidComposeYamlRetVal("Container challenges must expose at least one port")
 	}
 	return model.SuccessRetVal()
-}
-
-func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, int64, model.RetVal) {
-	options := db.GetOptions{
-		Conditions: make(map[string]any),
-		Search:     make(map[string]string),
-		Preloads:   map[string]db.GetOptions{"ChallengeFlags": {}},
-	}
-	if form.Type != "" {
-		options.Conditions["type"] = form.Type
-	}
-	if form.Category != "" {
-		options.Conditions["category"] = form.Category
-	}
-	if form.Name != "" {
-		options.Search["name"] = form.Name
-	}
-	if form.Description != "" {
-		options.Search["description"] = form.Description
-	}
-	return db.InitChallengeRepo(tx).List(form.Limit, form.Offset, options)
 }
 
 func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []model.ChallengeFlag, model.RetVal) {
@@ -426,145 +400,147 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 }
 
 func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge, model.RetVal) {
-	challengeRepo, challengeFlagRepo := db.InitChallengeRepo(tx), db.InitChallengeFlagRepo(tx)
-	options := model.Challenge{
-		RandID:          utils.UUID(),
-		Name:            form.Name,
-		Description:     form.Description,
-		Type:            form.Type,
-		Category:        form.Category,
-		GeneratorImage:  form.GeneratorImage,
-		NetworkPolicies: form.NetworkPolicies,
-	}
-	var podFlagOptions []model.ChallengeFlag
-	if form.Type == model.PodsChallengeType {
-		template, flags, ret := buildChallengeTemplate(form.DockerCompose)
-		if !ret.OK {
-			return model.Challenge{}, ret
+	var result model.Challenge
+	ret := db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
+		challengeRepo, challengeFlagRepo := db.InitChallengeRepo(tx), db.InitChallengeFlagRepo(tx)
+		options := model.Challenge{
+			RandID:          utils.UUID(),
+			Name:            form.Name,
+			Description:     form.Description,
+			Type:            form.Type,
+			Category:        form.Category,
+			GeneratorImage:  form.GeneratorImage,
+			NetworkPolicies: form.NetworkPolicies,
 		}
-		options.Template = template
-		podFlagOptions = flags
-	}
-	challenge, ret := challengeRepo.Create(options)
-	if !ret.OK {
-		return model.Challenge{}, ret
-	}
-	switch form.Type {
-	case model.StaticChallengeType:
-		for _, flag := range form.Flags {
-			if _, ret = challengeFlagRepo.Create(model.ChallengeFlag{
-				ChallengeID: challenge.ID,
-				Value:       flag,
-			}); !ret.OK {
-				return model.Challenge{}, ret
-			}
-		}
-	case model.DynamicChallengeType:
-		for _, flag := range form.Flags {
-			if _, ret = challengeFlagRepo.Create(model.ChallengeFlag{
-				ChallengeID: challenge.ID,
-				Value:       flag,
-			}); !ret.OK {
-				return model.Challenge{}, ret
-			}
-		}
-	case model.PodsChallengeType:
-		for _, flag := range podFlagOptions {
-			flag.ChallengeID = challenge.ID
-			if _, ret = challengeFlagRepo.Create(flag); !ret.OK {
-				return model.Challenge{}, ret
-			}
-		}
-	default:
-		return model.Challenge{}, model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
-	}
-	warmChallengeImages(challenge)
-	return challengeRepo.GetByID(challenge.ID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
-	})
-}
-
-func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChallengeForm) (result model.RetVal) {
-	defer func() {
-		if result.OK {
-			if updated, ret := db.InitChallengeRepo(tx).GetByID(challenge.ID); ret.OK {
-				warmChallengeImages(updated)
-			}
-		}
-	}()
-	switch challenge.Type {
-	case model.StaticChallengeType, model.DynamicChallengeType:
-		oldChallengeFlagID := make([]uint, 0)
-		for _, flag := range challenge.ChallengeFlags {
-			oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
-		}
-		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
-		for _, flag := range form.Flags {
-			if slices.Contains(oldChallengeFlagID, flag.ID) {
-				if ret := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
-					Value: &flag.Value,
-				}); !ret.OK {
-					return ret
-				}
-				oldChallengeFlagID = slices.DeleteFunc(oldChallengeFlagID, func(id uint) bool {
-					return id == flag.ID
-				})
-			} else {
-				if _, ret := challengeFlagRepo.Create(model.ChallengeFlag{
-					ChallengeID: challenge.ID,
-					Value:       flag.Value,
-				}); !ret.OK {
-					return ret
-				}
-			}
-		}
-		if ret := challengeFlagRepo.Delete(oldChallengeFlagID...); !ret.OK {
-			return ret
-		}
-		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
-			Name:           form.Name,
-			Description:    form.Description,
-			Category:       form.Category,
-			GeneratorImage: form.GeneratorImage,
-		})
-	case model.PodsChallengeType:
-		if form.DockerCompose != nil {
-			challengeFlagIDL := make([]uint, 0, len(challenge.ChallengeFlags))
-			for _, flag := range challenge.ChallengeFlags {
-				challengeFlagIDL = append(challengeFlagIDL, flag.ID)
-			}
-			if ret := db.InitChallengeFlagRepo(tx).Delete(challengeFlagIDL...); !ret.OK {
-				return ret
-			}
-			template, flags, ret := buildChallengeTemplate(*form.DockerCompose)
+		var podFlagOptions []model.ChallengeFlag
+		if form.Type == model.PodsChallengeType {
+			template, flags, ret := buildChallengeTemplate(form.DockerCompose)
 			if !ret.OK {
 				return ret
 			}
-			if ret = db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
+			options.Template = template
+			podFlagOptions = flags
+		}
+		challenge, ret := challengeRepo.Create(options)
+		if !ret.OK {
+			return ret
+		}
+		switch form.Type {
+		case model.StaticChallengeType, model.DynamicChallengeType:
+			for _, flag := range form.Flags {
+				if _, ret = challengeFlagRepo.Create(model.ChallengeFlag{
+					ChallengeID: challenge.ID,
+					Value:       flag,
+				}); !ret.OK {
+					return ret
+				}
+			}
+		case model.PodsChallengeType:
+			for _, flag := range podFlagOptions {
+				flag.ChallengeID = challenge.ID
+				if _, ret = challengeFlagRepo.Create(flag); !ret.OK {
+					return ret
+				}
+			}
+		default:
+			return model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
+		}
+		warmChallengeImages(challenge)
+		result, ret = challengeRepo.GetByID(challenge.ID, db.GetOptions{
+			Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
+		})
+		return ret
+	})
+	return result, ret
+}
+
+func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChallengeForm) model.RetVal {
+	challenge, ret := GetChallengeWithFlags(tx, challenge)
+	if !ret.OK {
+		return ret
+	}
+	return db.WithTransactionDB(tx, func(tx *gorm.DB) (result model.RetVal) {
+		defer func() {
+			if result.OK {
+				if updated, ret := db.InitChallengeRepo(tx).GetByID(challenge.ID); ret.OK {
+					warmChallengeImages(updated)
+				}
+			}
+		}()
+		switch challenge.Type {
+		case model.StaticChallengeType, model.DynamicChallengeType:
+			oldChallengeFlagID := make([]uint, 0)
+			for _, flag := range challenge.ChallengeFlags {
+				oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
+			}
+			challengeFlagRepo := db.InitChallengeFlagRepo(tx)
+			for _, flag := range form.Flags {
+				if slices.Contains(oldChallengeFlagID, flag.ID) {
+					if ret := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
+						Value: &flag.Value,
+					}); !ret.OK {
+						return ret
+					}
+					oldChallengeFlagID = slices.DeleteFunc(oldChallengeFlagID, func(id uint) bool {
+						return id == flag.ID
+					})
+				} else {
+					if _, ret := challengeFlagRepo.Create(model.ChallengeFlag{
+						ChallengeID: challenge.ID,
+						Value:       flag.Value,
+					}); !ret.OK {
+						return ret
+					}
+				}
+			}
+			if ret := challengeFlagRepo.Delete(oldChallengeFlagID...); !ret.OK {
+				return ret
+			}
+			return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
+				Name:           form.Name,
+				Description:    form.Description,
+				Category:       form.Category,
+				GeneratorImage: form.GeneratorImage,
+			})
+		case model.PodsChallengeType:
+			if form.DockerCompose != nil {
+				challengeFlagIDL := make([]uint, 0, len(challenge.ChallengeFlags))
+				for _, flag := range challenge.ChallengeFlags {
+					challengeFlagIDL = append(challengeFlagIDL, flag.ID)
+				}
+				if ret := db.InitChallengeFlagRepo(tx).Delete(challengeFlagIDL...); !ret.OK {
+					return ret
+				}
+				template, flags, ret := buildChallengeTemplate(*form.DockerCompose)
+				if !ret.OK {
+					return ret
+				}
+				if ret = db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
+					Name:            form.Name,
+					Description:     form.Description,
+					Category:        form.Category,
+					NetworkPolicies: form.NetworkPolicies,
+					Template:        &template,
+				}); !ret.OK {
+					return ret
+				}
+				repo := db.InitChallengeFlagRepo(tx)
+				for _, flag := range flags {
+					flag.ChallengeID = challenge.ID
+					if _, ret = repo.Create(flag); !ret.OK {
+						return ret
+					}
+				}
+				return model.SuccessRetVal()
+			}
+			return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 				Name:            form.Name,
 				Description:     form.Description,
 				Category:        form.Category,
 				NetworkPolicies: form.NetworkPolicies,
-				Template:        &template,
-			}); !ret.OK {
-				return ret
-			}
-			repo := db.InitChallengeFlagRepo(tx)
-			for _, flag := range flags {
-				flag.ChallengeID = challenge.ID
-				if _, ret = repo.Create(flag); !ret.OK {
-					return ret
-				}
-			}
-			return model.SuccessRetVal()
+			})
+		default:
+			return model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
 		}
-		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
-			Name:            form.Name,
-			Description:     form.Description,
-			Category:        form.Category,
-			NetworkPolicies: form.NetworkPolicies,
-		})
-	default:
-		return model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
-	}
+	})
 }

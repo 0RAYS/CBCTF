@@ -17,114 +17,109 @@ import (
 )
 
 func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (model.User, model.RetVal) {
-	id, ok := utils.GetClaimStringValue(response, provider.IDClaim, true)
-	if !ok {
-		log.Logger.Warningf("Failed to get user_id by provider %s: %s", provider.Provider, response)
-		return model.User{}, model.RetVal{Msg: i18n.Model.Oauth.MissingIDClaim}
-	}
-	name, ok := utils.GetClaimStringValue(response, provider.NameClaim, true)
-	if !ok {
-		name = fmt.Sprintf("%s_%s", utils.RandHexStr(10), provider.Provider)
-	}
-	email, ok := utils.GetClaimStringValue(response, provider.EmailClaim, true)
-	if !ok {
-		email = fmt.Sprintf("%s@%s.com", utils.RandHexStr(10), provider.Uri)
-	}
-	picture, _ := utils.GetClaimStringValue(response, provider.PictureClaim, false)
-	description, _ := utils.GetClaimStringValue(response, provider.DescriptionClaim, false)
-	raw, _ := json.Marshal(response)
-	userRepo := db.InitUserRepo(tx)
-	user, ret := userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
-	if !ret.OK {
-		if ret.Msg != i18n.Model.NotFound {
-			return model.User{}, ret
+	var result model.User
+	ret := db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
+		id, ok := utils.GetClaimStringValue(response, provider.IDClaim, true)
+		if !ok {
+			log.Logger.Warningf("Failed to get user_id by provider %s: %s", provider.Provider, response)
+			return model.RetVal{Msg: i18n.Model.Oauth.MissingIDClaim}
 		}
-		// 获取用户失败的时创建新用户
-		unique, uniqueRet := userRepo.IsUniqueKeyValue(0, "name", name)
-		if !uniqueRet.OK {
-			return model.User{}, uniqueRet
-		}
-		if !unique {
+		name, ok := utils.GetClaimStringValue(response, provider.NameClaim, true)
+		if !ok {
 			name = fmt.Sprintf("%s_%s", utils.RandHexStr(10), provider.Provider)
 		}
-		unique, uniqueRet = userRepo.IsUniqueKeyValue(0, "email", email)
-		if !uniqueRet.OK {
-			return model.User{}, uniqueRet
-		}
-		if !unique {
+		email, ok := utils.GetClaimStringValue(response, provider.EmailClaim, true)
+		if !ok {
 			email = fmt.Sprintf("%s@%s.com", utils.RandHexStr(10), provider.Uri)
 		}
-		user, ret = userRepo.Create(model.User{
-			Name:           name,
-			Password:       model.NeverLoginPWD,
-			Email:          email,
-			Picture:        model.FileURL(picture),
-			Description:    description,
-			Verified:       true,
-			Provider:       provider.Provider,
-			ProviderUserID: id,
-			OauthRaw:       string(raw),
-		})
+		picture, _ := utils.GetClaimStringValue(response, provider.PictureClaim, false)
+		description, _ := utils.GetClaimStringValue(response, provider.DescriptionClaim, false)
+		raw, _ := json.Marshal(response)
+		userRepo := db.InitUserRepo(tx)
+		user, ret := userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
 		if !ret.OK {
-			return model.User{}, ret
-		}
-		if provider.GroupsClaim != "" {
-			groupRepo := db.InitGroupRepo(tx)
-			if groups, groupsOK := utils.GetClaimRawValue[[]string](response, provider.GroupsClaim); groupsOK {
-				// 同步所有组
-				for _, groupName := range groups {
-					group, groupRet := groupRepo.GetByUniqueField("name", groupName)
-					if !groupRet.OK {
-						continue
+			if ret.Msg != i18n.Model.NotFound {
+				return ret
+			}
+			// 获取用户失败的时创建新用户
+			unique, uniqueRet := userRepo.IsUniqueKeyValue(0, "name", name)
+			if !uniqueRet.OK {
+				return uniqueRet
+			}
+			if !unique {
+				name = fmt.Sprintf("%s_%s", utils.RandHexStr(10), provider.Provider)
+			}
+			unique, uniqueRet = userRepo.IsUniqueKeyValue(0, "email", email)
+			if !uniqueRet.OK {
+				return uniqueRet
+			}
+			if !unique {
+				email = fmt.Sprintf("%s@%s.com", utils.RandHexStr(10), provider.Uri)
+			}
+			user, ret = userRepo.Create(model.User{
+				Name:           name,
+				Password:       model.NeverLoginPWD,
+				Email:          email,
+				Picture:        model.FileURL(picture),
+				Description:    description,
+				Verified:       true,
+				Provider:       provider.Provider,
+				ProviderUserID: id,
+				OauthRaw:       string(raw),
+			})
+			if !ret.OK {
+				return ret
+			}
+			if provider.GroupsClaim != "" {
+				groupRepo := db.InitGroupRepo(tx)
+				if groups, groupsOK := utils.GetClaimRawValue[[]string](response, provider.GroupsClaim); groupsOK {
+					// 同步所有组
+					for _, groupName := range groups {
+						group, groupRet := groupRepo.GetByUniqueField("name", groupName)
+						if !groupRet.OK {
+							continue
+						}
+						if !userRepo.IsInGroup(user.ID, group.Name) {
+							db.AppendUserToGroup(tx, user, group)
+						}
 					}
-					if !userRepo.IsInGroup(user.ID, group.Name) {
-						db.AppendUserToGroup(tx, user, group)
-					}
-				}
-				// 尝试添加到管理员组
-				if slices.Contains(groups, provider.AdminGroup) {
-					if !userRepo.IsInGroup(user.ID, model.AdminGroupName) {
-						adminGroup, adminGroupRet := db.InitGroupRepo(tx).GetByUniqueField("name", model.AdminGroupName)
-						if adminGroupRet.OK {
-							db.AppendUserToGroup(tx, user, adminGroup)
+					// 尝试添加到管理员组
+					if slices.Contains(groups, provider.AdminGroup) {
+						if !userRepo.IsInGroup(user.ID, model.AdminGroupName) {
+							adminGroup, adminGroupRet := db.InitGroupRepo(tx).GetByUniqueField("name", model.AdminGroupName)
+							if adminGroupRet.OK {
+								db.AppendUserToGroup(tx, user, adminGroup)
+							}
 						}
 					}
 				}
 			}
-		}
-		// 获取组声明或加组失败后尝试加入默认组
-		if provider.DefaultGroup != 0 {
-			defaultGroup, defaultGroupRet := db.InitGroupRepo(tx).GetByID(provider.DefaultGroup)
-			if defaultGroupRet.OK {
-				// 最终都无法获取到组则放弃加组
-				if !userRepo.IsInGroup(user.ID, defaultGroup.Name) {
-					db.AppendUserToGroup(tx, user, defaultGroup)
+			// 获取组声明或加组失败后尝试加入默认组
+			if provider.DefaultGroup != 0 {
+				defaultGroup, defaultGroupRet := db.InitGroupRepo(tx).GetByID(provider.DefaultGroup)
+				if defaultGroupRet.OK {
+					// 最终都无法获取到组则放弃加组
+					if !userRepo.IsInGroup(user.ID, defaultGroup.Name) {
+						db.AppendUserToGroup(tx, user, defaultGroup)
+					}
 				}
 			}
+			prometheus.RecordUserRegister(provider.Provider)
+		} else {
+			// 获取用户成功的时更新用户信息
+			ret = userRepo.Update(user.ID, db.UpdateUserOptions{
+				Description: &description,
+				Picture:     new(model.FileURL(picture)),
+				OauthRaw:    new(string(raw)),
+			})
+			if !ret.OK {
+				return ret
+			}
 		}
-		prometheus.RecordUserRegister(provider.Provider)
-	} else {
-		// 获取用户成功的时更新用户信息
-		ret = userRepo.Update(user.ID, db.UpdateUserOptions{
-			Description: &description,
-			Picture:     new(model.FileURL(picture)),
-			OauthRaw:    new(string(raw)),
-		})
-		if !ret.OK {
-			return model.User{}, ret
-		}
-	}
-	return userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
-}
-
-func OauthLoginWithTransaction(tx *gorm.DB, provider model.Oauth, response map[string]any) (model.User, model.RetVal) {
-	var user model.User
-	ret := db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		var loginRet model.RetVal
-		user, loginRet = OauthLogin(tx2, provider, response)
-		return loginRet
+		result, ret = userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
+		return ret
 	})
-	return user, ret
+	return result, ret
 }
 
 func ListEnabledOauthProviders(tx *gorm.DB) ([]model.Oauth, model.RetVal) {

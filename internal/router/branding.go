@@ -20,10 +20,6 @@ func GetBranding(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetBrandingResp(branding)))
 }
 
-func GetAdminBranding(ctx *gin.Context) {
-	GetBranding(ctx)
-}
-
 func UpdateBranding(ctx *gin.Context) {
 	var form dto.UpdateBrandingForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {

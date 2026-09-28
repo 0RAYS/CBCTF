@@ -101,10 +101,6 @@ function LanguageSwitcher({ size = 'sm', className = '' }) {
   const currentLang = i18n.language in LANG_CONFIG ? i18n.language : 'en';
   const { Flag, label, code, next, nextLabel } = LANG_CONFIG[currentLang];
 
-  const handleToggle = () => {
-    setLanguage(next);
-  };
-
   const sizeMap = {
     sm: { btn: 'h-8 px-2 gap-1.5 text-xs', flag: 'w-[18px] h-[12.6px] rounded-[1px]' },
     md: { btn: 'h-9 px-2.5 gap-1.5 text-xs', flag: 'w-5 h-[14px] rounded-[1px]' },
@@ -115,7 +111,7 @@ function LanguageSwitcher({ size = 'sm', className = '' }) {
   return (
     <button
       type="button"
-      onClick={handleToggle}
+      onClick={() => setLanguage(next)}
       title={`${t('common.switchTo')} ${nextLabel}`}
       aria-label={`${t('common.currentLanguage')}: ${label}. ${t('common.switchTo')} ${nextLabel}`}
       className={[

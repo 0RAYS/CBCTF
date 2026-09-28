@@ -98,7 +98,7 @@ func Register(ctx *gin.Context) {
 	setAuthCookie(ctx, token)
 	prometheus.RecordUserRegister(oa.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.GetUserView(db.DB, user, false), false)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB, user, false), false)))
 }
 
 func Login(ctx *gin.Context) {
@@ -132,7 +132,7 @@ func Login(ctx *gin.Context) {
 	setAuthCookie(ctx, token)
 	prometheus.RecordUserLogin(oa.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.GetUserView(db.DB, user, false), false)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB, user, false), false)))
 }
 
 func Logout(ctx *gin.Context) {
