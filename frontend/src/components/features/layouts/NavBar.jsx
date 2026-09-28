@@ -60,7 +60,7 @@ function NavBar({
         {/* 左侧区域包装 */}
         <div className="flex min-w-0 flex-1 items-center">
           {/* Logo区域 */}
-          <div className="relative min-w-0 max-w-[240px] xl:max-w-[200px]">
+          <div className="relative min-w-0 w-44 sm:w-52 max-w-full">
             <Button
               variant="outline"
               size="lg"
@@ -79,13 +79,13 @@ function NavBar({
           </div>
 
           {/* Keep the six contest tabs collapsed on tablets. */}
-          <nav aria-label={t('common.mainNavigation')} className="hidden xl:flex shrink-0 ml-6 gap-2">
+          <nav aria-label={t('common.mainNavigation')} className="hidden xl:flex shrink-0 ml-6 gap-2.5">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
                 variant={activeTab === tab.id ? 'primary' : 'outline'}
                 size="sm"
-                className="min-w-0 px-3! whitespace-nowrap"
+                className="min-w-24 shrink-0 px-6! whitespace-nowrap"
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 onClick={() => onTabChange(tab.id)}
               >
@@ -97,7 +97,7 @@ function NavBar({
 
         {/* 右侧语言切换与头像区域 */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <LanguageSwitcher size="sm" className="min-h-10" />
+          <LanguageSwitcher size="md" />
           <button
             type="button"
             aria-label={t('common.openUserMenu')}

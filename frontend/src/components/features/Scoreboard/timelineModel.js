@@ -1,3 +1,8 @@
+function rankPosition(team) {
+  const rank = Number(team.rank);
+  return Number.isInteger(rank) && rank > 0 ? rank : Infinity;
+}
+
 export function buildTimelineModel(timelineData) {
   const allTimePoints = new Set();
   const teams = (timelineData || []).map((team) => {
@@ -8,7 +13,11 @@ export function buildTimelineModel(timelineData) {
     points.forEach((point) => allTimePoints.add(point.time));
     return { ...team, timeline: points };
   });
-  return { timePoints: Array.from(allTimePoints).toSorted(), teams };
+  // Stable numeric order also handles string ranks; unknown ranks follow ranked teams.
+  return {
+    timePoints: Array.from(allTimePoints).toSorted(),
+    teams: teams.toSorted((a, b) => rankPosition(a) - rankPosition(b)),
+  };
 }
 
 export function buildTimelineChartData({ teams, timePoints }, hiddenTeams) {

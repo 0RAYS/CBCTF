@@ -2934,6 +2934,11 @@
       "total": "TOTAL",
       "toast": {
         "fetchFailed": "Failed to load scoreboard"
+      },
+      "timeline": {
+        "title": "Score progression",
+        "teams": "Teams in rank order",
+        "failed": "Failed to load score progression"
       }
     },
     "countdown": {

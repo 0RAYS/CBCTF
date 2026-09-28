@@ -75,6 +75,7 @@ tests/                         领域逻辑、异步会话与结构约束测试
 - 标准字段使用 `Input`、`Textarea`、`Select`、`DateTimeInput` 的 `label`。自定义单控件用 `FormField htmlFor` 配合明确 id；组合字段用 `fieldset/legend`。
 - 布尔勾选使用 `Checkbox`，`onChange` 接收 DOM event；不要恢复名称与行为不符的 `FormSwitch`。
 - `List` 是数据表格；空态使用 `emptyContent`，默认从数据推导。`minWidth` 限定内部表格宽度，窄屏在表格区域滚动，不能靠裁切隐藏操作。
+- 列宽必须有边界：排行榜得分列按文字测量但最多 240px（含内边距），溢出以省略号显示。`TruncatedText` 用于表头和单行文本，保留完整 DOM 文本与 `title`，不截断原始数据；多行摘要使用行数限制并提供完整提示。自定义数据表使用固定列布局及明确列宽，避免长名称、ID、地址或数值参与无限扩列；交互控件不能用文本截断替代。
 - 管理列表通过 `List.getRowActions(item)` 返回 `{ key, label, icon, onClick, disabled, danger, hidden, inline }`，所有操作均可在右键菜单执行。编辑、删除、查看详情不放入操作列；其他操作标记 `inline: true`，并通过 `actionsColumn: { label, width }` 展示操作列，共用同一份回调和状态。没有行内操作时不设置 `actionsColumn`，避免空操作列。有详情功能的列表，`onRowClick` 优先查看详情，编辑只通过右键菜单进入；没有详情功能的可编辑列表，行点击直接进入编辑。查看详情通过左键点击行或右键菜单进入。行内按钮、链接、表单控件及 `data-row-interactive` 区域不触发行点击。
 - 自定义表格使用 `common/useContextMenu` 的 `getRowProps`、`hint` 和 `menu`，共用 `ContextMenu`，操作列使用 `common/RowActions`；支持右键、触屏长按和 Shift+F10，数据刷新后关闭旧菜单。操作标签必须使用中英文翻译，权限和状态限制由业务组件提供。
 - `Pagination.current/total/onChange` 中 `total` 表示总页数，页码和数据请求由业务所有者维护。
@@ -93,7 +94,7 @@ tests/                         领域逻辑、异步会话与结构约束测试
 - 轮询必须处理在途请求。题目状态在请求结束后调度，管理列表在相同 query 请求未结束时跳过 tick；分页、筛选和手动刷新仍能立即替换旧查询。
 - 关闭弹窗、切题、切比赛、卸载都会失效旧请求和计时器。不能用单一 mounted 布尔值代替选题代次、请求序号等不同约束。
 - 角色授权、组成员变更、单 Flag 保存、封面上传是独立即时事务，不应混入主表单保存。
-- 表格/时间线数据按需请求；时间线 `null` 是未请求，`[]` 是已取得空结果。ECharts 隐藏曲线保留实例与 `replaceMerge`。
+- 排行榜上分曲线是排名/表格两种视图上方的共用区域，进入比赛排行榜即独立加载，视图切换和分页不取消或重复发起曲线请求。时间线 `null` 是未请求，`[]` 是已取得空结果；失败可单独重试。选择器与曲线共用按数值排名稳定排序的模型，ECharts 隐藏曲线保留实例与 `replaceMerge`。
 
 ## 自动化保护
 

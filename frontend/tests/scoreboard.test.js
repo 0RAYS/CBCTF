@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-    buildScoreboardColumns,
-    collectChallenges,
-    indexTeamChallenges,
-    toRankingTeam,
+  buildScoreboardColumns,
+  collectChallenges,
+  indexTeamChallenges,
+  toRankingTeam,
 } from '../src/components/features/Scoreboard/scoreboardModel.js';
-import {buildTimelineChartData, buildTimelineModel} from '../src/components/features/Scoreboard/timelineModel.js';
-import {buildTimelineOption, timelineTeamColor} from '../src/components/features/Scoreboard/timelineOption.js';
+import { buildTimelineChartData, buildTimelineModel } from '../src/components/features/Scoreboard/timelineModel.js';
+import { buildTimelineOption, timelineTeamColor } from '../src/components/features/Scoreboard/timelineOption.js';
 
 const times = [0, 1, 2, 3].map((minute) => `2026-09-10T10:0${minute}:00Z`);
 
@@ -135,6 +135,44 @@ test('timeline sorting is immutable and duplicate timestamps retain their first 
   assert.deepEqual(model.teams[1].timeline, []);
   assert.equal(input[0].timeline[0], first);
   assert.notEqual(model.teams[0], input[0]);
+});
+
+test('timeline teams sort numerically by rank without mutating input, including ties and unknown ranks', () => {
+  const input = Object.freeze([
+    Object.freeze({ id: 'ten', rank: '10', timeline: [] }),
+    Object.freeze({ id: 'missing', timeline: [] }),
+    Object.freeze({ id: 'two-a', rank: 2, timeline: [] }),
+    Object.freeze({ id: 'one', rank: 1, timeline: [] }),
+    Object.freeze({ id: 'two-b', rank: '2', timeline: [] }),
+    Object.freeze({ id: 'zero', rank: 0, timeline: [] }),
+    Object.freeze({ id: 'invalid', rank: 'unknown', timeline: [] }),
+  ]);
+  const model = buildTimelineModel(input);
+  assert.deepEqual(
+    model.teams.map(({ id }) => id),
+    ['one', 'two-a', 'two-b', 'ten', 'missing', 'zero', 'invalid']
+  );
+  assert.equal(input[0].id, 'ten');
+  assert.notEqual(model.teams[0], input[3]);
+});
+
+test('rank-sorted selector and chart keep the same team colors when higher-ranked curves are hidden', () => {
+  const model = buildTimelineModel([
+    { id: 30, rank: 3, timeline: [{ time: times[0], score: 30 }] },
+    { id: 10, rank: 1, timeline: [{ time: times[1], score: 100 }] },
+    { id: 20, rank: 2, timeline: [{ time: times[2], score: 50 }] },
+  ]);
+  const all = buildTimelineOption(model.timePoints, buildTimelineChartData(model, new Set()));
+  assert.deepEqual(
+    all.series.map(({ id }) => id),
+    ['team_10', 'team_20', 'team_30']
+  );
+  const visible = buildTimelineOption(model.timePoints, buildTimelineChartData(model, new Set([10])));
+  assert.deepEqual(visible.series, all.series.slice(1));
+  model.teams.forEach((team, index) => {
+    assert.equal(all.series[index].id, `team_${team.id}`);
+    assert.equal(all.series[index].lineStyle.color, timelineTeamColor(index));
+  });
 });
 
 test('timeline cursor matches the original first-match and carry-forward algorithm', () => {

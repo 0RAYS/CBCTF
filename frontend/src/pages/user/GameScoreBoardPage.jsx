@@ -8,7 +8,7 @@ import { getContestInfo, getContestRank, getContestScoreboard, getContestTimelin
 import { getTeamInfo } from '../../api/game/team';
 import Button from '../../components/common/Button';
 import Pagination from '../../components/common/Pagination';
-import { IconChartLine, IconList, IconTable } from '@tabler/icons-react';
+import { IconList, IconTable } from '@tabler/icons-react';
 import ScoreboardStats from '../../components/features/Scoreboard/ScoreboardStats';
 import { toast } from '../../utils/toast.js';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +30,9 @@ function ContestScoreboard({ contestId }) {
   const [tableData, setTableData] = useState({ page: null, teams: [], challenges: [], count: 0 });
   // null distinguishes an unfetched timeline from a successfully fetched empty result.
   const [timelineData, setTimelineData] = useState(null);
-  const [timelineLoading, setTimelineLoading] = useState(false);
+  const [timelineLoading, setTimelineLoading] = useState(true);
+  const [timelineError, setTimelineError] = useState(false);
+  const [timelineVersion, setTimelineVersion] = useState(0);
   const [scoreboardData, setScoreboardData] = useState({
     stats: { totalTeams: 0, totalSolves: 0, highestScore: 0, totalPlayers: 0 },
     teams: [],
@@ -97,15 +99,20 @@ function ContestScoreboard({ contestId }) {
   }, [contestId, viewMode, tableCurrentPage]);
 
   useEffect(() => {
-    if (viewMode !== 'timeline' || timelineData !== null) return;
     let ignore = false;
     setTimelineLoading(true);
+    setTimelineError(false);
     getContestTimeline(contestId)
       .then((response) => {
-        if (!ignore && response.code === 200) setTimelineData(response.data || []);
+        if (ignore) return;
+        if (response.code === 200) setTimelineData(response.data || []);
+        else setTimelineError(true);
       })
       .catch((error) => {
-        if (!ignore) toast.danger({ description: error.message || t('game.scoreboard.toast.fetchFailed') });
+        if (!ignore) {
+          setTimelineError(true);
+          toast.danger({ description: error.message || t('game.scoreboard.toast.fetchFailed') });
+        }
       })
       .finally(() => {
         if (!ignore) setTimelineLoading(false);
@@ -113,10 +120,10 @@ function ContestScoreboard({ contestId }) {
     return () => {
       ignore = true;
     };
-  }, [contestId, viewMode]);
+  }, [contestId, timelineVersion]);
 
   return (
-    <div className="contest-container mx-auto min-w-0 space-y-6">
+    <div className="contest-container mx-auto min-w-0 space-y-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-xl sm:text-3xl font-mono text-neutral-50 tracking-wider">{t('nav.scoreboard')}</h1>
         <div
@@ -127,7 +134,6 @@ function ContestScoreboard({ contestId }) {
           {[
             { mode: 'ranking', label: t('common.rank'), icon: <IconList size={16} /> },
             { mode: 'table', label: t('game.scoreboard.headers.challenges'), icon: <IconTable size={16} /> },
-            { mode: 'timeline', label: t('game.detail.labels.timeline'), icon: <IconChartLine size={16} /> },
           ].map(({ mode, label, icon }) => (
             <Button
               key={mode}
@@ -144,9 +150,13 @@ function ContestScoreboard({ contestId }) {
         </div>
       </div>
       <ScoreboardStats {...scoreboardData.stats} />
-      {viewMode === 'timeline' ? (
-        <ScoreboardTimeline timelineData={timelineData || []} loading={timelineLoading} />
-      ) : viewMode === 'table' ? (
+      <ScoreboardTimeline
+        timelineData={timelineData || []}
+        loading={timelineLoading}
+        error={timelineError}
+        onRetry={() => setTimelineVersion((version) => version + 1)}
+      />
+      {viewMode === 'table' ? (
         <ScoreboardTable
           teams={tableData.teams}
           challenges={tableData.challenges}

@@ -4,6 +4,7 @@ import Loading from './Loading';
 import EmptyState from './EmptyState';
 import useContextMenu from './useContextMenu';
 import RowActions from './RowActions';
+import TruncatedText from './TruncatedText';
 
 const INTERACTIVE_SELECTOR =
   'button, a, input, select, textarea, label, [role="button"], [role="checkbox"], [contenteditable="true"], [data-row-interactive]';
@@ -88,7 +89,7 @@ function List({
   };
 
   return (
-    <div className={className}>
+    <div className={`min-w-0 ${className}`}>
       {contextMenu.hint}
       {contextMenu.menu}
       {/* 表格区域 */}
@@ -101,23 +102,27 @@ function List({
                 <th
                   scope="col"
                   key={index}
-                  className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap"
+                  className="p-4 text-left text-neutral-400 font-mono [overflow-wrap:anywhere]"
                   style={{
                     width: columnWeight
                       ? `${(parseFloat(column.width) / columnWeight) * 100}%`
                       : column.width || 'auto',
                   }}
                 >
-                  {column.label}
+                  {typeof column.label === 'string' ? <TruncatedText>{column.label}</TruncatedText> : column.label}
                 </th>
               ))}
               {actionsColumn && (
                 <th
                   scope="col"
-                  className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap"
+                  className="p-4 text-left text-neutral-400 font-mono [overflow-wrap:anywhere]"
                   style={{ width: actionsWidth }}
                 >
-                  {actionsColumn.label}
+                  {typeof actionsColumn.label === 'string' ? (
+                    <TruncatedText>{actionsColumn.label}</TruncatedText>
+                  ) : (
+                    actionsColumn.label
+                  )}
                 </th>
               )}
             </tr>
@@ -173,11 +178,18 @@ function List({
                     }}
                     {...rowMotionProps}
                   >
-                    {columns.map((column, colIndex) => (
-                      <td key={colIndex} className="p-4 text-neutral-300 font-mono break-words overflow-hidden">
-                        {cellRenderer(item, column, rowIndex, colIndex)}
-                      </td>
-                    ))}
+                    {columns.map((column, colIndex) => {
+                      const content = cellRenderer(item, column, rowIndex, colIndex);
+                      return (
+                        <td key={colIndex} className="p-4 text-neutral-300 font-mono break-words overflow-hidden">
+                          {typeof content === 'string' || typeof content === 'number' ? (
+                            <TruncatedText>{content}</TruncatedText>
+                          ) : (
+                            content
+                          )}
+                        </td>
+                      );
+                    })}
                     {actionsColumn && (
                       <td className="p-4" data-row-interactive>
                         <RowActions actions={getRowActions?.(item) || []} />

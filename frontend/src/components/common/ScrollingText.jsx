@@ -72,9 +72,9 @@ function ScrollingText({ text, className = '', speed = 30, maxWidth = 200 }) {
   return (
     <div
       ref={containerRef}
-      className={`overflow-hidden ${className}`}
+      className={`min-w-0 overflow-hidden ${className}`}
       style={{ maxWidth: `${maxWidth}px` }}
-      title={shouldScroll ? text : undefined}
+      title={text}
     >
       <div
         ref={textRef}

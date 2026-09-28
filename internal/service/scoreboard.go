@@ -264,6 +264,11 @@ func GetRankTimelineViews(tx *gorm.DB, contest model.Contest) ([]view.RankTimeli
 	if !ret.OK {
 		return nil, ret
 	}
+	// Redis returns current ranking order, but each cached team may carry an old Rank.
+	// Assign positions before filtering so omitted zero-score teams do not shift ranks.
+	for i := range teams {
+		teams[i].Rank = i + 1
+	}
 	teams = slices.DeleteFunc(teams, func(team model.Team) bool {
 		return team.Score == 0
 	})

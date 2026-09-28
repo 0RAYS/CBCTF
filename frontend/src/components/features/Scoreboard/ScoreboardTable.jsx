@@ -14,6 +14,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Card, Pagination, ScrollingText } from '../../common';
 import { useTranslation } from 'react-i18next';
 import { buildScoreboardColumns, indexTeamChallenges } from './scoreboardModel.js';
+import useScoreColumnWidth from './useScoreColumnWidth';
+import TruncatedText from '../../common/TruncatedText';
 
 function ScoreboardTable({
   teams = [],
@@ -26,9 +28,17 @@ function ScoreboardTable({
   const { t } = useTranslation();
   const containerRef = useRef(null);
   const [stickyWidths, setStickyWidths] = useState({
+    containerWidth: 0,
     rankWidth: 60,
     teamWidth: 240,
-    scoreWidth: 80,
+  });
+  const scoreValues = useMemo(() => teams.map((team) => team.score), [teams]);
+  const { width: scoreWidth, measurement } = useScoreColumnWidth({
+    scores: scoreValues,
+    label: t('game.scoreboardTable.headers.score'),
+    scoreClassName: 'text-base',
+    padding: 25,
+    minWidth: 80,
   });
 
   useEffect(() => {
@@ -41,14 +51,13 @@ function ScoreboardTable({
       const width = container.clientWidth || 0;
       if (!width) return;
       const rankWidth = width < 640 ? 52 : 60;
-      const scoreWidth = width < 640 ? 72 : 80;
       const teamWidth = Math.max(140, Math.min(220, Math.floor(width * 0.24)));
 
       setStickyWidths((prev) => {
-        if (prev.rankWidth === rankWidth && prev.teamWidth === teamWidth && prev.scoreWidth === scoreWidth) {
+        if (prev.rankWidth === rankWidth && prev.teamWidth === teamWidth && prev.containerWidth === width) {
           return prev;
         }
-        return { rankWidth, teamWidth, scoreWidth };
+        return { containerWidth: width, rankWidth, teamWidth };
       });
     };
 
@@ -68,9 +77,20 @@ function ScoreboardTable({
     widthById: challengeWidthMap,
   } = useMemo(() => buildScoreboardColumns(challenges), [challenges]);
   const teamChallengeIndexes = useMemo(() => teams.map((team) => indexTeamChallenges(team.challenges || [])), [teams]);
+  const challengeWidth = challengeColWidths.reduce((total, width) => total + width, 0);
+  // Fill spare space with the team column so actual widths keep matching sticky offsets.
+  const teamWidth = Math.max(
+    stickyWidths.teamWidth,
+    stickyWidths.containerWidth - stickyWidths.rankWidth - scoreWidth - challengeWidth
+  );
+  const tableWidth = stickyWidths.rankWidth + teamWidth + scoreWidth + challengeWidth;
+  // On narrow screens, let team/score scroll so pinned columns cannot cover every challenge.
+  const detailPosition =
+    stickyWidths.rankWidth + teamWidth + scoreWidth + 80 <= stickyWidths.containerWidth ? 'sticky' : 'static';
 
   return (
-    <div className="w-full space-y-6" ref={containerRef}>
+    <div className="w-full min-w-0 space-y-6">
+      {measurement}
       {/* 表格容器 */}
       <Card
         variant="default"
@@ -78,12 +98,12 @@ function ScoreboardTable({
         className="overflow-hidden"
         style={{
           '--sb-rank-width': `${stickyWidths.rankWidth}px`,
-          '--sb-team-width': `${stickyWidths.teamWidth}px`,
-          '--sb-score-width': `${stickyWidths.scoreWidth}px`,
+          '--sb-team-width': `${teamWidth}px`,
+          '--sb-score-width': `${scoreWidth}px`,
         }}
       >
-        <div className="overflow-x-auto">
-          <table className="w-full" style={{ minWidth: '600px', tableLayout: 'fixed' }}>
+        <div className="overflow-x-auto" ref={containerRef}>
+          <table style={{ width: tableWidth, tableLayout: 'fixed' }}>
             <colgroup>
               <col style={{ width: 'var(--sb-rank-width)' }} />
               <col style={{ width: 'var(--sb-team-width)' }} />
@@ -97,32 +117,34 @@ function ScoreboardTable({
                 {/* 固定列 */}
                 <th
                   scope="col"
-                  className="sticky left-0 z-10 bg-neutral-800/80 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
+                  className="sticky left-0 z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
                   style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
                 >
-                  {t('game.scoreboardTable.headers.rank')}
+                  <TruncatedText>{t('game.scoreboardTable.headers.rank')}</TruncatedText>
                 </th>
                 <th
                   scope="col"
-                  className="sticky z-10 bg-neutral-800/80 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
+                  className="z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
                   style={{
+                    position: detailPosition,
                     width: 'var(--sb-team-width)',
                     minWidth: 'var(--sb-team-width)',
                     left: 'var(--sb-rank-width)',
                   }}
                 >
-                  {t('game.scoreboardTable.headers.team')}
+                  <TruncatedText>{t('game.scoreboardTable.headers.team')}</TruncatedText>
                 </th>
                 <th
                   scope="col"
-                  className="sticky z-10 bg-neutral-800/80 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
+                  className="z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase whitespace-nowrap border-r border-neutral-600/40"
                   style={{
+                    position: detailPosition,
                     width: 'var(--sb-score-width)',
                     minWidth: 'var(--sb-score-width)',
                     left: 'calc(var(--sb-rank-width) + var(--sb-team-width))',
                   }}
                 >
-                  {t('game.scoreboardTable.headers.score')}
+                  <TruncatedText>{t('game.scoreboardTable.headers.score')}</TruncatedText>
                 </th>
 
                 {/* 题目分类列 */}
@@ -134,9 +156,9 @@ function ScoreboardTable({
                     colSpan={categoryIchallenges.length}
                   >
                     <div className="flex items-center justify-center gap-2 p-3">
-                      <span className="text-geek-400">#</span>
-                      <span className="block max-w-full truncate">{category}</span>
-                      <span className="text-xs text-neutral-500">({categoryIchallenges.length})</span>
+                      <span className="shrink-0 text-geek-400">#</span>
+                      <TruncatedText maxWidth={240}>{category}</TruncatedText>
+                      <span className="shrink-0 text-xs text-neutral-500">({categoryIchallenges.length})</span>
                     </div>
                   </th>
                 ))}
@@ -145,20 +167,22 @@ function ScoreboardTable({
               {/* 题目名称行 */}
               <tr className="bg-neutral-800/40 border-t border-neutral-600/40">
                 <th
-                  className="sticky left-0 z-10 bg-neutral-800/60 p-2 border-r border-neutral-600/40"
+                  className="sticky left-0 z-10 bg-neutral-800 p-2 border-r border-neutral-600/40"
                   style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
                 ></th>
                 <th
-                  className="sticky z-10 bg-neutral-800/60 p-2 border-r border-neutral-600/40"
+                  className="z-10 bg-neutral-800 p-2 border-r border-neutral-600/40"
                   style={{
+                    position: detailPosition,
                     width: 'var(--sb-team-width)',
                     minWidth: 'var(--sb-team-width)',
                     left: 'var(--sb-rank-width)',
                   }}
                 ></th>
                 <th
-                  className="sticky z-10 bg-neutral-800/60 p-2 border-r border-neutral-600/40"
+                  className="z-10 bg-neutral-800 p-2 border-r border-neutral-600/40"
                   style={{
+                    position: detailPosition,
                     width: 'var(--sb-score-width)',
                     minWidth: 'var(--sb-score-width)',
                     left: 'calc(var(--sb-rank-width) + var(--sb-team-width))',
@@ -195,16 +219,17 @@ function ScoreboardTable({
                 >
                   {/* 排名 */}
                   <td
-                    className="sticky left-0 z-10 bg-neutral-800/70 p-3 text-center text-neutral-300 font-mono tabular-nums border-r border-neutral-600/40"
+                    className="sticky left-0 z-10 bg-neutral-800 p-3 text-center text-neutral-300 font-mono tabular-nums border-r border-neutral-600/40"
                     style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
                   >
-                    {(currentPage - 1) * pageSize + teamIndex + 1}
+                    <TruncatedText>{(currentPage - 1) * pageSize + teamIndex + 1}</TruncatedText>
                   </td>
 
                   {/* 队伍信息 */}
                   <td
-                    className="sticky z-10 bg-neutral-800/70 p-3 border-r border-neutral-600/40"
+                    className="z-10 bg-neutral-800 p-3 border-r border-neutral-600/40"
                     style={{
+                      position: detailPosition,
                       width: 'var(--sb-team-width)',
                       minWidth: 'var(--sb-team-width)',
                       left: 'var(--sb-rank-width)',
@@ -219,23 +244,24 @@ function ScoreboardTable({
                           maxWidth={240}
                           speed={15}
                         />
-                        <div className="text-xs text-neutral-500 tabular-nums">
+                        <TruncatedText className="text-xs text-neutral-500 tabular-nums">
                           {t('game.scoreboardTable.members', { count: team.users })}
-                        </div>
+                        </TruncatedText>
                       </div>
                     </div>
                   </td>
 
                   {/* 分数 */}
                   <td
-                    className="sticky z-10 bg-neutral-800/70 p-3 text-center text-geek-400 font-mono tabular-nums border-r border-neutral-600/40"
+                    className="z-10 bg-neutral-800 p-3 text-base text-center text-geek-400 font-mono tabular-nums whitespace-nowrap border-r border-neutral-600/40"
                     style={{
+                      position: detailPosition,
                       width: 'var(--sb-score-width)',
                       minWidth: 'var(--sb-score-width)',
                       left: 'calc(var(--sb-rank-width) + var(--sb-team-width))',
                     }}
                   >
-                    {team.score}
+                    <TruncatedText>{scoreValues[teamIndex]}</TruncatedText>
                   </td>
 
                   {/* 题目状态 */}

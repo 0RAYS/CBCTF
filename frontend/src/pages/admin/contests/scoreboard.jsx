@@ -14,7 +14,7 @@ import ScoreboardTable from '../../../components/features/Scoreboard/ScoreboardT
 import ScoreboardTimeline from '../../../components/features/Scoreboard/ScoreboardTimeline';
 import { collectChallenges, toRankingTeam } from '../../../components/features/Scoreboard/scoreboardModel.js';
 import Button from '../../../components/common/Button';
-import { IconChartLine, IconList, IconTable } from '@tabler/icons-react';
+import { IconList, IconTable } from '@tabler/icons-react';
 import ScoreboardStats from '../../../components/features/Scoreboard/ScoreboardStats.jsx';
 import { useTranslation } from 'react-i18next';
 import { useTeamDetailDialog } from '../../../components/features/Admin/details/useTeamDetailDialog.jsx';
@@ -26,7 +26,7 @@ function AdminContestScoreboard(props) {
 
 function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange }) {
   // 视图状态
-  const [viewMode, setViewMode] = useState(externalViewMode || 'ranking'); // 'ranking' | 'table' | 'timeline'
+  const [viewMode, setViewMode] = useState(externalViewMode === 'table' ? 'table' : 'ranking');
 
   // 排名视图状态
   const [teams, setTeams] = useState([]);
@@ -49,7 +49,9 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
 
   // 时间线相关状态
   const [timelineData, setTimelineData] = useState(null);
-  const [timelineLoading, setTimelineLoading] = useState(false);
+  const [timelineLoading, setTimelineLoading] = useState(true);
+  const [timelineError, setTimelineError] = useState(false);
+  const [timelineVersion, setTimelineVersion] = useState(0);
   const { t, i18n } = useTranslation();
 
   const { openTeamDetail, renderTeamDetailDialog } = useTeamDetailDialog(parseInt(id));
@@ -92,14 +94,18 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
   // 获取时间线数据
   const fetchTimelineData = async (isCurrent) => {
     setTimelineLoading(true);
+    setTimelineError(false);
     try {
       const response = await getContestTimeline(id);
-      if (isCurrent() && response.code === 200) {
-        setTimelineData(response.data || []);
+      if (isCurrent()) {
+        if (response.code === 200) setTimelineData(response.data || []);
+        else setTimelineError(true);
       }
     } catch (error) {
-      if (isCurrent())
+      if (isCurrent()) {
+        setTimelineError(true);
         toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTimelineFailed') });
+      }
     } finally {
       if (isCurrent()) setTimelineLoading(false);
     }
@@ -171,17 +177,24 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
       fetchRankings(isCurrent);
     } else if (viewMode === 'table') {
       fetchScoreboardTable(isCurrent);
-    } else if (viewMode === 'timeline' && timelineData === null) {
-      fetchTimelineData(isCurrent);
     }
     return () => {
       ignore = true;
     };
   }, [id, viewMode, currentPage, tableCurrentPage, i18n.language]);
 
+  // The shared chart has its own request lifetime; list switches and pagination cannot cancel it.
+  useEffect(() => {
+    let ignore = false;
+    fetchTimelineData(() => !ignore);
+    return () => {
+      ignore = true;
+    };
+  }, [id, timelineVersion]);
+
   // 同步外部视图模式
   useEffect(() => {
-    if (externalViewMode && externalViewMode !== viewMode) {
+    if (['ranking', 'table'].includes(externalViewMode) && externalViewMode !== viewMode) {
       setViewMode(externalViewMode);
     }
   }, [externalViewMode]);
@@ -201,7 +214,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
   };
 
   return (
-    <div className="w-full mx-auto space-y-6">
+    <div className="w-full min-w-0 mx-auto space-y-4">
       {/* 头部和视图切换 */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-xl font-mono text-neutral-50">{t('nav.scoreboard')}</h1>
@@ -232,16 +245,6 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
               aria-pressed={viewMode === 'table'}
               onClick={() => handleViewModeChange('table')}
             />
-            <Button
-              variant={viewMode === 'timeline' ? 'primary' : 'ghost'}
-              size="sm"
-              align="icon-left"
-              icon={<IconChartLine size={16} />}
-              aria-label={t('game.detail.labels.timeline')}
-              title={t('game.detail.labels.timeline')}
-              aria-pressed={viewMode === 'timeline'}
-              onClick={() => handleViewModeChange('timeline')}
-            />
           </div>
 
           {/* 导出按钮 */}
@@ -253,6 +256,12 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
 
       {/* 视图内容 */}
       <ScoreboardStats {...stats} />
+      <ScoreboardTimeline
+        timelineData={timelineData || []}
+        loading={timelineLoading}
+        error={timelineError}
+        onRetry={() => setTimelineVersion((version) => version + 1)}
+      />
       {viewMode === 'ranking' ? (
         <AdminRanking
           teams={teams}
@@ -262,7 +271,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
           onPageChange={setCurrentPage}
           onRowClick={handleRowClick}
         />
-      ) : viewMode === 'table' ? (
+      ) : (
         <ScoreboardTable
           teams={tableTeams}
           challenges={challenges}
@@ -271,8 +280,6 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
           pageSize={tablePageSize}
           onPageChange={setTableCurrentPage}
         />
-      ) : (
-        <ScoreboardTimeline timelineData={timelineData || []} loading={timelineLoading} />
       )}
 
       {renderTeamDetailDialog()}

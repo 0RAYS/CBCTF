@@ -4,6 +4,9 @@ import { Card, EmptyState } from '../../../common';
 import useContextMenu from '../../../common/useContextMenu';
 import RowActions from '../../../common/RowActions';
 import { isGeneratorStoppable } from './generatorUtils.js';
+import TruncatedText from '../../../common/TruncatedText';
+
+const COLUMN_WIDTHS = [48, 80, 200, 256, 112, 176, 96, 184, 96, 184, 128, 88];
 
 const STATUS_STYLES = {
   waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
@@ -54,7 +57,15 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
         <EmptyState title={text('noGenerators')} description={text('noGeneratorsDesc')} />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-neutral-300">
+          <table
+            className="w-full table-fixed text-sm text-neutral-300"
+            style={{ minWidth: COLUMN_WIDTHS.reduce((a, b) => a + b, 0) }}
+          >
+            <colgroup>
+              {COLUMN_WIDTHS.map((width, index) => (
+                <col key={index} style={{ width }} />
+              ))}
+            </colgroup>
             <thead>
               <tr className="border-b border-neutral-700 text-neutral-400 text-xs uppercase tracking-wider">
                 <th className="py-3 px-4 text-left w-10" scope="col">
@@ -68,7 +79,7 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
                 </th>
                 {COLUMNS.map((column) => (
                   <th key={column} className="py-3 px-4 text-left" scope="col">
-                    {text(`columns.${column}`)}
+                    <TruncatedText>{text(`columns.${column}`)}</TruncatedText>
                   </th>
                 ))}
               </tr>
@@ -92,22 +103,39 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
                       onChange={() => toggleSelect(generator.id)}
                     />
                   </td>
-                  <td className="py-3 px-4 font-mono text-xs text-neutral-500">{generator.id}</td>
-                  <td className="py-3 px-4 font-mono text-xs text-neutral-200">{generator.name}</td>
+                  <td className="py-3 px-4 font-mono text-xs text-neutral-500">
+                    <TruncatedText>{generator.id}</TruncatedText>
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-neutral-200">
+                    <TruncatedText>{generator.name}</TruncatedText>
+                  </td>
                   <td className="py-3 px-4 font-mono text-xs text-neutral-400">
                     <span className="block max-w-64 truncate" title={generator.image}>
                       {generator.image || '\u2014'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-neutral-400">{generator.contest_id}</td>
-                  <td className="py-3 px-4 text-neutral-400">{generator.challenge_name || generator.challenge_id}</td>
-                  <td className="py-3 px-4 text-green-400">{generator.success ?? 0}</td>
-                  <td className="py-3 px-4 text-neutral-400 text-xs">{formatTime(generator.success_last)}</td>
-                  <td className="py-3 px-4 text-red-400">{generator.failure ?? 0}</td>
-                  <td className="py-3 px-4 text-neutral-400 text-xs">{formatTime(generator.failure_last)}</td>
+                  <td className="py-3 px-4 text-neutral-400">
+                    <TruncatedText>{generator.contest_id}</TruncatedText>
+                  </td>
+                  <td className="py-3 px-4 text-neutral-400">
+                    <TruncatedText>{generator.challenge_name || generator.challenge_id}</TruncatedText>
+                  </td>
+                  <td className="py-3 px-4 text-green-400">
+                    <TruncatedText>{generator.success ?? 0}</TruncatedText>
+                  </td>
+                  <td className="py-3 px-4 text-neutral-400 text-xs">
+                    <TruncatedText>{formatTime(generator.success_last)}</TruncatedText>
+                  </td>
+                  <td className="py-3 px-4 text-red-400">
+                    <TruncatedText>{generator.failure ?? 0}</TruncatedText>
+                  </td>
+                  <td className="py-3 px-4 text-neutral-400 text-xs">
+                    <TruncatedText>{formatTime(generator.failure_last)}</TruncatedText>
+                  </td>
                   <td className="py-3 px-4">
                     <span
-                      className={`inline-block px-2 py-0.5 rounded border text-xs font-mono ${STATUS_STYLES[generator.status] ?? STATUS_STYLES.stopped}`}
+                      className={`inline-block max-w-full truncate px-2 py-0.5 rounded border text-xs font-mono ${STATUS_STYLES[generator.status] ?? STATUS_STYLES.stopped}`}
+                      title={t(`admin.contests.generators.status.${generator.status}`, generator.status)}
                     >
                       {t(`admin.contests.generators.status.${generator.status}`, generator.status)}
                     </span>
