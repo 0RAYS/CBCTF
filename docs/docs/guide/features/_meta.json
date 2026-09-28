@@ -6,5 +6,6 @@
   "container",
   "contest",
   "auth",
+  "cronjobs",
   "webhook"
 ]

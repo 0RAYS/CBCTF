@@ -13,6 +13,10 @@ description: 使用 CBCTF 的 Prometheus 指标、Grafana 仪表盘、日志和�
 
 通过 `GET /admin/tasks` 和 `GET /admin/tasks/live`（`admin:task:read`）查看 Asynq 后台任务的执行状态，包括各队列积压量、正在处理的任务、历史执行记录等。
 
+## 定时任务
+
+在后台「定时任务」页面可查看任务的执行次数和最近成功、失败时间，调整运行间隔，以及设置是否在服务器启动时立即执行一次。启动执行设置仅在下一次启动时生效，保存配置不会立即运行任务。详见[定时任务](../guide/features/cronjobs.md)。
+
 ## Prometheus 指标
 
 平台在 `/metrics` 端点暴露 Prometheus 格式的指标数据。

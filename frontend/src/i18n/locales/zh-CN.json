@@ -1988,6 +1988,7 @@
         "name": "名称",
         "description": "描述",
         "schedule": "周期",
+        "runOnStart": "启动时执行",
         "successCount": "成功次数",
         "failureCount": "失败次数",
         "successLast": "上次成功",
@@ -1998,12 +1999,14 @@
       "empty": "暂无 Cron 任务",
       "modal": {
         "editTitle": "编辑 Cron 任务",
-        "scheduleOnlyHint": "仅允许修改 Cron 周期"
+        "editHint": "可修改运行间隔和启动时执行设置"
       },
       "form": {
         "nameLabel": "任务名称",
         "descriptionLabel": "任务描述",
         "scheduleLabel": "运行间隔 *",
+        "runOnStartLabel": "服务器启动时立即执行一次",
+        "runOnStartHint": "下次服务器启动时生效，保存不会立即执行任务。关闭后仍按运行间隔执行。",
         "hoursPlaceholder": "小时",
         "minutesPlaceholder": "分钟",
         "secondsPlaceholder": "秒",
