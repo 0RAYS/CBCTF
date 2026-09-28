@@ -1,4 +1,4 @@
-import { Button, List, Pagination } from '../../../common';
+import { List, Pagination } from '../../../common';
 import { IconEdit } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
@@ -15,11 +15,26 @@ function AdminPermissions({
 
   const columns = [
     { key: 'id', label: t('admin.rbac.permissions.columns.id'), width: '5%' },
-    { key: 'name', label: t('admin.rbac.permissions.columns.name'), width: '15%' },
-    { key: 'resource', label: t('admin.rbac.permissions.columns.resource'), width: '15%' },
-    { key: 'operation', label: t('admin.rbac.permissions.columns.operation'), width: '15%' },
-    { key: 'description', label: t('admin.rbac.permissions.columns.description'), width: '30%' },
-    { key: 'actions', label: t('admin.rbac.permissions.columns.actions'), width: '7%' },
+    {
+      key: 'name',
+      label: t('admin.rbac.permissions.columns.name'),
+      width: '15%',
+    },
+    {
+      key: 'resource',
+      label: t('admin.rbac.permissions.columns.resource'),
+      width: '15%',
+    },
+    {
+      key: 'operation',
+      label: t('admin.rbac.permissions.columns.operation'),
+      width: '15%',
+    },
+    {
+      key: 'description',
+      label: t('admin.rbac.permissions.columns.description'),
+      width: '30%',
+    },
   ];
 
   const renderCell = (permission, column) => {
@@ -38,23 +53,6 @@ function AdminPermissions({
 
       case 'description':
         return <span className="text-neutral-300">{permission.description || '-'}</span>;
-
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-yellow-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditPermission?.(permission);
-              }}
-            >
-              <IconEdit size={18} />
-            </Button>
-          </div>
-        );
 
       default:
         return permission[column.key];
@@ -78,6 +76,15 @@ function AdminPermissions({
         columns={columns}
         data={permissions}
         renderCell={renderCell}
+        onRowClick={onEditPermission}
+        getRowActions={(permission) => [
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            icon: <IconEdit size={18} />,
+            onClick: () => onEditPermission?.(permission),
+          },
+        ]}
         loading={loading}
         empty={permissions.length === 0}
         footer={paginationComponent}

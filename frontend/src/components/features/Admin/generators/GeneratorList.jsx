@@ -1,6 +1,8 @@
 import { motion } from 'motion/react';
 import { IconFileText } from '@tabler/icons-react';
-import { Button, Card, EmptyState } from '../../../common';
+import { Card, EmptyState } from '../../../common';
+import useContextMenu from '../../../common/useContextMenu';
+import RowActions from '../../../common/RowActions';
 import { isGeneratorStoppable } from './generatorUtils.js';
 
 const STATUS_STYLES = {
@@ -30,9 +32,22 @@ const formatTime = (timestamp) => (timestamp ? new Date(timestamp).toLocaleStrin
 export default function GeneratorList({ session, onViewLogs, text, t }) {
   const { generators, selectedIds, loading, toggleSelect, toggleSelectAll } = session;
   const stoppable = generators.filter(isGeneratorStoppable);
+  const getRowActions = (generator) => [
+    {
+      key: 'logs',
+      inline: true,
+      label: text('logs.viewLogs'),
+      icon: <IconFileText size={18} />,
+      hidden: !['pending', 'running', 'terminating'].includes(generator.status),
+      onClick: () => onViewLogs(generator),
+    },
+  ];
+  const contextMenu = useContextMenu(generators, getRowActions, loading);
 
   return (
     <Card>
+      {contextMenu.hint}
+      {contextMenu.menu}
       {loading ? (
         <div className="flex justify-center py-12 text-neutral-400 text-sm">{t('common.loading')}</div>
       ) : generators.length === 0 ? (
@@ -62,7 +77,8 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
               {generators.map((generator) => (
                 <motion.tr
                   key={generator.id}
-                  className="border-b border-neutral-800 hover:bg-neutral-800/40 transition-colors"
+                  {...contextMenu.getRowProps(generator)}
+                  className="border-b border-neutral-800 hover:bg-neutral-800/40 transition-colors focus-visible:outline focus-visible:outline-geek-400 focus-visible:-outline-offset-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
@@ -97,17 +113,7 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    {['pending', 'running', 'terminating'].includes(generator.status) && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onViewLogs(generator)}
-                        title={text('logs.viewLogs')}
-                        aria-label={text('logs.viewLogs')}
-                      >
-                        <IconFileText size={16} />
-                      </Button>
-                    )}
+                    <RowActions actions={getRowActions(generator)} />
                   </td>
                 </motion.tr>
               ))}

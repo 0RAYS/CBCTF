@@ -37,9 +37,17 @@ function AdminFiles({
   // 文件类型选项
   const fileTypeOptions = [
     { value: 'file', label: t('admin.files.types.file'), icon: IconFile },
-    { value: 'picture', label: t('admin.files.types.picture'), icon: IconPhoto },
+    {
+      value: 'picture',
+      label: t('admin.files.types.picture'),
+      icon: IconPhoto,
+    },
     { value: 'traffic', label: t('admin.files.types.traffic'), icon: IconFile },
-    { value: 'writeup', label: t('admin.files.types.writeup'), icon: IconFileText },
+    {
+      value: 'writeup',
+      label: t('admin.files.types.writeup'),
+      icon: IconFileText,
+    },
   ];
 
   // 格式化文件大小
@@ -93,7 +101,6 @@ function AdminFiles({
     { key: 'size', label: t('admin.files.columns.size'), width: '5%' },
     { key: 'uploaded', label: t('admin.files.columns.uploaded'), width: '5%' },
     { key: 'meta', label: t('admin.files.columns.meta'), width: '18%' },
-    { key: 'actions', label: t('admin.files.columns.actions'), width: '5%' },
   ];
 
   const renderMetaBadge = (text) => (
@@ -166,33 +173,18 @@ function AdminFiles({
       case 'meta': {
         const badges = [];
         if (file.model && file.modelId > 0)
-          badges.push(renderMetaBadge(t('admin.files.meta.model', { model: file.model, id: file.modelId })));
+          badges.push(
+            renderMetaBadge(
+              t('admin.files.meta.model', {
+                model: file.model,
+                id: file.modelId,
+              })
+            )
+          );
         if (file.hash) badges.push(renderMetaBadge(t('admin.files.meta.sha256', { hash: file.hash })));
 
         return <div className="flex flex-wrap gap-2">{badges}</div>;
       }
-
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-black/30 !text-neutral-300 hover:!text-geek-400"
-              onClick={() => onDownload?.(file)}
-            >
-              <IconDownload size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-black/30 !text-red-400 hover:!text-red-300"
-              onClick={() => onDelete?.(file)}
-            >
-              <IconTrash size={18} />
-            </Button>
-          </div>
-        );
 
       default:
         return file[column.key];
@@ -214,7 +206,9 @@ function AdminFiles({
                 setSelectedFiles([]);
               }}
             >
-              {t('admin.files.actions.batchDelete', { count: selectedFiles.length })}
+              {t('admin.files.actions.batchDelete', {
+                count: selectedFiles.length,
+              })}
             </Button>
           </div>
         )}
@@ -243,6 +237,23 @@ function AdminFiles({
           columns={columns}
           data={files}
           renderCell={renderCell}
+          actionsColumn={{ label: t('admin.files.columns.actions'), width: 88 }}
+          getRowActions={(file) => [
+            {
+              key: 'download',
+              inline: true,
+              label: t('common.download'),
+              icon: <IconDownload size={18} />,
+              onClick: () => onDownload?.(file),
+            },
+            {
+              key: 'delete',
+              label: t('common.delete'),
+              icon: <IconTrash size={18} />,
+              danger: true,
+              onClick: () => onDelete?.(file),
+            },
+          ]}
           empty={files.length === 0}
           emptyContent={t('admin.files.empty')}
         />

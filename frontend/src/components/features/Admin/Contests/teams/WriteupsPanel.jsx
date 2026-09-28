@@ -19,8 +19,10 @@ export default function WriteupsPanel({
     ['size', 'size'],
     ['hash', 'hash'],
     ['user_id', 'uploader'],
-    ['actions', 'actions'],
-  ].map(([key, label]) => ({ key, label: t(`admin.contests.teamDetail.writeups.columns.${label}`) }));
+  ].map(([key, label]) => ({
+    key,
+    label: t(`admin.contests.teamDetail.writeups.columns.${label}`),
+  }));
   const renderCell = (writeup, { key }) => {
     if (key === 'date') return new Date(writeup.date).toLocaleString(i18n.language);
     if (key === 'size') return formatFileSize(writeup.size);
@@ -34,17 +36,6 @@ export default function WriteupsPanel({
       return (
         <Button variant="ghost" size="sm" onClick={() => onUserClick(writeup.user_id)}>
           {writeup.user_id}
-        </Button>
-      );
-    if (key === 'actions')
-      return (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onDownload(writeup)}
-          title={t('admin.contests.teamDetail.writeups.actions.download')}
-        >
-          <IconDownload size={18} />
         </Button>
       );
     return writeup[key] ?? '-';
@@ -62,6 +53,16 @@ export default function WriteupsPanel({
           columns={columns}
           data={writeups}
           renderCell={renderCell}
+          actionsColumn={{ label: t('admin.contests.teamDetail.writeups.columns.actions'), width: 88 }}
+          getRowActions={(writeup) => [
+            {
+              key: 'download',
+              inline: true,
+              label: t('admin.contests.teamDetail.writeups.actions.download'),
+              icon: <IconDownload size={18} />,
+              onClick: () => onDownload(writeup),
+            },
+          ]}
           empty={!writeups.length}
           emptyContent={t('admin.contests.teamDetail.empty.writeups')}
           footer={

@@ -299,7 +299,7 @@ function ContestTeamsManagement({ id }) {
         onDescChange={handleDescChange}
         searchRef={searchRef}
         isSearchMode={isSearchMode}
-        onRowClick={openTeamDetail}
+        onViewDetail={openTeamDetail}
         onPictureUpload={handlePictureUpload}
       />
       {renderTeamDetailDialog()}

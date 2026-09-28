@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Button, EmptyState, List, Pagination, StatusTag } from '../../../common';
+import { EmptyState, List, Pagination, StatusTag } from '../../../common';
 import { IconEye, IconWebhook } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
@@ -30,14 +30,41 @@ function AdminWebhookHistory({
   const { t, i18n } = useTranslation();
   // 列定义
   const columns = [
-    { key: 'id', label: t('admin.webhook.historyList.columns.id'), width: '3%' },
-    { key: 'webhook', label: t('admin.webhook.historyList.columns.webhook'), width: '5%' },
-    { key: 'event', label: t('admin.webhook.historyList.columns.event'), width: '8%' },
-    { key: 'status', label: t('admin.webhook.historyList.columns.status'), width: '5%' },
-    { key: 'resp', label: t('admin.webhook.historyList.columns.responseCode'), width: '5%' },
-    { key: 'duration', label: t('admin.webhook.historyList.columns.duration'), width: '5%' },
-    { key: 'time', label: t('admin.webhook.historyList.columns.time'), width: '8%' },
-    { key: 'actions', label: t('admin.webhook.historyList.columns.actions'), width: '5%' },
+    {
+      key: 'id',
+      label: t('admin.webhook.historyList.columns.id'),
+      width: '3%',
+    },
+    {
+      key: 'webhook',
+      label: t('admin.webhook.historyList.columns.webhook'),
+      width: '5%',
+    },
+    {
+      key: 'event',
+      label: t('admin.webhook.historyList.columns.event'),
+      width: '8%',
+    },
+    {
+      key: 'status',
+      label: t('admin.webhook.historyList.columns.status'),
+      width: '5%',
+    },
+    {
+      key: 'resp',
+      label: t('admin.webhook.historyList.columns.responseCode'),
+      width: '5%',
+    },
+    {
+      key: 'duration',
+      label: t('admin.webhook.historyList.columns.duration'),
+      width: '5%',
+    },
+    {
+      key: 'time',
+      label: t('admin.webhook.historyList.columns.time'),
+      width: '8%',
+    },
   ];
 
   // 自定义单元格渲染
@@ -110,24 +137,6 @@ function AdminWebhookHistory({
           </div>
         );
 
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewDetail?.(history);
-              }}
-              className="p-1"
-              title={t('admin.webhook.historyList.actions.viewDetail')}
-            >
-              <IconEye size={18} />
-            </Button>
-          </div>
-        );
-
       default:
         return null;
     }
@@ -144,7 +153,9 @@ function AdminWebhookHistory({
           <div className="flex items-center gap-3 mb-6">
             <IconWebhook size={20} className="text-neutral-400" />
             <p className="text-sm text-neutral-400">
-              {t('admin.webhook.historyList.currentViewing', { name: webhookName })}
+              {t('admin.webhook.historyList.currentViewing', {
+                name: webhookName,
+              })}
             </p>
           </div>
         )}
@@ -154,7 +165,15 @@ function AdminWebhookHistory({
           data={webhookHistory}
           columns={columns}
           renderCell={renderCell}
-          onRowClick={onHistoryClick}
+          getRowActions={(history) => [
+            {
+              key: 'detail',
+              label: t('admin.webhook.historyList.actions.viewDetail'),
+              icon: <IconEye size={18} />,
+              onClick: () => onViewDetail?.(history),
+            },
+          ]}
+          onRowClick={onViewDetail || onHistoryClick}
           loading={loading}
           empty={webhookHistory.length === 0}
           emptyContent={<EmptyState title={t('admin.webhook.historyList.empty')} />}

@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
 import { Button, Pagination } from '../../../components/common';
 import { List, StatusTag } from '../../common';
 import { useTranslation } from 'react-i18next';
@@ -70,9 +70,12 @@ function AdminContests({
     { key: 'cover', label: t('admin.contests.table.cover'), width: '10%' },
     { key: 'name', label: t('admin.contests.table.name'), width: '25%' },
     { key: 'status', label: t('admin.contests.table.status'), width: '7%' },
-    { key: 'schedule', label: t('admin.contests.table.schedule'), width: '15%' },
+    {
+      key: 'schedule',
+      label: t('admin.contests.table.schedule'),
+      width: '15%',
+    },
     { key: 'metrics', label: t('admin.contests.table.metrics'), width: '10%' },
-    { key: 'actions', label: t('admin.contests.table.actions'), width: '5%' },
   ];
 
   const renderCell = (contest, column) => {
@@ -128,25 +131,12 @@ function AdminContests({
         return (
           <div className="flex flex-col gap-1 text-xs font-mono text-neutral-400">
             <span>{t('admin.contests.metrics.teamSize', { count: contest.size })}</span>
-            <span>{t('admin.contests.metrics.registrations', { count: contest.users })}</span>
+            <span>
+              {t('admin.contests.metrics.registrations', {
+                count: contest.users,
+              })}
+            </span>
             <span>{t('admin.contests.metrics.teams', { count: contest.teams })}</span>
-          </div>
-        );
-
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-red-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteContest?.(contest);
-              }}
-            >
-              <IconTrash size={18} />
-            </Button>
           </div>
         );
 
@@ -168,6 +158,22 @@ function AdminContests({
           columns={columns}
           data={contests}
           renderCell={renderCell}
+          getRowActions={(contest) => [
+            {
+              key: 'edit',
+              label: t('common.edit'),
+              icon: <IconEdit size={18} />,
+              hidden: !onContestClick,
+              onClick: () => onContestClick(contest),
+            },
+            {
+              key: 'delete',
+              label: t('common.delete'),
+              icon: <IconTrash size={18} />,
+              danger: true,
+              onClick: () => onDeleteContest?.(contest),
+            },
+          ]}
           onRowClick={onContestClick}
           empty={contests.length === 0}
           emptyContent={t('admin.contests.empty')}

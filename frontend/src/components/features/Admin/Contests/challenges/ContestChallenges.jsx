@@ -112,11 +112,6 @@ function AdminContestChallenges({
       label: t('admin.contests.challenges.table.hints'),
       width: '10%',
     },
-    {
-      key: 'actions',
-      label: t('admin.contests.challenges.table.actions'),
-      width: '7%',
-    },
   ];
 
   const renderCell = (challenge, column) => {
@@ -170,27 +165,6 @@ function AdminContestChallenges({
         return <div className="whitespace-normal">{renderTags(challenge.tags)}</div>;
       case 'hints':
         return <div className="whitespace-normal">{renderHints(challenge.hints)}</div>;
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!text-geek-400 hover:!text-geek-300"
-              onClick={() => onEditChallenge(challenge)}
-            >
-              <IconEdit size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!text-red-400 hover:!text-red-300"
-              onClick={() => onDeleteChallenge(challenge)}
-            >
-              <IconTrash size={18} />
-            </Button>
-          </div>
-        );
       default:
         return challenge[column.key];
     }
@@ -298,6 +272,22 @@ function AdminContestChallenges({
         columns={columns}
         data={challenges}
         renderCell={renderCell}
+        onRowClick={onEditChallenge}
+        getRowActions={(challenge) => [
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            icon: <IconEdit size={18} />,
+            onClick: () => onEditChallenge(challenge),
+          },
+          {
+            key: 'delete',
+            label: t('common.delete'),
+            icon: <IconTrash size={18} />,
+            danger: true,
+            onClick: () => onDeleteChallenge(challenge),
+          },
+        ]}
         empty={challenges.length === 0}
         emptyContent={t('common.noData')}
         footer={

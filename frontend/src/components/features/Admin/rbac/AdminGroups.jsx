@@ -20,11 +20,18 @@ function AdminGroups({
   const columns = [
     { key: 'id', label: t('admin.rbac.groups.columns.id'), width: '5%' },
     { key: 'name', label: t('admin.rbac.groups.columns.name'), width: '10%' },
-    { key: 'description', label: t('admin.rbac.groups.columns.description'), width: '10%' },
+    {
+      key: 'description',
+      label: t('admin.rbac.groups.columns.description'),
+      width: '10%',
+    },
     { key: 'role', label: t('admin.rbac.groups.columns.role'), width: '10%' },
     { key: 'users', label: t('admin.rbac.groups.columns.users'), width: '7%' },
-    { key: 'default', label: t('admin.rbac.groups.columns.default'), width: '10%' },
-    { key: 'actions', label: t('admin.rbac.groups.columns.actions'), width: '7%' },
+    {
+      key: 'default',
+      label: t('admin.rbac.groups.columns.default'),
+      width: '10%',
+    },
   ];
 
   const renderCell = (group, column) => {
@@ -49,47 +56,6 @@ function AdminGroups({
           <StatusTag type="info" text={t('common.yes')} />
         ) : (
           <StatusTag type="error" text={t('common.no')} />
-        );
-
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-geek-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                onManageUsers?.(group);
-              }}
-            >
-              <IconUsers size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-yellow-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditGroup?.(group);
-              }}
-            >
-              <IconEdit size={18} />
-            </Button>
-            {!group.default && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="!bg-transparent !text-red-400"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteGroup?.(group);
-                }}
-              >
-                <IconTrash size={18} />
-              </Button>
-            )}
-          </div>
         );
 
       default:
@@ -120,6 +86,31 @@ function AdminGroups({
         columns={columns}
         data={groups}
         renderCell={renderCell}
+        onRowClick={onEditGroup}
+        actionsColumn={{ label: t('admin.rbac.groups.columns.actions'), width: 88 }}
+        getRowActions={(group) => [
+          {
+            key: 'members',
+            inline: true,
+            label: t('admin.rbac.groups.modal.usersTitle'),
+            icon: <IconUsers size={18} />,
+            onClick: () => onManageUsers?.(group),
+          },
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            icon: <IconEdit size={18} />,
+            onClick: () => onEditGroup?.(group),
+          },
+          {
+            key: 'delete',
+            label: t('common.delete'),
+            icon: <IconTrash size={18} />,
+            danger: true,
+            hidden: group.default,
+            onClick: () => onDeleteGroup?.(group),
+          },
+        ]}
         loading={loading}
         empty={groups.length === 0}
         footer={paginationComponent}

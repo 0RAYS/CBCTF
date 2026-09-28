@@ -19,9 +19,16 @@ function AdminRoles({
   const columns = [
     { key: 'id', label: t('admin.rbac.roles.columns.id'), width: '5%' },
     { key: 'name', label: t('admin.rbac.roles.columns.name'), width: '10%' },
-    { key: 'description', label: t('admin.rbac.roles.columns.description'), width: '15%' },
-    { key: 'default', label: t('admin.rbac.roles.columns.default'), width: '10%' },
-    { key: 'actions', label: t('admin.rbac.roles.columns.actions'), width: '5%' },
+    {
+      key: 'description',
+      label: t('admin.rbac.roles.columns.description'),
+      width: '15%',
+    },
+    {
+      key: 'default',
+      label: t('admin.rbac.roles.columns.default'),
+      width: '10%',
+    },
   ];
 
   const renderCell = (role, column) => {
@@ -40,47 +47,6 @@ function AdminRoles({
           <StatusTag type="info" text={t('common.yes')} />
         ) : (
           <StatusTag type="error" text={t('common.no')} />
-        );
-
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-geek-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                onManagePermissions?.(role);
-              }}
-            >
-              <IconShield size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-yellow-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditRole?.(role);
-              }}
-            >
-              <IconEdit size={18} />
-            </Button>
-            {!role.default && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="!bg-transparent !text-red-400"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteRole?.(role);
-                }}
-              >
-                <IconTrash size={18} />
-              </Button>
-            )}
-          </div>
         );
 
       default:
@@ -111,6 +77,31 @@ function AdminRoles({
         columns={columns}
         data={roles}
         renderCell={renderCell}
+        onRowClick={onEditRole}
+        actionsColumn={{ label: t('admin.rbac.roles.columns.actions'), width: 88 }}
+        getRowActions={(role) => [
+          {
+            key: 'permissions',
+            inline: true,
+            label: t('admin.rbac.roles.modal.permissionsTitle'),
+            icon: <IconShield size={18} />,
+            onClick: () => onManagePermissions?.(role),
+          },
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            icon: <IconEdit size={18} />,
+            onClick: () => onEditRole?.(role),
+          },
+          {
+            key: 'delete',
+            label: t('common.delete'),
+            icon: <IconTrash size={18} />,
+            danger: true,
+            hidden: role.default,
+            onClick: () => onDeleteRole?.(role),
+          },
+        ]}
         loading={loading}
         empty={roles.length === 0}
         footer={paginationComponent}

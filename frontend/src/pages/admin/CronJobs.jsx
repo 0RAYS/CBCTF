@@ -185,11 +185,6 @@ function CronJobs() {
       width: '13%',
     },
     { key: 'next', label: t('admin.cronjobs.columns.next'), width: '13%' },
-    {
-      key: 'actions',
-      label: t('admin.cronjobs.columns.actions'),
-      width: '7%',
-    },
   ];
 
   const renderCell = (cronJob, column) => {
@@ -224,21 +219,6 @@ function CronJobs() {
           </span>
         );
       }
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                openEditModal(cronJob);
-              }}
-            >
-              <IconEdit size={18} />
-            </Button>
-          </div>
-        );
       default:
         return cronJob[column.key];
     }
@@ -257,6 +237,14 @@ function CronJobs() {
           data={cronJobs}
           columns={columns}
           renderCell={renderCell}
+          getRowActions={(cronJob) => [
+            {
+              key: 'edit',
+              label: t('common.edit'),
+              icon: <IconEdit size={18} />,
+              onClick: () => openEditModal(cronJob),
+            },
+          ]}
           onRowClick={openEditModal}
           loading={loading}
           empty={cronJobs.length === 0}

@@ -184,7 +184,7 @@ function UsersManager() {
         onNameChange={setNameQuery}
         onEmailChange={setEmailQuery}
         onDescChange={setDescQuery}
-        onRowClick={(user) => openUserDetail(user.id)}
+        onViewDetail={(user) => openUserDetail(user.id)}
       />
 
       <Modal

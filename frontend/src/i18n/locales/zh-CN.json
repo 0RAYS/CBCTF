@@ -4,6 +4,11 @@
     "admin": "DEEP DIVE Admin"
   },
   "common": {
+    "contextMenu": {
+      "label": "行操作",
+      "hint": "右键点击行以显示操作 · 触屏长按 · 键盘 Shift+F10",
+      "empty": "暂无可用操作"
+    },
     "loading": "加载中...",
     "language": "语言",
     "switchTo": "切换至",
@@ -20,6 +25,9 @@
     "end": "结束",
     "saveChanges": "保存更改",
     "delete": "删除",
+    "edit": "编辑",
+    "download": "下载",
+    "viewDetails": "查看详情",
     "send": "发送",
     "submit": "提交",
     "change": "修改",

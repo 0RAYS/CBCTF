@@ -31,7 +31,7 @@
  * @param {boolean} props.isSearchMode - 是否处于搜索模式
  */
 
-import { IconEdit, IconSearch, IconTrash, IconUserMinus } from '@tabler/icons-react';
+import { IconEdit, IconEye, IconSearch, IconTrash, IconUserMinus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import {
   Avatar,
@@ -78,7 +78,7 @@ function AdminTeams({
   onDescChange,
   searchRef,
   isSearchMode = false,
-  onRowClick,
+  onViewDetail,
   onPictureUpload,
 }) {
   const { t, i18n } = useTranslation();
@@ -86,11 +86,26 @@ function AdminTeams({
 
   const columns = [
     { key: 'team', label: t('admin.contests.teams.table.team'), width: '25%' },
-    { key: 'score', label: t('admin.contests.teams.table.score'), width: '10%' },
-    { key: 'members', label: t('admin.contests.teams.table.members'), width: '10%' },
-    { key: 'lastSubmit', label: t('admin.contests.teams.table.lastSubmit'), width: '20%' },
-    { key: 'status', label: t('admin.contests.teams.table.status'), width: '20%' },
-    { key: 'actions', label: t('admin.contests.teams.table.actions'), width: '15%' },
+    {
+      key: 'score',
+      label: t('admin.contests.teams.table.score'),
+      width: '10%',
+    },
+    {
+      key: 'members',
+      label: t('admin.contests.teams.table.members'),
+      width: '10%',
+    },
+    {
+      key: 'lastSubmit',
+      label: t('admin.contests.teams.table.lastSubmit'),
+      width: '20%',
+    },
+    {
+      key: 'status',
+      label: t('admin.contests.teams.table.status'),
+      width: '20%',
+    },
   ];
 
   const renderCell = (team, column) => {
@@ -130,7 +145,9 @@ function AdminTeams({
       case 'members':
         return (
           <span className="text-neutral-300 font-mono">
-            {t('admin.contests.teams.memberCount', { count: (team.users || 0).toLocaleString(locale) })}
+            {t('admin.contests.teams.memberCount', {
+              count: (team.users || 0).toLocaleString(locale),
+            })}
           </span>
         );
       case 'lastSubmit':
@@ -152,27 +169,6 @@ function AdminTeams({
             />
           </div>
         );
-      case 'actions':
-        return (
-          <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!text-geek-400 hover:!text-geek-300"
-              onClick={() => onEditTeam(team)}
-            >
-              <IconEdit size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!text-red-400 hover:!text-red-300"
-              onClick={() => onDeleteTeam(team)}
-            >
-              <IconTrash size={18} />
-            </Button>
-          </div>
-        );
       default:
         return team[column.key];
     }
@@ -187,7 +183,9 @@ function AdminTeams({
     if (modalMode === 'delete') {
       return (
         <p className="text-neutral-300">
-          {t('admin.contests.teams.modal.deletePrompt', { name: selectedTeam?.name || '' })}
+          {t('admin.contests.teams.modal.deletePrompt', {
+            name: selectedTeam?.name || '',
+          })}
         </p>
       );
     }
@@ -243,7 +241,9 @@ function AdminTeams({
         {/* 移除成员区块 */}
         <div className="border-t border-neutral-700 pt-4">
           <p className="text-sm font-mono text-neutral-400 mb-3">
-            {t('admin.contests.teams.modal.kickPrompt', { name: selectedTeam?.name || '' })}
+            {t('admin.contests.teams.modal.kickPrompt', {
+              name: selectedTeam?.name || '',
+            })}
           </p>
           {teamMembers.length === 0 ? (
             <EmptyState title={t('admin.contests.teams.empty.noMembers')} />
@@ -325,9 +325,31 @@ function AdminTeams({
         columns={columns}
         data={displayTeams}
         renderCell={renderCell}
+        getRowActions={(team) => [
+          {
+            key: 'detail',
+            label: t('common.viewDetails'),
+            icon: <IconEye size={18} />,
+            hidden: !onViewDetail,
+            onClick: () => onViewDetail(team),
+          },
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            icon: <IconEdit size={18} />,
+            onClick: () => onEditTeam(team),
+          },
+          {
+            key: 'delete',
+            label: t('common.delete'),
+            icon: <IconTrash size={18} />,
+            danger: true,
+            onClick: () => onDeleteTeam(team),
+          },
+        ]}
         empty={displayTeams.length === 0}
         emptyContent={emptyContent}
-        onRowClick={onRowClick}
+        onRowClick={onViewDetail || onEditTeam}
       />
 
       {/* 分页 - 只在非搜索模式下显示 */}
