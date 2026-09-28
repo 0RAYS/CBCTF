@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/distribution/reference"
 	corev1 "k8s.io/api/core/v1"
@@ -21,6 +22,7 @@ func imageFailureKey(image string) string {
 
 // NormalizeImage uses one identity for warmup, failure tracking and image inventories.
 func NormalizeImage(image string) string {
+	image = strings.TrimSpace(image)
 	name, err := reference.ParseNormalizedNamed(image)
 	if err != nil {
 		return image
@@ -74,6 +76,15 @@ func excludedNodeAffinity(excluded []string) *corev1.Affinity {
 // does not delay warming other nodes. ImageID, not command exit status, proves
 // a successful pull (VM/distroless images need not contain echo or a shell).
 func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPolicy string) error {
+	if pullPolicy == string(corev1.PullNever) || len(images) == 0 {
+		return nil
+	}
+	if pullPolicy == "" {
+		pullPolicy = string(corev1.PullIfNotPresent)
+	}
+	if pullPolicy != string(corev1.PullIfNotPresent) && pullPolicy != string(corev1.PullAlways) {
+		return fmt.Errorf("unsupported image pull policy: %s", pullPolicy)
+	}
 	nodes, ret := ListSchedulableNodes(ctx)
 	if !ret.OK {
 		return resourceError(ret)
@@ -117,18 +128,10 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 			continue
 		}
 		var missing []string
+		inventory := nodeImageSet(node)
 		for _, image := range images {
-			present := false
-			if pullPolicy != string(corev1.PullAlways) {
-				for _, entry := range node.Status.Images {
-					for _, name := range entry.Names {
-						if NormalizeImage(name) == NormalizeImage(image) {
-							present = true
-						}
-					}
-				}
-			}
-			if present {
+			_, present := inventory[NormalizeImage(image)]
+			if pullPolicy == string(corev1.PullIfNotPresent) && present {
 				if err := redis.RDB.HDel(ctx, imageFailureKey(image), node.Name).Err(); err != nil {
 					return err
 				}

@@ -23,6 +23,7 @@ import {
     normalizeTargetImages,
     parseManualImages,
     parseTargetKey,
+    selectableTargetKeys,
 } from '../src/components/features/Admin/images/imageModel.js';
 
 test('task queries retain independent pages and filters', () => {
@@ -197,4 +198,21 @@ test('missing targets exclude present images while manual targets retain every c
   ]);
   assert.deepEqual(missingTargetKeys([], ['app:1']), []);
   assert.deepEqual(buildTargets(['a'], []), []);
+});
+
+test('required images absent from every node remain selectable and unrelated images are not targets', () => {
+  const payload = normalizePayload({
+    nodes: [{ node: 'a', images: ['unrelated:v1'] }, { node: 'b', images: [] }],
+    target_images: ['challenge:v1', 'nginx:latest'],
+  });
+  assert.deepEqual(payload.targetImages, ['challenge:v1', 'nginx:latest']);
+  assert.equal(missingTargetKeys(payload.nodes, payload.targetImages).length, 4);
+});
+
+test('pull policy controls selection of present and missing pairs', () => {
+  const nodes = [{ node: 'a', images: ['app:1'] }, { node: 'b', images: [] }];
+  const images = ['app:1', 'nginx:latest'];
+  assert.deepEqual(selectableTargetKeys(nodes, images, 'IfNotPresent'), missingTargetKeys(nodes, images));
+  assert.deepEqual(selectableTargetKeys(nodes, images, 'Always').map(parseTargetKey), buildTargets(['a', 'b'], images));
+  assert.deepEqual(selectableTargetKeys(nodes, images, 'Never'), []);
 });

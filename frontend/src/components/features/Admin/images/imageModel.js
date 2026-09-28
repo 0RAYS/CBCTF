@@ -58,3 +58,14 @@ export function missingTargetKeys(nodes, images) {
     nodes.filter((node) => !node.images.includes(image)).map((node) => buildTargetKey(node.node, image))
   );
 }
+
+export function selectableTargetKeys(nodes, images, pullPolicy) {
+  if (pullPolicy === 'Never') return [];
+  if (pullPolicy === 'Always') {
+    return buildTargets(
+      nodes.map((node) => node.node),
+      images
+    ).map(({ node, image }) => buildTargetKey(node, image));
+  }
+  return missingTargetKeys(nodes, images);
+}

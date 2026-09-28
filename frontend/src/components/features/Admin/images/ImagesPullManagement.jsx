@@ -5,7 +5,7 @@ import { toast } from '../../../../utils/toast';
 import {
   buildTargetKey,
   buildTargets,
-  missingTargetKeys,
+  selectableTargetKeys,
   normalizePayload,
   normalizeTargetImages,
   parseManualImages,
@@ -27,7 +27,10 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
   const mounted = useRef(false);
 
   const allImages = useMemo(() => normalizeTargetImages(undefined, nodes), [nodes]);
-  const availableTargetKeys = useMemo(() => missingTargetKeys(nodes, targetImages), [nodes, targetImages]);
+  const availableTargetKeys = useMemo(
+    () => selectableTargetKeys(nodes, targetImages, pullPolicy),
+    [nodes, targetImages, pullPolicy]
+  );
 
   const loadImages = useEffectEvent(() => fetchImages());
   const reportFetchError = useEffectEvent((error) => {
@@ -122,7 +125,13 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
       });
 
       if (mounted.current && response.code === 200) {
-        toast.success({ description: t('admin.contests.imagesPull.toast.submitSuccess') });
+        toast.success({
+          description: t(
+            pullPolicy === 'Never'
+              ? 'admin.contests.imagesPull.toast.skipped'
+              : 'admin.contests.imagesPull.toast.submitSuccess'
+          ),
+        });
         clearTimeout(refreshTimer.current);
         refreshTimer.current = setTimeout(refresh, 2000);
       }

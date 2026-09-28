@@ -49,6 +49,7 @@ export default function ImagesPullView({ scope, loading, onRefresh, ...props }) 
           scopeKey={scopeKey}
           nodes={props.nodes}
           targetImages={props.targetImages}
+          pullPolicy={props.pullPolicy}
           filteredTargetImages={filteredTargetImages}
           selectedTargetKeys={props.selectedTargetKeys}
           filterText={filterText}

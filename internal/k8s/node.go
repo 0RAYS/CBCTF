@@ -3,7 +3,6 @@ package k8s
 import (
 	"context"
 	"slices"
-	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,18 +57,23 @@ func ListNodeImages(ctx context.Context) (map[string][]string, model.RetVal) {
 	images := make(map[string][]string)
 	for _, node := range nodes {
 		images[node.Name] = make([]string, 0)
-		for _, containerImage := range node.Status.Images {
-			for _, name := range containerImage.Names {
-				name = strings.TrimSpace(name)
-				if name == "" {
-					continue
-				}
-				name = NormalizeImage(name)
-				if !slices.Contains(images[node.Name], name) {
-					images[node.Name] = append(images[node.Name], name)
-				}
+		for name := range nodeImageSet(node) {
+			images[node.Name] = append(images[node.Name], name)
+		}
+		slices.Sort(images[node.Name])
+	}
+	return images, model.SuccessRetVal()
+}
+
+// Use the same canonical inventory for display and pre-pull decisions.
+func nodeImageSet(node *corev1.Node) map[string]struct{} {
+	images := make(map[string]struct{})
+	for _, entry := range node.Status.Images {
+		for _, name := range entry.Names {
+			if name = NormalizeImage(name); name != "" {
+				images[name] = struct{}{}
 			}
 		}
 	}
-	return images, model.SuccessRetVal()
+	return images
 }
