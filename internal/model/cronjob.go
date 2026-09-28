@@ -20,7 +20,7 @@ const (
 )
 
 var CronJobs = []CronJob{
-	{Name: WarmChallengeImagesCronJob, Description: "预热新增节点镜像并复查镜像拉取失败节点", Schedule: 15 * time.Minute},
+	{Name: WarmChallengeImagesCronJob, Description: "预热未结束比赛引用题目的镜像并复查拉取失败节点", Schedule: 15 * time.Minute},
 	{Name: CloseTimeoutVictimsCronJob, Description: "关闭运行超时的靶机实例", Schedule: time.Minute},
 	{Name: CloseUnCtrlVictimsCronJob, Description: "清理数据库外仍在运行的失控靶机实例", Schedule: 10 * time.Minute},
 	{Name: SyncFrpsPortLocksCronJob, Description: "校准 FRPS 端口占用缓存", Schedule: 10 * time.Minute},
