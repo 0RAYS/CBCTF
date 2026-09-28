@@ -16,9 +16,9 @@ description: 说明全节点镜像预热、失败节点排除、共享 informer�
 - 创建工作负载时，只用 `metadata.name NotIn` 排除已确认失败的节点。没有失败记录时，完全不添加 affinity，交由 Kubernetes 调度。
 - 自动重试、手动预热或周期复查确认镜像可用后，清除失败记录。所有节点失败时，工作负载保持 Pending，最终由启动超时流程回收。
 
-`WarmChallengeImages` Cron 默认每 15 分钟复查一次，也覆盖新加入的节点。预热任务在 `tasks:prepull` 队列中执行，可在任务日志中查看结果。手动预热也走同一套结果记录流程；指定 `Always` 时会重新访问镜像仓库。
+`WarmChallengeImages` Cron 默认每 15 分钟复查一次，仅预热**未结束比赛（包括未开始和正在进行的比赛）所引用的题目**，也覆盖新加入的节点。比赛是否结束按 `开始时间 + 持续时长` 判断；隐藏比赛及已关联但隐藏的题目也纳入提前预热。同一题目被多场符合条件的比赛引用时，每轮只提交一次。查询会排除已删除的比赛、题目关联和题目，不再直接扫描整个题库。预热任务在 `tasks:prepull` 队列中执行，可在任务日志中查看结果。手动预热也走同一套结果记录流程；指定 `Always` 时会重新访问镜像仓库。
 
-预热 Job 设置 `ttlSecondsAfterFinished: 3600`，成功或失败进入终止状态后保留 1 小时，再由 Kubernetes TTL Controller 回收 Job，并级联清理所属 Pod，平台不主动删除这些资源。`ImagePullBackOff` 等尚未终止的 Job 受 `activeDeadlineSeconds: 600` 限制，超时转为失败后同样保留 1 小时再回收。预热结果在创建 Job 前就通过共享 Pod informer 订阅，已观察到的结果保留到任务消费，避免资源被回收后漏掉结果。
+预热 Job 设置 `ttlSecondsAfterFinished: 0`，成功或失败进入终止状态后即由 Kubernetes TTL Controller 回收 Job，并级联清理所属 Pod，平台不主动删除这些资源。`ImagePullBackOff` 等尚未终止的 Job 受 `activeDeadlineSeconds: 600` 限制，超时转为失败后同样回收。预热结果在创建 Job 前就通过共享 Pod informer 订阅，已观察到的结果保留到任务消费，避免资源被回收后漏掉结果。
 
 预热成功不构成节点永久保留镜像的承诺：kubelet 镜像 GC、节点重建或镜像标签变化仍可能产生冷启动。比赛镜像宜使用固定版本或 digest。
 

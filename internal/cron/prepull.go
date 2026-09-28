@@ -1,6 +1,8 @@
 package cron
 
 import (
+	"time"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
@@ -9,7 +11,7 @@ import (
 )
 
 func warmChallengeImagesTask() model.RetVal {
-	challenges, _, ret := db.InitChallengeRepo(db.CronDB).List(-1, -1)
+	challenges, ret := db.InitChallengeRepo(db.CronDB).ListForUnfinishedContests(time.Now())
 	if !ret.OK {
 		return ret
 	}

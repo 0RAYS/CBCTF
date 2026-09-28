@@ -134,8 +134,8 @@ func TestPrepullRetainsResultsAfterControllerCollection(t *testing.T) {
 					return true, nil, fmt.Errorf("pod watch was not established")
 				}
 				job := action.(ktesting.CreateAction).GetObject().(*batchv1.Job)
-				if job.Spec.TTLSecondsAfterFinished == nil || *job.Spec.TTLSecondsAfterFinished != 3600 {
-					return true, nil, fmt.Errorf("job is missing one-hour TTL collection")
+				if job.Spec.TTLSecondsAfterFinished == nil || *job.Spec.TTLSecondsAfterFinished != 0 {
+					return true, nil, fmt.Errorf("job is missing immediate TTL collection")
 				}
 				job.UID = "job-uid"
 				pod := &corev1.Pod{

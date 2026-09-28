@@ -1,6 +1,8 @@
 package db
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/i18n"
@@ -52,6 +54,31 @@ func InitChallengeRepo(tx *gorm.DB) *ChallengeRepo {
 
 func (c *ChallengeRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.Challenge, model.RetVal) {
 	return c.GetByUniqueField("rand_id", randID, optionsL...)
+}
+
+// ListForUnfinishedContests includes upcoming and running contests, regardless
+// of visibility. Use Go duration arithmetic, matching Contest.IsOver exactly.
+func (c *ChallengeRepo) ListForUnfinishedContests(now time.Time) ([]model.Challenge, model.RetVal) {
+	contests, ret := InitContestRepo(c.DB.Select("id", "start", "duration")).FindAll()
+	if !ret.OK {
+		return nil, ret
+	}
+	var contestIDs []uint
+	for _, contest := range contests {
+		if !now.After(contest.Start.Add(contest.Duration)) {
+			contestIDs = append(contestIDs, contest.ID)
+		}
+	}
+	if len(contestIDs) == 0 {
+		return []model.Challenge{}, model.SuccessRetVal()
+	}
+
+	// IN selects each challenge once even when several eligible contests refer
+	// to it. GORM applies soft-delete scopes to both references and challenges.
+	references := c.DB.Model(&model.ContestChallenge{}).
+		Select("challenge_id").
+		Where("contest_id IN ?", contestIDs)
+	return InitChallengeRepo(c.DB.Where("id IN (?)", references)).FindAll()
 }
 
 func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.RetVal) {
