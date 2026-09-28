@@ -1530,7 +1530,7 @@ flag 的实际前缀由比赛配置中的 `prefix` 字段决定，而非固定�
 ```bash
 /root/run.sh {team_id} {base64(base64(flag1),base64(flag2),...)}
 ```
-示例（team\_id=1，两个 flag）：
+示例（team_id=1，两个 flag）：
 ```bash
 FLAGS=$(printf '%s,%s' "$(printf 'CBCTF{flag1}' | base64 | tr -d '\n')" "$(printf 'CBCTF{flag2}' | base64 | tr -d '\n')" | base64 | tr -d '\n')
 /root/run.sh 1 "$FLAGS"
