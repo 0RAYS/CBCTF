@@ -20,6 +20,23 @@ description: 说明 CBCTF 动态容器、Pod 模式、VPC 模式、端口转发�
 
 ## Pod 网络模式
 
+在「题目管理」创建 `pods` 类型，使用容器配置编辑器或 YAML 模式保存以下示例：
+
+```yaml
+services:
+  web:
+    image: nginx:alpine
+    cpus: 0.5
+    mem_limit: 128m
+    ports:
+      - "80:80"
+    x-volumes:
+      - path: /usr/share/nginx/html/flag.txt
+        content: static{hello}
+```
+
+这里的 `80:80` 不代表占用节点 80 端口。后端把 target 80 转为 Service 端口，NodePort 或 FRPS 端口由平台分配，访问地址以界面返回为准。Compose 是平台支持字段的配置输入，不支持任意 Docker Compose 的 `build`、本地卷和编排行为。
+
 Pod 模式适合单 Pod 内多容器共享网络命名空间的题目。所有容器在同一个 Kubernetes Pod 中运行，容器之间通过 `localhost:port`
 通信。
 
@@ -123,7 +140,29 @@ VM 必须接入至少一个 VPC 网络
 
 ## 流量捕获
 
-容器题可使用 `k8s.capture` 配置的镜像进行流量捕获。管理员可在靶机或队伍详情中查看并下载 pcap 文件。
+`k8s.capture_enabled` 控制是否创建抓包 sidecar，镜像由 `k8s.capture` 指定，Helm 对应 `cbctf.k8s.captureEnabled` / `capture`。管理员可在靶机或队伍详情查看并下载抓包产物。关闭后新实例不再挂载抓包所需共享卷，已有实例不会自动重建。
+
+## FRP 配置
+
+平台不会部署 FRPS。先自行运行 FRPS，再在「系统管理 → Kubernetes」设置启用、服务器地址、控制端口、token 和允许分配的外部端口范围：
+
+```yaml
+k8s:
+  frp:
+    on: true
+    frpc: ghcr.io/fatedier/frpc:v0.69.0
+    nginx: nginx:latest
+    frps:
+      - host: frps.example.com
+        port: 7000
+        token: replace-with-frps-token
+        allowed:
+          - from: 10000
+            to: 20000
+            exclude: [15000]
+```
+
+Helm 的层级为 `cbctf.k8s.frp`。FRPS 服务器的配置和防火墙需允许同一端口池；7000 是控制端口，不是选手访问题目的端口。未启用 FRP 时使用 NodePort，选手网络必须能访问平台返回的节点地址与分配端口。
 
 ## 常见问题
 

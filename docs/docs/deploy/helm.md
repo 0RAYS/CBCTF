@@ -14,7 +14,7 @@ PostgreSQL 和 Redis。
 - Helm 可用
 - 集群可以拉取 `ghcr.io/0rays/cbctf`、PostgreSQL、Redis 以及题目镜像
 - 如启用持久化，集群需要可用 StorageClass
-- 动态附件建议使用支持 `ReadWriteMany` 的共享存储
+- 动态附件输入与抓包文件需要平台和运行时 Pod 共享同一 PVC；多节点场景使用 `ReadWriteMany`
 - VPC 靶机需要提前安装 Kube-OVN 和 Multus CNI
 - KubeVirt VM 靶机需要提前安装 KubeVirt，并确认节点支持虚拟化
 
@@ -24,16 +24,23 @@ PostgreSQL 和 Redis。
 
 ```bash
 helm repo add cbctf https://cbctf.0rays.club
+helm repo update
 ```
 
 **须使用自定义 values**
 
-Helm values 会渲染为容器内 `/app/config.yaml`。升级 values 后会滚动重启：
+Helm values 会渲染为容器内 `/app/config.yaml`。应用 Deployment 固定为单副本、`Recreate` 策略；ConfigMap 变化触发 Pod 替换，会有短暂中断，并非滚动更新。
 
 ```bash
 helm show values cbctf/cbctf > values.yaml
-helm install cbctf cbctf/cbctf -n cbctf --create-namespace -f values.yaml
+helm upgrade --install cbctf cbctf/cbctf -n cbctf --create-namespace -f values.yaml --wait --timeout 10m
 ```
+
+:::info
+本文与仓库 Chart `0.0.29` 对应。使用仓库代码时可将命令中的 `cbctf/cbctf` 换成 `./chart`；新配置能力需要匹配版本的后端镜像。
+
+运行时设置首次写入数据库后，以数据库为准。修改 values 中的 `host`、JWT、注册、上传限制或 Kubernetes 运行参数再升级，并不会覆盖已经保存的设置；请到「系统管理」修改并按需重启。参见[配置来源与生效时机](./settings)。
+:::
 
 ## 升级和卸载
 
@@ -73,8 +80,6 @@ helm uninstall cbctf -n cbctf
 | 配置项                                | 说明                          | 示例                        |
 |------------------------------------|-----------------------------|---------------------------|
 | `cbctf.host`                       | 平台公开访问地址，不要带尾部 `/`          | `https://ctf.example.com` |
-| `cbctf.log.level`                  | 应用日志级别                      | `info`                    |
-| `cbctf.log.save`                   | 是否持久化日志                     | `false`                   |
 | `cbctf.gin.mode`                   | Gin 运行模式                    | `release`                 |
 | `cbctf.gin.host`                   | 容器内监听地址                     | `0.0.0.0`                 |
 | `cbctf.gin.port`                   | 容器内监听端口                     | `8000`                    |
@@ -113,10 +118,41 @@ JWT、PostgreSQL 和 Redis 密钥会写入 `/app/config.yaml`。
 | `redis.persistence.enabled`    | Redis 数据持久化               | `true`                      |
 | `redis.persistence.size`       | Redis PVC 容量              | `1Gi`                       |
 
-:::info
-当前 Chart values 中没有外部 PostgreSQL 或外部 Redis 的 `externalHost` 配置项。如果需要使用外部数据库，需要同步调整 Chart
-模板或用等价的 Service 名称接入。
-:::
+关闭内置组件时必须设置 `externalHost`，地址按原值使用，不追加命名空间。认证和端口仍使用对应的 `auth` 与 `service.port`：
+
+```yaml
+postgres:
+  enabled: false
+  externalHost: postgres.example.com
+  service:
+    port: 5432
+  auth:
+    database: cbctf
+    username: cbctf
+    password: replace-with-database-password
+redis:
+  enabled: false
+  externalHost: redis.example.com
+  service:
+    port: 6379
+  auth:
+    password: replace-with-redis-password
+cbctf:
+  gorm:
+    postgres:
+      sslmode: true
+```
+
+PostgreSQL 使用 `pg_trgm`；初始化会尝试创建扩展。平台有 HTTP、任务查询和 advisory-lock 连接池，外部 PostgreSQL 应提供足够连接数，并使用直连或 session pooling，不能使用 transaction pooling 承载会话级 advisory lock。Redis 配置目前只有 host、port、密码，不提供 Sentinel、Cluster 或 TLS 参数。
+
+内置 PostgreSQL 的 `auth` 变量仅初始化空数据目录；对已有 PVC 修改 values 中的密码不会执行数据库 `ALTER ROLE`，应先协调修改数据库凭据。关闭任一数据库的 `persistence.enabled` 后使用 `emptyDir`，Pod 重建会丢失对应数据。
+
+## 共享数据卷与镜像凭据
+
+- 平台挂载 `/app/data`，默认 PVC 为 `{namespace}-shared-volume`。`persistence.existingClaim` 可以指定同命名空间已有 PVC，Chart 同时写入后端 `k8s.shared_volume_claim`，使生成器和抓包容器使用同一卷。
+- `persistence.enabled: false` 仅使平台数据使用临时卷，不会为运行时 Pod 创建共享 PVC；这不适用于需要动态附件或抓包的部署。
+- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台、PostgreSQL 和 Redis Pod。后端创建的题目、生成器、FRPC 和预热 Job 不会继承应用 Pod 的凭据；这些 Pod 使用运行命名空间的 `default` ServiceAccount，可将所需 Secret 配置到该 ServiceAccount。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
+- Chart 的 `nodeSelector`、`tolerations`、`affinity`、`resources` 作用于平台 Pod，不等于题目调度和资源配置；题目资源来自 Compose。
 
 ## Kubernetes 靶机配置
 
@@ -125,7 +161,7 @@ JWT、PostgreSQL 和 Redis 密钥会写入 `/app/config.yaml`。
 | `serviceAccount.create` | 是否创建应用 ServiceAccount | `true`                            |
 | `cbctf.k8s.capture`     | 流量捕获镜像                | `ghcr.io/domcyrus/rustnet:latest` |
 | `cbctf.k8s.captureEnabled` | 是否开启抓包容器 | `true` |
-| `cbctf.k8s.priorityClassName` | 已有工作负载 PriorityClass | `""` |
+| `cbctf.k8s.priorityClassName` | 普通 Pod 的已有 PriorityClass，当前不应用到 VM | `""` |
 | `cbctf.k8s.workerImage` | 独立 worker 镜像地址，与主程序版本分开配置 | `ghcr.io/0rays/cbctf-worker:latest` |
 | `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量 | `2` |
 | `cbctf.k8s.frp.on`      | 是否启用 FRP 端口暴露         | `false`                           |
@@ -185,9 +221,20 @@ cbctf:
     jwt:
       secret: "change-me-long-random-secret"
 
+postgres:
+  auth:
+    password: "replace-with-database-password"
+redis:
+  auth:
+    password: "replace-with-redis-password"
+persistence:
+  storageClass: nfs-client
+
 ingress:
   enabled: true
   className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "16m"
   hosts:
     - host: ctf.example.com
       paths:
@@ -216,15 +263,15 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 
 如果 Pod 反复重启，优先检查日志中的数据库、Redis、RBAC、PVC、KubeVirt、Kube-OVN/Multus 相关错误。
 
-## 启动时资源检查与创建
+## 启动时资源检查
 
-Helm 安装后，应用启动时会检查或创建以下资源：
+Helm 安装后，应用启动时只检查以下资源，不自动创建命名空间或 PVC：
 
 - 命名空间：`{namespace}`
-- 共享存储 PVC：`{namespace}-shared-volume`
+- 共享存储 PVC：`k8s.shared_volume_claim`，未指定时为 `{namespace}-shared-volume`
 - Kubernetes API 权限：上方 RBAC 表中的所有 verbs
 
 :::warning
-PVC 缺失会导致动态附件不可用。KubeVirt 资源不会在启动时创建，只有启动包含 `x-kubevirt: true` 的 VM 靶机时才会创建对应
+命名空间或必需 RBAC 缺失会使启动失败；PVC 缺失会记录警告，随后动态附件和启用抓包的靶机可能无法启动。KubeVirt 资源不会在启动时创建，只有启动包含 `x-kubevirt: true` 的 VM 靶机时才会创建对应
 `VirtualMachine`。
 :::

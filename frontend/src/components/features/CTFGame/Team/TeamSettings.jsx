@@ -109,15 +109,17 @@ function TeamSettings({
       )}
 
       {/* 编辑模态框 */}
-      <EditTeamModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        team={team}
-        onSave={(data) => {
-          onEditTeam(data);
-          setShowEditModal(false);
-        }}
-      />
+      {showEditModal && (
+        <EditTeamModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          team={team}
+          onSave={(data) => {
+            onEditTeam(data);
+            setShowEditModal(false);
+          }}
+        />
+      )}
 
       {/* 踢出确认模态框 */}
       <ConfirmModal

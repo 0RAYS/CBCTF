@@ -456,7 +456,7 @@ func ListVictimHistories(tx *gorm.DB, team model.Team, form dto.ListModelsForm) 
 }
 
 func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm) model.RetVal {
-	if len(form.Challenges) == 0 || form.TeamRatio <= 0 || form.TeamRatio >= 1 {
+	if len(form.Challenges) == 0 || form.TeamRatio <= 0 || form.TeamRatio > 1 {
 		return model.SuccessRetVal()
 	}
 	requestedChallenges := len(form.Challenges)

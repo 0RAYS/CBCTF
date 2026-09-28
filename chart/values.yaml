@@ -13,7 +13,8 @@ timezone: "Asia/Shanghai"
 
 imagePullSecrets: []
 # Inline registry credentials — the chart creates a docker registry Secret automatically
-# and appends it to imagePullSecrets on all pods.
+# and appends it to imagePullSecrets on chart-managed application/database pods.
+# Runtime challenge pods use the namespace's default ServiceAccount instead.
 imageCredentials:
   registry: ""   # e.g. ghcr.io
   username: ""
@@ -92,18 +93,14 @@ cbctf:
   # Public URL of the platform (used in emails, links, etc.)
   host: "http://cbctf.local"
 
-  log:
-    level: info   # DEBUG / INFO / WARNING / ERROR
-    save: false
-
   gin:
     mode: release   # debug / release / test
     host: "0.0.0.0"
     port: 8000
     upload:
-      picture: 8     # MB
-      challenge: 8   # MB
-      writeup: 8     # MB
+      picture: 8     # MiB
+      challenge: 8   # MiB
+      writeup: 8     # MiB
     # Trusted reverse proxy IPs (add your ingress controller pod CIDR)
     proxies:
       - "127.0.0.1"
@@ -192,12 +189,13 @@ persistence:
   storageClass: ""     # Leave empty to use cluster default
   accessMode: ReadWriteMany
   size: 20Gi
-  # existingClaim: ""  # Use an existing PVC
+  existingClaim: ""    # Existing PVC in the release namespace, shared with runtime workloads
 
 # ── PostgreSQL ────────────────────────────────────────────────────────────────
 
 postgres:
   enabled: true
+  externalHost: ""     # Required when disabled; hostname/IP used verbatim
   image:
     repository: postgres
     tag: "17-alpine"
@@ -231,6 +229,7 @@ postgres:
 
 redis:
   enabled: true
+  externalHost: ""     # Required when disabled; hostname/IP used verbatim
   image:
     repository: redis
     tag: "7-alpine"

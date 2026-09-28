@@ -1,220 +1,59 @@
 ---
 title: 权限与角色
-description: 管理 CBCTF 用户组、角色、权限点和后台访问控制策略。
+description: 按 CBCTF 的用户组、角色和 API 权限模型配置后台访问与选手授权。
 ---
 
 # 权限与角色
 
-## RBAC 模型
+## 授权模型
 
-CBCTF 使用基于角色的访问控制（RBAC）：
-
-```
-权限（Permission）→ 角色（Role）→ 用户（User）
+```text
+权限 Permission → 角色 Role → 分组 Group → 用户 User
 ```
 
-- **权限**：对特定 API 路由的访问授权，由系统内置，不可自定义
-- **角色**：权限的集合，可自定义创建
-- **用户**：可分配多个角色，权限取所有角色权限的并集
+- 权限点由后端路由映射内置，后台可查看和编辑描述。
+- 每个分组关联一个角色；一个角色包含多个权限。
+- 一个用户可加入多个分组，最终权限取各组角色的并集。界面不直接向用户分配多个角色。
+- 比赛中的队伍与 RBAC 分组是不同概念，加入参赛队伍不会自动授予后台权限。
 
-## 内置角色
+## 内置角色与分组
 
-| 角色          | 说明                          |
-|-------------|-----------------------------|
-| `admin`     | 拥有所有权限，超级管理员                |
-| `organizer` | 默认无权限，需管理员手动配置权限子集          |
-| `user`      | 默认参赛用户权限（`self:*`、`user:*`） |
+| 名称 | 默认用途 |
+| --- | --- |
+| `admin` | 全部平台管理和选手权限 |
+| `organizer` | 赛事、题目、队伍、公告、作弊以及比赛内镜像/靶机/生成器管理，同时具备选手权限 |
+| `user` | 个人设置、参赛、队伍、题目、提交、靶机和题解权限 |
 
-## 完整权限清单
+初始化会创建同名默认分组并绑定角色；每次启动会补齐默认角色映射中缺失的权限。需要长期限制权限时创建自定义角色和分组，不要依赖从默认角色删去权限后永远保持不变。
 
-### self — 用户自身
+角色权限是接口级权限，`organizer` 不等于“仅能管理自己创建的比赛”；当前路由没有比赛所有者授权模型。
 
-| 权限              | 说明                   |
-|-----------------|----------------------|
-| `self:read`     | 查看自身信息（登录必须，撤销后无法登录） |
-| `self:update`   | 更新自身信息（修改密码、头像等）     |
-| `self:delete`   | 删除自身账号               |
-| `self:activate` | 发送激活邮件（触发邮箱验证）       |
+## 前端操作流程
 
-### user:contest — 比赛（用户视角）
+1. 在「RBAC → 角色」创建自定义角色。
+2. 打开角色的权限管理，选择需要的权限点。
+3. 在「分组」创建组并选择该角色。
+4. 在组成员管理中添加用户。
+5. 使用目标用户验证后台导航与具体操作。
 
-| 权限                  | 说明         |
-|---------------------|------------|
-| `user:contest:read` | 查看比赛详情     |
-| `user:contest:rank` | 查看比赛排名和计分板 |
+导航按 `GET /me/permissions` 返回的 **HTTP 方法 + 路由** 过滤；某页可见不表示所有按钮对应的接口均有权限。RBAC 页面入口本身要求 `GET /admin/roles`，自定义管理角色还需配齐其实际使用的列表、读取和修改权限。
 
-### user:team — 队伍操作
+## 常用权限范围
 
-| 权限                 | 说明     |
-|--------------------|--------|
-| `user:team:create` | 创建队伍   |
-| `user:team:join`   | 加入队伍   |
-| `user:team:read`   | 查看队伍信息 |
-| `user:team:update` | 更新队伍信息 |
-| `user:team:delete` | 解散队伍   |
+以下 `*` 只是说明一组权限，不是可提交的通配符：
 
-### user:challenge — 题目操作
+| 场景 | 主要权限 |
+| --- | --- |
+| 个人信息与邮箱验证 | `self:read`、`self:update`、`self:activate` |
+| 参赛 | `user:contest:*`、`user:team:*`、`user:notice:list` |
+| 解题与题解 | `user:challenge:*`、`user:victim:control`、`user:writeup:*` |
+| 题库与测试 | `admin:challenge:*` |
+| 比赛与比赛题目 | `admin:contest:*`、`admin:contest_challenge:*`、`admin:contest_challenge_flag:*` |
+| 队伍与题解 | `admin:team:*`、`admin:team_writeup:list/read`、`admin:contest_writeup:export` |
+| 全局资源 | `admin:image:pull`、`admin:victim:control`、`admin:generator:control`、`admin:traffic:read` |
+| 比赛资源 | `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`、`admin:contest_traffic:read` |
+| SMTP | `admin:smtp:*`，其中发测试邮件为 `admin:smtp:test` |
+| 定时任务 | `admin:cronjob:list`、`admin:cronjob:update` |
+| 系统配置 | `admin:system:read/update/restart` |
 
-| 权限                      | 说明              |
-|-------------------------|-----------------|
-| `user:challenge:list`   | 查看题目列表          |
-| `user:challenge:read`   | 查看题目详情和下载附件     |
-| `user:challenge:init`   | 初始化动态附件或容器靶机    |
-| `user:challenge:reset`  | 重置题目（重新生成 flag） |
-| `user:challenge:submit` | 提交 flag         |
-
-### user:victim — 靶机控制
-
-| 权限                    | 说明         |
-|-----------------------|------------|
-| `user:victim:control` | 启动、延长、停止靶机 |
-
-### user:writeup — Writeup
-
-| 权限                    | 说明            |
-|-----------------------|---------------|
-| `user:writeup:upload` | 上传 Writeup    |
-| `user:writeup:list`   | 查看 Writeup 列表 |
-
-### admin:system — 系统管理
-
-| 权限                     | 说明       |
-|------------------------|----------|
-| `admin:system:status`  | 查看系统健康状态 |
-| `admin:system:read`    | 读取系统配置   |
-| `admin:system:update`  | 更新系统配置   |
-| `admin:system:restart` | 重启系统     |
-
-### admin:branding — 品牌化管理
-
-| 权限                      | 说明                   |
-|-------------------------|----------------------|
-| `admin:branding:read`   | 查看品牌化配置（站点名称、Logo 等） |
-| `admin:branding:update` | 更新品牌化配置（含上传 Logo）    |
-
-### admin:role — 角色管理
-
-| 权限                  | 说明      |
-|---------------------|---------|
-| `admin:role:create` | 创建角色    |
-| `admin:role:read`   | 查看角色详情  |
-| `admin:role:update` | 更新角色    |
-| `admin:role:delete` | 删除角色    |
-| `admin:role:list`   | 查看角色列表  |
-| `admin:role:assign` | 为角色分配权限 |
-| `admin:role:revoke` | 撤销角色权限  |
-
-### admin:group — 用户组管理
-
-| 权限                   | 说明      |
-|----------------------|---------|
-| `admin:group:create` | 创建用户组   |
-| `admin:group:read`   | 查看用户组详情 |
-| `admin:group:update` | 更新用户组   |
-| `admin:group:delete` | 删除用户组   |
-| `admin:group:list`   | 查看用户组列表 |
-
-### admin:user — 用户管理
-
-| 权限                  | 说明            |
-|---------------------|---------------|
-| `admin:user:create` | 手动创建用户        |
-| `admin:user:read`   | 查看用户详情        |
-| `admin:user:update` | 修改用户信息（含重置密码） |
-| `admin:user:delete` | 删除用户          |
-| `admin:user:list`   | 查看用户列表        |
-| `admin:user:assign` | 将用户加入分组       |
-| `admin:user:revoke` | 将用户移出分组       |
-
-### admin:challenge — 题目管理
-
-| 权限                       | 说明          |
-|--------------------------|-------------|
-| `admin:challenge:create` | 创建题目        |
-| `admin:challenge:read`   | 查看题目详情      |
-| `admin:challenge:update` | 更新题目（含上传附件） |
-| `admin:challenge:delete` | 删除题目        |
-| `admin:challenge:list`   | 查看题目列表      |
-| `admin:challenge:test`   | 测试模式启停靶机    |
-
-### admin:contest — 比赛管理
-
-| 权限                     | 说明        |
-|------------------------|-----------|
-| `admin:contest:create` | 创建比赛      |
-| `admin:contest:read`   | 查看比赛详情    |
-| `admin:contest:update` | 更新比赛配置    |
-| `admin:contest:delete` | 删除比赛      |
-| `admin:contest:list`   | 查看比赛列表    |
-| `admin:contest:rank`   | 查看管理视角排行榜 |
-
-### admin:team — 队伍管理（管理视角）
-
-| 权限                  | 说明                     |
-|---------------------|------------------------|
-| `admin:team:read`   | 查看队伍详情、Flag 记录、流量 pcap |
-| `admin:team:update` | 修改队伍信息                 |
-| `admin:team:delete` | 删除队伍                   |
-| `admin:team:list`   | 查看队伍列表                 |
-
-### admin:cheat — 作弊记录
-
-| 权限                   | 说明               |
-|----------------------|------------------|
-| `admin:cheat:create` | 手动创建作弊记录（重新运行检测） |
-| `admin:cheat:update` | 更新作弊记录状态         |
-| `admin:cheat:delete` | 删除作弊记录           |
-| `admin:cheat:list`   | 查看作弊记录列表         |
-
-### admin:victim — 靶机控制（管理视角）
-
-| 权限                             | 说明             |
-|--------------------------------|----------------|
-| `admin:victim:control`         | 管理员全局批量启停靶机    |
-| `admin:contest_victim:control` | 管理员批量启停特定比赛的靶机 |
-
-### admin:traffic — 流量查看
-
-| 权限                           | 说明                  |
-|------------------------------|---------------------|
-| `admin:traffic:read`         | 查看全局靶机流量（下载 pcap）   |
-| `admin:contest_traffic:read` | 查看特定比赛靶机流量（下载 pcap） |
-
-### 其他管理权限
-
-| 权限                                             | 说明                 |
-|------------------------------------------------|--------------------|
-| `admin:oauth:create/read/update/delete/list`   | OAuth 提供商的 CRUD 操作 |
-| `admin:smtp:create/read/update/delete/list`    | SMTP 服务器的 CRUD 操作  |
-| `admin:webhook:create/read/update/delete/list` | Webhook 的 CRUD 操作  |
-| `admin:notice:create/update/delete/list`       | 公告管理               |
-| `admin:file:list/read/delete`                  | 文件管理               |
-| `admin:log:read`                               | 查看系统日志             |
-| `admin:task:read`                              | 查看后台任务队列状态         |
-| `admin:image:pull`                             | 触发全局镜像预热           |
-| `admin:contest_image:pull`                     | 触发特定比赛的镜像预热        |
-| `admin:generator:control`                      | 控制全局附件生成器          |
-| `admin:contest_generator:control`              | 控制特定比赛的附件生成器       |
-
-## 自定义 organizer 角色示例
-
-创建一个只能管理比赛和题目的 organizer 角色：
-
-```
-admin:contest:create/read/update/list
-admin:challenge:read/update/list
-admin:contest_challenge:create/read/update/delete/list
-admin:contest_challenge_flag:list/read/update
-admin:team:read/list
-admin:team_writeup:list/read
-admin:notice:create/update/delete/list
-admin:cheat:list/update
-admin:contest_image:pull
-admin:contest_victim:control
-admin:contest_generator:control
-admin:contest_traffic:read
-```
-
-:::warning
-撤销 `self:read` 权限将导致该用户**无法登录**，操作前请确认。
-:::
+完整权限名称和接口映射以后台「权限」页及 `internal/model/permission.go` 为准。撤销 `self:read` 会使前端无法加载 `/me` 与权限信息，不能正常完成登录后的会话初始化。

@@ -11,6 +11,16 @@ import (
 )
 
 func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, model.RetVal) {
+	var contest model.Contest
+	ret := db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		var ret model.RetVal
+		contest, ret = createContest(tx2, form)
+		return ret
+	})
+	return contest, ret
+}
+
+func createContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, model.RetVal) {
 	repo := db.InitContestRepo(tx)
 	if form.Start.IsZero() {
 		form.Start = time.Now()
@@ -60,7 +70,7 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 			},
 		}
 	}
-	return repo.Create(model.Contest{
+	contest, ret := repo.Create(model.Contest{
 		Name:        form.Name,
 		Description: form.Description,
 		Captcha:     form.Captcha,
@@ -76,6 +86,18 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 		Prizes:      form.Prizes,
 		Timelines:   form.Timelines,
 	})
+	if !ret.OK {
+		return contest, ret
+	}
+	// GORM applies default:true to zero-value bools on insert. Persist the
+	// explicit form choices as a map update, just as the edit endpoint does.
+	if contest.Blood != form.Blood || contest.Hidden != form.Hidden {
+		if ret = repo.Update(contest.ID, db.UpdateContestOptions{Blood: &form.Blood, Hidden: &form.Hidden}); !ret.OK {
+			return model.Contest{}, ret
+		}
+		return repo.GetByID(contest.ID)
+	}
+	return contest, ret
 }
 
 func UpdateContest(tx *gorm.DB, contest model.Contest, form dto.UpdateContestForm) model.RetVal {

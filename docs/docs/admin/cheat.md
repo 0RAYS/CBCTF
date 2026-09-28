@@ -15,7 +15,7 @@ CBCTF 内置多维度自动作弊检测，管理员可查看、确认或驳回�
 
 ### 2. `same_victim_ip` — 多队伍共用靶机访问 IP
 
-多支队伍访问靶机的 IP 相同（capture 捕获），强烈暗示存在跨队协作。
+多支队伍访问靶机的 IP 相同（capture 捕获），需要结合公共出口、代理及比赛场地判断。关闭抓包后不会获得这类实例访问流量证据。
 
 ### 3. `wrong_flag` — 跨队 flag 提交
 
@@ -45,10 +45,12 @@ CBCTF 内置多维度自动作弊检测，管理员可查看、确认或驳回�
 
 1. 访问比赛的作弊记录列表（`admin:cheat:list`）
 2. 查看各条记录的 `type`、`reason`、相关队伍信息
-3. 结合 IP 历史（`admin:ip:search`）和流量捕获进行综合判断
+3. 结合 IP 地理查询（`admin:ip:search`）、相关队伍提交及流量捕获综合判断；IP 查询接口不提供登录历史
 4. 更新 `type` 为 `cheater` 或 `pass`（`admin:cheat:update`）
 5. 在 `comment` 中填写处置说明
 6. 标记 `checked: true`
+
+处理作弊记录不自动封禁队伍。需要限制参赛时，在比赛队伍管理中另行设置封禁。
 
 ## 重新运行检测
 
@@ -68,7 +70,7 @@ DELETE /admin/contests/:contestID/cheats
 
 ## IP 白名单
 
-在 `config.yaml` 中配置 IP 白名单，白名单内的 IP 不触发 IP 类作弊检测：
+首次部署可在 `config.yaml` 中配置 IP 白名单；已有平台在「系统管理」中更新数据库设置。白名单内的 IP 不触发 IP 类作弊检测：
 
 ```yaml
 cheat:
@@ -93,5 +95,5 @@ cheat:
 | 比赛现场同一 WiFi     | `same_web_ip`                  |
 
 :::tip
-建议将竞赛现场的出口 IP 加入白名单，或在 Helm values 中配置 `cbctf.cheat.ip.whitelist`。
+建议将竞赛现场的出口 IP 加入白名单；Helm 初始配置对应 `cbctf.cheat.ip.whitelist`，已有数据库不会因升级 values 自动覆盖。
 :::

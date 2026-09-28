@@ -34,7 +34,7 @@ features:
     details: 静态、线性、对数三种计分类型，支持三血奖励和多 Flag 独立计分。
     icon: 📊
     link: /guide/features/scoring
-  - title: Helm 一键部署
+  - title: Helm 部署
     details: Chart 内置 PostgreSQL 和 Redis，支持 PVC 持久化、Ingress TLS 和镜像拉取凭据。
     icon: ⚡
     link: /deploy/helm

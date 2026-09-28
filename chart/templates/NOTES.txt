@@ -20,14 +20,14 @@ CBCTF URL:
   NOTE: It may take a few minutes for the LoadBalancer IP to be available.
   kubectl get svc {{ include "cbctf.fullname" . }} -n {{ .Release.Namespace }} -w
 {{- else }}
-  kubectl port-forward svc/{{ include "cbctf.fullname" . }} 8000:8000 -n {{ .Release.Namespace }}
-  Then open http://localhost:8000
+  kubectl port-forward svc/{{ include "cbctf.fullname" . }} 8000:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+  Then open http://localhost:8000/platform/ (configure cbctf.host for the public URL).
 {{- end }}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  Default Admin Password
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-After the pod is running, initialize Kubernetes resources:
+On first database initialization, read the generated administrator credentials:
 
   kubectl logs -n {{ .Release.Namespace }} deploy/{{ include "cbctf.fullname" . }} | grep "Init Admin"

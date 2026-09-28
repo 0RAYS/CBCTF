@@ -13,8 +13,8 @@ func checkResources() {
 	if _, ret := GetNamespace(ctx, globalNamespace); !ret.OK {
 		log.Logger.Fatalf("Namespace %q not found: %s", globalNamespace, ret.Msg)
 	}
-	if _, ret := GetPVC(ctx, nfsVolumeName); !ret.OK {
-		log.Logger.Warningf("PersistentVolumeClaim %q not found: %s", nfsVolumeName, ret.Msg)
+	if _, ret := GetPVC(ctx, nfsVolumeClaim); !ret.OK {
+		log.Logger.Warningf("PersistentVolumeClaim %q not found: %s", nfsVolumeClaim, ret.Msg)
 		log.Logger.Warningf("Dynamic attachments will not be generated correctly")
 	}
 	log.Logger.Info("K8s resource check completed")

@@ -176,7 +176,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				volumes = append(volumes, corev1.Volume{
 					Name: nfsVolumeName,
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: nfsVolumeName,
+						ClaimName: nfsVolumeClaim,
 					},
 				})
 			}

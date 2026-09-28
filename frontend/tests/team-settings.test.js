@@ -33,11 +33,20 @@ test('an empty member list remains valid', () => {
   assert.deepEqual(mapTeamSettings({ captain_id: 5 }, [], undefined).members, []);
 });
 
-test('saving only sends name and description, not the unimplemented leadership selection', () => {
+test('saving omits an unchanged captain and excludes display-only fields', () => {
   const description = 'x'.repeat(120);
   assert.deepEqual(teamUpdatePayload({ name: '', description, newLeader: 'Member', captainId: 2, inviteCode: 'secret' }), {
     name: '', description,
   });
+});
+
+test('leadership selection sends a numeric member ID instead of a username', () => {
+  assert.deepEqual(teamUpdatePayload({ name: 'Team', description: '', newLeader: '12' }), {
+    name: 'Team', description: '', captain_id: 12,
+  });
+  for (const newLeader of ['', 'Member', '0', '-1', '1.5']) {
+    assert.equal('captain_id' in teamUpdatePayload({ name: 'Team', description: '', newLeader }), false);
+  }
 });
 
 test('refresh applies untouched fields but preserves edits made during the request', () => {

@@ -77,6 +77,7 @@ type Config struct {
 	} `mapstructure:"gin" json:"gin"`
 	K8S struct {
 		Namespace         string `mapstructure:"namespace" json:"namespace"`
+		SharedVolumeClaim string `mapstructure:"shared_volume_claim" json:"shared_volume_claim"`
 		CaptureImage      string `mapstructure:"capture" json:"capture"`
 		CaptureEnabled    bool   `mapstructure:"capture_enabled" json:"capture_enabled"`
 		PriorityClassName string `mapstructure:"priority_class_name" json:"priority_class_name"`

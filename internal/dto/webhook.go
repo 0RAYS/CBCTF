@@ -12,6 +12,7 @@ type CreateWebhookForm struct {
 	Timeout int64            `form:"timeout" json:"timeout" binding:"gte=0"`
 	Retry   int              `form:"retry" json:"retry" binding:"gte=0"`
 	Events  model.StringList `form:"events" json:"events"`
+	On      bool             `form:"on" json:"on"`
 }
 
 type UpdateWebhookForm struct {

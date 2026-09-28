@@ -82,9 +82,10 @@ export default function useTeamSettings(contestId, navigate) {
     onEditTeam: (updatedTeam) =>
       mutate(
         () => updateTeamInfo(contestId, teamUpdatePayload(updatedTeam)),
-        (scope) => {
-          patchTeam(scope, teamUpdatePayload(updatedTeam));
+        async (scope) => {
+          patchTeam(scope, { name: updatedTeam.name, description: updatedTeam.description });
           toast.success({ title: t('game.team.toast.updateSuccess') });
+          if (updatedTeam.newLeader) await refresh(scope);
         },
         'game.team.toast.updateFailed'
       ),

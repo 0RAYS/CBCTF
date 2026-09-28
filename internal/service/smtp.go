@@ -14,12 +14,17 @@ func ListSmtps(tx *gorm.DB, form dto.ListModelsForm) ([]model.Smtp, int64, model
 }
 
 func CreateSmtp(tx *gorm.DB, form dto.CreateSmtpForm) (model.Smtp, model.RetVal) {
-	return db.InitSmtpRepo(tx).Create(model.Smtp{
+	smtp, ret := db.InitSmtpRepo(tx).Create(model.Smtp{
 		Address: form.Address,
 		Host:    form.Host,
 		Port:    form.Port,
 		Pwd:     form.Pwd,
+		On:      form.On,
 	})
+	if ret.OK && smtp.On {
+		email.AddSenders(smtp)
+	}
+	return smtp, ret
 }
 
 func UpdateSmtp(tx *gorm.DB, smtp model.Smtp, form dto.UpdateSmtpForm) (model.Smtp, model.RetVal) {

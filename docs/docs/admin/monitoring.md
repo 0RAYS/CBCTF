@@ -7,7 +7,7 @@ description: 使用 CBCTF 的 Prometheus 指标、Grafana 仪表盘、日志和�
 
 ## 系统状态
 
-通过 `GET /admin/system/status`（`admin:system:status`）查看各服务的健康状态，包括 PostgreSQL、Redis、Asynq 等组件的连接状态。
+「仪表盘」通过 `GET /admin/system/status`（`admin:system:status`）展示系统资源指标、网络收发、平均请求耗时和用户/比赛/提交等统计。它不是逐项探测 PostgreSQL、Redis、Asynq 连通性的健康检查接口；连接问题还需查看应用日志和各组件状态。
 
 ## 任务队列
 
@@ -60,15 +60,15 @@ gin:
 
 ## 日志系统
 
-平台使用 Logrus 记录日志，支持文件轮转。
+平台使用 Logrus 输出进程日志，并通过 Redis 日志 Hook 提供后台查询。
 
 ### 日志级别
 
-通过 `log.level` 配置，支持 `DEBUG` `INFO` `WARNING` `ERROR`。
+当前进程日志初始化为 Debug 级别，后台日志页可按级别筛选。数据库日志使用 `gorm.log.level`，任务日志使用 `asynq.log.level`；旧的顶层 `log.level` 已不生效。
 
 ### 日志持久化
 
-设置 `log.save: true` 后，日志持久化到 `{path}/logs/` 目录下，自动按日期轮转。
+当前没有 `log.save` 文件轮转实现。长期留存容器日志请接入集群日志采集；后台 Redis 日志是有限缓存，不应视为永久归档。
 
 ### 在线查看日志
 
@@ -96,7 +96,7 @@ gin:
 
 - 题目附件（`attachment.zip`、`generator.zip`）
 - 流量捕获文件（`.pcap`）
-- 选手 Writeup（PDF/ZIP）
+- 选手 Writeup（PDF/DOC/DOCX）
 
 支持在线下载（`admin:file:read`）和删除（`admin:file:delete`）。
 
@@ -116,6 +116,8 @@ POST /admin/system/restart  # 需 admin:system:restart
 ```
 
 PostgreSQL/GORM、Redis、数据目录、Gin 监听地址和监听端口在页面中只读，只能通过部署配置修改。
+
+共享 PVC `k8s.shared_volume_claim` 同样是部署参数。后台重启会停止并重建 HTTP、任务、Cron 和 Kubernetes 客户端，不重新读取磁盘配置文件；部署参数修改需要重建 Pod。上传大小、CORS、代理与并发等初始化参数的生效方式见[配置说明](../deploy/settings)。
 
 :::warning
 重启会短暂中断服务。正式比赛期间谨慎使用。

@@ -17,6 +17,9 @@ spec:
       labels:
         {{- include "cbctf.redis.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with include "cbctf.imagePullSecrets" . }}
+      {{- . | nindent 6 }}
+      {{- end }}
       securityContext:
         fsGroup: 1000  # redis group
       containers:
@@ -50,7 +53,7 @@ spec:
               command:
                 - sh
                 - -c
-                - "redis-cli -a $REDIS_PASSWORD ping | grep PONG"
+                - 'redis-cli -a "$REDIS_PASSWORD" ping | grep PONG'
             initialDelaySeconds: 15
             periodSeconds: 15
             timeoutSeconds: 5
@@ -60,7 +63,7 @@ spec:
               command:
                 - sh
                 - -c
-                - "redis-cli -a $REDIS_PASSWORD ping | grep PONG"
+                - 'redis-cli -a "$REDIS_PASSWORD" ping | grep PONG'
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 3
@@ -72,6 +75,11 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+      {{- if not .Values.redis.persistence.enabled }}
+      volumes:
+        - name: data
+          emptyDir: {}
+      {{- end }}
 
   {{- if .Values.redis.persistence.enabled }}
   volumeClaimTemplates:

@@ -19,3 +19,4 @@
 .idea/
 *.tmproj
 .vscode/
+*_test.go

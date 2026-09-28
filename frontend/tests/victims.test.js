@@ -76,9 +76,11 @@ test('start payload converts percentage to ratio and keeps duration in seconds',
   assert.equal(buildVictimStartPayload([], 50, '1.9').duration, 1);
 });
 
-test('team estimate rejects endpoints and floors with a minimum of one team', () => {
+test('team estimate includes all teams at 100 percent and floors smaller selections', () => {
   assert.equal(estimateVictimTeams(10, 25), 2);
   assert.equal(estimateVictimTeams(1, 1), 1);
-  for (const percentage of [0, 100, -1, 101]) assert.equal(estimateVictimTeams(10, percentage), 0);
+  assert.equal(estimateVictimTeams(10, 100), 10);
+  assert.equal(buildVictimStartPayload(['challenge'], 100, '7200').team_ratio, 1);
+  for (const percentage of [0, -1, 101]) assert.equal(estimateVictimTeams(10, percentage), 0);
   assert.equal(estimateVictimTeams(0, 50), 0);
 });

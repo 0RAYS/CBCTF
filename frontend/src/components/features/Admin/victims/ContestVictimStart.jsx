@@ -125,7 +125,7 @@ export default function ContestVictimStart({ contestId, onStarted }) {
                 <div className="relative">
                   <input
                     type="range"
-                    min="0"
+                    min="1"
                     max="100"
                     value={randomTeamPercentage}
                     onChange={(event) => setRandomTeamPercentage(Number.parseInt(event.target.value, 10))}

@@ -7,7 +7,7 @@ import { Steps, Tabs, Tab } from '@rspress/core/theme';
 
 # 管理后台概览
 
-管理后台入口为 `/platform/#/admin`。用户需要拥有管理员角色，或通过 RBAC 获得相应管理接口权限后才能访问对应页面。
+管理后台首页为 `/platform/#/admin/dashboard`。用户通过分组关联的角色获得管理接口权限后，才能访问对应页面；只拥有部分权限时，从导航进入被授权的页面。
 
 ## 初始管理员
 
@@ -31,9 +31,9 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 
 <Steps>
 
-### 登录后台，先在系统状态页确认数据库、Redis、任务队列和运行状态正常
+### 登录后台，查看仪表盘的资源与业务统计，并从任务页、应用日志确认后台任务是否正常
 
-### 在用户、分组、角色权限中创建管理员、主办方或普通用户，并按需分配权限
+### 在 RBAC 的用户、分组、角色权限标签页创建用户并授权，同时设置注册默认分组和 SMTP
 
 ### 在题目管理中创建题目，配置附件、Flag、动态生成器或容器靶机
 
@@ -64,7 +64,7 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 | Victims    | 查看和停止运行中的靶机，查看流量        |
 | Generators | 查看和控制动态附件生成器            |
 | Images     | 预热题目镜像                  |
-| OAuth      | 管理 OAuth/OIDC 登录提供商     |
+| OAuth      | 管理 OAuth2（含手动配置的 OIDC 端点）和 CAS 登录提供商 |
 | SMTP       | 管理邮件发送配置和邮件记录           |
 | CronJobs   | 查看和更新后台 Cron 任务         |
 | Webhook    | 管理出站 Webhook 和历史记录      |
