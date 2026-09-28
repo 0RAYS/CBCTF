@@ -37,12 +37,31 @@ function AdminWebhook({
     { key: 'id', label: t('admin.webhook.list.columns.id'), width: '2%' },
     { key: 'name', label: t('admin.webhook.list.columns.name'), width: '3%' },
     { key: 'url', label: t('admin.webhook.list.columns.url'), width: '10%' },
-    { key: 'method', label: t('admin.webhook.list.columns.method'), width: '5%' },
-    { key: 'status', label: t('admin.webhook.list.columns.status'), width: '5%' },
-    { key: 'events', label: t('admin.webhook.list.columns.events'), width: '5%' },
-    { key: 'success', label: t('admin.webhook.list.columns.success'), width: '7%' },
-    { key: 'failure', label: t('admin.webhook.list.columns.failure'), width: '7%' },
-    { key: 'actions', label: t('admin.webhook.list.columns.actions'), width: '5%' },
+    {
+      key: 'method',
+      label: t('admin.webhook.list.columns.method'),
+      width: '5%',
+    },
+    {
+      key: 'status',
+      label: t('admin.webhook.list.columns.status'),
+      width: '5%',
+    },
+    {
+      key: 'events',
+      label: t('admin.webhook.list.columns.events'),
+      width: '5%',
+    },
+    {
+      key: 'success',
+      label: t('admin.webhook.list.columns.success'),
+      width: '7%',
+    },
+    {
+      key: 'failure',
+      label: t('admin.webhook.list.columns.failure'),
+      width: '7%',
+    },
   ];
 
   // 自定义单元格渲染
@@ -147,48 +166,6 @@ function AdminWebhook({
           </div>
         );
 
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditWebhook?.(webhook);
-              }}
-              className="p-1"
-              title={t('admin.webhook.list.actions.edit')}
-            >
-              <IconEdit size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewHistory?.(webhook);
-              }}
-              className="p-1"
-              title={t('admin.webhook.list.actions.viewHistory')}
-            >
-              <IconHistory size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteWebhook?.(webhook);
-              }}
-              className="p-1 text-red-400 hover:text-red-300"
-              title={t('admin.webhook.list.actions.delete')}
-            >
-              <IconTrash size={18} />
-            </Button>
-          </div>
-        );
-
       default:
         return null;
     }
@@ -212,7 +189,30 @@ function AdminWebhook({
           data={webhooks}
           columns={columns}
           renderCell={renderCell}
-          onRowClick={onWebhookClick}
+          actionsColumn={{ label: t('admin.webhook.list.columns.actions'), width: 88 }}
+          getRowActions={(webhook) => [
+            {
+              key: 'edit',
+              label: t('admin.webhook.list.actions.edit'),
+              icon: <IconEdit size={18} />,
+              onClick: () => onEditWebhook?.(webhook),
+            },
+            {
+              key: 'history',
+              inline: true,
+              label: t('admin.webhook.list.actions.viewHistory'),
+              icon: <IconHistory size={18} />,
+              onClick: () => onViewHistory?.(webhook),
+            },
+            {
+              key: 'delete',
+              label: t('admin.webhook.list.actions.delete'),
+              icon: <IconTrash size={18} />,
+              danger: true,
+              onClick: () => onDeleteWebhook?.(webhook),
+            },
+          ]}
+          onRowClick={onEditWebhook || onWebhookClick}
           loading={loading}
           empty={webhooks.length === 0}
           emptyContent={t('admin.webhook.list.empty')}

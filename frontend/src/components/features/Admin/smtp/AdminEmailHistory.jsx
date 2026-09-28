@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Button, EmptyState, List, Pagination, StatusTag } from '../../../common';
+import { EmptyState, List, Pagination, StatusTag } from '../../../common';
 import { IconEye, IconMail } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
@@ -33,10 +33,17 @@ function AdminEmailHistory({
     { key: 'id', label: t('admin.smtp.history.columns.id'), width: '5%' },
     { key: 'from', label: t('admin.smtp.history.columns.from'), width: '15%' },
     { key: 'to', label: t('admin.smtp.history.columns.to'), width: '15%' },
-    { key: 'subject', label: t('admin.smtp.history.columns.subject'), width: '10%' },
-    { key: 'status', label: t('admin.smtp.history.columns.status'), width: '10%' },
+    {
+      key: 'subject',
+      label: t('admin.smtp.history.columns.subject'),
+      width: '10%',
+    },
+    {
+      key: 'status',
+      label: t('admin.smtp.history.columns.status'),
+      width: '10%',
+    },
     { key: 'time', label: t('admin.smtp.history.columns.time'), width: '15%' },
-    { key: 'actions', label: t('admin.smtp.history.columns.actions'), width: '5%' },
   ];
 
   // 自定义单元格渲染
@@ -92,24 +99,6 @@ function AdminEmailHistory({
           </div>
         );
 
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewEmail?.(email);
-              }}
-              className="p-1"
-              title={t('admin.smtp.history.actions.viewDetail')}
-            >
-              <IconEye size={18} />
-            </Button>
-          </div>
-        );
-
       default:
         return null;
     }
@@ -136,7 +125,15 @@ function AdminEmailHistory({
           data={emailHistory}
           columns={columns}
           renderCell={renderCell}
-          onRowClick={onEmailClick}
+          getRowActions={(email) => [
+            {
+              key: 'detail',
+              label: t('admin.smtp.history.actions.viewDetail'),
+              icon: <IconEye size={18} />,
+              onClick: () => onViewEmail?.(email),
+            },
+          ]}
+          onRowClick={onViewEmail || onEmailClick}
           loading={loading}
           empty={emailHistory.length === 0}
           emptyContent={<EmptyState title={t('admin.smtp.history.empty')} />}

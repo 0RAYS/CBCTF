@@ -21,8 +21,10 @@ export default function TrafficPanel({
     ['start', 'startTime'],
     ['duration', 'duration'],
     ['status', 'status'],
-    ['actions', 'actions'],
-  ].map(([key, label]) => ({ key, label: t(`admin.contests.teamDetail.traffic.columns.${label}`) }));
+  ].map(([key, label]) => ({
+    key,
+    label: t(`admin.contests.teamDetail.traffic.columns.${label}`),
+  }));
   const durationLabel = (duration) => {
     const seconds = Number(duration) || 0;
     const unit = (name, count) => t(`utils.time.units.${name}`, { count });
@@ -49,29 +51,6 @@ export default function TrafficPanel({
           {container.user_id}
         </Button>
       );
-    if (key === 'actions')
-      return (
-        <div className="flex gap-2">
-          {onViewGraph && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onViewGraph(container)}
-              title={t('admin.contests.teamDetail.traffic.actions.viewTraffic')}
-            >
-              <IconGraph size={18} />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDownload(container)}
-            title={t('admin.contests.teamDetail.traffic.actions.downloadTraffic')}
-          >
-            <IconDownload size={18} />
-          </Button>
-        </div>
-      );
     return container[key] ?? '-';
   };
   return (
@@ -87,6 +66,24 @@ export default function TrafficPanel({
           columns={columns}
           data={containers}
           renderCell={renderCell}
+          actionsColumn={{ label: t('admin.contests.teamDetail.traffic.columns.actions'), width: 136 }}
+          getRowActions={(container) => [
+            {
+              key: 'graph',
+              inline: true,
+              label: t('admin.contests.teamDetail.traffic.actions.viewTraffic'),
+              icon: <IconGraph size={18} />,
+              hidden: !onViewGraph,
+              onClick: () => onViewGraph(container),
+            },
+            {
+              key: 'download',
+              inline: true,
+              label: t('admin.contests.teamDetail.traffic.actions.downloadTraffic'),
+              icon: <IconDownload size={18} />,
+              onClick: () => onDownload(container),
+            },
+          ]}
           empty={!containers.length}
           emptyContent={t('admin.contests.teamDetail.empty.traffic')}
           footer={

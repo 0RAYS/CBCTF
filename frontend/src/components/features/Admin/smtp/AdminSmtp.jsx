@@ -42,7 +42,6 @@ function AdminSmtp({
     { key: 'status', label: t('admin.smtp.columns.status'), width: '3%' },
     { key: 'success', label: t('admin.smtp.columns.success'), width: '5%' },
     { key: 'failure', label: t('admin.smtp.columns.failure'), width: '5%' },
-    { key: 'actions', label: t('admin.smtp.columns.actions'), width: '5%' },
   ];
 
   // 自定义单元格渲染
@@ -111,59 +110,6 @@ function AdminSmtp({
           </div>
         );
 
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditSmtp?.(smtp);
-              }}
-              className="p-1"
-              title={t('admin.smtp.modal.editTitle')}
-            >
-              <IconEdit size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onTestSmtp?.(smtp);
-              }}
-              className="p-1 text-blue-400 hover:text-blue-300"
-              title={t('admin.smtp.actions.sendTest')}
-            >
-              <IconSend size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewHistory?.(smtp);
-              }}
-              className="p-1"
-              title={t('admin.smtp.actions.viewHistory')}
-            >
-              <IconHistory size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteSmtp?.(smtp);
-              }}
-              className="p-1 text-red-400 hover:text-red-300"
-            >
-              <IconTrash size={18} />
-            </Button>
-          </div>
-        );
-
       default:
         return null;
     }
@@ -184,10 +130,41 @@ function AdminSmtp({
 
         {/* 数据表格 */}
         <List
+          minWidth={1000}
           data={smtpConfigs}
           columns={columns}
           renderCell={renderCell}
-          onRowClick={onSmtpClick}
+          actionsColumn={{ label: t('admin.smtp.columns.actions'), width: 136 }}
+          getRowActions={(smtp) => [
+            {
+              key: 'edit',
+              label: t('common.edit'),
+              icon: <IconEdit size={18} />,
+              onClick: () => onEditSmtp?.(smtp),
+            },
+            {
+              key: 'test',
+              inline: true,
+              label: t('admin.smtp.actions.sendTest'),
+              icon: <IconSend size={18} />,
+              onClick: () => onTestSmtp?.(smtp),
+            },
+            {
+              key: 'history',
+              inline: true,
+              label: t('admin.smtp.actions.viewHistory'),
+              icon: <IconHistory size={18} />,
+              onClick: () => onViewHistory?.(smtp),
+            },
+            {
+              key: 'delete',
+              label: t('common.delete'),
+              icon: <IconTrash size={18} />,
+              danger: true,
+              onClick: () => onDeleteSmtp?.(smtp),
+            },
+          ]}
+          onRowClick={onEditSmtp || onSmtpClick}
           loading={loading}
           empty={smtpConfigs.length === 0}
           emptyContent={t('admin.smtp.empty')}

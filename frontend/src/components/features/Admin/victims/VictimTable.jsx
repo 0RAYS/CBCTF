@@ -2,6 +2,8 @@ import { IconBan, IconDownload, IconFileText, IconGraph, IconRefresh, IconTable,
 import { motion } from 'motion/react';
 import { Button, Card, EmptyState, Pagination } from '../../../common';
 import AutoRefreshControl from '../../../common/AutoRefreshControl';
+import useContextMenu from '../../../common/useContextMenu';
+import RowActions from '../../../common/RowActions';
 
 export function VictimTable({
   t,
@@ -32,6 +34,31 @@ export function VictimTable({
   VictimStatusBadge,
 }) {
   const stoppableCount = containers.filter(isVictimStoppable).length;
+  const getRowActions = (container) => [
+    {
+      key: 'graph',
+      inline: true,
+      label: t('admin.contests.teamDetail.traffic.actions.viewTraffic'),
+      icon: <IconGraph size={18} />,
+      onClick: () => onViewTrafficGraph(container),
+    },
+    {
+      key: 'download',
+      inline: true,
+      label: t('admin.contests.teamDetail.traffic.actions.downloadTraffic'),
+      icon: <IconDownload size={18} />,
+      onClick: () => onDownloadTraffic(container),
+    },
+    {
+      key: 'logs',
+      inline: true,
+      label: t(`${translationKey}.logs.viewLogs`),
+      icon: <IconFileText size={18} />,
+      hidden: !['pending', 'running', 'terminating'].includes(container.status),
+      onClick: () => onViewLogs(container),
+    },
+  ];
+  const contextMenu = useContextMenu(containers, getRowActions);
 
   const toolbar = (
     <div className="flex flex-wrap gap-2 items-center">
@@ -70,6 +97,8 @@ export function VictimTable({
           {contestId && toolbar}
         </div>
 
+        {contextMenu.hint}
+        {contextMenu.menu}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -98,7 +127,7 @@ export function VictimTable({
             <tbody>
               {containers.length === 0 ? (
                 <tr>
-                  <td colSpan="11">
+                  <td colSpan={contestId ? 10 : 11}>
                     <EmptyState title={t(`${translationKey}.table.empty`)} />
                   </td>
                 </tr>
@@ -106,7 +135,8 @@ export function VictimTable({
                 containers.map((container, index) => (
                   <motion.tr
                     key={container.id}
-                    className="border-t border-neutral-300/10 hover:bg-black/40 transition-colors"
+                    {...contextMenu.getRowProps(container)}
+                    className="border-t border-neutral-300/10 hover:bg-black/40 transition-colors focus-visible:outline focus-visible:outline-geek-400 focus-visible:-outline-offset-2"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.02 }}
@@ -163,41 +193,8 @@ export function VictimTable({
                         {formatRemaining(container.remaining)}
                       </span>
                     </td>
-                    <td className="p-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="!text-geek-400 hover:!text-geek-300"
-                          onClick={() => onViewTrafficGraph(container)}
-                          aria-label={t('admin.contests.teamDetail.traffic.actions.viewTraffic')}
-                          title={t('admin.contests.teamDetail.traffic.actions.viewTraffic')}
-                        >
-                          <IconGraph size={18} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="!text-geek-400 hover:!text-geek-300"
-                          onClick={() => onDownloadTraffic(container)}
-                          aria-label={t('admin.contests.teamDetail.traffic.actions.downloadTraffic')}
-                          title={t('admin.contests.teamDetail.traffic.actions.downloadTraffic')}
-                        >
-                          <IconDownload size={18} />
-                        </Button>
-                        {['pending', 'running', 'terminating'].includes(container.status) && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="!text-geek-400 hover:!text-geek-300"
-                            onClick={() => onViewLogs(container)}
-                            aria-label={t(`${translationKey}.logs.viewLogs`)}
-                            title={t(`${translationKey}.logs.viewLogs`)}
-                          >
-                            <IconFileText size={18} />
-                          </Button>
-                        )}
-                      </div>
+                    <td className="p-4 min-w-44">
+                      <RowActions actions={getRowActions(container)} />
                     </td>
                   </motion.tr>
                 ))

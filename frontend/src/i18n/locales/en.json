@@ -4,6 +4,11 @@
     "admin": "DEEP DIVE Admin"
   },
   "common": {
+    "contextMenu": {
+      "label": "Row actions",
+      "hint": "Right-click a row for actions · Touch: long press · Keyboard: Shift+F10",
+      "empty": "No actions available"
+    },
     "loading": "Loading...",
     "language": "Language",
     "switchTo": "Switch to",
@@ -20,6 +25,9 @@
     "end": "End",
     "saveChanges": "Save Changes",
     "delete": "Delete",
+    "edit": "Edit",
+    "download": "Download",
+    "viewDetails": "View details",
     "send": "Send",
     "submit": "Submit",
     "change": "Change",

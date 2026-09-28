@@ -1,5 +1,5 @@
 import { Avatar, Button, Input, List, Pagination, Spinner, StatusTag } from '../../../common';
-import { IconEdit, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
+import { IconEdit, IconEye, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -37,7 +37,7 @@ function AdminUsers({
   onNameChange,
   onEmailChange,
   onDescChange,
-  onRowClick,
+  onViewDetail,
 }) {
   const { t } = useTranslation();
 
@@ -49,7 +49,6 @@ function AdminUsers({
     { key: 'status', label: t('admin.users.columns.status'), width: '5%' },
     { key: 'contests', label: t('admin.users.columns.contests'), width: '5%' },
     { key: 'teams', label: t('admin.users.columns.teams'), width: '5%' },
-    { key: 'actions', label: t('admin.users.columns.actions'), width: '5%' },
   ];
 
   // 自定义单元格渲染
@@ -90,34 +89,6 @@ function AdminUsers({
             {user.verified && <StatusTag type="success" text={t('admin.users.status.verified')} />}
             {user.banned && <StatusTag type="error" text={t('admin.users.status.banned')} />}
             {user.hidden && <StatusTag type="warning" text={t('admin.users.status.hidden')} />}
-          </div>
-        );
-
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-yellow-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditUser?.(user);
-              }}
-            >
-              <IconEdit size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-red-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteUser?.(user);
-              }}
-            >
-              <IconTrash size={18} />
-            </Button>
           </div>
         );
 
@@ -187,9 +158,31 @@ function AdminUsers({
         columns={columns}
         data={users}
         renderCell={renderCell}
+        getRowActions={(user) => [
+          {
+            key: 'detail',
+            label: t('common.viewDetails'),
+            icon: <IconEye size={18} />,
+            hidden: !onViewDetail,
+            onClick: () => onViewDetail(user),
+          },
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            icon: <IconEdit size={18} />,
+            onClick: () => onEditUser?.(user),
+          },
+          {
+            key: 'delete',
+            label: t('common.delete'),
+            icon: <IconTrash size={18} />,
+            danger: true,
+            onClick: () => onDeleteUser?.(user),
+          },
+        ]}
         loading={loading}
         empty={users.length === 0}
-        onRowClick={onRowClick}
+        onRowClick={onViewDetail || onEditUser}
         emptyContent={
           isSearchMode ? (
             <div className="flex flex-col items-center justify-center space-y-2">

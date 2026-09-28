@@ -34,13 +34,32 @@ function AdminOAuthProviders({
 
   // 列定义
   const columns = [
-    { key: 'picture', label: t('admin.oauthProviders.columns.logo'), width: '5%' },
-    { key: 'provider', label: t('admin.oauthProviders.columns.provider'), width: '10%' },
+    {
+      key: 'picture',
+      label: t('admin.oauthProviders.columns.logo'),
+      width: '5%',
+    },
+    {
+      key: 'provider',
+      label: t('admin.oauthProviders.columns.provider'),
+      width: '10%',
+    },
     { key: 'uri', label: t('admin.oauthProviders.columns.uri'), width: '10%' },
-    { key: 'protocol', label: t('admin.oauthProviders.columns.protocol'), width: '10%' },
-    { key: 'status', label: t('admin.oauthProviders.columns.status'), width: '8%' },
-    { key: 'callback_url', label: t('admin.oauthProviders.columns.callback'), width: '25%' },
-    { key: 'actions', label: t('admin.oauthProviders.columns.actions'), width: '5%' },
+    {
+      key: 'protocol',
+      label: t('admin.oauthProviders.columns.protocol'),
+      width: '10%',
+    },
+    {
+      key: 'status',
+      label: t('admin.oauthProviders.columns.status'),
+      width: '8%',
+    },
+    {
+      key: 'callback_url',
+      label: t('admin.oauthProviders.columns.callback'),
+      width: '25%',
+    },
   ];
 
   // 自定义单元格渲染
@@ -134,34 +153,6 @@ function AdminOAuthProviders({
         );
       }
 
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditProvider?.(provider);
-              }}
-              className="p-1"
-            >
-              <IconEdit size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteProvider?.(provider);
-              }}
-              className="p-1 text-red-400 hover:text-red-300"
-            >
-              <IconTrash size={18} />
-            </Button>
-          </div>
-        );
-
       default:
         return null;
     }
@@ -191,7 +182,22 @@ function AdminOAuthProviders({
           data={providers}
           columns={columns}
           renderCell={renderCell}
-          onRowClick={onProviderClick}
+          getRowActions={(provider) => [
+            {
+              key: 'edit',
+              label: t('common.edit'),
+              icon: <IconEdit size={18} />,
+              onClick: () => onEditProvider?.(provider),
+            },
+            {
+              key: 'delete',
+              label: t('common.delete'),
+              icon: <IconTrash size={18} />,
+              danger: true,
+              onClick: () => onDeleteProvider?.(provider),
+            },
+          ]}
+          onRowClick={onEditProvider || onProviderClick}
           loading={loading}
           emptyContent={t('admin.oauthProviders.empty')}
         />

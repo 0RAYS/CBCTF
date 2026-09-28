@@ -53,11 +53,6 @@ function AdminNotice({
       label: t('admin.contests.notices.table.content'),
       width: '48%',
     },
-    {
-      key: 'actions',
-      label: t('admin.contests.notices.table.actions'),
-      width: '7%',
-    },
   ];
 
   const typeLabels = {
@@ -78,27 +73,6 @@ function AdminNotice({
         return <span className="text-neutral-300 font-mono text-sm">{typeLabels[notice.type] || notice.type}</span>;
       case 'content':
         return <div className="text-neutral-300 line-clamp-2 whitespace-normal">{notice.content}</div>;
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!text-geek-400 hover:!text-geek-300"
-              onClick={() => handleEdit(notice)}
-            >
-              <IconEdit size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!text-red-400 hover:!text-red-300"
-              onClick={() => handleDelete(notice)}
-            >
-              <IconTrash size={16} />
-            </Button>
-          </div>
-        );
       default:
         return notice[column.key];
     }
@@ -202,6 +176,22 @@ function AdminNotice({
         columns={columns}
         data={notices}
         renderCell={renderCell}
+        onRowClick={handleEdit}
+        getRowActions={(notice) => [
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            icon: <IconEdit size={18} />,
+            onClick: () => handleEdit(notice),
+          },
+          {
+            key: 'delete',
+            label: t('common.delete'),
+            icon: <IconTrash size={18} />,
+            danger: true,
+            onClick: () => handleDelete(notice),
+          },
+        ]}
         empty={notices.length === 0}
         emptyContent={t('common.noData')}
         footer={

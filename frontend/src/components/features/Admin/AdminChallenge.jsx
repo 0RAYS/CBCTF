@@ -82,7 +82,6 @@ function AdminChallenge({
     { key: 'type', label: t('admin.challenge.table.type'), width: '5%' },
     { key: 'flags', label: t('admin.challenge.table.flags'), width: '5%' },
     { key: 'file', label: t('admin.challenge.table.file'), width: '5%' },
-    { key: 'actions', label: t('admin.challenge.table.actions'), width: '5%' },
   ];
 
   const renderCell = (challenge, column) => {
@@ -140,36 +139,6 @@ function AdminChallenge({
             <IconUpload size={14} />
             <span>{t('common.none')}</span>
           </button>
-        );
-      case 'actions':
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-orange-400 hover:!text-orange-300"
-              onClick={() => onTestChallenge(challenge)}
-              title={t('admin.challenge.actions.test')}
-            >
-              <IconFlask size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-geek-400 hover:!text-geek-300"
-              onClick={() => onEditChallenge(challenge)}
-            >
-              <IconEdit size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="!bg-transparent !text-red-400 hover:!text-red-300"
-              onClick={() => onDeleteChallenge(challenge)}
-            >
-              <IconTrash size={18} />
-            </Button>
-          </div>
         );
       default:
         return challenge[column.key];
@@ -280,6 +249,30 @@ function AdminChallenge({
         columns={columns}
         data={challenges}
         renderCell={renderCell}
+        onRowClick={onEditChallenge}
+        actionsColumn={{ label: t('admin.challenge.table.actions'), width: 88 }}
+        getRowActions={(challenge) => [
+          {
+            key: 'test',
+            inline: true,
+            label: t('admin.challenge.actions.test'),
+            icon: <IconFlask size={18} />,
+            onClick: () => onTestChallenge(challenge),
+          },
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            icon: <IconEdit size={18} />,
+            onClick: () => onEditChallenge(challenge),
+          },
+          {
+            key: 'delete',
+            label: t('common.delete'),
+            icon: <IconTrash size={18} />,
+            danger: true,
+            onClick: () => onDeleteChallenge(challenge),
+          },
+        ]}
         empty={challenges.length === 0}
         emptyContent={
           isSearchMode ? (
