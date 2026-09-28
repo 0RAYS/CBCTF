@@ -42,7 +42,7 @@ Pod、VM、ConfigMap 根对象以及本命名空间对应的 VPC 各使用共享
 - 配置文件中 `k8s.capture_enabled: false` 会关闭靶机和 FRPC 的抓包容器及相关 NFS 挂载。
 - FRPC 与 nginx 共用一个配置 ConfigMap；纯 UDP 暴露不启动 nginx。
 - 设置了 limits 的 CPU/内存资源使用相同 requests；未指定的 requests 默认是 `100m` / `64Mi`。capture、FRPC、nginx 的 requests 为 `10m` / `32Mi`，limits 为 `500m` / `256Mi`。
-- `k8s.priority_class_name` 可指定已存在的 PriorityClass，不对节点增加正向亲和性。
+- `k8s.priority_class_name` 为后端创建的普通 Pod 指定已有 PriorityClass，不对节点增加正向亲和性；当前 VM 创建路径未设置该字段。
 
 NetworkPolicy 先于工作负载创建，避免引入未隔离窗口。VPC 模式先创建 VPC，再并行创建依赖它的 Subnet 与 NAD。
 
@@ -53,6 +53,8 @@ NetworkPolicy 先于工作负载创建，避免引入未隔离窗口。VPC 模�
 未启用 FRP 时使用 NodePort，协调器在 Pod Ready 后写入节点地址。FRP 需要真实可用的 FRPS 地址及端口池，因此默认保持关闭。
 
 ## 附件 worker 池与缓存
+
+共享输入与平台数据必须位于同一 PVC。Chart `0.0.29` 将 `persistence.existingClaim` 同步到后端部署参数 `k8s.shared_volume_claim`；空值使用 `{namespace}-shared-volume`。只给平台 Deployment 换卷而不修改运行时卷会导致生成器读不到题目源文件。
 
 ```text
 生成团队 flag → Redis/Asynq 去重任务 → 执行时领取空闲 generator

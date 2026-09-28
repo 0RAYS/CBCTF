@@ -1,22 +1,16 @@
 > For AI agents: the complete documentation index is available at /llms.txt, the full documentation bundle is available at /llms-full.txt.
 
-***
-
-title: Flag 规则
-description: 说明 CBCTF 的 static、leet 和 uuid Flag 类型及多队伍动态 Flag 行为。
------------------------------------------------------------------
-
 # Flag 规则
 
 CBCTF 支持三种 flag 类型，每道题可配置多个 flag，每个 flag 独立计分。
 
 ## Flag 类型
 
-| 类型   | 配置格式              | 生成结果（前缀 `CBCTF`）                              | 特点              |
-| ---- | ----------------- | --------------------------------------------- | --------------- |
-| 静态   | `static{content}` | `CBCTF{content}`                              | 所有队伍相同          |
-| 动态   | `leet{template}`  | `CBCTF{ThiliS-iS-4_Dyn4MIC_FLaG}`             | 每队不同，**长度可变**   |
-| UUID | `uuid{}`          | `CBCTF{550e8400-e29b-41d4-a716-446655440000}` | 每队不同，标准 UUID 格式 |
+| 类型   | 配置格式                | 生成结果（前缀 `CBCTF`）                              | 特点                  |
+| ---- | ------------------- | --------------------------------------------- | ------------------- |
+| 静态   | `static{content}`   | `CBCTF{content}`                              | 所有队伍相同              |
+| 动态   | `leet{hello_world}` | `CBCTF{h3LLo-W0rLd}`                          | 按字符随机变体，不保证不同队伍绝不碰撞 |
+| UUID | `uuid{}`            | `CBCTF{550e8400-e29b-41d4-a716-446655440000}` | 每队不同，标准 UUID 格式     |
 
 :::info
 flag 的实际前缀由比赛配置中的 `prefix` 字段决定，而非固定为 `CBCTF`。
@@ -35,10 +29,10 @@ flag 的实际前缀由比赛配置中的 `prefix` 字段决定，而非固定�
 
 ```text
 配置: leet{this_is_a_leet_flag}
-生成: CBCTF{ThiliS-iS-4_Dyn4MIC_FLaG}
+生成: CBCTF{Th1S-iS_4_l33T_fL@g}
 ```
 
-基于模板随机替换字符，保持可读性。**生成结果的长度可能与模板长度不同**，题目设计中不得依赖 flag 长度。
+当前 `internal/utils/flag.go` 使用单字节替换表，逐字节替换大小写、近形字符及 `_` / `-`，未命中的字节原样保留，所以模板内容的字节长度保持不变。最终 Flag 还会添加比赛前缀和花括号。模板可变字符太少时不同队伍可能生成相同结果，需较强随机性时使用 `uuid{}`。
 
 ## UUID Flag
 
@@ -61,7 +55,8 @@ flag 的实际前缀由比赛配置中的 `prefix` 字段决定，而非固定�
 ```
 示例（team\_id=1，两个 flag）：
 ```bash
-/root/run.sh 1 UTBKRFZFWjdabXhoWnpGOSxRMEpEVkVaN1pteGhaejo5
+FLAGS=$(printf '%s,%s' "$(printf 'CBCTF{flag1}' | base64 | tr -d '\n')" "$(printf 'CBCTF{flag2}' | base64 | tr -d '\n')" | base64 | tr -d '\n')
+/root/run.sh 1 "$FLAGS"
 ```
 其中第二个参数为 `base64(base64("CBCTF{flag1}") + "," + base64("CBCTF{flag2}"))` 的结果。
 
@@ -114,11 +109,11 @@ services:
 
 ## Flag 生成时机
 
-队伍的 flag **仅在初始化（init）或重置（reset）时生成**，容器重启不重新生成 flag。
+队伍 Flag 在题目初始化、重置，以及管理员批量预启动等需要初始化的流程中生成；容器单纯停止再启动不重新生成 Flag。
 
 - 选手重启容器不会改变 flag
-- 选手执行「重置题目」时会生成新 flag，旧 flag 失效
-- 题目测试模式（admin）不产生真实 flag 记录
+- 选手执行「重置题目」时重新生成团队 Flag 并清理该题提交记录；动态题重新生成附件，容器题停止旧实例。静态 Flag 的值仍相同，leet 变体也可能碰撞
+- 题目测试模式不产生正式 TeamFlag，但容器中会注入以 `flag` 为前缀的测试值；动态附件测试传入原始模板
 
 ## 多 Flag 配置
 

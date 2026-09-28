@@ -2,108 +2,68 @@
 
 # 题目管理
 
+入口：「管理后台 → 题目管理」，对应 `/platform/#/admin/challenges`。
+
 ## 题库与比赛题目
 
-CBCTF 采用两层题目管理：
+全局题库保存题目模板、附件、生成器镜像、Compose 和原始 Flag。加入比赛时，平台复制名称、描述、分类和 Flag 模板到比赛关联记录；比赛内的名称、描述、提示、标签、隐藏、提交次数与计分独立维护。
 
-| 层级                         | 说明                 |
-| -------------------------- | ------------------ |
-| **全局题库**                   | 题目模板，不直接对选手可见      |
-| **比赛题目（ContestChallenge）** | 将全局题目关联到比赛，可覆盖部分字段 |
-
-对全局题库的修改（如更新附件）会影响所有使用该题目的比赛。对比赛题目的覆盖配置（name、description 等）仅影响该场比赛。
+附件和底层运行模板仍引用全局题目，更新会影响引用该题目的比赛。已有比赛 Flag 是独立记录，不应假定修改题库 Flag 或 Compose 后会自动同步所有比赛的 Flag 绑定。应在加入正式比赛前完成结构调整；比赛中改动运行模板后要重新测试并检查比赛 Flag。
 
 ## 创建题目
 
-必填字段：`name`（题目名称）、`type`（题目类型）、`category`（分类）。
+1. 选择 `static`、`dynamic` 或 `pods` 类型。创建后编辑 API 不支持切换题型。
+2. 填写名称、分类和 Markdown 描述。分类会进行标题化处理。
+3. 静态题和动态附件题填写 Flag 模板列表，例如 `static{hello}`、`leet{hello_world}` 或 `uuid{}`。
+4. 动态附件题必须填写生成器镜像；容器题必须提供 Compose，Flag 从环境变量、`x-volumes` 或 `x-cloudinit.write_files` 提取。
+5. 保存题目后上传附件并测试。
 
-可选字段：
+容器编辑器支持表单和 YAML 配置；平台只转换支持的 Compose 字段，不会在节点运行 `docker compose up`。普通容器题至少暴露一个端口。网络、文件注入和 VM 限制见[动态靶机](/guide/features/container.md)。
 
-- `description`：题目描述（Markdown）
-- `generator_image`：动态附件题的生成器容器镜像
-- `network_policies`：Kubernetes NetworkPolicy 配置（JSON）
+## 附件
 
-## 上传附件
+| 题型        | 上传内容与下载行为                                                                      |
+| --------- | ------------------------------------------------------------------------------ |
+| 静态题 / 容器题 | 所有队伍共享一个附件；内部路径名为 `attachment.zip`，下载尽量保留上传文件名                                 |
+| 动态附件题     | 可选上传 ZIP 源文件，保存为 `generator.zip`，由 worker 解压到 `/root`；每队下载按 Flag 和源文件版本生成的 ZIP |
 
-- **静态/容器题**：上传 `attachment.zip`，所有队伍共享下载
-- **动态附件题**：上传 `generator.zip` 到共享存储，常驻 worker 将其解压到容器的 `/root` 目录（可选）。生成结果按团队 flag 和源文件版本缓存。
+题目上传接口目前不强制静态附件后缀为 ZIP，但动态生成器会实际调用 `unzip`，其输入必须是有效 ZIP。上传字段为 `challenge`，大小受 `gin.upload.challenge` 限制。附件上传立即落库，不随编辑弹窗的取消操作回滚。
 
-题目镜像会自动触发全节点预热，动态题加入比赛时会预建 generator 池。运行机制与部署参数见[工作负载调度](/deploy/workloads.md)。
+## 测试
 
-## 题目测试模式
+在题目列表/详情进入测试操作：
 
-需要 `admin:challenge:test` 权限。管理员可在题目加入比赛前，通过测试模式验证容器靶机配置：
+- 静态题：检查附件下载和内容。
+- 动态附件题：先在全局「生成器」页为该题启动测试生成器，再测试下载生成结果。测试使用 `team_id=0` 和题库原始 Flag 模板，与比赛队伍的最终 Flag 不同。
+- 容器题：启动测试实例，等待 Running，核对端点、服务、环境变量/文件和资源限制，测试后停止。
 
-1. 访问题目详情，点击「测试」
-2. 平台以管理员身份启动靶机容器或 KubeVirt VM（不绑定任何队伍）
-3. 普通 Pod 题验证端口连通性和访问地址；VM 题验证 VM 启动、网络接入、Flag 注入和 cloud-init 写入
-4. 测试完成后停止靶机
+测试实例不创建比赛队伍或正式 TeamFlag 记录，但**会注入测试 Flag**，通常为 `flag{...}`。VM 需要可启动的 containerDisk 镜像、VPC、内存、静态 IP 与 MAC，且不会根据 `ports` 生成访问地址。
 
-:::info
-测试模式下不产生实际的 flag 和队伍记录。如果题目使用 `x-kubevirt: true`，测试前应确认集群已安装 KubeVirt，题目使用 VPC
-网络并配置了每张网卡的 `ipv4_address` 和 `mac_address`。VM 模式的 `ports` 不会生成平台访问地址；普通环境变量和 `x-volumes`
-不会注入到虚拟机，需改用 `x-cloudinit.write_files` 注入文件和 Flag。
-:::
+测试状态与附件接口使用 `admin:challenge:read`；测试启动/停止使用 `admin:challenge:test`。动态测试还需要可用的全局生成器。
 
-## 加入比赛
+## 加入比赛与发布
 
-通过 `POST /admin/contests/:contestID/challenges`（`admin:contest_challenge:create`）将题目加入比赛。
+在「比赛 → 题目」选择并添加题目。新关联默认隐藏，先检查 Flag 和分数，再取消隐藏。比赛题目可编辑字段为：
 
-加入时可覆盖以下字段（仅对本场比赛生效）：
+| 字段                     | 说明                 |
+| ---------------------- | ------------------ |
+| `name` / `description` | 比赛内名称与 Markdown 描述 |
+| `tags` / `hints`       | 标签与提示字符串列表         |
+| `hidden`               | 是否隐藏               |
+| `attempt`              | 每队提交次数上限，`0` 不限制   |
 
-| 字段              | 说明              |
-| --------------- | --------------- |
-| `name`          | 比赛中显示的题目名称      |
-| `description`   | 比赛中显示的题目描述      |
-| `category`      | 分类              |
-| `tags`          | 标签              |
-| `hints`         | 提示列表（选手可查看）     |
-| `hidden`        | 是否在比赛中隐藏该题目     |
-| `attempt_limit` | 提交次数限制（0 表示无限制） |
-
-## 管理比赛 Flag 分数
-
-通过 `PUT /admin/contests/:contestID/challenges/:challengeID/flags/:flagID`（`admin:contest_challenge_flag:update`）为每个
-flag 独立配置计分：
+计分字段使用小写 JSON 键：
 
 ```json
-{
-  "score_type": 2,
-  "score": 1000,
-  "min_score": 100,
-  "decay": 50
-}
+{"score_type": 2, "score": 1000, "min_score": 100, "decay": 50}
 ```
 
-详见[计分系统](/guide/features/scoring.md)。
+## 网络策略
 
-## NetworkPolicy
-
-在题目的 `network_policies` 字段中配置 Kubernetes NetworkPolicy（JSON 格式），对该题目的所有靶机生效。
-
-示例：禁止靶机出站访问互联网：
+`network_policies` 接收 Kubernetes NetworkPolicy **spec** 列表（JSON），平台设置所属题目的选择器。示例仅允许发往指定私网网段的出站流量：
 
 ```json
-[
-  {
-    "policyTypes": [
-      "Egress"
-    ],
-    "egress": [
-      {
-        "to": [
-          {
-            "ipBlock": {
-              "cidr": "10.0.0.0/8"
-            }
-          }
-        ]
-      }
-    ]
-  }
-]
+[{"policyTypes":["Egress"],"egress":[{"to":[{"ipBlock":{"cidr":"10.0.0.0/8"}}]}]}]
 ```
 
-## 文件管理
-
-通过 `GET /admin/files`（`admin:file:list`）查看所有已上传的题目附件，支持下载和删除。流量 pcap 文件和 Writeup 文件也在此处统一管理。
+这不是通用“禁止互联网”模板：需要按集群 DNS、题目网络和依赖地址调整；实际隔离由 CNI 执行。创建/更新题目会触发镜像预热，详细机制见[工作负载调度](/deploy/workloads.md)。
