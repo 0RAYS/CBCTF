@@ -12,10 +12,6 @@ function loadNProgress() {
   return nprogressPromise;
 }
 
-function startRequestLoading() {
-  loadNProgress().then(({ startLoading }) => startLoading());
-}
-
 function finishRequestLoading() {
   loadNProgress().then(({ finishLoading }) => finishLoading());
 }
@@ -48,7 +44,7 @@ request.interceptors.request.use(
   async (config) => {
     // 如果没有设置 noLoading 标识, 则执行全局 loading 逻辑
     if (!config.noLoading) {
-      startRequestLoading();
+      loadNProgress().then(({ startLoading }) => startLoading());
       updateGlobalLoading(requestCount + 1);
     }
     config.headers['Accept-Language'] = i18n.language;
@@ -119,19 +115,14 @@ request.interceptors.response.use(
     if (error.response) {
       const { status, data } = error.response;
       // responseType: 'blob' 时错误体也是 Blob, 需异步解析
-      const resolveData = async () => {
-        if (data instanceof Blob) {
-          try {
-            const text = await data.text();
-            return JSON.parse(text);
-          } catch {
-            return null;
-          }
+      let resolved = data;
+      if (data instanceof Blob) {
+        try {
+          resolved = JSON.parse(await data.text());
+        } catch {
+          resolved = null;
         }
-        return data;
-      };
-
-      const resolved = await resolveData();
+      }
       switch (status) {
         case 401:
           errorMessage = i18n.t('errors.unauthorized');

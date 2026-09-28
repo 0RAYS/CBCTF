@@ -97,7 +97,7 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	user, ret := service.OauthLoginWithTransaction(db.DB, provider, result)
+	user, ret := service.OauthLogin(db.DB, provider, result)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

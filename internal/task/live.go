@@ -92,82 +92,38 @@ func listAllTaskState(state string, queue string) ([]*asynq.TaskInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	switch state {
-	case "pending":
-		return listPendingTasks(queue, info.Pending)
-	case "active":
-		return listActiveTasks(queue, info.Active)
-	case "scheduled":
-		return listScheduledTasks(queue, info.Scheduled)
-	case "retry":
-		return listRetryTasks(queue, info.Retry)
-	case "archived":
-		return listArchivedTasks(queue, info.Archived)
-	case "completed":
-		return listCompletedTasks(queue, info.Completed)
-	default:
-		allTasks := make([]*asynq.TaskInfo, 0, info.Pending+info.Active+info.Scheduled+info.Retry+info.Archived+info.Completed)
-		for _, list := range []struct {
-			fn   func(string, int) ([]*asynq.TaskInfo, error)
-			size int
-		}{
-			{fn: listActiveTasks, size: info.Active},
-			{fn: listPendingTasks, size: info.Pending},
-			{fn: listScheduledTasks, size: info.Scheduled},
-			{fn: listRetryTasks, size: info.Retry},
-			{fn: listArchivedTasks, size: info.Archived},
-			{fn: listCompletedTasks, size: info.Completed},
-		} {
-			tasks, err := list.fn(queue, list.size)
-			if err != nil {
-				return nil, err
+	lists := []struct {
+		state string
+		size  int
+		fn    func(string, ...asynq.ListOption) ([]*asynq.TaskInfo, error)
+	}{
+		{"active", info.Active, inspector.ListActiveTasks},
+		{"pending", info.Pending, inspector.ListPendingTasks},
+		{"scheduled", info.Scheduled, inspector.ListScheduledTasks},
+		{"retry", info.Retry, inspector.ListRetryTasks},
+		{"archived", info.Archived, inspector.ListArchivedTasks},
+		{"completed", info.Completed, inspector.ListCompletedTasks},
+	}
+	for _, list := range lists {
+		if state == list.state {
+			if list.size <= 0 {
+				return []*asynq.TaskInfo{}, nil
 			}
-			allTasks = append(allTasks, tasks...)
+			return list.fn(queue, asynq.Page(1), asynq.PageSize(list.size))
 		}
-		return allTasks, nil
 	}
-}
-
-func listPendingTasks(queue string, size int) ([]*asynq.TaskInfo, error) {
-	if size <= 0 {
-		return []*asynq.TaskInfo{}, nil
+	allTasks := make([]*asynq.TaskInfo, 0, info.Pending+info.Active+info.Scheduled+info.Retry+info.Archived+info.Completed)
+	for _, list := range lists {
+		if list.size <= 0 {
+			continue
+		}
+		tasks, err := list.fn(queue, asynq.Page(1), asynq.PageSize(list.size))
+		if err != nil {
+			return nil, err
+		}
+		allTasks = append(allTasks, tasks...)
 	}
-	return inspector.ListPendingTasks(queue, asynq.Page(1), asynq.PageSize(size))
-}
-
-func listActiveTasks(queue string, size int) ([]*asynq.TaskInfo, error) {
-	if size <= 0 {
-		return []*asynq.TaskInfo{}, nil
-	}
-	return inspector.ListActiveTasks(queue, asynq.Page(1), asynq.PageSize(size))
-}
-
-func listScheduledTasks(queue string, size int) ([]*asynq.TaskInfo, error) {
-	if size <= 0 {
-		return []*asynq.TaskInfo{}, nil
-	}
-	return inspector.ListScheduledTasks(queue, asynq.Page(1), asynq.PageSize(size))
-}
-
-func listRetryTasks(queue string, size int) ([]*asynq.TaskInfo, error) {
-	if size <= 0 {
-		return []*asynq.TaskInfo{}, nil
-	}
-	return inspector.ListRetryTasks(queue, asynq.Page(1), asynq.PageSize(size))
-}
-
-func listArchivedTasks(queue string, size int) ([]*asynq.TaskInfo, error) {
-	if size <= 0 {
-		return []*asynq.TaskInfo{}, nil
-	}
-	return inspector.ListArchivedTasks(queue, asynq.Page(1), asynq.PageSize(size))
-}
-
-func listCompletedTasks(queue string, size int) ([]*asynq.TaskInfo, error) {
-	if size <= 0 {
-		return []*asynq.TaskInfo{}, nil
-	}
-	return inspector.ListCompletedTasks(queue, asynq.Page(1), asynq.PageSize(size))
+	return allTasks, nil
 }
 
 func liveTaskSortTime(task *asynq.TaskInfo, status string) time.Time {

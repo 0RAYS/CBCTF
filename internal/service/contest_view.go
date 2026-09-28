@@ -31,10 +31,18 @@ func BuildContestView(tx *gorm.DB, contest model.Contest) view.ContestView {
 	return result
 }
 
-func BuildContestViews(tx *gorm.DB, contests []model.Contest) []view.ContestView {
+func ListContests(tx *gorm.DB, form dto.ListModelsForm, admin bool) ([]view.ContestView, int64, model.RetVal) {
+	options := db.GetOptions{Sort: []string{"id DESC"}}
+	if !admin {
+		options.Conditions = map[string]any{"hidden": false}
+	}
+	contests, count, ret := db.InitContestRepo(tx).List(form.Limit, form.Offset, options)
+	if !ret.OK {
+		return nil, 0, ret
+	}
 	views := make([]view.ContestView, 0, len(contests))
 	if len(contests) == 0 {
-		return views
+		return views, count, model.SuccessRetVal()
 	}
 
 	contestIDs := make([]uint, 0, len(contests))
@@ -59,34 +67,14 @@ func BuildContestViews(tx *gorm.DB, contests []model.Contest) []view.ContestView
 			NoticeCount: noticeCountMap[contest.ID],
 		})
 	}
-	return views
-}
-
-func GetContestView(tx *gorm.DB, contest model.Contest) view.ContestView {
-	return BuildContestView(tx, contest)
-}
-
-func ListContests(tx *gorm.DB, form dto.ListModelsForm, admin bool) ([]view.ContestView, int64, model.RetVal) {
-	options := db.GetOptions{Sort: []string{"id DESC"}}
-	if !admin {
-		options.Conditions = map[string]any{"hidden": false}
-	}
-	contests, count, ret := db.InitContestRepo(tx).List(form.Limit, form.Offset, options)
-	if !ret.OK {
-		return nil, 0, ret
-	}
-	return BuildContestViews(tx, contests), count, model.SuccessRetVal()
+	return views, count, model.SuccessRetVal()
 }
 
 func DeleteContest(tx *gorm.DB, contest model.Contest) model.RetVal {
-	if ret := stopGeneratorResources(tx, db.GetOptions{Conditions: map[string]any{"contest_id": contest.ID}}); !ret.OK {
-		return ret
-	}
-	return db.InitContestRepo(tx).Delete(contest.ID)
-}
-
-func DeleteContestWithTransaction(tx *gorm.DB, contest model.Contest) model.RetVal {
-	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		return DeleteContest(tx2, contest)
+	return db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
+		if ret := stopGeneratorResources(tx, db.GetOptions{Conditions: map[string]any{"contest_id": contest.ID}}); !ret.OK {
+			return ret
+		}
+		return db.InitContestRepo(tx).Delete(contest.ID)
 	})
 }

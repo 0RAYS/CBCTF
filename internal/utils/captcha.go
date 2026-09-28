@@ -67,7 +67,7 @@ type digitCaptcha struct {
 
 func (c *digitCaptcha) generate() (id, question, answer string) {
 	id = randomID()
-	answer = digitsToString(randomDigits(normalizeLength(c.length, 5)))
+	answer = digitsToString(randomBytesMod(normalizeLength(c.length, 5), 10))
 	return id, answer, answer
 }
 
@@ -160,14 +160,14 @@ func newCaptchaImageWithBackground(width, height int, background *color.RGBA) *c
 
 func drawInterference(img *captchaImage, dotCount int) {
 	img.drawSineLine()
-	img.drawDots(maxInt(dotCount, 0))
+	img.drawDots(max(dotCount, 0))
 }
 
 func (img *captchaImage) drawSineLine() {
-	a := randomInt(maxInt(img.height/2, 1))
+	a := randomInt(max(img.height/2, 1))
 	b := randomFloatRange(int64(-img.height/4), int64(img.height/4))
 	f := randomFloatRange(int64(-img.height/4), int64(img.height/4))
-	period := randomFloatRange(int64(maxInt(img.height, 1)), int64(maxInt(img.width/2, img.height+1)))
+	period := randomFloatRange(int64(max(img.height, 1)), int64(max(img.width/2, img.height+1)))
 	w := (2 * math.Pi) / period
 	c := randomDarkColor()
 	for px, px2 := 0, int(randomFloatRange(int64(float64(img.width)*0.8), int64(img.width))); px < px2; px++ {
@@ -180,8 +180,8 @@ func (img *captchaImage) drawSineLine() {
 
 func (img *captchaImage) drawDots(count int) {
 	for range count {
-		size := randomIntRange(1, maxInt(img.height/35, 2))
-		img.drawBlock(randomInt(maxInt(img.width, 1)), randomInt(maxInt(img.height, 1)), size, size, randomDarkColor())
+		size := randomIntRange(1, max(img.height/35, 2))
+		img.drawBlock(randomInt(max(img.width, 1)), randomInt(max(img.height, 1)), size, size, randomDarkColor())
 	}
 }
 
@@ -190,14 +190,14 @@ func (img *captchaImage) drawText(text string) error {
 	if len(runes) == 0 {
 		return errors.New("text must not be empty")
 	}
-	cellWidth := maxInt(img.width/len(runes), 1)
+	cellWidth := max(img.width/len(runes), 1)
 	for i, r := range runes {
-		scale := minInt(maxInt(cellWidth/(glyphWidth+2), 1), maxInt(img.height/(glyphHeight+3), 1))
+		scale := min(max(cellWidth/(glyphWidth+2), 1), max(img.height/(glyphHeight+3), 1))
 		if scale > 2 {
 			scale -= randomInt(2)
 		}
-		x := i*cellWidth + maxInt((cellWidth-glyphWidth*scale)/2, 0) + randomIntRange(-scale, scale+1)
-		y := maxInt((img.height-glyphHeight*scale)/2, 0) + randomIntRange(-scale, scale+1)
+		x := i*cellWidth + max((cellWidth-glyphWidth*scale)/2, 0) + randomIntRange(-scale, scale+1)
+		y := max((img.height-glyphHeight*scale)/2, 0) + randomIntRange(-scale, scale+1)
 		img.drawRune(r, x, y, scale, randomDarkColor(), randomFloat64Range(-0.35, 0.35))
 	}
 	return nil
@@ -271,8 +271,6 @@ func digitsToString(b []byte) string {
 	}
 	return string(out)
 }
-
-func randomDigits(length int) []byte { return randomBytesMod(length, 10) }
 
 func randomBytes(length int) []byte {
 	b := make([]byte, length)
@@ -368,20 +366,6 @@ func randomInt(max int) int {
 }
 
 func randomFloat64() float64 { return float64(randomInt(1<<53)) / (1 << 53) }
-
-func maxInt(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
 
 func glyphFor(r rune) []string {
 	if g, ok := glyphs[r]; ok {

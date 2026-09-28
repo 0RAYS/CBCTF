@@ -261,8 +261,6 @@ function ContestTeamsManagement({ id }) {
     }
   };
 
-  const handleRowClick = (team) => openTeamDetail(team);
-
   return (
     <>
       <input
@@ -301,7 +299,7 @@ function ContestTeamsManagement({ id }) {
         onDescChange={handleDescChange}
         searchRef={searchRef}
         isSearchMode={isSearchMode}
-        onRowClick={handleRowClick}
+        onRowClick={openTeamDetail}
         onPictureUpload={handlePictureUpload}
       />
       {renderTeamDetailDialog()}

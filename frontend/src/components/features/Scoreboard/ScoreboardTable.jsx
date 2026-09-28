@@ -69,11 +69,6 @@ function ScoreboardTable({
   } = useMemo(() => buildScoreboardColumns(challenges), [challenges]);
   const teamChallengeIndexes = useMemo(() => teams.map((team) => indexTeamChallenges(team.challenges || [])), [teams]);
 
-  // 计算排名
-  const getTeamRank = (index) => {
-    return (currentPage - 1) * pageSize + index + 1;
-  };
-
   return (
     <div className="w-full space-y-6" ref={containerRef}>
       {/* 表格容器 */}
@@ -203,7 +198,7 @@ function ScoreboardTable({
                     className="sticky left-0 z-10 bg-neutral-800/70 p-3 text-center text-neutral-300 font-mono tabular-nums border-r border-neutral-600/40"
                     style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
                   >
-                    {getTeamRank(teamIndex)}
+                    {(currentPage - 1) * pageSize + teamIndex + 1}
                   </td>
 
                   {/* 队伍信息 */}

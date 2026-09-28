@@ -12,7 +12,7 @@ import (
 )
 
 func GetContest(ctx *gin.Context) {
-	contestView := service.GetContestView(db.DB, middleware.GetContest(ctx))
+	contestView := service.BuildContestView(db.DB, middleware.GetContest(ctx))
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(contestView, middleware.IsFullAccess(ctx))))
 }
 
@@ -47,7 +47,7 @@ func CreateContest(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(service.GetContestView(db.DB, contest), true)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(service.BuildContestView(db.DB, contest), true)))
 }
 
 func UpdateContest(ctx *gin.Context) {
@@ -67,7 +67,7 @@ func UpdateContest(ctx *gin.Context) {
 
 func DeleteContest(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestEventType)
-	ret := service.DeleteContestWithTransaction(db.DB, middleware.GetContest(ctx))
+	ret := service.DeleteContest(db.DB, middleware.GetContest(ctx))
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

@@ -20,7 +20,7 @@ func GetUser(ctx *gin.Context) {
 	} else {
 		user = middleware.GetSelf(ctx)
 	}
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.GetUserView(db.DB, user, includeCounts), includeCounts)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB, user, includeCounts), includeCounts)))
 }
 
 func GetAccessibleRoutes(ctx *gin.Context) {
@@ -64,7 +64,7 @@ func CreateUser(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.GetUserView(db.DB, user, true), true)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB, user, true), true)))
 }
 
 func ChangePwd(ctx *gin.Context) {
@@ -122,11 +122,11 @@ func DeleteUser(ctx *gin.Context) {
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		user = middleware.GetSelf(ctx)
-		ret = service.DeleteSelfWithTransaction(db.DB, user, form)
+		ret = service.DeleteSelf(db.DB, user, form)
 	} else {
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		user = middleware.GetUser(ctx)
-		ret = service.DeleteUserWithTransaction(db.DB, user)
+		ret = service.DeleteUser(db.DB, user)
 	}
 	if !ret.OK {
 		resp.JSON(ctx, ret)

@@ -36,24 +36,33 @@ func BuildChallengeView(tx *gorm.DB, challenge model.Challenge) view.ChallengeVi
 	return result
 }
 
-func BuildChallengeViews(tx *gorm.DB, challenges []model.Challenge) []view.ChallengeView {
+func ListChallengeViews(tx *gorm.DB, form dto.GetChallengesForm) ([]view.ChallengeView, int64, model.RetVal) {
+	options := db.GetOptions{
+		Conditions: make(map[string]any),
+		Search:     make(map[string]string),
+		Preloads:   map[string]db.GetOptions{"ChallengeFlags": {}},
+	}
+	if form.Type != "" {
+		options.Conditions["type"] = form.Type
+	}
+	if form.Category != "" {
+		options.Conditions["category"] = form.Category
+	}
+	if form.Name != "" {
+		options.Search["name"] = form.Name
+	}
+	if form.Description != "" {
+		options.Search["description"] = form.Description
+	}
+	challenges, count, ret := db.InitChallengeRepo(tx).List(form.Limit, form.Offset, options)
+	if !ret.OK {
+		return nil, 0, ret
+	}
 	views := make([]view.ChallengeView, 0, len(challenges))
 	for _, challenge := range challenges {
 		views = append(views, BuildChallengeView(tx, challenge))
 	}
-	return views
-}
-
-func GetChallengeView(tx *gorm.DB, challenge model.Challenge) view.ChallengeView {
-	return BuildChallengeView(tx, challenge)
-}
-
-func ListChallengeViews(tx *gorm.DB, form dto.GetChallengesForm) ([]view.ChallengeView, int64, model.RetVal) {
-	challenges, count, ret := GetChallenges(tx, form)
-	if !ret.OK {
-		return nil, 0, ret
-	}
-	return BuildChallengeViews(tx, challenges), count, model.SuccessRetVal()
+	return views, count, model.SuccessRetVal()
 }
 
 func ListChallengesNotInContest(tx *gorm.DB, contest model.Contest, form dto.GetChallengesForm) ([]view.SimpleChallengeView, int64, model.RetVal) {
@@ -80,41 +89,17 @@ func ListChallengeCategories(tx *gorm.DB, form dto.GetCategoriesForm) ([]string,
 	return db.InitChallengeRepo(tx).ListCategories(form.Type)
 }
 
-func CreateChallengeWithTransaction(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge, model.RetVal) {
-	var challenge model.Challenge
-	ret := db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		var createRet model.RetVal
-		challenge, createRet = CreateChallenge(tx2, form)
-		return createRet
-	})
-	return challenge, ret
-}
-
 func GetChallengeWithFlags(tx *gorm.DB, challenge model.Challenge) (model.Challenge, model.RetVal) {
 	return db.InitChallengeRepo(tx).GetByID(challenge.ID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
 	})
 }
 
-func UpdateChallengeWithTransaction(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChallengeForm) model.RetVal {
-	loaded, ret := GetChallengeWithFlags(tx, challenge)
-	if !ret.OK {
-		return ret
-	}
-	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		return UpdateChallenge(tx2, loaded, form)
-	})
-}
-
 func DeleteChallenge(tx *gorm.DB, challenge model.Challenge) model.RetVal {
-	if ret := stopGeneratorResources(tx, db.GetOptions{Conditions: map[string]any{"challenge_id": challenge.ID}}); !ret.OK {
-		return ret
-	}
-	return db.InitChallengeRepo(tx).Delete(challenge.RandID)
-}
-
-func DeleteChallengeWithTransaction(tx *gorm.DB, challenge model.Challenge) model.RetVal {
-	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		return DeleteChallenge(tx2, challenge)
+	return db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
+		if ret := stopGeneratorResources(tx, db.GetOptions{Conditions: map[string]any{"challenge_id": challenge.ID}}); !ret.OK {
+			return ret
+		}
+		return db.InitChallengeRepo(tx).Delete(challenge.RandID)
 	})
 }

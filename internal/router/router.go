@@ -196,7 +196,7 @@ func Init() *gin.Engine {
 			adminSystem.POST("/restart", RestartSystem)
 		}
 
-		admin.GET("/branding", GetAdminBranding)
+		admin.GET("/branding", GetBranding)
 		admin.PUT("/branding", UpdateBranding)
 		admin.POST("/branding/logo", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("branding"))
 

@@ -14,7 +14,7 @@ import (
 
 func GetGroup(ctx *gin.Context) {
 	group := middleware.GetGroup(ctx)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetGroupResp(service.GetGroupView(db.DB, group))))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetGroupResp(service.BuildGroupView(db.DB, group))))
 }
 
 func GetGroupUsers(ctx *gin.Context) {
@@ -87,7 +87,7 @@ func CreateGroup(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetGroupResp(service.GetGroupView(db.DB, group))))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetGroupResp(service.BuildGroupView(db.DB, group))))
 }
 
 func UpdateGroup(ctx *gin.Context) {

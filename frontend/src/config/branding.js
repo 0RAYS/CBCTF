@@ -56,13 +56,9 @@ export const DEFAULT_BRANDING = {
   },
 };
 
-function getBrandingLanguageKey(language) {
-  return language?.toLowerCase().startsWith('zh') ? 'zh_cn' : 'en';
-}
-
 export function resolveLocalizedText(value, language, fallback = '') {
   if (!value || typeof value !== 'object') return fallback;
-  const languageKey = getBrandingLanguageKey(language);
+  const languageKey = language?.toLowerCase().startsWith('zh') ? 'zh_cn' : 'en';
   return value[languageKey] || value.en || value.zh_cn || fallback;
 }
 

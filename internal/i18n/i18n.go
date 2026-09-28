@@ -29,16 +29,12 @@ func Init() {
 	Bundle.MustParseMessageFileBytes(code, "und.yaml")
 }
 
-func GetLocalizer(lang string) *i18n.Localizer {
-	return i18n.NewLocalizer(Bundle, lang)
-}
-
 func Translate(lang, key string, args ...map[string]any) string {
 	config := i18n.LocalizeConfig{MessageID: key}
 	if len(args) > 0 {
 		config.TemplateData = args[0]
 	}
-	msg, err := GetLocalizer(lang).Localize(&config)
+	msg, err := i18n.NewLocalizer(Bundle, lang).Localize(&config)
 	if err != nil {
 		return key
 	}
