@@ -2,104 +2,80 @@
 
 # Webhook
 
-Webhook 允许平台在特定事件发生时，向外部系统（Slack、Discord、自动化脚本等）发送 HTTP 通知。
+入口：「管理后台 → Webhook」。平台将匹配事件放入 Asynq 队列，以 JSON 请求体投递到你的接收服务。
 
-## Webhook 字段
+## 先配置目标白名单
 
-| 字段        | 类型        | 说明                                                 |
-| --------- | --------- | -------------------------------------------------- |
-| `name`    | string    | Webhook 名称（仅用于标识）                                  |
-| `url`     | string    | 目标 URL                                             |
-| `method`  | string    | HTTP 方法（`POST`、`GET` 等）                            |
-| `headers` | object    | 自定义 HTTP 请求头，如 `{"Authorization": "Bearer token"}` |
-| `timeout` | int       | 请求超时（毫秒）                                           |
-| `retry`   | int       | 失败后重试次数                                            |
-| `on`      | bool      | 是否启用此 Webhook                                      |
-| `events`  | \[]string | 订阅的事件类型列表                                          |
-
-## 触发事件
-
-Webhook 支持订阅平台的多种事件，主要包括：
-
-**用户事件**
-
-- 用户注册、登录、修改信息
-
-**比赛事件**
-
-- 比赛创建、开始、结束
-
-**队伍事件**
-
-- 队伍创建、加入、退出
-
-**题目事件**
-
-- 题目初始化、重置、靶机启停
-
-**Flag 事件**
-
-- Flag 提交成功（`flag_correct`）
-- Flag 提交错误（`flag_wrong`）
-- 首血、二血、三血事件
-
-## 投递历史
-
-每个 Webhook 都维护投递历史记录，包含：
-
-- `success`：累计成功投递次数
-- `failure`：累计失败投递次数
-- 最后成功/失败时间
-- 详细历史日志（包含完整请求和响应内容）
-
-通过 `GET /admin/webhook/:webhookID/history` 查看。
-
-## 安全配置
-
-在 `config.yaml` 中配置 Webhook 目标 URL 白名单：
+在「系统管理」配置 `webhook.whitelist`。**空列表拒绝创建目标，不是不限制**。白名单匹配主机名、主机名加端口、IP 或 IP CIDR，不接受 URL 路径前缀：
 
 ```yaml
 webhook:
   whitelist:
-    - "https://hooks.slack.com/"
-    - "https://discord.com/api/webhooks/"
+    - hooks.example.com
+    - notify.example.com:8443
+    - 192.0.2.10
+    - 192.0.2.0/24
 ```
 
-配置后，平台仅允许向匹配前缀的 URL 发送 Webhook 请求，防止 SSRF 攻击。留空 `[]` 表示不限制。
+Helm 初次部署写入 `cbctf.webhook.whitelist`；已有数据库通过系统管理更新。白名单在创建/修改 URL 时校验，不是对已有投递、DNS 解析结果和 HTTP 重定向的网络防火墙。
 
-## 自定义认证
+## 创建与启用
 
-通过 `headers` 字段添加认证信息：
+填写名称、目标 URL、方法、超时、重试次数、请求头，选择订阅事件并勾选启用。创建和编辑均支持启用开关。
+
+| 字段             | 含义                                          |
+| -------------- | ------------------------------------------- |
+| `name` / `url` | 名称与目标完整 URL                                 |
+| `method`       | 仅 `POST` 或 `GET`，两者都携带 JSON 请求体             |
+| `headers`      | 请求头对象，默认发送 `Content-Type: application/json` |
+| `timeout`      | **秒**，`0` 使用 HTTP 客户端默认 30 秒                |
+| `retry`        | 失败后的最大重试次数，`0` 不重试                          |
+| `events`       | 事件名称字符串列表；空列表订阅所有事件                         |
+| `on`           | 是否启用                                        |
+
+## 事件名称和负载
+
+编辑器从 `GET /admin/webhook/events` 加载实际事件；以该列表为准。常见值有：
+
+- 用户：`register`、`login`、`oauth_login`、`update_user`
+- 队伍：`create_team`、`join_team`、`leave_team`
+- 题目：`init_challenge`、`reset_challenge`、`start_victim`、`stop_victim`
+- 提交：`submit_flag`
+- 公告：`create_notice`、`update_notice`、`delete_notice`
+
+没有 `flag_correct`、`flag_wrong`、`first_blood` 等独立 Webhook 事件，也没有比赛时间到达后自动产生的开始/结束通知。
+
+实际负载只包含事件类型、来源 IP 和相关对象 ID：
 
 ```json
 {
-  "Authorization": "Bearer your-token",
-  "X-Secret": "your-secret"
+  "type": "submit_flag",
+  "ip": "192.0.2.20",
+  "models": {"Self": 12, "Contest": 3, "Team": 8}
 }
 ```
 
-## 重试机制
+`models` 的键依事件上下文变化。负载不包含 Flag 内容、解题正误、完整对象或事件成功状态，不应仅凭 `submit_flag` 就宣布解题成功。
 
-Webhook 投递通过 Asynq 异步队列处理。若请求失败（超时、非 2xx 响应），按 `retry` 配置的次数自动重试，重试间隔指数递增。
-
-## 示例：Slack 通知
+## 可用配置示例
 
 ```json
 {
-  "name": "Slack Flag 通知",
-  "url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+  "name": "赛事事件接收器",
+  "url": "https://hooks.example.com/cbctf",
   "method": "POST",
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "timeout": 5000,
+  "headers": {"Authorization": "Bearer your-token"},
+  "timeout": 10,
   "retry": 3,
   "on": true,
-  "events": [
-    "flag_correct",
-    "first_blood",
-    "second_blood",
-    "third_blood"
-  ]
+  "events": ["submit_flag", "create_notice"]
 }
 ```
+
+Slack、Discord 等通常要求自己的消息格式，需要接收服务将上述负载转换后再发送，不能直接把 CBCTF 的 JSON 当作聊天消息模板。
+
+## 历史与重试
+
+页面提供全局和单个 Webhook 的历史，展示成功状态、HTTP 响应码、耗时、错误及关联事件，不保存完整请求/响应正文。
+
+网络错误、超时和非 2xx 响应会向任务队列返回失败，按 `retry` 重试；每次尝试分别记录历史。接收器应考虑重复投递。配置修改影响后续入队任务，已入队任务携带的是当时的目标配置。

@@ -2,57 +2,44 @@
 
 # 用户与分组
 
-## 用户字段
+用户、分组、角色和权限位于同一个「RBAC」页面：`/platform/#/admin/rbac`，不是独立的用户管理路由。
 
-| 字段            | 说明            |
-| ------------- | ------------- |
-| `name`        | 用户名           |
-| `email`       | 邮箱（用于登录和邮件通知） |
-| `verified`    | 邮箱是否已验证       |
-| `picture`     | 头像 URL        |
-| `description` | 个人简介          |
+## 创建与授权
 
-## 手动创建用户
+1. 在用户标签页创建账号，填写用户名、邮箱、密码、简介，以及已验证、隐藏、封禁状态。
+2. 在分组标签页创建或选择分组，指定其角色。
+3. 打开分组成员管理，从可用用户中选择并添加成员；移除成员会撤销该分组带来的权限。
 
-当 `registration.enabled: false` 时，管理员可通过 `POST /admin/users`（需 `admin:user:create`）手动创建用户，绕过注册限制。
+管理员创建用户不受 `registration.enabled` 限制，也不会自动使用公开注册默认分组。创建后应显式加入合适分组。一个用户可属于多个分组，获得各组角色权限的并集。
 
-## 查找用户
+## 注册与默认分组
 
-- **列表**：`GET /admin/users`，支持分页和筛选
+在「系统管理 → 注册配置」设置：
 
-## 用户分组（Groups）
+- `registration.enabled`：控制本地自助注册入口。
+- `registration.default_group`：本地注册用户自动加入的分组 ID。`0` 表示不加入任何分组，不是默认授予 `user` 角色。
 
-分组用于批量管理参赛者，常见用途：按班级/院校/队伍组织用户、控制默认分配、赛前批量导入用户。
+先从 RBAC 页面读取 `user` 分组的实际 ID，再配置默认分组。OAuth/CAS 提供商有自己的 `default_group`，两者需要分别检查。当前没有用户 CSV 批量导入或注册审批工作流。
 
-### 创建分组
+## 用户状态
 
-`POST /admin/groups`（需 `admin:group:create`）
+| 字段                        | 含义                        |
+| ------------------------- | ------------------------- |
+| `name`                    | 本地登录使用的用户名                |
+| `email`                   | 验证、密码找回及邮件通知地址；本地登录不是邮箱登录 |
+| `verified`                | 邮箱验证状态，参赛操作要求验证           |
+| `hidden`                  | 展示隐藏，不等同于封禁               |
+| `banned`                  | 账号封禁状态                    |
+| `picture` / `description` | 头像与简介                     |
 
-### 自动分配
+修改邮箱会清除已验证状态；若管理员需重新确认新邮箱，可在邮箱保存后再设置已验证。
 
-在 `registration.default_group` 中配置分组 ID，新注册用户自动加入该分组。也可在 OAuth 配置的 `default_group` 字段中为
-OAuth 登录用户单独设置默认分组。
+## 邮箱验证与密码
 
-### 手动添加/移除用户
+配置可用 [SMTP](/admin/smtp.md) 后，本地注册会发送验证邮件。用户也可在个人设置中重新发送；`POST /me/activate` 需要 `self:activate` 权限。邮件链接打开前端验证页，由页面调用 `POST /verify`。
 
-- 添加用户到分组：`POST /admin/groups/:groupID/users`（`admin:user:assign`）
-- 移除用户：`DELETE /admin/groups/:groupID/users`（`admin:user:revoke`）
+管理员可在编辑用户时设置新密码，无需原密码。普通用户在个人设置修改密码需验证原密码，也可在登录页使用“忘记密码”通过邮箱重置。修改 RBAC 后若导航未更新，可重新登录刷新权限列表。
 
-## GeoIP 地理信息
+## IP 信息
 
-若配置了 `geocity_db`（MaxMind GeoLite2-City），用户列表中会显示最近登录 IP 的地理位置（国家/城市）。
-
-## IP 登录历史
-
-通过 `GET /admin/ip`（`admin:ip:search`）搜索特定 IP 的登录历史，包含登录时间、地理位置、关联用户等信息，用于作弊调查。
-
-## 邮箱验证流程
-
-1. 确保已配置 SMTP 服务器（见[邮件配置](/admin/smtp.md)）
-2. 为 `user` 角色分配 `self:activate` 权限
-3. 用户调用 `POST /me/activate` 触发发送激活邮件
-4. 用户点击邮件中的链接，`verified` 字段变为 `true`
-
-## 重置用户密码
-
-管理员通过 `PUT /admin/users/:userID`（`admin:user:update`）可直接修改用户密码，无需原密码验证。
+在「系统管理」上传 GeoLite2-City 数据库，文件保存到 `{path}/GeoLite2-City.mmdb`。`GET /admin/ip?ip=...` 返回地理位置、时区及坐标，**不提供登录历史查询**。关联行为应结合队伍提交、作弊详情和平台请求记录分析。

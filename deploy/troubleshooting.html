@@ -6,12 +6,12 @@
 <script>{;const saved = localStorage.getItem('rspress-theme-appearance');const preferDark = window.matchMedia('(prefers-color-scheme: dark)').matches;const defaultTheme = 'auto';const theme = saved === 'light' || saved === 'dark' || saved === 'auto' ? saved : defaultTheme;const isDark = theme === 'auto' ? preferDark : theme === 'dark';document.documentElement.classList.toggle('dark', isDark);document.documentElement.classList.toggle('rp-dark', isDark);document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';}</script>
 <script>window.RSPRESS_THEME = 'dark';</script>
 <link href="/static/css/styles.eb1086a0f9.css" rel="stylesheet">
-<link rel="preload" href="/static/js/async/route-b65ea835fae4.4375ac89e6.js" as="script">
+<link rel="preload" href="/static/js/async/route-b65ea835fae4.6ff8cbcde9.js" as="script">
 <script defer src="/static/js/styles.34ceb679f3.js"></script>
 <script defer src="/static/js/lib-react.8074fc35ac.js"></script>
 <script defer src="/static/js/lib-router.c961427ba1.js"></script>
 <script defer src="/static/js/t.82972bf225.js"></script>
-<script defer src="/static/js/index.a1429d6601.js"></script>
+<script defer src="/static/js/index.09160478a2.js"></script>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="generator" content="Rspress v2.0.22">
 <link rel="icon" href="/logo.png">
@@ -30,16 +30,18 @@
 <li>查看应用日志：<code>kubectl logs -n cbctf deployment/cbctf</code></li>
 <li>检查 PostgreSQL 和 Redis Pod 是否 Ready</li>
 <li>检查 ConfigMap 中的数据库、Redis、JWT 配置是否正确</li>
-<li>检查应用 ServiceAccount 是否绑定了 Chart 创建的 ClusterRole</li>
+<li>检查应用 ServiceAccount 是否同时绑定 Chart 的 Role 和 ClusterRole</li>
 <li>如果使用 VPC 网络，检查 Kube-OVN 和 Multus</li>
 <li>如果使用 VM 靶机，检查 KubeVirt 组件、CRD 和节点虚拟化能力</li>
 </ol>
 <h2 class="rp-toc-include" id="数据库连接失败"><a href="#数据库连接失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>数据库连接失败</h2>
+<p>关闭内置 PostgreSQL/Redis 后要填写相应的 <code>externalHost</code>。Chart <code>0.0.29</code> 修正了外部地址被追加命名空间后缀的问题；更早版本应升级或修正渲染地址。</p>
 <p>常见原因：</p>
 <ul>
 <li>PostgreSQL Pod 未启动或 Service 名称不可解析</li>
 <li><code>postgres.auth.password</code> 与 ConfigMap 中的密码不一致</li>
 <li>数据库 PVC 损坏、容量不足或权限异常</li>
+<li>修改了 values 密码，但已有 PostgreSQL 数据目录中的角色密码未变更</li>
 <li>外部数据库要求 SSL，但 <code>gorm.postgres.sslmode</code> 未设置为 <code>true</code></li>
 </ul>
 <p>应用启动时会自动迁移数据库。如果迁移失败，服务会退出，需要先修复数据库连接或权限问题。</p>
@@ -76,14 +78,20 @@
 <li>OAuth 提供商回调地址应指向后端的 <code>/oauth/{provider}/callback</code></li>
 <li>如果前后端分离，当前 OAuth 登录完成后仍默认跳回后端 <code>/platform/#/oauth/callback</code> 页面</li>
 <li>检查 <code>gin.origins</code> 是否包含前端页面发起请求时的 <code>Origin</code></li>
+<li>检查浏览器是否保存认证 Cookie：同源 HTTP 应为 <code>SameSite=Lax</code>，跨域登录为 <code>SameSite=None; Secure</code>，后者需要 HTTPS</li>
+<li>新用户登录后接口提示权限不足：检查是否加入了带 <code>user</code> 角色的分组；<code>registration.default_group: 0</code> 不自动授权</li>
+<li>注册或加入队伍失败：检查账号是否验证邮箱，SMTP 是否可用</li>
 </ul>
+<h2 class="rp-toc-include" id="修改-values-后配置没有变化"><a href="#修改-values-后配置没有变化" class="rp-header-anchor rp-link" aria-hidden="true">#</a>修改 values 后配置没有变化</h2>
+<p><code>host</code>、JWT、注册策略、Gin 运行策略及 Kubernetes 运行参数在首次启动后保存在数据库。检查「系统管理」中读取的实际值，保存后按<a href="/deploy/settings.html" class="rp-link">生效时机</a>重启。数据库连接、监听地址、数据路径和共享 PVC 来自部署文件，应重建 Pod。</p>
 <h2 class="rp-toc-include" id="上传失败"><a href="#上传失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>上传失败</h2>
 <p>排查方向：</p>
 <ul>
-<li><code>gin.upload</code> 是否小于上传文件大小</li>
+<li>对应的 <code>gin.upload.picture</code> / <code>gin.upload.challenge</code> / <code>gin.upload.writeup</code> 是否小于上传请求大小（MiB）</li>
 <li>Ingress 或反向代理是否有更小的 body size 限制</li>
 <li><code>/app/data</code> PVC 是否可写、容量是否充足</li>
 <li>管理员或用户是否具备对应上传权限</li>
+<li>Writeup 只接受 <code>.pdf</code>、<code>.doc</code>、<code>.docx</code>；ZIP 是管理员导出整场题解的格式</li>
 </ul>
 <h2 class="rp-toc-include" id="靶机无法启动"><a href="#靶机无法启动" class="rp-header-anchor rp-link" aria-hidden="true">#</a>靶机无法启动</h2>
 <p>排查方向：</p>
@@ -112,17 +120,17 @@
 <p>应用启动时会执行 Kubernetes RBAC 自检。如果日志出现 <code>Missing K8s permissions</code> 或 <code>Insufficient K8s permissions</code>，说明当前 ServiceAccount 与后端实际调用不匹配。</p>
 <p>排查方向：</p>
 <ul>
-<li>使用 Helm Chart 自带的 ServiceAccount、ClusterRole 和 ClusterRoleBinding，或把 Chart 中的 ClusterRole 同步到自定义 RBAC</li>
+<li>使用 Helm Chart 的 ServiceAccount、Role/RoleBinding 和 ClusterRole/ClusterRoleBinding，或完整同步两组规则到自定义 RBAC</li>
 <li>确认 <code>pods</code> 包含 <code>watch</code>，否则创建 Pod 后无法等待 Running 状态</li>
 <li>确认 <code>authorization.k8s.io/selfsubjectaccessreviews</code> 包含 <code>create</code>，否则启动自检本身无法执行</li>
 <li>VPC 模式需要 <code>k8s.cni.cncf.io/network-attachment-definitions</code> 和 <code>kubeovn.io/subnets</code>、<code>vpcs</code>、<code>ips</code> 权限</li>
-<li>VM 模式需要 <code>kubevirt.io/virtualmachines</code> 的 <code>create</code>、<code>get</code>、<code>deletecollection</code></li>
+<li>VM 模式需要 <code>kubevirt.io/virtualmachines</code> 的 <code>create</code>、<code>get</code>、<code>list</code>、<code>watch</code>、<code>deletecollection</code></li>
 </ul>
 <h2 class="rp-toc-include" id="镜像拉取失败"><a href="#镜像拉取失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>镜像拉取失败</h2>
 <p>排查方向：</p>
 <ul>
 <li>镜像仓库地址、tag、平台架构是否正确</li>
-<li>私有仓库是否配置 <code>imagePullSecrets</code> 或 <code>imageCredentials</code></li>
+<li>平台 Pod 的私有仓库检查 <code>imagePullSecrets</code> / <code>imageCredentials</code>；题目、生成器和预热 Pod 检查运行命名空间的 <code>default</code> ServiceAccount 凭据，二者不自动继承</li>
 <li>节点是否可以访问镜像仓库</li>
 <li>是否达到镜像仓库限流</li>
 </ul>
@@ -133,6 +141,14 @@
 <li>Redis 和 Asynq 邮件队列是否正常</li>
 <li>SMTP 服务是否允许集群出口访问</li>
 <li>发件账号、密码、TLS/端口设置是否符合服务商要求</li>
+</ul>
+<h2 class="rp-toc-include" id="动态附件一直未就绪"><a href="#动态附件一直未就绪" class="rp-header-anchor rp-link" aria-hidden="true">#</a>动态附件一直未就绪</h2>
+<ul>
+<li>在比赛的「生成器」页面确认实例 Ready；全局测试生成器不供比赛队伍使用</li>
+<li>平台与生成器必须挂载同一个 PVC；旧版本对 <code>persistence.existingClaim</code> 支持不完整，应升级匹配的 Chart 和后端</li>
+<li>平台必须能够连接 generator Pod IP 的 TCP 8080</li>
+<li>查看生成器日志与任务日志，检查 <code>/root/run.sh</code> 可执行、依赖已安装，且在一分钟内同步写出有效 ZIP</li>
+<li><code>generator.zip</code> 必须以脚本/资源为根目录，而不是再套一层目录；重复测试可清理脚本自己的临时文件，避免复用上个团队产物</li>
 </ul>
 <h2 class="rp-toc-include" id="webhook-失败"><a href="#webhook-失败" class="rp-header-anchor rp-link" aria-hidden="true">#</a>Webhook 失败</h2>
 <p>排查方向：</p>
@@ -155,7 +171,7 @@
 <li>定期备份 PostgreSQL 和 <code>/app/data</code></li>
 <li>不要公开 <code>config.yaml</code>、kubeconfig、私有镜像凭据和含敏感信息的日志
 :::</li>
-</ul><!--/$--></div><footer class="rp-doc-footer"><div class="rp-doc-footer__edit"><a href="https://github.com/0RAYS/CBCTF/tree/main/docs/docs/deploy/troubleshooting.md" target="_blank" rel="noopener noreferrer" class="rp-edit-link rp-link">编辑此页面</a><div class="rp-last-updated"><p>最后更新于<!-- -->: <span>2026/9/28 02:46:11</span></p></div></div><div class="rp-doc-footer__divider"></div><div class="rp-prev-next-page"><a href="/deploy/separation.html" class="rp-prev-next-page__item rp-prev-next-page__prev rp-link"><span class="rp-prev-next-page__item__desc">上一页</span><span class="rp-prev-next-page__item__title"><svg width="1em" height="1em" viewBox="0 0 32 32" class="rp-prev-next-page__icon rp-prev-next-page__rotate_180"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg><span>前后端分离</span></span></a><div class="rp-prev-next-page__placeholder"></div></div></footer></main></div><aside class="rp-doc-layout__outline rp-scrollbar"><div class="rp-outline"><div class="rp-outline__title">目录<svg width="14" height="14" class="rp-progress-circle"><circle cx="7" cy="7" r="6" stroke-linecap="round" fill="none" stroke="var(--rp-c-divider-light)" stroke-width="2"></circle><circle cx="7" cy="7" r="6" stroke-linecap="round" fill="none" stroke="var(--rp-c-brand)" stroke-width="2" stroke-dasharray="37.69911184307752" stroke-dashoffset="37.69911184307752" transform="rotate(-90 7 7)" style="transition:stroke-dashoffset 0.3s"></circle></svg></div><nav class="rp-outline__toc rp-scrollbar"><a href="#服务启动失败" class="rp-toc-item rp-link" title="服务启动失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">服务启动失败</span></a><a href="#数据库连接失败" class="rp-toc-item rp-link" title="数据库连接失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">数据库连接失败</span></a><a href="#redis-连接失败" class="rp-toc-item rp-link" title="Redis 连接失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">Redis 连接失败</span></a><a href="#前端页面无法访问" class="rp-toc-item rp-link" title="前端页面无法访问" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">前端页面无法访问</span></a><a href="#helm-部署后无法访问" class="rp-toc-item rp-link" title="Helm 部署后无法访问" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">Helm 部署后无法访问</span></a><a href="#登录或-oauth-跳转异常" class="rp-toc-item rp-link" title="登录或 OAuth 跳转异常" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">登录或 OAuth 跳转异常</span></a><a href="#上传失败" class="rp-toc-item rp-link" title="上传失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">上传失败</span></a><a href="#靶机无法启动" class="rp-toc-item rp-link" title="靶机无法启动" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">靶机无法启动</span></a><a href="#kubevirt-vm-启动失败" class="rp-toc-item rp-link" title="KubeVirt VM 启动失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">KubeVirt VM 启动失败</span></a><a href="#启动时报缺少-kubernetes-权限" class="rp-toc-item rp-link" title="启动时报缺少 Kubernetes 权限" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">启动时报缺少 Kubernetes 权限</span></a><a href="#镜像拉取失败" class="rp-toc-item rp-link" title="镜像拉取失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">镜像拉取失败</span></a><a href="#邮件发送失败" class="rp-toc-item rp-link" title="邮件发送失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">邮件发送失败</span></a><a href="#webhook-失败" class="rp-toc-item rp-link" title="Webhook 失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">Webhook 失败</span></a><a href="#安全建议" class="rp-toc-item rp-link" title="安全建议" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">安全建议</span></a></nav><div class="rp-outline__divider"></div><div class="rp-outline__bottom"><a href="https://github.com/0RAYS/CBCTF/tree/main/docs/docs/deploy/troubleshooting.md" target="_blank" rel="noopener noreferrer" class="rp-outline__action-row rp-edit-link rp-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"></path></svg><span>编辑此页面</span></a><button class="rp-outline__action-row"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M20 8v12H8V8zm0-2H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2"></path><path fill="currentColor" d="M4 16H2V4a2 2 0 0 1 2-2h12v2H4Z"></path></svg><span>复制 Markdown</span></button><div class="rp-outline__open-in-wrapper"><button class="rp-outline__action-row"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"></path></svg><span>在 chat 中打开</span></button></div></div></div></aside></div></div>
+</ul><!--/$--></div><footer class="rp-doc-footer"><div class="rp-doc-footer__edit"><a href="https://github.com/0RAYS/CBCTF/tree/main/docs/docs/deploy/troubleshooting.md" target="_blank" rel="noopener noreferrer" class="rp-edit-link rp-link">编辑此页面</a><div class="rp-last-updated"><p>最后更新于<!-- -->: <span>2026/9/28 03:37:22</span></p></div></div><div class="rp-doc-footer__divider"></div><div class="rp-prev-next-page"><a href="/deploy/separation.html" class="rp-prev-next-page__item rp-prev-next-page__prev rp-link"><span class="rp-prev-next-page__item__desc">上一页</span><span class="rp-prev-next-page__item__title"><svg width="1em" height="1em" viewBox="0 0 32 32" class="rp-prev-next-page__icon rp-prev-next-page__rotate_180"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg><span>前后端分离</span></span></a><div class="rp-prev-next-page__placeholder"></div></div></footer></main></div><aside class="rp-doc-layout__outline rp-scrollbar"><div class="rp-outline"><div class="rp-outline__title">目录<svg width="14" height="14" class="rp-progress-circle"><circle cx="7" cy="7" r="6" stroke-linecap="round" fill="none" stroke="var(--rp-c-divider-light)" stroke-width="2"></circle><circle cx="7" cy="7" r="6" stroke-linecap="round" fill="none" stroke="var(--rp-c-brand)" stroke-width="2" stroke-dasharray="37.69911184307752" stroke-dashoffset="37.69911184307752" transform="rotate(-90 7 7)" style="transition:stroke-dashoffset 0.3s"></circle></svg></div><nav class="rp-outline__toc rp-scrollbar"><a href="#服务启动失败" class="rp-toc-item rp-link" title="服务启动失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">服务启动失败</span></a><a href="#数据库连接失败" class="rp-toc-item rp-link" title="数据库连接失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">数据库连接失败</span></a><a href="#redis-连接失败" class="rp-toc-item rp-link" title="Redis 连接失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">Redis 连接失败</span></a><a href="#前端页面无法访问" class="rp-toc-item rp-link" title="前端页面无法访问" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">前端页面无法访问</span></a><a href="#helm-部署后无法访问" class="rp-toc-item rp-link" title="Helm 部署后无法访问" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">Helm 部署后无法访问</span></a><a href="#登录或-oauth-跳转异常" class="rp-toc-item rp-link" title="登录或 OAuth 跳转异常" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">登录或 OAuth 跳转异常</span></a><a href="#修改-values-后配置没有变化" class="rp-toc-item rp-link" title="修改 values 后配置没有变化" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">修改 values 后配置没有变化</span></a><a href="#上传失败" class="rp-toc-item rp-link" title="上传失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">上传失败</span></a><a href="#靶机无法启动" class="rp-toc-item rp-link" title="靶机无法启动" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">靶机无法启动</span></a><a href="#kubevirt-vm-启动失败" class="rp-toc-item rp-link" title="KubeVirt VM 启动失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">KubeVirt VM 启动失败</span></a><a href="#启动时报缺少-kubernetes-权限" class="rp-toc-item rp-link" title="启动时报缺少 Kubernetes 权限" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">启动时报缺少 Kubernetes 权限</span></a><a href="#镜像拉取失败" class="rp-toc-item rp-link" title="镜像拉取失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">镜像拉取失败</span></a><a href="#邮件发送失败" class="rp-toc-item rp-link" title="邮件发送失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">邮件发送失败</span></a><a href="#动态附件一直未就绪" class="rp-toc-item rp-link" title="动态附件一直未就绪" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">动态附件一直未就绪</span></a><a href="#webhook-失败" class="rp-toc-item rp-link" title="Webhook 失败" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">Webhook 失败</span></a><a href="#安全建议" class="rp-toc-item rp-link" title="安全建议" style="padding-left:0" data-depth="0"><span class="rp-toc-item__text rp-doc">安全建议</span></a></nav><div class="rp-outline__divider"></div><div class="rp-outline__bottom"><a href="https://github.com/0RAYS/CBCTF/tree/main/docs/docs/deploy/troubleshooting.md" target="_blank" rel="noopener noreferrer" class="rp-outline__action-row rp-edit-link rp-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"></path></svg><span>编辑此页面</span></a><button class="rp-outline__action-row"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M20 8v12H8V8zm0-2H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2"></path><path fill="currentColor" d="M4 16H2V4a2 2 0 0 1 2-2h12v2H4Z"></path></svg><span>复制 Markdown</span></button><div class="rp-outline__open-in-wrapper"><button class="rp-outline__action-row"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"></path></svg><span>在 chat 中打开</span></button></div></div></div></aside></div></div>
     <div id="__rspress_modal_container"></div>
   </body>
 </html>

@@ -2,77 +2,81 @@
 
 # 快速上手
 
-推荐使用 Helm 将 CBCTF 部署到 Kubernetes。
+CBCTF 的后端目前只使用 Kubernetes **InClusterConfig**，应运行在集群内的 Pod 中。即使只使用静态题，启动过程也会初始化 Kubernetes 客户端并执行权限检查；仅准备 PostgreSQL 和 Redis 后在宿主机执行 `go run .` 不能完成启动。
 
-:::tip
-须提前安装好所需的 k8s 组件，参考[部署](/deploy/cluster.md)
+## 1. 准备集群和存储
 
-| 组件                                                               | 用途       |
-| ---------------------------------------------------------------- | -------- |
-| [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离 |
-| [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) | 多网络接口    |
-| [KubeVirt](https://kubevirt.io/)                                 | 虚拟机调度    |
+- 准备 Kubernetes、kubectl、Helm，以及可拉取平台、worker 和题目镜像的节点。
+- 为平台数据选择支持 `ReadWriteMany` 的 StorageClass。动态附件输入与抓包文件需要与运行时 Pod 共享数据。
+- 使用 VPC 题目时安装 Kube-OVN 和 Multus；使用虚拟机题目时再安装 KubeVirt。
+- Chart 不会替你安装 CNI、KubeVirt、Ingress Controller 或存储 provisioner。具体步骤见[集群准备](/deploy/cluster.md)。
 
-:::
+## 2. 安装平台
 
-## Helm 快速部署
-
-:::warning
-没有快速部署，必炸，请仔细阅读[部署](/deploy/cluster.md)
-:::
-
-## 初始管理员
-
-应用启动时会自动迁移数据库。首次启动且管理员组中没有用户时，会自动创建 `admin` 用户，并把初始密码打印到日志：
-
-```text
-Init Admin: Admin{ name: admin, password: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, email: admin@0rays.club}
+```bash
+helm repo add cbctf https://cbctf.0rays.club
+helm repo update
+helm show values cbctf/cbctf > values.yaml
 ```
 
-查看日志：
+修改 `values.yaml`：至少设置公开地址 `cbctf.host`、`cbctf.gin.origins`、Ingress 域名、StorageClass、JWT 密钥和数据库密码。完整示例、外部数据库及持久化说明见 [Helm 部署](/deploy/helm.md)。
+
+```bash
+helm upgrade --install cbctf cbctf/cbctf \
+  -n cbctf --create-namespace -f values.yaml --wait --timeout 10m
+kubectl get pods,pvc,svc,ingress -n cbctf
+kubectl logs -n cbctf deployment/cbctf
+```
+
+若使用本仓库尚未发布的修改，从仓库根目录执行相同命令，将 `cbctf/cbctf` 换成 `./chart`，并使用与代码匹配的自建应用镜像。
+
+## 3. 首次登录
+
+首次初始化数据库且 `admin` 分组没有用户时，日志会输出初始凭据：
 
 ```bash
 kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 ```
 
-首次登录后请立即修改管理员密码。管理后台为 `/platform/#/admin`。
+访问 `https://你的域名/platform/#/login`，使用 `admin` 和日志中的随机密码登录。在个人设置中修改密码，然后进入 `/platform/#/admin/dashboard`。
 
-## 本地开发运行
+若通过端口转发临时检查页面：
 
-本地运行需要先准备 PostgreSQL 和 Redis。
-
-
-### 构建前端
 ```bash
+kubectl port-forward -n cbctf svc/cbctf 8000:8000
+```
+
+直接打开 `http://localhost:8000/platform/`。根路径跳转、邮件链接和 OAuth 仍使用 `host` 设置的公开地址；端口转发不会自动修改它。
+
+## 4. 完成第一场比赛
+
+1. 在「系统管理」核对公开地址、注册开关和默认注册分组；将默认分组设置为 RBAC 页面中实际的 `user` 分组 ID。`0` 不会自动分配用户组。
+2. 在「SMTP」配置发信账号并发送测试邮件。本地注册会发送验证邮件，参赛操作要求账号已验证。
+3. 在「题目管理」创建静态题，填写 `static{hello}`，按需上传附件。
+4. 创建比赛，设置开始/结束时间、Flag 前缀和队伍人数。
+5. 在比赛管理的「题目」页添加题目，设置分数并取消题目隐藏；确认比赛本身也已公开。
+6. 用普通选手账号验证邮箱、创建队伍，待比赛开始后初始化题目并提交对应前缀的 Flag。
+
+后续参见[选手操作流程](/guide/features/playing.md)、[比赛管理](/admin/contests.md)和[题目管理](/admin/challenges.md)。
+
+## 源码构建与前端开发
+
+当前 `go.mod` 要求 Go **1.27.1**，前端 `packageManager` 为 **pnpm 12.6.0**；Docker 构建使用 Node 24、Go 1.27、CGO 和 libpcap。版本升级时以这些文件为准。
+
+```bash
+# 从仓库根目录构建前端；Go embed 依赖此产物
 cd frontend
-pnpm install
-pnpm run build
-```
-### 启动后端
-```bash
+pnpm install --frozen-lockfile
+pnpm build
 cd ..
-go run .
-```
 
-如果没有 `config.yaml`，程序会使用内置默认配置。系统配置页不会修改 PostgreSQL/GORM、Redis、数据目录、Gin 监听地址和监听端口。
-
-后端构建命令：
-
-```bash
+# 在已安装 C 编译器与 libpcap 开发库的 Linux 构建环境中执行
 CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
+
+# 或使用 Docker 完成上述两个构建阶段
+docker build -t your-registry/cbctf:your-tag .
 ```
 
-:::tip
-流量捕获能力依赖 CGO 和 libpcap；如果只做文档或前端调试，可优先使用 Helm 或已有镜像。
+二进制通过 `-c` 指定配置文件，默认读取 `config.yaml`；请显式提供可读文件。当前代码没有自动生成配置文件或读取 `CBCTF_*` 环境覆盖的逻辑。
 
-可通过修改 `frontend/src/api/config.js` 快速在本地实现前端调试开发
-
-```javascript
-export const API_CONFIG = {
-    // 已部署服务
-    BASE_URL: 'https://ctf.example.com',
-};
-```
-
-需要在 `config.yaml` 或 Helm values 中添加对应的 `gin.cors` 白名单配置
-:::
+只调试前端时可运行 `pnpm dev`。默认 `API_CONFIG.BASE_URL` 是空字符串（同源请求），Vite 没有 API 代理；连接已有后端时修改 `frontend/src/api/config.js`，并在后台系统配置的 `gin.origins` 中加入开发页面的 Origin。跨域认证需要 HTTPS 和浏览器允许相应 Cookie，详见[前后端分离](/deploy/separation.md)。

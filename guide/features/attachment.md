@@ -65,17 +65,21 @@ worker 只读取这个固定路径。该输出目录是 Pod 本地 EmptyDir，�
 
 ```bash
 #!/bin/bash
+set -euo pipefail
 TEAM_ID=$1
 FLAGS_B64=$2
 
-FLAGS=$(echo "$FLAGS_B64" | base64 -d | tr ',' '\n' | while read f; do echo "$f" | base64 -d; done)
-FLAG1=$(echo "$FLAGS" | head -1)
-
-mkdir -p /tmp/challenge
-echo "$FLAG1" > /tmp/challenge/flag.txt
+# 二次解码；这里只使用第一个 Flag。不要用无换行的 while read 丢掉最后一个值。
+ENCODED_FLAGS=$(printf '%s' "$FLAGS_B64" | base64 -d)
+FLAG1=$(printf '%s' "${ENCODED_FLAGS%%,*}" | base64 -d)
+WORKDIR=$(mktemp -d)
+trap 'rm -rf "$WORKDIR"' EXIT
+printf '%s\n' "$FLAG1" > "$WORKDIR/flag.txt"
 
 mkdir -p /root/mnt/attachments
-zip -j /root/mnt/attachments/${TEAM_ID}.zip /tmp/challenge/*
+OUTPUT="/root/mnt/attachments/${TEAM_ID}.zip"
+rm -f "$OUTPUT"
+zip -j "$OUTPUT" "$WORKDIR/flag.txt"
 ```
 
 ## 注意事项
@@ -83,7 +87,7 @@ zip -j /root/mnt/attachments/${TEAM_ID}.zip /tmp/challenge/*
 1. 镜像必须包含 `sleep` 与 `unzip`
 2. 脚本入口固定为 `/root/run.sh`，工作目录为 `/root`
 3. 输出文件必须是 `/root/mnt/attachments/{team_id}.zip`
-4. 动态 Flag 的实际结果可能与模板字符表现不同，题目逻辑不要依赖固定字符形态
+4. 此示例还需要 `bash`、`base64`、`mktemp` 和 `zip`；将 `/root/run.sh` 设置为可执行。镜像入口会被 worker 覆盖，初始化逻辑应放在脚本中
 5. 共享存储不可用时，动态附件无法生成
 
 ## 管理入口

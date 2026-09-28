@@ -2,84 +2,61 @@
 
 # 比赛管理
 
-## 比赛生命周期
+入口：「管理后台 → 比赛管理」，对应 `/platform/#/admin/contests`。点击比赛进入该比赛的管理空间。
 
-```
-创建 → 配置题目 → 参赛者注册 → 比赛进行中 → 结束后处理
-```
+## 创建与发布
 
-1. **创建比赛**：配置名称、时间、flag 前缀、队伍规模等基础信息
-2. **添加题目**：从全局题库选择并加入比赛，可覆盖比赛特定参数
-3. **配置计分**：为每个 flag 设置计分类型和参数
-4. **镜像预热**：比赛开始前 30-60 分钟拉取镜像到所有节点
-5. **参赛管理**：比赛中管理队伍、发布公告、处理作弊
-6. **赛后处理**：收集 Writeup、导出数据
+1. 创建比赛，填写名称、介绍、开始时间和结束时间。界面将时间转换为 `start` 和以秒为单位的 `duration`。
+2. 设置 Flag 前缀、队伍人数、每队靶机上限、三血奖励及是否隐藏。
+3. 如需限制报名，在「比赛验证码」填写字符串。它用于**创建队伍**；加入已有队伍使用队伍自己的邀请码。
+4. 配置规则列表、奖项和展示时间线。时间线中的“题解截止”等文字仅用于展示，不会自动创建截止规则或定时动作。
+5. 在「题目」页加入全局题库中的题目，配置分数并取消题目隐藏。
+6. 取消比赛隐藏，使用普通选手账号检查报名、题目可见性与提交。
 
-## 比赛状态切换
+比赛按时间自动进入未开始、进行中、已结束状态。公开比赛与公开题目是两个独立操作；新加入比赛的题目默认隐藏。隐藏比赛不等于“持链接即可访问的邀请赛”。
 
-平台根据 `start` 和 `duration` 字段自动切换状态，无需手动操作：
+比赛封面上传会立即保存，编辑页取消操作不会撤销已经上传的封面。其他基础信息需要保存。
 
-| 时间条件                             | 状态        |
-| -------------------------------- | --------- |
-| 当前时间 \< start                    | `coming`  |
-| start ≤ 当前时间 \< start + duration | `running` |
-| 当前时间 ≥ start + duration          | `over`    |
+## 比赛题目与计分
 
-## 队伍管理
+在题目选择器中可筛选并跨页勾选题目。加入时 API 只接收全局题目的 UUID 列表 `challenge_ids`；添加完成后再编辑比赛题目。
 
-通过 `GET /admin/contests/:contestID/teams`（`admin:team:list`）查看所有队伍。
+- 可编辑名称、描述、标签、提示、隐藏状态和 `attempt`（提交次数，`0` 为不限制）。分类来自加入时的题库分类，比赛编辑 API 不支持修改分类。
+- 每个 Flag 分别设置 `value`、`score_type`、`score`、`min_score`、`decay`。
+- 单个 Flag 的保存是独立请求，关闭或取消题目编辑不会回滚已保存的 Flag；「保存更改」会先等待未保存的 Flag 修改，再保存题目元信息。
+- 加入时的计分初值为静态分 `1000`、最低分 `100`、衰减参数 `100`，应按比赛规则主动设置。
 
-| 操作      | API                        | 权限                  |
-| ------- | -------------------------- | ------------------- |
-| 查看队伍详情  | `GET .../teams/:teamID`    | `admin:team:read`   |
-| 查看队伍成员  | `GET .../users`            | `admin:team:read`   |
-| 修改队伍信息  | `PUT .../teams/:teamID`    | `admin:team:update` |
-| 踢出成员    | `POST .../kick`            | `admin:team:update` |
-| 删除队伍    | `DELETE .../teams/:teamID` | `admin:team:delete` |
-| 查看提交记录  | `GET .../submissions`      | `admin:team:read`   |
-| 查看 Flag | `GET .../flags`            | `admin:team:read`   |
+详见[题目管理](/admin/challenges.md)和[计分系统](/guide/features/scoring.md)。
 
-## 批量靶机控制
+## 队伍与公告
 
-通过 `POST /admin/contests/:contestID/victims` 和 `DELETE /admin/contests/:contestID/victims`（`admin:victim:control`
-）批量启动/停止该比赛的所有靶机。
+「队伍」页支持搜索、查看成员、提交记录、团队 Flag、题解和靶机历史；编辑队伍可修改名称、描述、队长、邀请码、隐藏及封禁状态。队长必须是队内成员。
 
-## 流量捕获
+隐藏影响展示，封禁影响参赛操作；确认作弊记录不会自动替代队伍封禁，需另行操作。「公告」页可创建、修改和删除公告，选手在比赛公告页查看。
 
-管理员可为指定队伍的靶机下载流量捕获文件：
+## 镜像、生成器与靶机预热
 
-```
-GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download
-```
+这三种操作的作用不同：
 
-需要 `admin:contest_traffic:read` 权限。下载的 pcap 文件可用 Wireshark 分析。
+| 页面  | 实际行为                                               |
+| --- | -------------------------------------------------- |
+| 镜像  | 选择镜像与拉取策略，向可调度节点提交预拉取 Job                          |
+| 生成器 | 为所选动态附件题启动比赛专用 worker；平台也会按池容量自动预建                 |
+| 靶机  | 选择容器题、队伍比例（1–100%）和持续秒数，为随机选择的已有队伍初始化 Flag 并提交启动任务 |
 
-## 公告发布
+靶机批量启动并非“无条件启动所有队伍的全部题目”：只处理所选题目和所选比例的队伍，已解题或已有实例的队伍可能被跳过。任务提交成功也不代表 Pod 已 Ready，应查看运行状态与任务日志。
 
-通过 `POST /admin/contests/:contestID/notices`（`admin:notice:create`）发布公告，参赛者可在比赛公告页面实时查看。
+停止操作按勾选的 victim ID 提交，不是清空整场比赛。当前管理列表只允许勾选运行中的实例。更多状态与回收机制见[工作负载调度](/deploy/workloads.md)。
 
-## 镜像预热
+## 排行榜与赛后题解
 
-通过 `POST /admin/contests/:contestID/images`（`admin:image:pull`）触发将该比赛所有题目的容器镜像预拉取到各 Kubernetes
-节点，避免比赛开始时因拉取镜像导致延迟。
+- 排行榜完整数据接口为 `GET /admin/contests/:contestID/scoreboard`，时间线为 `/timeline`；`/rank` 用于队伍排名数据，不是整个计分板。
+- 在队伍详情查看、下载单队题解，或使用比赛题解导出功能下载整场 ZIP。
+- 选手上传格式为 PDF、DOC、DOCX；比赛开始后即允许上传。展示时间线中的截止时间不自动禁止上传。
+- 启用抓包时，在靶机流量详情查看连接与下载抓包产物；未启用抓包的实例没有这些文件。
 
-:::tip
-建议在比赛开始前 30-60 分钟执行镜像预热。
-:::
+## 主要权限
 
-## Writeup 收集
+比赛管理使用 `admin:contest:*`；比赛题目使用 `admin:contest_challenge:*`，Flag 使用 `admin:contest_challenge_flag:*`。比赛范围的镜像、靶机、生成器分别使用 `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`，不要与全局权限混淆。
 
-选手上传 Writeup 后，管理员可通过以下方式访问：
-
-```
-GET /admin/contests/:contestID/teams/:teamID/writeups          # 列表（admin:team_writeup:list）
-GET /admin/contests/:contestID/teams/:teamID/writeups/:fileID  # 下载（admin:team_writeup:read）
-```
-
-## 作弊检测
-
-详见[作弊检测](/admin/cheat.md)。通过 `POST /admin/contests/:contestID/cheats` 可手动重新运行一次全量作弊检测。
-
-## 排行榜
-
-管理员视角排行榜通过 `GET /admin/contests/:contestID/rank` 查看（`admin:contest:rank`），功能与选手视图相同但不受隐藏比赛限制。
+题解列表/下载使用 `admin:team_writeup:list/read`，整场导出使用 `admin:contest_writeup:export`。完整对应关系以后台权限页和 `internal/model/permission.go` 为准。
