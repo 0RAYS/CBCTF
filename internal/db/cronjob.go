@@ -16,6 +16,7 @@ type CronJobRepo struct {
 
 type UpdateCronJobOptions struct {
 	Schedule    *time.Duration
+	RunOnStart  *bool
 	Success     *int64
 	SuccessLast *time.Time
 	Failure     *int64
@@ -26,6 +27,9 @@ func (u UpdateCronJobOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
 	if u.Schedule != nil {
 		options["schedule"] = *u.Schedule
+	}
+	if u.RunOnStart != nil {
+		options["run_on_start"] = *u.RunOnStart
 	}
 	if u.Success != nil {
 		options["success"] = *u.Success

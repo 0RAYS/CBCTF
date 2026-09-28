@@ -12,6 +12,7 @@ func GetCronJobResp(cronJob model.CronJob) gin.H {
 		"name":         cronJob.Name,
 		"description":  cronJob.Description,
 		"schedule":     int64(cronJob.Schedule.Seconds()),
+		"run_on_start": cronJob.RunOnStart,
 		"success_last": cronJob.SuccessLast,
 		"failure_last": cronJob.FailureLast,
 		"success":      cronJob.Success,

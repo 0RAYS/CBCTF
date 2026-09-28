@@ -73,6 +73,7 @@ func exec(name string, task func() model.RetVal) func() {
 
 func Init() {
 	logger := cronLogger{}
+	taskEntries.Clear()
 	c = cron.New(cron.WithSeconds(), cron.WithChain(cron.Recover(logger), cron.SkipIfStillRunning(logger)))
 }
 
@@ -106,7 +107,7 @@ func ReloadCronJob(name string) model.RetVal {
 	if !ret.OK {
 		return ret
 	}
-	return registerCronJob(cronJob, def)
+	return registerCronJob(cronJob, def, false)
 }
 
 func reloadAll() model.RetVal {
@@ -120,23 +121,27 @@ func reloadAll() model.RetVal {
 			log.Logger.Warningf("Skip unknown cron job: %s", cronJob.Name)
 			continue
 		}
-		if ret = registerCronJob(cronJob, def); !ret.OK {
+		if ret = registerCronJob(cronJob, def, cronJob.RunOnStart); !ret.OK {
 			return ret
 		}
 	}
 	return model.SuccessRetVal()
 }
 
-func registerCronJob(cronJob model.CronJob, def taskDefinition) model.RetVal {
+func registerCronJob(cronJob model.CronJob, def taskDefinition, runOnStart bool) model.RetVal {
+	spec := "@every " + cronJob.Schedule.String()
+	schedule, err := cron.ParseStandard(spec)
+	if err != nil {
+		return model.RetVal{Msg: "Invalid cron schedule", Attr: map[string]any{"Name": cronJob.Name, "Schedule": spec, "Error": err.Error()}}
+	}
+	if runOnStart {
+		schedule = &startupSchedule{Schedule: schedule, pending: true}
+	}
 	if value, ok := taskEntries.Load(cronJob.Name); ok {
 		c.Remove(value.(cron.EntryID))
 		taskEntries.Delete(cronJob.Name)
 	}
-	spec := "@every " + cronJob.Schedule.String()
-	entryID, err := c.AddFunc(spec, exec(def.name, def.run))
-	if err != nil {
-		return model.RetVal{Msg: "Invalid cron schedule", Attr: map[string]any{"Name": cronJob.Name, "Schedule": spec, "Error": err.Error()}}
-	}
+	entryID := c.Schedule(schedule, cron.FuncJob(exec(def.name, def.run)))
 	taskEntries.Store(cronJob.Name, entryID)
 	log.Logger.Infof("Cron job loaded: %s (%s)", cronJob.Name, spec)
 	return model.SuccessRetVal()

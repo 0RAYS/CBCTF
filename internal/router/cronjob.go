@@ -46,9 +46,11 @@ func UpdateCronJob(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	if ret = cron.ReloadCronJob(cronJob.Name); !ret.OK {
-		resp.JSON(ctx, ret)
-		return
+	if form.Schedule != nil {
+		if ret = cron.ReloadCronJob(cronJob.Name); !ret.OK {
+			resp.JSON(ctx, ret)
+			return
+		}
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetCronJobResp(cronJob)))

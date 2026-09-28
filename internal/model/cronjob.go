@@ -21,16 +21,16 @@ const (
 
 var CronJobs = []CronJob{
 	{Name: WarmChallengeImagesCronJob, Description: "预热未结束比赛引用题目的镜像并复查拉取失败节点", Schedule: 15 * time.Minute},
-	{Name: CloseTimeoutVictimsCronJob, Description: "关闭运行超时的靶机实例", Schedule: time.Minute},
-	{Name: CloseUnCtrlVictimsCronJob, Description: "清理数据库外仍在运行的失控靶机实例", Schedule: 10 * time.Minute},
+	{Name: CloseTimeoutVictimsCronJob, Description: "关闭运行超时的靶机实例", Schedule: time.Minute, RunOnStart: true},
+	{Name: CloseUnCtrlVictimsCronJob, Description: "清理数据库外仍在运行的失控靶机实例", Schedule: 10 * time.Minute, RunOnStart: true},
 	{Name: SyncFrpsPortLocksCronJob, Description: "校准 FRPS 端口占用缓存", Schedule: 10 * time.Minute},
-	{Name: ClearEmptyTeamCronJob, Description: "清理没有成员的空队伍", Schedule: 5 * time.Minute},
-	{Name: UpdateFlagScoreCronJob, Description: "重算比赛题目 Flag 分数和解题人数", Schedule: 5 * time.Minute},
-	{Name: UpdateUserRankingCronJob, Description: "全量刷新用户得分和排名", Schedule: 3 * time.Hour},
-	{Name: UpdateTeamRankingCronJob, Description: "全量刷新队伍得分和排名", Schedule: 5 * time.Minute},
-	{Name: StopUnCtrlGeneratorCronJob, Description: "清理未受数据库管控的附件生成器 Pod", Schedule: 10 * time.Minute},
+	{Name: ClearEmptyTeamCronJob, Description: "清理没有成员的空队伍", Schedule: 5 * time.Minute, RunOnStart: true},
+	{Name: UpdateFlagScoreCronJob, Description: "重算比赛题目 Flag 分数和解题人数", Schedule: 5 * time.Minute, RunOnStart: true},
+	{Name: UpdateUserRankingCronJob, Description: "全量刷新用户得分和排名", Schedule: 3 * time.Hour, RunOnStart: true},
+	{Name: UpdateTeamRankingCronJob, Description: "全量刷新队伍得分和排名", Schedule: 5 * time.Minute, RunOnStart: true},
+	{Name: StopUnCtrlGeneratorCronJob, Description: "清理未受数据库管控的附件生成器 Pod", Schedule: 10 * time.Minute, RunOnStart: true},
 	{Name: ClearSubmissionMutexCronJob, Description: "清理解题提交锁缓存", Schedule: 10 * time.Minute},
-	{Name: CheckCheatCronJob, Description: "扫描并分析比赛作弊事件", Schedule: 10 * time.Minute},
+	{Name: CheckCheatCronJob, Description: "扫描并分析比赛作弊事件", Schedule: 10 * time.Minute, RunOnStart: true},
 	{Name: ClearCheatMutexCronJob, Description: "清理作弊检测锁缓存", Schedule: 10 * time.Minute},
 	{Name: ClearJoinTeamMutexCronJob, Description: "清理队伍加入锁缓存", Schedule: 10 * time.Minute},
 	{Name: ReindexPostgresCronJob, Description: "并发重建 PostgreSQL 数据库索引", Schedule: 24 * time.Hour},
@@ -46,4 +46,5 @@ type CronJob struct {
 	DefaultSchedule time.Duration `gorm:"not null;default:0" json:"default_schedule"`
 	Success         int64         `gorm:"default:0" json:"success"`
 	Failure         int64         `gorm:"default:0" json:"failure"`
+	RunOnStart      bool          `gorm:"not null;default:false" json:"run_on_start"`
 }

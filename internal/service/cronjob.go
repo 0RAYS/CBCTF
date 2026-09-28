@@ -20,7 +20,8 @@ func UpdateCronJob(tx *gorm.DB, cronJob model.CronJob, form dto.UpdateCronJobFor
 		schedule = new(time.Duration(*form.Schedule) * time.Second)
 	}
 	if ret := db.InitCronJobRepo(tx).Update(cronJob.ID, db.UpdateCronJobOptions{
-		Schedule: schedule,
+		Schedule:   schedule,
+		RunOnStart: form.RunOnStart,
 	}); !ret.OK {
 		return model.CronJob{}, ret
 	}

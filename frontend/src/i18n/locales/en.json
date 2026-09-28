@@ -248,6 +248,7 @@
         "name": "Contest",
         "status": "Status",
         "schedule": "Schedule",
+        "runOnStart": "Run on startup",
         "metrics": "Metrics",
         "actions": "Actions"
       },
@@ -1998,12 +1999,14 @@
       "empty": "No cron jobs",
       "modal": {
         "editTitle": "Edit Cron Job",
-        "scheduleOnlyHint": "Only cron schedule can be changed"
+        "editHint": "You can change the run interval and startup execution setting"
       },
       "form": {
         "nameLabel": "Job name",
         "descriptionLabel": "Description",
         "scheduleLabel": "Run interval *",
+        "runOnStartLabel": "Run once immediately when the server starts",
+        "runOnStartHint": "Takes effect on the next server startup. Saving does not run the job immediately. When off, the job still runs at its configured interval.",
         "hoursPlaceholder": "Hours",
         "minutesPlaceholder": "Minutes",
         "secondsPlaceholder": "Seconds",

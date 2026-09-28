@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { IconEdit } from '@tabler/icons-react';
 import { Button, Input, List, Modal, Pagination } from '../../components/common';
+import Checkbox from '../../components/common/Checkbox';
 import { getCronJobList, updateCronJob } from '../../api/admin/cronjob';
 import { toast } from '../../utils/toast';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +12,7 @@ const DEFAULT_FORM = {
   hours: '0',
   minutes: '0',
   seconds: '0',
+  run_on_start: false,
 };
 
 function splitDuration(durationSeconds) {
@@ -94,7 +96,10 @@ function CronJobs() {
 
   const openEditModal = (cronJob) => {
     setSelectedCronJob(cronJob);
-    setForm(splitDuration(cronJob.schedule));
+    setForm({
+      ...splitDuration(cronJob.schedule),
+      run_on_start: cronJob.run_on_start,
+    });
     setIsModalOpen(true);
   };
 
@@ -105,6 +110,7 @@ function CronJobs() {
         const currentSeconds = selectedCronJob.schedule;
         const payload = {};
         if (durationSeconds !== currentSeconds) payload.schedule = durationSeconds;
+        if (form.run_on_start !== selectedCronJob.run_on_start) payload.run_on_start = form.run_on_start;
         if (Object.keys(payload).length === 0) {
           setIsModalOpen(false);
           return;
@@ -154,6 +160,11 @@ function CronJobs() {
       width: '14%',
     },
     {
+      key: 'runOnStart',
+      label: t('admin.cronjobs.columns.runOnStart'),
+      width: '10%',
+    },
+    {
       key: 'successCount',
       label: t('admin.cronjobs.columns.successCount'),
       width: '10%',
@@ -191,6 +202,12 @@ function CronJobs() {
         return <span className="text-neutral-300 text-sm">{cronJob.description || t('common.none')}</span>;
       case 'schedule':
         return <span className="text-neutral-300 font-mono text-sm">{formatDuration(cronJob.schedule, t)}</span>;
+      case 'runOnStart':
+        return (
+          <span className={cronJob.run_on_start ? 'text-geek-400 text-sm' : 'text-neutral-400 text-sm'}>
+            {t(cronJob.run_on_start ? 'common.toggle.enabled' : 'common.toggle.disabled')}
+          </span>
+        );
       case 'successCount':
         return <span className="text-emerald-300 text-sm font-medium">{cronJob.success ?? 0}</span>;
       case 'failureCount':
@@ -236,6 +253,7 @@ function CronJobs() {
     <div className="w-full mx-auto">
       <div className="rounded-md bg-neutral-900 overflow-hidden p-6">
         <List
+          minWidth={1500}
           data={cronJobs}
           columns={columns}
           renderCell={renderCell}
@@ -275,7 +293,7 @@ function CronJobs() {
         }
       >
         <div className="space-y-4">
-          <p className="text-sm text-neutral-400">{t('admin.cronjobs.modal.scheduleOnlyHint')}</p>
+          <p className="text-sm text-neutral-400">{t('admin.cronjobs.modal.editHint')}</p>
           <div>
             <label className="block text-neutral-300 text-sm font-medium mb-2">
               {t('admin.cronjobs.form.nameLabel')}
@@ -359,6 +377,17 @@ function CronJobs() {
               {t('admin.cronjobs.form.durationPreviewLabel')}
             </label>
             <Input type="text" value={formatDuration(previewDurationNs, t)} fullWidth disabled />
+          </div>
+          <div className="space-y-2">
+            <Checkbox
+              checked={form.run_on_start}
+              onChange={(e) => setForm((prev) => ({ ...prev, run_on_start: e.target.checked }))}
+              label={t('admin.cronjobs.form.runOnStartLabel')}
+              aria-describedby="cronjob-run-on-start-hint"
+            />
+            <p id="cronjob-run-on-start-hint" className="text-sm text-neutral-400">
+              {t('admin.cronjobs.form.runOnStartHint')}
+            </p>
           </div>
         </div>
       </Modal>
