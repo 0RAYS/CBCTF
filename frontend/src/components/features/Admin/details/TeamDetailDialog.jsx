@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Avatar, Button, Card, EmptyState, Modal } from '../../../common';
 import AdminContestTeamDetail from '../Contests/teams/TeamDetailPanels';
 import { useUserDetailDialog } from './useUserDetailDialog';
+import TruncatedText from '../../../common/TruncatedText';
 
 const TABS = ['info', 'flags', 'submissions', 'writeups', 'containers'];
 
@@ -62,8 +63,8 @@ function AdminTeamDetailDialog({
       <div className="flex items-start gap-4">
         <Avatar src={team.picture} name={team.name} size="lg" className="border border-neutral-300/30" />
         <div className="min-w-0 flex-1">
-          <h3 className="text-lg font-mono text-neutral-50 font-medium">{team.name}</h3>
-          <p className="text-sm text-neutral-400 mt-1">
+          <h3 className="text-lg font-mono text-neutral-50 font-medium [overflow-wrap:anywhere]">{team.name}</h3>
+          <p className="text-sm text-neutral-400 mt-1 [overflow-wrap:anywhere]">
             {team.description || t('admin.contests.teams.detail.info.noDescription')}
           </p>
           <div className="flex items-center gap-2 mt-2">
@@ -85,7 +86,9 @@ function AdminTeamDetailDialog({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card variant="default" padding="md">
           <div className="text-xs font-mono text-neutral-400 mb-1">{t('admin.contests.teams.detail.info.score')}</div>
-          <div className="text-lg font-mono text-neutral-50">{team.score?.toLocaleString() || 0}</div>
+          <TruncatedText className="text-lg font-mono text-neutral-50">
+            {team.score?.toLocaleString() || 0}
+          </TruncatedText>
         </Card>
         <Card
           variant="default"
@@ -93,9 +96,9 @@ function AdminTeamDetailDialog({
           onClick={team.captain_id ? () => openUserDetail(team.captain_id) : undefined}
         >
           <div className="text-xs font-mono text-neutral-400 mb-1">{t('admin.contests.teams.detail.info.captain')}</div>
-          <div className={`text-lg font-mono ${team.captain_id ? 'text-geek-400' : 'text-neutral-50'}`}>
+          <TruncatedText className={`text-lg font-mono ${team.captain_id ? 'text-geek-400' : 'text-neutral-50'}`}>
             {team.captain_id || '-'}
-          </div>
+          </TruncatedText>
         </Card>
         <Card variant="default" padding="md">
           <div className="text-xs font-mono text-neutral-400 mb-1">
@@ -105,7 +108,7 @@ function AdminTeamDetailDialog({
         </Card>
         <Card variant="default" padding="md">
           <div className="text-xs font-mono text-neutral-400 mb-1">{t('admin.contests.teams.detail.info.members')}</div>
-          <div className="text-lg font-mono text-neutral-50">{team.users || 0}</div>
+          <TruncatedText className="text-lg font-mono text-neutral-50">{team.users || 0}</TruncatedText>
         </Card>
       </div>
 
@@ -122,44 +125,55 @@ function AdminTeamDetailDialog({
           </Card>
         ) : (
           <Card variant="default" padding="none" className="overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-neutral-800/50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider">
-                    {t('admin.contests.teams.detail.info.memberId')}
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider">
-                    {t('admin.contests.teams.detail.info.memberName')}
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider">
-                    {t('admin.contests.teams.detail.info.memberRole')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-700">
-                {members.map((member) => (
-                  <tr
-                    key={member.id}
-                    className="hover:bg-neutral-800/30 transition-colors cursor-pointer"
-                    onClick={() => openUserDetail(member.id)}
-                  >
-                    <td className="px-4 py-2 text-sm font-mono text-geek-400">{member.id}</td>
-                    <td className="px-4 py-2 text-sm font-mono text-geek-400">{member.name}</td>
-                    <td className="px-4 py-2">
-                      {member.id === team.captain_id ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-mono bg-geek-500/20 text-geek-400">
-                          {t('admin.contests.teams.detail.info.captainBadge')}
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded text-xs font-mono bg-neutral-400/20 text-neutral-400">
-                          {t('admin.contests.teams.detail.info.memberBadge')}
-                        </span>
-                      )}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px] table-fixed">
+                <colgroup>
+                  <col style={{ width: 100 }} />
+                  <col />
+                  <col style={{ width: 128 }} />
+                </colgroup>
+                <thead className="bg-neutral-800/50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider">
+                      {t('admin.contests.teams.detail.info.memberId')}
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider">
+                      {t('admin.contests.teams.detail.info.memberName')}
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider">
+                      {t('admin.contests.teams.detail.info.memberRole')}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-neutral-700">
+                  {members.map((member) => (
+                    <tr
+                      key={member.id}
+                      className="hover:bg-neutral-800/30 transition-colors cursor-pointer"
+                      onClick={() => openUserDetail(member.id)}
+                    >
+                      <td className="px-4 py-2 text-sm font-mono text-geek-400">
+                        <TruncatedText>{member.id}</TruncatedText>
+                      </td>
+                      <td className="px-4 py-2 text-sm font-mono text-geek-400">
+                        <TruncatedText>{member.name}</TruncatedText>
+                      </td>
+                      <td className="px-4 py-2">
+                        {member.id === team.captain_id ? (
+                          <span className="px-2 py-0.5 rounded text-xs font-mono bg-geek-500/20 text-geek-400">
+                            {t('admin.contests.teams.detail.info.captainBadge')}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-xs font-mono bg-neutral-400/20 text-neutral-400">
+                            {t('admin.contests.teams.detail.info.memberBadge')}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Card>
         )}
       </div>

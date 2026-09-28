@@ -1,11 +1,14 @@
 import { motion } from 'motion/react';
 import Button from '../../common/Button';
 import ScrollingText from '../../common/ScrollingText';
+import TruncatedText from '../../common/TruncatedText';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useBranding } from '../../../hooks/useBranding';
 
 const RANK_COLORS = ['text-rank-gold', 'text-rank-silver', 'text-rank-bronze'];
+const ROW_LAYOUT =
+  'grid min-w-[320px] grid-cols-[2rem_minmax(0,1fr)_6rem_3rem] sm:grid-cols-[3rem_minmax(0,1fr)_8rem_4rem] gap-2 sm:gap-4 items-center px-3 sm:px-5';
 
 function LeaderboardPreview({ topUsers, isLoading }) {
   const navigate = useNavigate();
@@ -35,26 +38,26 @@ function LeaderboardPreview({ topUsers, isLoading }) {
 
         {/* Leaderboard rows — header row for structure */}
         <motion.div
-          className="border border-neutral-600/60 rounded-md overflow-hidden"
+          className="min-w-0 border border-neutral-600/60 rounded-md overflow-x-auto"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.4 }}
         >
           {/* Column header */}
-          <div className="grid grid-cols-[48px_1fr_auto_auto] gap-4 items-center px-5 py-2 border-b border-neutral-700/60 bg-neutral-800/40">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
+          <div className={`${ROW_LAYOUT} py-2 border-b border-neutral-700/60 bg-neutral-800/40`}>
+            <TruncatedText className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
               {t('common.scoreboard.headers.rank')}
-            </span>
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
+            </TruncatedText>
+            <TruncatedText className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
               {t('common.scoreboard.headers.team')}
-            </span>
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em] text-right">
+            </TruncatedText>
+            <TruncatedText className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em] text-right">
               {t('common.scoreboard.headers.score')}
-            </span>
-            <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em] text-right w-16">
+            </TruncatedText>
+            <TruncatedText className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em] text-right">
               {t('common.solved')}
-            </span>
+            </TruncatedText>
           </div>
 
           {isLoading
@@ -68,7 +71,7 @@ function LeaderboardPreview({ topUsers, isLoading }) {
               topUsers.map((team, index) => (
                 <motion.div
                   key={index}
-                  className={`grid grid-cols-[48px_1fr_auto_auto] gap-4 items-center px-5 py-3
+                  className={`${ROW_LAYOUT} py-3
                               ${index !== topUsers.length - 1 ? 'border-b border-neutral-700/50' : ''}
                               hover:bg-neutral-700/20 transition-colors duration-150 cursor-pointer group`}
                   initial={{ opacity: 0 }}
@@ -83,8 +86,8 @@ function LeaderboardPreview({ topUsers, isLoading }) {
                     maxWidth={240}
                     speed={15}
                   />
-                  <span className="text-sm font-mono text-geek-400 text-right">{team.score}</span>
-                  <span className="text-sm font-mono text-neutral-300 text-right w-16">{team.solved}</span>
+                  <TruncatedText className="text-sm font-mono text-geek-400 text-right">{team.score}</TruncatedText>
+                  <TruncatedText className="text-sm font-mono text-neutral-300 text-right">{team.solved}</TruncatedText>
                 </motion.div>
               ))}
         </motion.div>

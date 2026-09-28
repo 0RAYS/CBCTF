@@ -4,6 +4,7 @@ import { Button, Card, EmptyState, Pagination } from '../../../common';
 import AutoRefreshControl from '../../../common/AutoRefreshControl';
 import useContextMenu from '../../../common/useContextMenu';
 import RowActions from '../../../common/RowActions';
+import TruncatedText from '../../../common/TruncatedText';
 
 export function VictimTable({
   t,
@@ -34,6 +35,7 @@ export function VictimTable({
   VictimStatusBadge,
 }) {
   const stoppableCount = containers.filter(isVictimStoppable).length;
+  const columnWidths = [48, 80, ...(!contestId ? [100] : []), 180, 180, 180, 256, 176, 136, 136, 176];
   const getRowActions = (container) => [
     {
       key: 'graph',
@@ -100,7 +102,12 @@ export function VictimTable({
         {contextMenu.hint}
         {contextMenu.menu}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed" style={{ minWidth: columnWidths.reduce((a, b) => a + b, 0) }}>
+            <colgroup>
+              {columnWidths.map((width, index) => (
+                <col key={index} style={{ width }} />
+              ))}
+            </colgroup>
             <thead>
               <tr className="bg-black/40">
                 <th className="p-4 text-left text-neutral-400 font-mono">
@@ -158,9 +165,9 @@ export function VictimTable({
                     <TableCell>{container.id}</TableCell>
                     {!contestId && (
                       <TableCell>
-                        <span className="px-2 py-0.5 rounded border border-geek-400/30 text-geek-400 text-xs">
+                        <TruncatedText className="px-2 py-0.5 rounded border border-geek-400/30 text-geek-400 text-xs">
                           {container.contest_id ?? '-'}
-                        </span>
+                        </TruncatedText>
                       </TableCell>
                     )}
                     <TableCell>{container.challenge}</TableCell>
@@ -168,13 +175,13 @@ export function VictimTable({
                     <TableCell>{container.user}</TableCell>
                     <td className="p-4 text-neutral-300 font-mono">
                       {container.remote && container.remote.length > 0 ? (
-                        <div className="space-y-1">
+                        <div className="max-h-32 space-y-1 overflow-y-auto">
                           {container.remote.map((addr, remoteIndex) => (
                             <div
                               key={remoteIndex}
                               className="text-xs bg-black/30 text-geek-400 px-2 py-1 rounded border border-geek-400/30"
                             >
-                              {addr}
+                              <TruncatedText>{addr}</TruncatedText>
                             </div>
                           ))}
                         </div>
@@ -187,11 +194,11 @@ export function VictimTable({
                       <VictimStatusBadge status={container.status} t={t} translationKey={translationKey} />
                     </td>
                     <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">
-                      <span
+                      <TruncatedText
                         className={`px-2 py-1 rounded-md text-xs font-mono border ${getContainerStatusStyle(container.remaining)}`}
                       >
                         {formatRemaining(container.remaining)}
-                      </span>
+                      </TruncatedText>
                     </td>
                     <td className="p-4 min-w-44">
                       <RowActions actions={getRowActions(container)} />
@@ -220,9 +227,21 @@ export function VictimTable({
 }
 
 function TableHeader({ children }) {
-  return <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">{children}</th>;
+  return (
+    <th className="p-4 text-left text-neutral-400 font-mono">
+      <TruncatedText>{children}</TruncatedText>
+    </th>
+  );
 }
 
 function TableCell({ children }) {
-  return <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">{children}</td>;
+  return (
+    <td className="p-4 text-neutral-300 font-mono">
+      {typeof children === 'string' || typeof children === 'number' ? (
+        <TruncatedText>{children}</TruncatedText>
+      ) : (
+        children
+      )}
+    </td>
+  );
 }

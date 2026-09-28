@@ -15,13 +15,13 @@ function AdminTopbar({
   const resolvedUserName = userName || t('admin.topbar.defaultUser');
 
   return (
-    <div className="sticky top-0 z-20 flex items-center justify-between h-[70px] px-4 md:px-8 bg-black/40 backdrop-blur-[2px] border-b border-neutral-300/30">
-      <div className="flex items-center gap-3">
+    <div className="sticky top-0 z-20 flex items-center justify-between gap-3 h-[70px] px-4 md:px-8 bg-black/40 backdrop-blur-[2px] border-b border-neutral-300/30">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         {showSidebarToggle && (
           <button
             type="button"
             onClick={onToggleSidebar}
-            className="md:hidden w-9 h-9 border border-neutral-300/30 rounded-md flex items-center justify-center text-neutral-300 hover:text-neutral-100 hover:border-neutral-100 transition-colors"
+            className="md:hidden shrink-0 w-9 h-9 border border-neutral-300/30 rounded-md flex items-center justify-center text-neutral-300 hover:text-neutral-100 hover:border-neutral-100 transition-colors"
             aria-label={t('admin.topbar.toggleSidebar')}
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,13 +31,19 @@ function AdminTopbar({
             </svg>
           </button>
         )}
-        <div>
-          <div className="text-lg font-mono text-neutral-100 tracking-wider">{title}</div>
-          {subtitle && <div className="text-xs font-mono text-neutral-500 mt-1">{subtitle}</div>}
+        <div className="min-w-0">
+          <div className="truncate text-lg font-mono text-neutral-100 tracking-wider" title={title}>
+            {title}
+          </div>
+          {subtitle && (
+            <div className="truncate text-xs font-mono text-neutral-500 mt-1" title={subtitle}>
+              {subtitle}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
         <LanguageSwitcher size="sm" />
         <button
           type="button"
@@ -45,8 +51,10 @@ function AdminTopbar({
           className="flex items-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 rounded-md"
           onClick={onAvatarClick}
         >
-          <div className="text-right">
-            <div className="text-sm font-mono text-neutral-200">{resolvedUserName}</div>
+          <div className="hidden sm:block max-w-36 text-right">
+            <div className="truncate text-sm font-mono text-neutral-200" title={resolvedUserName}>
+              {resolvedUserName}
+            </div>
             <div className="text-xs text-neutral-500">{t('admin.topbar.role')}</div>
           </div>
           <div className="relative group">

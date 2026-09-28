@@ -6,6 +6,7 @@ import { getFlagSolvers } from '../../../../../api/admin/challenge';
 import { toast } from '../../../../../utils/toast';
 import { useUserDetailDialog } from '../../details/useUserDetailDialog';
 import { useTeamDetailDialog } from '../../details/useTeamDetailDialog';
+import TruncatedText from '../../../../common/TruncatedText';
 
 function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, flagId }) {
   const { t } = useTranslation();
@@ -48,7 +49,7 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
         title={t('admin.contests.challengeModal.solversModal.title', { index: flagIndex + 1 })}
       >
         {/* Body */}
-        <div className="p-4 max-h-[60vh] overflow-y-auto">
+        <div className="p-4 max-h-[60vh] overflow-auto">
           {loading ? (
             <p className="text-center text-sm font-mono text-neutral-400 py-8">
               {t('admin.contests.challengeModal.solversModal.loading')}
@@ -58,7 +59,14 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
               {t('admin.contests.challengeModal.solversModal.empty')}
             </p>
           ) : (
-            <table className="w-full text-sm font-mono">
+            <table className="w-full min-w-[640px] table-fixed text-sm font-mono">
+              <colgroup>
+                <col style={{ width: 48 }} />
+                <col />
+                <col />
+                <col style={{ width: 112 }} />
+                <col style={{ width: 160 }} />
+              </colgroup>
               <thead>
                 <tr className="border-b border-neutral-700 text-neutral-400">
                   <th className="text-left py-2 pr-4 w-12" scope="col">
@@ -95,30 +103,34 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
                     <td className="py-2 pr-4">
                       {solver.user_id ? (
                         <button
-                          className="text-neutral-200 hover:text-geek-400 transition-colors cursor-pointer text-left"
+                          className="block max-w-full text-neutral-200 hover:text-geek-400 transition-colors cursor-pointer text-left"
                           onClick={() => openUserDetail(solver.user_id)}
                         >
-                          {solver.user_name || '—'}
+                          <TruncatedText>{solver.user_name || '—'}</TruncatedText>
                         </button>
                       ) : (
-                        <span className="text-neutral-200">{solver.user_name || '—'}</span>
+                        <TruncatedText className="text-neutral-200">{solver.user_name || '—'}</TruncatedText>
                       )}
                     </td>
                     <td className="py-2 pr-4">
                       {solver.team_id ? (
                         <button
-                          className="text-neutral-300 hover:text-geek-400 transition-colors cursor-pointer text-left"
+                          className="block max-w-full text-neutral-300 hover:text-geek-400 transition-colors cursor-pointer text-left"
                           onClick={() => openTeamDetail(solver.team_id)}
                         >
-                          {solver.team_name || '—'}
+                          <TruncatedText>{solver.team_name || '—'}</TruncatedText>
                         </button>
                       ) : (
-                        <span className="text-neutral-300">{solver.team_name || '—'}</span>
+                        <TruncatedText className="text-neutral-300">{solver.team_name || '—'}</TruncatedText>
                       )}
                     </td>
-                    <td className="py-2 pr-4 text-right text-geek-400">{solver.score}</td>
+                    <td className="py-2 pr-4 text-right text-geek-400">
+                      <TruncatedText>{solver.score}</TruncatedText>
+                    </td>
                     <td className="py-2 text-right text-neutral-400 text-xs">
-                      {solver.solved_at ? new Date(solver.solved_at).toLocaleString() : '—'}
+                      <TruncatedText>
+                        {solver.solved_at ? new Date(solver.solved_at).toLocaleString() : '—'}
+                      </TruncatedText>
                     </td>
                   </tr>
                 ))}

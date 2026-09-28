@@ -2933,6 +2933,11 @@
       "total": "总计",
       "toast": {
         "fetchFailed": "获取排行榜失败"
+      },
+      "timeline": {
+        "title": "上分曲线",
+        "teams": "按排名排序的队伍",
+        "failed": "获取上分曲线失败"
       }
     },
     "countdown": {
