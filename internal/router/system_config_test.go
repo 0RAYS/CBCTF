@@ -38,9 +38,9 @@ func TestSystemConfigExposesEditableSettings(t *testing.T) {
 	if response.Code != 200 {
 		t.Fatal(recorder.Body.String())
 	}
-	formType := reflect.TypeOf(dto.UpdateSettingForm{})
-	for i := 0; i < formType.NumField(); i++ {
-		key := formType.Field(i).Tag.Get("json")
+	formType := reflect.TypeFor[dto.UpdateSettingForm]()
+	for field := range formType.Fields() {
+		key := field.Tag.Get("json")
 		if key == "gin_jwt_secret" {
 			continue
 		}
