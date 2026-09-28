@@ -23,7 +23,10 @@ export function mapTeamSettings(teamInfo, members, inviteCode) {
 }
 
 export function teamUpdatePayload(team) {
-  return { name: team.name, description: team.description };
+  const payload = { name: team.name, description: team.description };
+  const captainId = Number(team.newLeader);
+  if (Number.isSafeInteger(captainId) && captainId > 0) payload.captain_id = captainId;
+  return payload;
 }
 
 // A refresh must not overwrite fields changed after it started.

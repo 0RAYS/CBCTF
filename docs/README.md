@@ -12,6 +12,7 @@ pnpm dev
 ## 构建与预览
 
 ```bash
+pnpm check
 pnpm build
 pnpm preview
 ```
@@ -33,6 +34,7 @@ DOCS_BASE=/CBCTF/ pnpm build
 - 内容统一放在 `docs/` 下，按「开始」「部署」「功能」「管理员」组织。
 - 使用 `_nav.json` 和 `_meta.json` 控制导航与侧边栏顺序，不通过文件名前缀排序。
 - 每个页面需要包含 `title` 和 `description` frontmatter，用于 SEO、站内搜索和 `llms.txt`。
+- Frontmatter 必须放在文件最前面，MDX `import` 放在其后；`pnpm check` 检查元数据及本地链接、图片、侧边栏条目。
 - 以任务为导向编写标题和示例，保持代码块最小、可复制、版本准确。
 - 新增 MDX 组件前优先使用 Rspress 内置组件；全局样式放在 `styles/global.css`。
 
@@ -45,6 +47,12 @@ DOCS_BASE=/CBCTF/ pnpm build
 - 与每个页面对应的 Markdown 文件
 
 这些文件依赖页面 frontmatter 的描述质量。新增页面时请同步补充准确的中文 `description`。
+
+## 与实现核对
+
+更新使用文档时，沿前端表单/按钮、`frontend/src/api`、`internal/router/router.go`、DTO 与 service 检查实际操作。安装参数应同时核对 `chart/values.yaml`、模板、`internal/config` 和数据库 settings，不要把后端存在的接口直接写成界面已经提供的操作。
+
+本次对照的版本由 `go.mod`、`frontend/package.json` 和 `chart/Chart.yaml` 决定。部署差异与已知边界写入相关功能页，不依赖旧截图判断行为。Chart 渲染回归检查可从仓库根目录执行 `go test ./chart`，需要 PATH 中存在 Helm，或设置 `HELM_BIN`。
 
 ## 调试
 

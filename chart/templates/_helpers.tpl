@@ -113,7 +113,7 @@ PostgreSQL service hostname
 */}}
 {{- define "cbctf.postgres.host" -}}
 {{- if .Values.postgres.enabled }}
-{{- include "cbctf.postgres.fullname" . }}
+{{- printf "%s.%s" (include "cbctf.postgres.fullname" .) .Release.Namespace }}
 {{- else }}
 {{- required "postgres.externalHost is required when postgres.enabled is false" .Values.postgres.externalHost }}
 {{- end }}
@@ -124,7 +124,7 @@ Redis service hostname
 */}}
 {{- define "cbctf.redis.host" -}}
 {{- if .Values.redis.enabled }}
-{{- include "cbctf.redis.fullname" . }}
+{{- printf "%s.%s" (include "cbctf.redis.fullname" .) .Release.Namespace }}
 {{- else }}
 {{- required "redis.externalHost is required when redis.enabled is false" .Values.redis.externalHost }}
 {{- end }}

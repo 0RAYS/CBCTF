@@ -25,6 +25,7 @@ const (
 	CaptureContainerName = "capture"
 	NginxContainerName   = "nginx"
 	FrpcContainerName    = "frpc"
+	nfsVolumeName        = "shared-data"
 )
 
 var (
@@ -34,12 +35,15 @@ var (
 	virtClient      *virtclient.Clientset
 	kubeConfig      *rest.Config
 	globalNamespace string
-	nfsVolumeName   string
+	nfsVolumeClaim  string
 )
 
 func Init() {
 	globalNamespace = config.Env.K8S.Namespace
-	nfsVolumeName = fmt.Sprintf("%s-shared-volume", globalNamespace)
+	nfsVolumeClaim = config.Env.K8S.SharedVolumeClaim
+	if nfsVolumeClaim == "" {
+		nfsVolumeClaim = fmt.Sprintf("%s-shared-volume", globalNamespace)
+	}
 	initClients()
 	checkPermissions()
 	checkResources()

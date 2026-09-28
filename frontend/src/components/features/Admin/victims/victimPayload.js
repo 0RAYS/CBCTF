@@ -30,5 +30,5 @@ export function buildVictimStartPayload(challenges, percentage, durationInput) {
 }
 
 export function estimateVictimTeams(total, percentage) {
-  return total > 0 && percentage > 0 && percentage < 100 ? Math.max(1, Math.floor((total * percentage) / 100)) : 0;
+  return total > 0 && percentage > 0 && percentage <= 100 ? Math.max(1, Math.floor((total * percentage) / 100)) : 0;
 }

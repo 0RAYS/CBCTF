@@ -69,6 +69,8 @@ redis:
 k8s:
   # Also as prefix of resources
   namespace: cbctf
+  # Deployment-only; empty uses {namespace}-shared-volume
+  shared_volume_claim: ""
   # Docker image
   capture: ghcr.io/domcyrus/rustnet:latest
   capture_enabled: true

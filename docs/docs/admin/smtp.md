@@ -1,25 +1,32 @@
 ---
 title: 邮件配置
-description: 配置 CBCTF SMTP 发信、邮箱验证、密码找回和邮件模板相关设置。
+description: 在管理后台配置 SMTP、测试发信，并排查邮箱验证、密码找回和发送历史。
 ---
 
 # 邮件配置
 
-CBCTF 通过 SMTP 发送邮件（目前用于邮箱验证功能）。
+平台通过 SMTP 发送邮箱验证、密码重置和管理员测试邮件。入口为「管理后台 → SMTP」。
 
-## SMTP 字段
+## 配置步骤
 
-| 字段        | 类型     | 说明                               |
-|-----------|--------|----------------------------------|
-| `address` | string | 发件人邮箱地址（如 `noreply@example.com`） |
-| `host`    | string | SMTP 服务器地址                       |
-| `port`    | int    | SMTP 端口（通常 25/465/587）           |
-| `pwd`     | string | SMTP 账号密码或授权码                    |
-| `on`      | bool   | 是否启用该 SMTP 服务器                   |
+1. 创建 SMTP，填写邮箱、服务器地址、端口及密码或授权码。
+2. 如需参与自动发信，勾选「启用」。平台从启用且成功连接的账号池中随机选择发件账号。
+3. 保存后使用「测试」，填写收件邮箱，确认实际收信。
+4. 查看该配置或全局邮件历史，再用普通账号验证注册邮件与密码找回。
 
-## 添加 SMTP 服务器
+测试邮件使用指定 SMTP 直接发信，不经过随机账号池，也不要求该配置已启用。测试成功不等于其他启用账号都可用。
 
-通过 `POST /admin/smtp`（`admin:smtp:create`）创建：
+## 字段
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `address` | string | 发件邮箱，同时用作 SMTP 登录账号 |
+| `host` | string | SMTP 服务器主机名 |
+| `port` | int | 通常为 465 或 587，按服务商要求填写 |
+| `pwd` | string | 密码或应用授权码 |
+| `on` | bool | 创建/编辑时控制是否启用 |
+
+当前表单没有独立的 SMTP 用户名、TLS 模式或证书设置；使用 gomail 的端口/TLS 行为。编辑界面密码留空时保留原密码。
 
 ```json
 {
@@ -31,21 +38,21 @@ CBCTF 通过 SMTP 发送邮件（目前用于邮箱验证功能）。
 }
 ```
 
-## 多 SMTP 服务器
+## 验证与密码找回
 
-可以配置多个 SMTP 服务器，平台发送邮件时会从启用的服务器列表中随机选择一个。适用于负载均衡或备用 SMTP 场景。
+- 本地注册自动提交验证邮件任务；个人设置可重新发送，需 `self:activate` 权限。
+- 验证邮件打开 `{host}/platform/#/verify?token=...`，页面调用 `POST /verify` 完成验证。
+- 登录页“忘记密码”发送重置链接，打开 `{host}/platform/#/reset-password?token=...`；成功重置同时标记邮箱已验证。
+- `host` 必须是收件人可访问的地址。注册成功或任务入队不表示邮件已送达，需要检查任务和邮件历史。
 
-## 邮件使用场景
+## 权限与排查
 
-目前 CBCTF 使用邮件的场景：
+创建使用 `admin:smtp:create`，测试使用 `admin:smtp:test`，邮件列表使用 `admin:smtp:list`。相关接口：
 
-- **邮箱验证**：用户调用 `POST /me/activate` 后，平台发送含激活链接的验证邮件
+```text
+POST /admin/smtp/:smtpID/test          请求 {"to":"recipient@example.com"}
+GET  /admin/smtp/:smtpID/email         指定账号邮件历史
+GET  /admin/email                     全局邮件历史
+```
 
-## 启用邮箱验证的前置条件
-
-1. 配置至少一个启用状态的 SMTP 服务器
-2. 为 `user` 角色（或相关角色）分配 `self:activate` 权限，用户才能触发发送激活邮件
-
-## 发送统计
-
-通过 `GET /admin/smtp/:smtpID/email`（`admin:smtp:list`）查看该 SMTP 服务器的邮件发送历史，包含成功/失败次数和详细日志。
+若测试成功但验证邮件失败，检查 Redis、Asynq 邮件任务、SMTP 启用状态，以及其他启用账号是否连接成功。若账号池为空，可修复配置后重新保存启用状态或重启服务以重新连接。

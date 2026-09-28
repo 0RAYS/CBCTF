@@ -216,7 +216,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			nfsVolume := corev1.Volume{
 				Name: nfsVolumeName,
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: nfsVolumeName,
+					ClaimName: nfsVolumeClaim,
 				},
 			}
 			containers := []corev1.Container{

@@ -3,6 +3,7 @@ package webhook
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -125,5 +126,8 @@ func SendPayload(event model.Event, target model.Webhook) error {
 		)
 	}
 	db.InitWebhookHistoryRepo(db.TaskDB).Create(options)
+	if !options.Success {
+		return fmt.Errorf("webhook returned HTTP %d", resp.StatusCode)
+	}
 	return nil
 }

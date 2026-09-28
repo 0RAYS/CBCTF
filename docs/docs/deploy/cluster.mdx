@@ -29,7 +29,7 @@ egrep -c '(vmx|svm)' /proc/cpuinfo
 
 ### 安装 NFS 客户端
 
-动态附件与题目文件共享依赖 RWX 存储。所有节点需要安装 NFS 客户端：
+动态附件与抓包文件共享依赖 RWX 存储。若选择 NFS，所有可能挂载该卷的节点需要安装 NFS 客户端：
 
 ```bash
 sudo apt update
@@ -47,6 +47,8 @@ chmod 700 get_helm.sh
 ## 安装 [K3S](https://docs.k3s.io/)
 
 ### Master 节点
+
+先决定默认网络方案：下方命令保留 K3S 默认 Flannel；若选择 Kube-OVN 主 CNI，应直接使用后文带 `--flannel-backend=none --disable-network-policy` 的命令初始化，而不是装完默认集群后再重复安装。
 
 ```bash
 curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn sh -
@@ -159,6 +161,8 @@ helm install kube-ovn kube-ovn/kube-ovn-v2 --namespace kube-system -f values.yam
 
 为 VPC 网络模式靶机提供多网卡支持：
 
+安装前按 Multus 文档选择与集群版本匹配的发行版，并核对 CNI 配置与二进制目录。K3S 的目录可能与标准 kubeadm 集群不同，不能假定上游清单中的 `/etc/cni/net.d` 和 `/opt/cni/bin` 一定适用。下面仅为上游清单入口：
+
 ```bash
 kubectl apply \
   -f https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-cni/master/deployments/multus-daemonset-thick.yml
@@ -190,9 +194,9 @@ CBCTF 只会创建和删除 `VirtualMachine` 资源，不会自动安装 KubeVir
 
 建议流程：
 
-1. 取消 `local-path` 的默认 StorageClass 标记
+1. 准备可被全部工作节点访问的 NFS 服务与导出目录（provisioner 不会部署 NFS 服务本身）
 2. 安装支持 RWX 的 StorageClass
-3. 将 RWX 存储类设为默认，或在 Helm `persistence.storageClass` 中显式指定
+3. 在 Helm `persistence.storageClass` 中显式指定共享存储类；PostgreSQL/Redis 可分别选择适合数据库的存储类，无需改变集群默认值
 
 以安装 `nfs-subdir-external-provisioner` 为例
 
@@ -211,7 +215,7 @@ nfs:
     server: 192.168.8.1
 replicaCount: 3
 storageClass:
-    defaultClass: true
+    defaultClass: false
     reclaimPolicy: Retain
 ```
 
@@ -223,3 +227,17 @@ helm install nfs-provisioner \
   --namespace kube-system \
   -f values.yaml
 ```
+
+## 安装平台前验证
+
+```bash
+kubectl get nodes
+kubectl get storageclass
+kubectl get pods -n kube-system
+# VPC 模式
+kubectl get crd vpcs.kubeovn.io subnets.kubeovn.io network-attachment-definitions.k8s.cni.cncf.io
+# VM 模式
+kubectl get kubevirt -n kubevirt
+```
+
+用实际 StorageClass 验证两个不同节点上的 Pod 能同时读写同一个 RWX PVC。平台不检查底层 CNI 是否真正执行 NetworkPolicy；使用普通 Pod 网络隔离时，也要验证所选主 CNI 的 NetworkPolicy 支持。

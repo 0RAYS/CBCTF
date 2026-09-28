@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"net/url"
 	"slices"
 	"strings"
 	"time"
@@ -23,24 +24,26 @@ import (
 	"CBCTF/internal/utils"
 )
 
-// setAuthCookie 写入 httpOnly 认证 cookie
-// 当请求 Origin 在允许来源列表内（跨域前端）时, 设置 SameSite=None 使浏览器可携带 cookie
-// 其余情况保持 SameSite=Lax, 避免无谓降低安全级别
-func setAuthCookie(ctx *gin.Context, token string) {
+func authCookiePolicy(ctx *gin.Context) (bool, http.SameSite) {
 	secure := strings.HasPrefix(config.Env.Host, "https://")
 	sameSite := http.SameSiteLaxMode
 	origin := ctx.GetHeader("Origin")
-	if origin != "" {
-		if slices.Contains(config.Env.Gin.Origins, origin) {
-			sameSite = http.SameSiteNoneMode
-		}
+	publicURL, err := url.Parse(config.Env.Host)
+	if err == nil && origin != "" && origin != publicURL.Scheme+"://"+publicURL.Host && slices.Contains(config.Env.Gin.Origins, origin) {
+		sameSite = http.SameSiteNoneMode
 	}
+	return secure || sameSite == http.SameSiteNoneMode, sameSite
+}
+
+// Same-origin HTTP must not receive a Secure cookie just because its Origin is allowed.
+func setAuthCookie(ctx *gin.Context, token string) {
+	secure, sameSite := authCookiePolicy(ctx)
 	http.SetCookie(ctx.Writer, &http.Cookie{
 		Name:     middleware.TokenCookieName,
 		Value:    token,
 		MaxAge:   int(time.Hour.Seconds()),
 		Path:     "/",
-		Secure:   secure || sameSite == http.SameSiteNoneMode,
+		Secure:   secure,
 		HttpOnly: true,
 		SameSite: sameSite,
 	})
@@ -134,20 +137,13 @@ func Login(ctx *gin.Context) {
 
 func Logout(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.LogoutEventType)
-	secure := strings.HasPrefix(config.Env.Host, "https://")
-	sameSite := http.SameSiteLaxMode
-	origin := ctx.GetHeader("Origin")
-	if origin != "" {
-		if slices.Contains(config.Env.Gin.Origins, origin) {
-			sameSite = http.SameSiteNoneMode
-		}
-	}
+	secure, sameSite := authCookiePolicy(ctx)
 	http.SetCookie(ctx.Writer, &http.Cookie{
 		Name:     middleware.TokenCookieName,
 		Value:    "",
 		MaxAge:   -1,
 		Path:     "/",
-		Secure:   secure || sameSite == http.SameSiteNoneMode,
+		Secure:   secure,
 		HttpOnly: true,
 		SameSite: sameSite,
 	})

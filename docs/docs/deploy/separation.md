@@ -24,6 +24,8 @@ pnpm install
 
 修改 `frontend/src/api/config.js`：
 
+仓库默认 `BASE_URL: ''`，表示使用页面同源的 API。这里填写后端 Origin，不附加 `/platform` 或不存在的 `/api` 前缀。
+
 ```javascript
 export const API_CONFIG = {
     BASE_URL: 'https://api.ctf.example.com',
@@ -36,7 +38,7 @@ export const API_CONFIG = {
 pnpm build
 ```
 
-构建完成后，将 `frontend/dist/` 部署到任意静态托管环境。
+构建完成后，将 `frontend/dist/` 内容部署到静态站点的 `/platform/` 路径。Vite 的 `base` 固定为 `/platform/`，前端路由由 HashRouter 处理，例如 `/platform/#/games`；若改部署子路径，需要同步修改 Vite base。开发服务器没有内置 API proxy。
 
 ## 后端配置
 
@@ -52,6 +54,8 @@ gin:
 
 - `host` 必须填写后端真实对外地址，OAuth 回调与邮件链接都会使用它
 - `gin.origins` 需要包含前端独立域名对应的浏览器 `Origin`，否则跨域请求和认证 cookie 可能无法正常工作
+- 现有数据库上的这些值应在「系统管理」修改；CORS 需要重启生效，仅修改 Helm values 不会覆盖数据库。
+- API 客户端使用 `withCredentials`，认证存储在 HttpOnly Cookie 中。允许的跨域 Origin 会使用 `SameSite=None; Secure`，需要 HTTPS；浏览器的第三方 Cookie 策略仍可能阻止真正跨站点的登录。
 
 ## OAuth 注意事项
 
@@ -63,6 +67,8 @@ gin:
 :::warning
 当前代码默认仍依赖后端提供 `/platform` 下的前端回调页。若完全拆离前端托管位置，需要同步调整 OAuth 回调后的前端跳转逻辑。
 :::
+
+邮箱验证和密码重置链接也使用 `{host}/platform/#/verify` 与 `{host}/platform/#/reset-password`。一种无需改登录逻辑的部署方式是在同一公开域名上，将 `/platform/` 转发到静态托管，将其他路径转发到后端；此时前端继续使用同源 API。
 
 ## Helm 场景
 

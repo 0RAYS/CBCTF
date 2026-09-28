@@ -28,6 +28,9 @@ spec:
       labels:
         {{- include "cbctf.postgres.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with include "cbctf.imagePullSecrets" . }}
+      {{- . | nindent 6 }}
+      {{- end }}
       securityContext:
         fsGroup: 999
       containers:
@@ -86,6 +89,10 @@ spec:
               subPath: postgresql.conf
               readOnly: true
       volumes:
+        {{- if not .Values.postgres.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
         - name: config
           configMap:
             name: {{ include "cbctf.postgres.fullname" . }}-config

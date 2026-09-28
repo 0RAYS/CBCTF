@@ -26,10 +26,10 @@ description: 创建和配置 CBCTF 比赛时间、队伍、题目、公告、奖
 | `start`         | datetime | 比赛开始时间                                                           |
 | `duration`      | int      | 比赛持续时长（秒）                                                        |
 | `blood`         | bool     | 是否启用三血奖励                                                         |
-| `hidden`        | bool     | 隐藏比赛（不出现在公开列表，仅邀请制）                                              |
-| `captcha`       | bool     | 加入队伍时是否需要验证码                                                     |
-| `victims_count` | int      | 每队最大同时运行靶机数                                                      |
-| `rules`         | string   | 比赛规则（支持 Markdown）                                                |
+| `hidden`        | bool     | 隐藏比赛，普通选手无法按公开比赛访问；不是邀请赛开关 |
+| `captcha`       | string   | 创建队伍时需要的比赛验证码，空字符串表示不校验 |
+| `victims`       | int      | 每队最大同时运行靶机数，至少为 1 |
+| `rules`         | []string | 规则条目列表 |
 | `prizes`        | []object | 奖励配置，`[{amount, description}]`                                   |
 | `timelines`     | []object | 时间线，`[{date, title, description}]`                               |
 
@@ -44,6 +44,8 @@ uuid{}           →  {prefix}{uuid}
 ```
 
 例如，`prefix: "flag"` 则选手提交 `flag{...}`；`prefix: "CBCTF"` 则提交 `CBCTF{...}`。
+
+前端创建表单默认填写 `CBCTF`；数据库模型的默认前缀为 `flag`。以前端保存后的比赛配置为准；编辑为空字符串时，生成结果不再添加前缀及外层花括号。前缀修改不会自动重写已经生成的团队 Flag。
 
 ## 公告系统
 
@@ -87,24 +89,23 @@ uuid{}           →  {prefix}{uuid}
 
 - **总分排名**：实时总分排序，支持队伍搜索
 - **时间线视图**：各队分数随时间变化的折线图
-- **计分板（Scoreboard）**：横轴为队伍，纵轴为题目，展示每道题的完成情况
+- **计分板（Scoreboard）**：按队伍行与题目列展示完成情况，并可切换图表查看趋势
 
 ## Writeup 管理
 
-比赛结束后，参赛队伍可上传 Writeup（PDF 或 ZIP 格式）。管理员可从后台按队下载 Writeup。
+比赛开始后，已验证且已加入队伍的选手可上传 Writeup（PDF、DOC 或 DOCX），大小受 `gin.upload.writeup` 限制。管理员可按队下载，或导出整场题解 ZIP。比赛时间线中的题解截止提示不是上传截止配置。
 
 ## 题目管理
 
-在比赛中，可从全局题库添加题目。添加时可覆盖以下字段（仅对本场比赛生效，不修改全局题库）：
+在比赛中从全局题库添加题目后，可编辑以下字段（仅对本场比赛生效，不修改全局题库）：
 
 | 字段              | 说明                |
 |-----------------|-------------------|
 | `name`          | 比赛中显示的题目名称        |
 | `description`   | 比赛中显示的题目描述        |
-| `category`      | 题目分类              |
 | `tags`          | 题目标签              |
 | `hints`         | 提示内容              |
 | `hidden`        | 是否在比赛中隐藏该题目       |
-| `attempt_limit` | 提交尝试次数限制（0 表示无限制） |
+| `attempt`       | 提交尝试次数限制（0 表示无限制） |
 
-每个 flag 的计分参数（`score_type`、`Score`、`MinScore`、`Decay`）也在比赛层级独立配置。
+分类在添加时从题库复制，当前比赛编辑接口不修改分类。每个 Flag 的计分参数（`score_type`、`score`、`min_score`、`decay`）也在比赛层级独立配置。新增比赛题目默认隐藏，须在准备完成后发布。

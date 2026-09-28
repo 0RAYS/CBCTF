@@ -7,14 +7,32 @@ description: 说明 CBCTF 配置来源、Helm values、配置文件和数据库�
 
 CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲染成 `/app/config.yaml`，优先级高于内置默认值。
 
+启动参数 `-c <文件>` 用于选择配置文件，默认是 `config.yaml`。当前实现没有绑定 `CBCTF_*` 环境变量，也不自动生成缺失的配置文件。不要把 Kubernetes 注入的环境变量当作应用配置来源。
+
 以下配置只来自部署配置，不进入 `settings` 表：
 
 - PostgreSQL/GORM 配置：`gorm.*`
 - Redis 连接信息：`redis.*`
 - 数据存储目录：`path`
 - Gin 监听地址和端口：`gin.host`、`gin.port`
+- 运行时共享 PVC：`k8s.shared_volume_claim`（空值回退到 `{namespace}-shared-volume`）
 
-其他配置首次启动时写入 `settings`；之后以数据库值为准。系统配置不会写回 `config.yaml`。
+`internal/db/setting.go` 中列出的运行时设置首次启动时写入 `settings`；之后以数据库值为准。系统配置不会写回 `config.yaml`。所以升级 Helm values 不会覆盖数据库中的同名设置。
+
+旧的 `log.level` / `log.save` 已不在应用配置结构中；当前日志输出由 Logrus 和 Redis 日志 Hook 处理，不能用这两个键控制级别或文件轮转。`gorm.log.level` 与 `asynq.log.level` 仍有效。
+
+## 保存与生效
+
+「系统管理」保存后会读取数据库设置到**当前进程**，但并非所有已初始化组件都会随之重建：
+
+| 设置 | 生效时机 |
+| --- | --- |
+| 注册开关、默认分组、后续请求读取的公开地址、Webhook/作弊白名单 | 当前进程后续操作使用新值 |
+| 抓包开关、worker 镜像、生成器池容量、FRP 镜像等 | 后续新建工作负载使用；已有实例不自动重建 |
+| Gin 模式、可信代理、CORS、上传限制、全局限流；Asynq 并发；Kubernetes 命名空间 | 需要后台「重启」重建路由、客户端或 worker |
+| 固定部署配置 | 修改文件/values 后重新创建 Pod；后台重启不会重新读取配置文件 |
+
+存在多个平台进程时，保存不会广播到其他进程。不要只修改 `k8s.namespace` 就把它当作迁移：目标命名空间、RoleBinding、PVC 和历史工作负载也需要处理，Helm 部署通常保持 Release namespace。
 
 上传大小限制已拆分为 `gin.upload.picture`、`gin.upload.challenge`、`gin.upload.writeup`。旧的 `gin.upload.max` 不再生效。
 
@@ -71,9 +89,10 @@ Redis 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务�
 | 配置项             | 说明                                          | 示例                                |
 |-----------------|---------------------------------------------|-----------------------------------|
 | `k8s.namespace` | 靶机、生成器等资源所在命名空间                             | `cbctf`                           |
+| `k8s.shared_volume_claim` | 平台和运行时工作负载共用的 PVC；部署参数，后台不修改 | `cbctf-data` |
 | `k8s.capture`   | 流量捕获 sidecar 镜像                             | `ghcr.io/domcyrus/rustnet:latest` |
 | `k8s.capture_enabled` | 是否创建抓包容器及相关挂载 | `true` |
-| `k8s.priority_class_name` | 工作负载使用的已有 PriorityClass | `""` |
+| `k8s.priority_class_name` | 普通 Pod 使用的已有 PriorityClass，当前不应用到 VM | `""` |
 | `k8s.worker_image` | 含 `/app/worker` 的独立 worker 镜像 | `ghcr.io/0rays/cbctf-worker:latest` |
 | `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量 | `2` |
 | `k8s.frp.on`    | 是否启用 FRP 暴露靶机端口                             | `false`                           |
@@ -95,7 +114,7 @@ Helm 会把以下值渲染进 ConfigMap：
 | `postgres.auth.password`     | 数据库密码    |
 | `redis.auth.password`        | Redis 密码 |
 
-应用不从环境变量读取配置，也不为这些值生成 Secret。
+应用不从环境变量读取配置，也不为这些值生成 Secret。Chart 的镜像仓库凭据 Secret 与这些应用配置是不同对象。
 
 ## 首次启动行为
 
@@ -110,7 +129,7 @@ Helm 会把以下值渲染进 ConfigMap：
 
 GeoLite2-City 数据库可通过管理后台上传，保存到 `{path}/GeoLite2-City.mmdb`。
 
-固定部署参数修改后需要重启 Pod。
+固定部署参数修改后需要重新创建 Pod。`registration.default_group: 0` 表示不指定注册用户组；应先到 RBAC 页面查看实际分组 ID，再选择普通用户分组，避免新用户没有参赛权限。
 
 ## 安全配置建议
 

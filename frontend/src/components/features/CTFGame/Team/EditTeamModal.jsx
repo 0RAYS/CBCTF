@@ -64,7 +64,7 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
           >
             <option value="">{t('game.team.editModal.selectNewLeader')}</option>
             {team.members.map((member) => (
-              <option key={member.name} value={member.name}>
+              <option key={member.id} value={member.id}>
                 {member.name}
               </option>
             ))}

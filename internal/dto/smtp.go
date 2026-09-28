@@ -5,6 +5,7 @@ type CreateSmtpForm struct {
 	Host    string `form:"host" json:"host" binding:"required,hostname"`
 	Port    int    `form:"port" json:"port" binding:"required,gte=0,lte=65535"`
 	Pwd     string `form:"pwd" json:"pwd" binding:"required"`
+	On      bool   `form:"on" json:"on"`
 }
 
 type UpdateSmtpForm struct {

@@ -10,10 +10,6 @@ data:
     host: {{ .Values.cbctf.host | quote }}
     path: /app/data
 
-    log:
-      level: {{ .Values.cbctf.log.level | quote }}
-      save: {{ .Values.cbctf.log.save }}
-
     asynq:
       log:
         level: {{ .Values.cbctf.asynq.log.level | quote }}
@@ -34,41 +30,23 @@ data:
         picture: {{ .Values.cbctf.gin.upload.picture }}
         challenge: {{ .Values.cbctf.gin.upload.challenge }}
         writeup: {{ .Values.cbctf.gin.upload.writeup }}
-      proxies:
-        {{- range .Values.cbctf.gin.proxies }}
-        - {{ . | quote }}
-        {{- end }}
+      proxies: {{ toYaml .Values.cbctf.gin.proxies | nindent 8 }}
       ratelimit:
         global: {{ .Values.cbctf.gin.ratelimit.global }}
-        whitelist:
-          {{- range .Values.cbctf.gin.ratelimit.whitelist }}
-          - {{ . | quote }}
-          {{- end }}
-      origins:
-        {{- range .Values.cbctf.gin.origins }}
-        - {{ . | quote }}
-        {{- end }}
+        whitelist: {{ toYaml .Values.cbctf.gin.ratelimit.whitelist | nindent 10 }}
+      origins: {{ toYaml .Values.cbctf.gin.origins | nindent 8 }}
       log:
-        whitelist:
-          {{- range .Values.cbctf.gin.log.whitelist }}
-          - {{ . | quote }}
-          {{- end }}
+        whitelist: {{ toYaml .Values.cbctf.gin.log.whitelist | nindent 10 }}
       jwt:
         secret: {{ .Values.cbctf.gin.jwt.secret | quote }}
       metrics:
-        whitelist:
-          {{- range .Values.cbctf.gin.metrics.whitelist }}
-          - {{ . | quote }}
-          {{- end }}
+        whitelist: {{ toYaml .Values.cbctf.gin.metrics.whitelist | nindent 10 }}
       pprof:
-        whitelist:
-          {{- range .Values.cbctf.gin.pprof.whitelist }}
-          - {{ . | quote }}
-          {{- end }}
+        whitelist: {{ toYaml .Values.cbctf.gin.pprof.whitelist | nindent 10 }}
 
     gorm:
       postgres:
-        host: {{ printf "%s.%s" (include "cbctf.postgres.host" .) .Release.Namespace | quote }}
+        host: {{ include "cbctf.postgres.host" . | quote }}
         port: {{ .Values.postgres.service.port }}
         user: {{ .Values.postgres.auth.username | quote }}
         pwd: {{ .Values.postgres.auth.password | quote }}
@@ -80,12 +58,13 @@ data:
         level: {{ .Values.cbctf.gorm.log.level | quote }}
 
     redis:
-      host: {{ printf "%s.%s" (include "cbctf.redis.host" .) .Release.Namespace | quote }}
+      host: {{ include "cbctf.redis.host" . | quote }}
       port: {{ .Values.redis.service.port }}
       pwd: {{ .Values.redis.auth.password | quote }}
 
     k8s:
       namespace: {{ .Release.Namespace | quote }}
+      shared_volume_claim: {{ default (printf "%s-shared-volume" .Release.Namespace) .Values.persistence.existingClaim | quote }}
       capture: {{ .Values.cbctf.k8s.capture | quote }}
       capture_enabled: {{ .Values.cbctf.k8s.captureEnabled }}
       priority_class_name: {{ .Values.cbctf.k8s.priorityClassName | quote }}
@@ -99,10 +78,7 @@ data:
 
     cheat:
       ip:
-        whitelist:
-          {{- range .Values.cbctf.cheat.ip.whitelist }}
-          - {{ . | quote }}
-          {{- end }}
+        whitelist: {{ toYaml .Values.cbctf.cheat.ip.whitelist | nindent 10 }}
 
     webhook:
       whitelist: {{ toYaml .Values.cbctf.webhook.whitelist | nindent 8 }}

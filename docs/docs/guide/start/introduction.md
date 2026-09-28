@@ -42,7 +42,7 @@ flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 - **SMTP 邮件验证** — 注册验证与密码找回
 - **Writeup 管理** — 支持收集与批量下载
 - **OAuth / OIDC** — 第三方认证，支持用户组自动分配
-- **平台品牌化** — Logo、名称、主题色等全局配置
+- **平台品牌化** — Logo、名称、首页文案等全局配置
 - **可重载配置** — 多数运行配置可在线保存，并通过管理后台重启重载
 - **Webhook** — GET / POST
 - **国际化（i18n）** — 多语言界面支持
@@ -66,6 +66,8 @@ flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 <img src="/img/log.png" width="100%" alt="日志" />
 
 ## 构建
+
+当前版本要求 Go 1.27.1，前端使用 `package.json` 指定的 pnpm 12.6.0，Docker 使用 Node 24。运行后端需要集群内身份，构建后部署方式见[快速上手](./quick-start)。
 
 ```bash
 # 1. 构建前端（静态文件会被嵌入二进制）
@@ -114,7 +116,9 @@ services:
 version: '3'
 services:
   web:
-    image: nginx:alpine
+    # 替换为自行制作的可启动 containerDisk 镜像，普通 nginx 镜像不能启动虚拟机
+    image: registry.example.com/challenges/vm-web:v1
+    mem_limit: 512m
     x-kubevirt: true
     x-boot:
       bootloader: efi
@@ -144,7 +148,9 @@ networks:
 
 <img src="/img/victims-2.png" width="100%" alt="靶机详情" />
 
-<img src="/img/victims-3.png" width="100%" alt="靶机终端" />
+<img src="/img/victims-3.png" width="100%" alt="历史靶机界面截图" />
+
+截图用于展示平台形态，界面可能随版本变化。当前管理 API 提供 Pod 状态和日志查询，不提供浏览器交互式 Exec 终端。
 
 ## 动态附件
 
@@ -156,19 +162,19 @@ networks:
 - 脚本路径固定为 `/root/run.sh <team_id> <base64_encoded_flags>`
 - 产物须写入 `/root/mnt/attachments/{id}.zip`
 - 平台注入常驻 worker，输出目录使用 Pod 本地存储；脚本完成后，worker 将 ZIP 返回平台写入版本化缓存
-- 禁止使用 `latest` 镜像标签
+- 建议使用固定版本或 digest，便于镜像预热与复现实验；当前代码并未禁止 `latest`
 
 > 完整示例：[example/dynamic/README.md](https://github.com/0RAYS/CBCTF/blob/main/example/dynamic/README.md)
 
 ## Kubernetes 依赖
 
-动态容器与动态附件功能依赖以下组件：
+平台启动要求 Kubernetes 集群内配置。额外组件按题型选择，不是所有动态题都需要安装全部组件：
 
 | 组件                                                               | 用途       |
 |------------------------------------------------------------------|----------|
-| [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离 |
-| [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) | 多网络接口    |
-| [KubeVirt](https://kubevirt.io/)                                 | 虚拟机调度    |
+| [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 题目的网络隔离 |
+| [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) | VPC/VM 题目的多网络接口 |
+| [KubeVirt](https://kubevirt.io/) | VM 题目的虚拟机调度 |
 
 ## 许可证
 

@@ -73,7 +73,7 @@ func CreateWebhook(tx *gorm.DB, form dto.CreateWebhookForm) (model.Webhook, mode
 	if ret := validateWebhookURL(form.URL); !ret.OK {
 		return model.Webhook{}, ret
 	}
-	return db.InitWebhookRepo(tx).Create(model.Webhook{
+	webhook, ret := db.InitWebhookRepo(tx).Create(model.Webhook{
 		Name:    form.Name,
 		URL:     form.URL,
 		Method:  form.Method,
@@ -81,7 +81,12 @@ func CreateWebhook(tx *gorm.DB, form dto.CreateWebhookForm) (model.Webhook, mode
 		Timeout: form.Timeout,
 		Retry:   form.Retry,
 		Events:  form.Events,
+		On:      form.On,
 	})
+	if ret.OK && webhook.On {
+		wh.AddWebhook(webhook)
+	}
+	return webhook, ret
 }
 
 func UpdateWebhook(tx *gorm.DB, webhook model.Webhook, form dto.UpdateWebhookForm) (model.Webhook, model.RetVal) {

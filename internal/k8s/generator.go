@@ -101,7 +101,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 			{
 				Name: nfsVolumeName,
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: nfsVolumeName,
+					ClaimName: nfsVolumeClaim,
 				},
 			},
 		},
