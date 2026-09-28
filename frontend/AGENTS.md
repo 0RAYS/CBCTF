@@ -23,7 +23,6 @@ Frontend is the embedded React app for CBCTF. Trust executable config over stale
 - ESLint disables hook rules (`rules-of-hooks`, `exhaustive-deps`, `set-state-in-effect`); do not rely on lint to catch invalid hook usage.
 - Prettier is enforced as ESLint warnings: single quotes, semicolons, trailing commas, width 120, `endOfLine: auto`.
 - Keep UI bilingual for `en` and `zh-CN`; check CJK text length and wrapping.
-- If repo-root `.impeccable.md` exists, follow its frontend design direction: dark theme, Maple UI/Maple Mono, geek blue `#597ef7`, restrained motion, no matrix/glitch/cyan-purple-gradient aesthetics.
 
 ## Structure
 
