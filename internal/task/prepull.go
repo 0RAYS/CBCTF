@@ -8,6 +8,7 @@ import (
 
 	"github.com/hibiken/asynq"
 	"github.com/vmihailenco/msgpack/v5"
+	corev1 "k8s.io/api/core/v1"
 
 	"CBCTF/internal/k8s"
 )
@@ -25,7 +26,13 @@ func EnqueuePrepullTask(images []string) error {
 }
 
 func EnqueuePrepullTargets(images, nodes []string, pullPolicy string) error {
+	if pullPolicy == string(corev1.PullNever) {
+		return nil
+	}
 	images = slices.Clone(images)
+	for i, image := range images {
+		images[i] = k8s.NormalizeImage(image)
+	}
 	slices.Sort(images)
 	images = slices.DeleteFunc(slices.Compact(images), func(s string) bool { return s == "" })
 	if len(images) == 0 {
@@ -37,7 +44,11 @@ func EnqueuePrepullTargets(images, nodes []string, pullPolicy string) error {
 	if err != nil {
 		return err
 	}
-	_, err = enqueueTask(prepullTaskType, asynq.NewTask(prepullTaskType, payload), asynq.Unique(15*time.Minute), asynq.MaxRetry(2), asynq.Timeout(11*time.Minute))
+	options := []asynq.Option{asynq.MaxRetry(2), asynq.Timeout(11 * time.Minute)}
+	if pullPolicy != string(corev1.PullAlways) {
+		options = append(options, asynq.Unique(15*time.Minute))
+	}
+	_, err = enqueueTask(prepullTaskType, asynq.NewTask(prepullTaskType, payload), options...)
 	if errors.Is(err, asynq.ErrDuplicateTask) {
 		return nil
 	}

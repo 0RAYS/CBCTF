@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { IconCheck, IconDownload, IconSearch } from '@tabler/icons-react';
 import { Button, Card, Chip, EmptyState, Input } from '../../../common';
-import { buildTargetKey, missingTargetKeys } from './imageModel';
+import { buildTargetKey, selectableTargetKeys } from './imageModel';
 
 export default function ImageTargetSelection({
   scopeKey,
   nodes,
   targetImages,
+  pullPolicy,
   filteredTargetImages,
   selectedTargetKeys,
   filterText,
@@ -17,7 +18,8 @@ export default function ImageTargetSelection({
   submitting,
 }) {
   const { t } = useTranslation();
-  const allTargetCount = missingTargetKeys(nodes, targetImages).length;
+  const selectableKeys = new Set(selectableTargetKeys(nodes, targetImages, pullPolicy));
+  const allTargetCount = selectableKeys.size;
 
   return (
     <Card variant="default" padding="md" animate className="flex h-full min-w-0 flex-col">
@@ -30,6 +32,7 @@ export default function ImageTargetSelection({
           variant="outline"
           size="sm"
           onClick={onToggleAllTargets}
+          disabled={allTargetCount === 0}
           className="min-w-fit shrink-0 whitespace-nowrap"
         >
           {allTargetCount > 0 && selectedTargetKeys.length === allTargetCount
@@ -69,14 +72,16 @@ export default function ImageTargetSelection({
                   {nodes.map((node) => {
                     const isMissing = !node.images.includes(imageName);
                     const isSelected = selectedTargetKeys.includes(buildTargetKey(node.node, imageName));
+                    const isSelectable = selectableKeys.has(buildTargetKey(node.node, imageName));
                     return (
                       <button
                         key={buildTargetKey(node.node, imageName)}
                         type="button"
-                        disabled={!isMissing}
+                        disabled={!isSelectable}
+                        aria-pressed={isSelected}
                         onClick={() => onTargetToggle(node.node, imageName)}
                         className={`flex items-center gap-2 rounded-md border px-3 py-2 font-mono text-sm transition-colors ${
-                          !isMissing
+                          !isSelectable
                             ? 'border-neutral-300/10 bg-black/10 text-neutral-500 cursor-not-allowed'
                             : isSelected
                               ? 'border-geek-400/60 bg-geek-400/10 text-geek-300'
@@ -87,9 +92,7 @@ export default function ImageTargetSelection({
                         <Chip
                           label={
                             isMissing
-                              ? isSelected
-                                ? t('admin.contests.imagesPull.status.selectedMissing')
-                                : t('admin.contests.imagesPull.status.missing')
+                              ? t('admin.contests.imagesPull.status.missing')
                               : t('admin.contests.imagesPull.status.present')
                           }
                           variant="tag"

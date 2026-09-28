@@ -13,14 +13,26 @@ import (
 	"CBCTF/internal/service"
 )
 
-func formatNodeImages(nodeImageMap map[string][]string) []gin.H {
+func formatNodeImages(nodeImageMap map[string][]string, targetImages []string) []gin.H {
+	targetSet := make(map[string]struct{}, len(targetImages))
+	for _, image := range targetImages {
+		targetSet[image] = struct{}{}
+	}
 	data := make([]gin.H, 0, len(nodeImageMap))
 	for node, images := range nodeImageMap {
+		current := make([]string, 0)
+		for _, image := range images {
+			if _, ok := targetSet[image]; ok {
+				current = append(current, image)
+			}
+		}
+		sort.Strings(current)
 		data = append(data, gin.H{
 			"node":   node,
-			"images": images,
+			"images": current,
 		})
 	}
+	sort.Slice(data, func(i, j int) bool { return data[i]["node"].(string) < data[j]["node"].(string) })
 	return data
 }
 
@@ -31,26 +43,14 @@ func GetImages(ctx *gin.Context) {
 		return
 	}
 
+	targetImages, ret := service.ListChallengeImages(db.DB)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{
-		"nodes": formatNodeImages(nodeImageMap),
-		"target_images": func(nodeImageMap map[string][]string) []string {
-			imageSet := make(map[string]struct{})
-			images := make([]string, 0)
-			for _, nodeImages := range nodeImageMap {
-				for _, image := range nodeImages {
-					if image == "" {
-						continue
-					}
-					if _, ok := imageSet[image]; ok {
-						continue
-					}
-					imageSet[image] = struct{}{}
-					images = append(images, image)
-				}
-			}
-			sort.Strings(images)
-			return images
-		}(nodeImageMap),
+		"nodes":         formatNodeImages(nodeImageMap, targetImages),
+		"target_images": targetImages,
 	}))
 }
 
@@ -66,28 +66,8 @@ func GetContestChallengeImage(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	nodeImageMap = func(nodeImageMap map[string][]string, targetImages []string) map[string][]string {
-		targetSet := make(map[string]struct{}, len(targetImages))
-		for _, image := range targetImages {
-			targetSet[image] = struct{}{}
-		}
-
-		filtered := make(map[string][]string, len(nodeImageMap))
-		for node, images := range nodeImageMap {
-			current := make([]string, 0, len(images))
-			for _, image := range images {
-				if _, ok := targetSet[image]; ok {
-					current = append(current, image)
-				}
-			}
-			sort.Strings(current)
-			filtered[node] = current
-		}
-		return filtered
-	}(nodeImageMap, targetImages)
-
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{
-		"nodes":         formatNodeImages(nodeImageMap),
+		"nodes":         formatNodeImages(nodeImageMap, targetImages),
 		"target_images": targetImages,
 	}))
 }

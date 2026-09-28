@@ -607,19 +607,19 @@
           "nodes": "{{count}} nodes",
           "nodesLabel": "Schedulable Nodes",
           "unionLabel": "Contest Images",
-          "totalLabel": "All Images",
+          "totalLabel": "Present Required Images",
           "total": "{{count}} images total"
         },
         "selection": {
-          "title": "Missing Contest Images",
-          "subtitle": "Select missing node/image pairs that should be pulled for this contest.",
+          "title": "Contest Image Status",
+          "subtitle": "Select node/image pairs to pull. Always also allows selecting present images.",
           "selectedTargets": "{{count}} pairs selected",
           "nodeImages": "{{count}} images"
         },
         "intersection": {
           "title": "Contest Image Coverage",
-          "subtitle": "Images below are required by this contest and missing on at least one node.",
-          "empty": "All contest images are present"
+          "subtitle": "Compare all contest-required images and runtime dependencies against each node.",
+          "empty": "No matching contest images"
         },
         "manual": {
           "title": "Manual Contest Pull",
@@ -628,7 +628,7 @@
           "count": "{{count}} images entered"
         },
         "node": {
-          "empty": "This node has no image data",
+          "empty": "No matching required images are present on this node",
           "missingTitle": "Missing contest images",
           "noMissing": "No contest images missing"
         },
@@ -643,7 +643,7 @@
         "pullPolicy": {
           "always": "Always - pull latest image",
           "ifNotPresent": "IfNotPresent - pull when missing locally",
-          "never": "Never - use local images only"
+          "never": "Never - skip pre-pulling"
         },
         "empty": "No node image data",
         "status": {
@@ -659,6 +659,7 @@
           "selectRequired": "Select at least one node/image pair",
           "manualRequired": "Enter at least one image name",
           "submitSuccess": "Image pull task submitted",
+          "skipped": "Pre-pulling skipped by the Never policy",
           "pullFailed": "Pull failed"
         }
       },
@@ -2002,11 +2003,11 @@
       "form": {
         "nameLabel": "Job name",
         "descriptionLabel": "Description",
-        "scheduleLabel": "Duration *",
+        "scheduleLabel": "Run interval *",
         "hoursPlaceholder": "Hours",
         "minutesPlaceholder": "Minutes",
         "secondsPlaceholder": "Seconds",
-        "durationPreviewLabel": "Duration preview",
+        "durationPreviewLabel": "Interval preview",
         "successCountLabel": "Success count",
         "failureCountLabel": "Failure count",
         "successLastLabel": "Last success time",
@@ -2401,26 +2402,26 @@
     "imagesPull": {
       "control": {
         "title": "Global Image Pull",
-        "subtitle": "Compare images across nodes and pre-pull missing global challenge images."
+        "subtitle": "Compare all challenge library images and enabled runtime dependencies against each node."
       },
       "summary": {
         "unionLabel": "Required Images"
       },
       "selection": {
-        "title": "Missing Global Images",
-        "subtitle": "Select missing node/image pairs that should be pulled."
+        "title": "Required Image Status",
+        "subtitle": "Select node/image pairs to pull. Always also allows selecting present images."
       },
       "intersection": {
         "title": "Required Image Coverage",
-        "subtitle": "Images below are missing on at least one node.",
-        "empty": "All required images are present"
+        "subtitle": "All challenge library images and enabled runtime dependencies, including images absent from every node.",
+        "empty": "No matching required images"
       },
       "manual": {
         "title": "Manual Global Pull",
         "subtitle": "Enter image names manually and choose target nodes."
       },
       "statusTitle": "Node Image Inventory",
-      "statusSubtitle": "Review currently available images and missing global images per node.",
+      "statusSubtitle": "Review present and missing required images per node, based on the challenge library and runtime dependencies.",
       "node": {
         "missingTitle": "Missing required images",
         "noMissing": "No required images missing"

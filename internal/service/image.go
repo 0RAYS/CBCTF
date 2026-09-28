@@ -3,12 +3,15 @@ package service
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
+	"gorm.io/gorm"
 	corev1 "k8s.io/api/core/v1"
 
 	"CBCTF/internal/config"
+	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
@@ -17,12 +20,12 @@ import (
 	"CBCTF/internal/task"
 )
 
-func ChallengeImages(challenge model.Challenge) []string {
+func challengeSidecarImages(challengeType model.ChallengeType) []string {
 	var sidecars []string
-	if challenge.Type == model.DynamicChallengeType {
+	if challengeType == model.DynamicChallengeType {
 		sidecars = append(sidecars, config.Env.K8S.WorkerImage)
 	}
-	if challenge.Type == model.PodsChallengeType {
+	if challengeType == model.PodsChallengeType {
 		if config.Env.K8S.CaptureEnabled {
 			sidecars = append(sidecars, config.Env.K8S.CaptureImage)
 		}
@@ -30,7 +33,27 @@ func ChallengeImages(challenge model.Challenge) []string {
 			sidecars = append(sidecars, config.Env.K8S.Frp.FrpcImage, config.Env.K8S.Frp.NginxImage)
 		}
 	}
-	return k8s.ChallengeImages(challenge, sidecars...)
+	return sidecars
+}
+
+func ChallengeImages(challenge model.Challenge) []string {
+	return k8s.ChallengeImages(challenge, challengeSidecarImages(challenge.Type)...)
+}
+
+// ListChallengeImages covers the whole library, including challenges not yet
+// referenced by a contest, plus the platform's enabled runtime dependencies.
+func ListChallengeImages(tx *gorm.DB) ([]string, model.RetVal) {
+	challenges, ret := db.InitChallengeRepo(tx.Select("type", "generator_image", "template")).FindAll()
+	if !ret.OK {
+		return nil, ret
+	}
+	sidecars := append(challengeSidecarImages(model.DynamicChallengeType), challengeSidecarImages(model.PodsChallengeType)...)
+	images := k8s.ChallengeImages(model.Challenge{}, sidecars...)
+	for _, challenge := range challenges {
+		images = append(images, ChallengeImages(challenge)...)
+	}
+	slices.Sort(images)
+	return slices.Compact(images), model.SuccessRetVal()
 }
 
 func warmChallengeImages(challenge model.Challenge) {
@@ -69,6 +92,7 @@ func PullContestChallengeImage(form dto.PullImageForm) model.RetVal {
 		if nodeName == "" || imageName == "" {
 			continue
 		}
+		imageName = k8s.NormalizeImage(imageName)
 		node, ok := nodeMap[nodeName]
 		if !ok || node == nil {
 			return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": fmt.Sprintf("Unknown node: %s", nodeName)}}
