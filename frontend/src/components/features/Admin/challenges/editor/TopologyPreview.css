@@ -1,0 +1,48 @@
+.topology-connection-flow {
+  opacity: 0;
+}
+
+.topology-connection-allow:hover .topology-connection-flow {
+  opacity: 1;
+  animation: topology-connection-flow 0.6s linear infinite;
+}
+
+.topology-connection-deny:hover .topology-connection-line {
+  stroke: #fecaca;
+  stroke-opacity: 1;
+  stroke-width: 0.5;
+}
+
+.topology-connection-deny:hover .topology-connection-visual {
+  animation: topology-connection-shake 0.18s ease-in-out 2;
+}
+
+@keyframes topology-connection-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-0.5px);
+  }
+  75% {
+    transform: translateX(0.5px);
+  }
+}
+
+@keyframes topology-connection-flow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    /* One dash + gap, moving along the path from source to target. */
+    stroke-dashoffset: -2.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topology-connection-allow:hover .topology-connection-flow,
+  .topology-connection-deny:hover .topology-connection-visual {
+    animation: none;
+  }
+}
