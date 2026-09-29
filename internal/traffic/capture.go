@@ -22,20 +22,21 @@ import (
 )
 
 type Connection struct {
-	TimeShift time.Duration
-	Time      time.Time
-	SrcIP     string
-	DstIP     string
-	SrcPort   string
-	DstPort   string
-	Type      string
-	Subtype   string
-	Size      int
-	Process   *TrafficProcessInfo
-	Capture   string
-	SYN       bool
-	ACK       bool
-	ClientIP  string
+	TimeShift   time.Duration
+	Time        time.Time
+	SrcIP       string
+	DstIP       string
+	SrcPort     string
+	DstPort     string
+	Type        string
+	Subtype     string
+	Size        int
+	Process     *TrafficProcessInfo
+	Capture     string
+	SYN         bool
+	ACK         bool
+	ClientIP    string
+	Fingerprint string
 }
 
 type TrafficProcessInfo struct {
@@ -171,6 +172,9 @@ func EnrichPcap(ctx context.Context, pcapPath, jsonlPath, outputPath string) err
 
 func extractTrafficConnection(packet gopacket.Packet, processLookup trafficProcessLookup) (Connection, bool) {
 	connection := Connection{Size: packet.Metadata().CaptureLength, Time: packet.Metadata().Timestamp}
+	if network := packet.NetworkLayer(); network != nil {
+		connection.Fingerprint = packetFingerprint(append(append([]byte{}, network.LayerContents()...), network.LayerPayload()...))
+	}
 	src, dst, srcPort, dstPort, baseLayerIndex, ok := extractTrafficEndpoints(packet)
 	if !ok {
 		return Connection{}, false
@@ -647,6 +651,7 @@ func ReadPcapDirWithContext(ctx context.Context, path string) (PcapDirResult, er
 
 	if len(connections) > 0 {
 		slices.SortStableFunc(connections, func(c1 Connection, c2 Connection) int { return c1.Time.Compare(c2.Time) })
+		connections = deduplicateTraffic(connections)
 		firstPacket := connections[0]
 		for i, connection := range connections {
 			connections[i].TimeShift = connection.Time.Sub(firstPacket.Time)
