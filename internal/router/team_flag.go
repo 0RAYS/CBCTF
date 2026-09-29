@@ -12,7 +12,7 @@ import (
 
 func GetTeamFlags(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ReadFlagEventType)
-	teamFlags, ret := service.ListTeamFlagViews(db.DB, middleware.GetTeam(ctx))
+	teamFlags, ret := service.ListTeamFlagViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -46,7 +46,7 @@ func GetTeamFlags(ctx *gin.Context) {
 func InitTeamFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.InitChallengeEventType)
 	ret := service.InitTeamChallenge(
-		db.DB,
+		db.DB.WithContext(ctx.Request.Context()),
 		middleware.GetSelf(ctx),
 		middleware.GetTeam(ctx),
 		middleware.GetContest(ctx),
@@ -64,7 +64,7 @@ func InitTeamFlag(ctx *gin.Context) {
 func ResetTeamFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ResetChallengeEventType)
 	ret := service.ResetTeamChallenge(
-		db.DB,
+		db.DB.WithContext(ctx.Request.Context()),
 		middleware.GetSelf(ctx),
 		middleware.GetTeam(ctx),
 		middleware.GetContest(ctx),

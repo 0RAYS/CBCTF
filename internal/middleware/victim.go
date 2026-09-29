@@ -13,7 +13,7 @@ import (
 func CheckTeamVictimCount(ctx *gin.Context) {
 	contest := GetContest(ctx)
 	team := GetTeam(ctx)
-	count, ret := service.CountTeamVictims(db.DB, team)
+	count, ret := service.CountTeamVictims(db.DB.WithContext(ctx.Request.Context()), team)
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
 		return

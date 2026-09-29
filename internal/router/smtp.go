@@ -17,7 +17,7 @@ func GetSmtps(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	smtps, count, ret := service.ListSmtps(db.DB, form)
+	smtps, count, ret := service.ListSmtps(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -40,7 +40,7 @@ func CreateSmtp(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateSmtpEventType)
-	smtp, ret := service.CreateSmtp(db.DB, form)
+	smtp, ret := service.CreateSmtp(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -56,7 +56,7 @@ func UpdateSmtp(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSmtpEventType)
-	if _, ret := service.UpdateSmtp(db.DB, middleware.GetSmtp(ctx), form); !ret.OK {
+	if _, ret := service.UpdateSmtp(db.DB.WithContext(ctx.Request.Context()), middleware.GetSmtp(ctx), form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -66,7 +66,7 @@ func UpdateSmtp(ctx *gin.Context) {
 
 func DeleteSmtp(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteSmtpEventType)
-	if ret := service.DeleteSmtp(db.DB, middleware.GetSmtp(ctx)); !ret.OK {
+	if ret := service.DeleteSmtp(db.DB.WithContext(ctx.Request.Context()), middleware.GetSmtp(ctx)); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}

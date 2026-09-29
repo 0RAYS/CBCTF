@@ -18,7 +18,7 @@ func GetEmails(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	emails, count, ret := service.ListEmails(db.DB, middleware.GetSmtp(ctx), form)
+	emails, count, ret := service.ListEmails(db.DB.WithContext(ctx.Request.Context()), middleware.GetSmtp(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -37,7 +37,7 @@ func VerifyEmail(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.VerifyEmailEventType)
-	if ret := service.VerifyEmail(db.DB, form); !ret.OK {
+	if ret := service.VerifyEmail(db.DB.WithContext(ctx.Request.Context()), form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}

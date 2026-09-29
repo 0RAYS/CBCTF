@@ -113,7 +113,7 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	defer unlockGeneratorAttachment(generator.ID, lockToken)
-	current, ret := db.InitGeneratorRepo(db.TaskDB).GetByID(generator.ID)
+	current, ret := db.InitGeneratorRepo(db.TaskDB.WithContext(ctx)).GetByID(generator.ID)
 	if !ret.OK {
 		return taskResourceError("get attachment generator", ret)
 	}
@@ -137,10 +137,13 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	}
 	generator = current
 
-	ctx, cancel := context.WithTimeout(ctx, 80*time.Second)
-	ret = k8s.GenAttachment(ctx, payload.Challenge, generator, payload.TeamID, payload.Flags)
+	generateCtx, cancel := context.WithTimeout(ctx, 80*time.Second)
+	ret = k8s.GenAttachment(generateCtx, payload.Challenge, generator, payload.TeamID, payload.Flags)
 	cancel()
-	generatorRepo := db.InitGeneratorRepo(db.TaskDB)
+	// Persist the outcome and release broken pool members even after cancellation.
+	finishCtx, finishCancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer finishCancel()
+	generatorRepo := db.InitGeneratorRepo(db.TaskDB.WithContext(finishCtx))
 	generatorRepo.UpdateStatus(generator.ID, ret.OK, time.Now())
 	if !ret.OK {
 		if ret.Msg == i18n.Model.NotFound || ret.Msg == i18n.K8S.NotFound {

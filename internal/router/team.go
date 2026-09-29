@@ -14,8 +14,9 @@ import (
 
 func GetTeam(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
-	view := service.BuildTeamView(db.DB, team)
-	solvedFlagL, contestFlagL, ret := service.GetTeamSolvedFlags(db.DB, middleware.GetContest(ctx), team)
+	tx := db.DB.WithContext(ctx.Request.Context())
+	view := service.BuildTeamView(tx, team)
+	solvedFlagL, contestFlagL, ret := service.GetTeamSolvedFlags(tx, middleware.GetContest(ctx), team)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -31,7 +32,7 @@ func GetTeams(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	teams, count, ret := service.ListTeams(db.DB, middleware.GetContest(ctx), form)
+	teams, count, ret := service.ListTeams(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -49,7 +50,7 @@ func GetTeamCaptcha(ctx *gin.Context) {
 
 func GetTeammates(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
-	users, ret := service.GetTeammates(db.DB, team, middleware.IsFullAccess(ctx))
+	users, ret := service.GetTeammates(db.DB.WithContext(ctx.Request.Context()), team, middleware.IsFullAccess(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -73,7 +74,7 @@ func UpdateTeam(ctx *gin.Context) {
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
-		ret = service.AdminUpdateTeam(db.DB, team, form)
+		ret = service.AdminUpdateTeam(db.DB.WithContext(ctx.Request.Context()), team, form)
 	} else {
 		var form dto.UpdateTeamForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
@@ -81,7 +82,7 @@ func UpdateTeam(ctx *gin.Context) {
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
-		ret = service.UpdateTeam(db.DB, team, form)
+		ret = service.UpdateTeam(db.DB.WithContext(ctx.Request.Context()), team, form)
 	}
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -93,7 +94,7 @@ func UpdateCaptcha(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
 	captcha := utils.UUID()
 	team := middleware.GetTeam(ctx)
-	ret := service.UpdateTeamCaptcha(db.DB, team, captcha)
+	ret := service.UpdateTeamCaptcha(db.DB.WithContext(ctx.Request.Context()), team, captcha)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -104,7 +105,7 @@ func UpdateCaptcha(ctx *gin.Context) {
 
 func DeleteTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteTeamEventType)
-	ret := service.DeleteTeam(db.DB, middleware.GetTeam(ctx))
+	ret := service.DeleteTeam(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -120,7 +121,7 @@ func KickMember(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.KickMemberEventType)
-	ret := service.LeaveTeam(db.DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), form.UserID)
+	ret := service.LeaveTeam(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), middleware.GetTeam(ctx), form.UserID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -137,7 +138,7 @@ func JoinTeam(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.JoinTeamEventType)
-	team, ret := service.JoinTeam(db.DB, middleware.GetContest(ctx), middleware.GetSelf(ctx), form)
+	team, ret := service.JoinTeam(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), middleware.GetSelf(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -154,7 +155,7 @@ func CreateTeam(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateTeamEventType)
-	team, ret := service.CreateTeam(db.DB, middleware.GetContest(ctx), middleware.GetSelf(ctx), form)
+	team, ret := service.CreateTeam(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), middleware.GetSelf(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -166,7 +167,7 @@ func CreateTeam(ctx *gin.Context) {
 
 func LeaveTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.LeaveTeamEventType)
-	ret := service.LeaveTeam(db.DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), middleware.GetSelf(ctx).ID)
+	ret := service.LeaveTeam(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), middleware.GetTeam(ctx), middleware.GetSelf(ctx).ID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

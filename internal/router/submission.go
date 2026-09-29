@@ -17,7 +17,7 @@ func GetSubmissions(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	submissions, count, ret := service.ListTeamSubmissions(db.DB, middleware.GetTeam(ctx), form)
+	submissions, count, ret := service.ListTeamSubmissions(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

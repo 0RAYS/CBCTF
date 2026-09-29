@@ -89,7 +89,7 @@ func GetTraffic(ctx context.Context, victim model.Victim, form dto.GetTrafficFor
 	}
 
 	// 从 DB 读取该靶机所有已知 IP（不受时间窗口限制）
-	ips, ret := db.InitTrafficRepo(db.DB).GetVictimIPs(victim.ID)
+	ips, ret := db.InitTrafficRepo(db.DB.WithContext(ctx)).GetVictimIPs(victim.ID)
 	if !ret.OK {
 		return resp.TrafficTopologyResp{}, ret
 	}

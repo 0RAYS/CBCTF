@@ -94,19 +94,19 @@ func UploadPicture(v string) gin.HandlerFunc {
 			modelName = model.Name(model.Oauth{})
 		case "branding":
 			var ret model.RetVal
-			id, ret = service.GetDefaultBrandingID(db.DB)
+			id, ret = service.GetDefaultBrandingID(db.DB.WithContext(ctx.Request.Context()))
 			if !ret.OK {
 				resp.JSON(ctx, ret)
 				return
 			}
 			modelName = model.Name(model.Branding{})
 		}
-		record, ret := service.SavePicture(db.DB, modelName, id, file)
+		record, ret := service.SavePicture(db.DB.WithContext(ctx.Request.Context()), modelName, id, file)
 		if !ret.OK {
 			resp.JSON(ctx, ret)
 			return
 		}
-		path, ret := service.UpdatePicture(db.DB, v, id, record)
+		path, ret := service.UpdatePicture(db.DB.WithContext(ctx.Request.Context()), v, id, record)
 		if !ret.OK {
 			resp.JSON(ctx, ret)
 			return
@@ -143,7 +143,7 @@ func UploadChallenge(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
 		return
 	}
-	record, ret := service.SaveChallenge(db.DB, challenge, file, path)
+	record, ret := service.SaveChallenge(db.DB.WithContext(ctx.Request.Context()), challenge, file, path)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -166,7 +166,7 @@ func UploadWriteup(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadWriteupEventType)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	record, ret := service.SaveWriteup(db.DB, contest, team, file)
+	record, ret := service.SaveWriteup(db.DB.WithContext(ctx.Request.Context()), contest, team, file)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -186,7 +186,7 @@ func GetFiles(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	files, count, ret := service.ListFiles(db.DB, form)
+	files, count, ret := service.ListFiles(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -204,7 +204,7 @@ func GetWriteUPs(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	writeups, count, ret := service.ListWriteups(db.DB, middleware.GetTeam(ctx), form)
+	writeups, count, ret := service.ListWriteups(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -244,7 +244,7 @@ func DeleteFiles(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteFileEventType)
-	ret := service.DeleteFiles(db.DB, form)
+	ret := service.DeleteFiles(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

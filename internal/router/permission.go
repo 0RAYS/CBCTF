@@ -17,7 +17,7 @@ func GetPermissions(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	permissions, count, ret := service.ListPermissions(db.DB, form)
+	permissions, count, ret := service.ListPermissions(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -37,7 +37,7 @@ func UpdatePermission(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdatePermissionEventType)
 	permission := middleware.GetPermission(ctx)
-	ret := service.UpdatePermission(db.DB, permission, form)
+	ret := service.UpdatePermission(db.DB.WithContext(ctx.Request.Context()), permission, form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

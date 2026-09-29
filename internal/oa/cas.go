@@ -1,6 +1,7 @@
 package oa
 
 import (
+	"context"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -29,7 +30,7 @@ func (*casProtocol) ID() string {
 	return model.OauthProtocolCAS
 }
 
-func (*casProtocol) LoginURL(provider model.Oauth) (string, model.RetVal) {
+func (*casProtocol) LoginURL(_ context.Context, provider model.Oauth) (string, model.RetVal) {
 	loginURL, err := buildCASLoginURL(provider)
 	if err != nil {
 		return "", model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
@@ -48,7 +49,11 @@ func (*casProtocol) Exchange(ctx *gin.Context, provider model.Oauth) (map[string
 	}
 	log.Logger.Debugf("CAS callback for provider %s: %s", provider.Provider, validateURL)
 	client := http.Client{Timeout: time.Second * 10}
-	response, err := client.Get(validateURL)
+	request, err := http.NewRequestWithContext(ctx.Request.Context(), http.MethodGet, validateURL, nil)
+	if err != nil {
+		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+	}
+	response, err := client.Do(request)
 	if err != nil {
 		log.Logger.Warningf("Failed to validate CAS ticket for provider %s: %s", provider.Provider, err)
 		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}

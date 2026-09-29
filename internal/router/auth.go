@@ -56,7 +56,7 @@ func GetCaptcha(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
-	if ret := redis.SetCaptchaAnswer(id, answer); !ret.OK {
+	if ret := redis.SetCaptchaAnswer(ctx.Request.Context(), id, answer); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -73,12 +73,12 @@ func Register(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	if ret := redis.VerifyCaptcha(form.CaptchaID, form.Captcha); !ret.OK {
+	if ret := redis.VerifyCaptcha(ctx.Request.Context(), form.CaptchaID, form.Captcha); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.RegisterEventType)
-	user, ret := service.RegisterUser(db.DB, form)
+	user, ret := service.RegisterUser(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -98,7 +98,7 @@ func Register(ctx *gin.Context) {
 	setAuthCookie(ctx, token)
 	prometheus.RecordUserRegister(oa.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB, user, false), false)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB.WithContext(ctx.Request.Context()), user, false), false)))
 }
 
 func Login(ctx *gin.Context) {
@@ -111,12 +111,12 @@ func Login(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.User.CaptchaRequired})
 		return
 	}
-	if ret := redis.VerifyCaptcha(form.CaptchaID, form.Captcha); !ret.OK {
+	if ret := redis.VerifyCaptcha(ctx.Request.Context(), form.CaptchaID, form.Captcha); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.LoginEventType)
-	user, ret := service.VerifyUser(db.DB, form)
+	user, ret := service.VerifyUser(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -132,7 +132,7 @@ func Login(ctx *gin.Context) {
 	setAuthCookie(ctx, token)
 	prometheus.RecordUserLogin(oa.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB, user, false), false)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB.WithContext(ctx.Request.Context()), user, false), false)))
 }
 
 func Logout(ctx *gin.Context) {
@@ -158,12 +158,12 @@ func ForgotPassword(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	if ret := redis.VerifyCaptcha(form.CaptchaID, form.Captcha); !ret.OK {
+	if ret := redis.VerifyCaptcha(ctx.Request.Context(), form.CaptchaID, form.Captcha); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	// 无论邮箱是否存在均返回成功，防止用户枚举
-	service.SendPasswordResetEmail(db.DB, form)
+	service.SendPasswordResetEmail(db.DB.WithContext(ctx.Request.Context()), form)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
 
@@ -175,7 +175,7 @@ func ResetPassword(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ret := service.ResetUserPassword(db.DB, form)
+	ret := service.ResetUserPassword(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		prometheus.RecordPasswordReset(false)
 		resp.JSON(ctx, ret)

@@ -37,13 +37,13 @@ func formatNodeImages(nodeImageMap map[string][]string, targetImages []string) [
 }
 
 func GetImages(ctx *gin.Context) {
-	nodeImageMap, ret := service.ListNodeImages()
+	nodeImageMap, ret := service.ListNodeImages(ctx.Request.Context())
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 
-	targetImages, ret := service.ListChallengeImages(db.DB)
+	targetImages, ret := service.ListChallengeImages(db.DB.WithContext(ctx.Request.Context()))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -55,13 +55,13 @@ func GetImages(ctx *gin.Context) {
 }
 
 func GetContestChallengeImage(ctx *gin.Context) {
-	nodeImageMap, ret := service.ListNodeImages()
+	nodeImageMap, ret := service.ListNodeImages(ctx.Request.Context())
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 
-	targetImages, ret := service.ListContestChallengeImages(db.DB, middleware.GetContest(ctx))
+	targetImages, ret := service.ListContestChallengeImages(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -79,7 +79,7 @@ func PullImages(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.PullImageEventType)
-	ret := service.PullContestChallengeImage(form)
+	ret := service.PullContestChallengeImage(ctx.Request.Context(), form)
 	ctx.Set(middleware.CTXEventSuccessKey, ret.OK)
 	resp.JSON(ctx, ret)
 }

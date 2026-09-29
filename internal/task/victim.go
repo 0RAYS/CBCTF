@@ -47,7 +47,9 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 		cleanupQueued := false
 		claimed := false
 		cleanupFailedStart := func(reason error) error {
-			victimRepo := db.InitVictimRepo(db.TaskDB)
+			cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Minute)
+			defer cancel()
+			victimRepo := db.InitVictimRepo(db.TaskDB.WithContext(cleanupCtx))
 			// The stop worker shares our lock; persist partial allocation even if a
 			// stop request already changed status while Kubernetes was provisioning.
 			_ = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
@@ -70,9 +72,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 				log.Logger.Warningf("Failed to enqueue victim cleanup after start failure: victim_id=%d error=%v", victim.ID, enqueueErr)
 			}
 
-			cleanupCtx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			ret := k8s.StopVictim(cleanupCtx, victim)
-			cancel()
 			if !ret.OK {
 				return fmt.Errorf("%w; cleanup enqueue failed and synchronous cleanup failed: %s", reason, ret.Msg)
 			}
@@ -83,8 +83,8 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			return reason
 		}
 		err := func() error {
-			podRepo := db.InitPodRepo(db.TaskDB)
-			victimRepo := db.InitVictimRepo(db.TaskDB)
+			podRepo := db.InitPodRepo(db.TaskDB.WithContext(ctx))
+			victimRepo := db.InitVictimRepo(db.TaskDB.WithContext(ctx))
 			currentVictim, ret := victimRepo.GetByID(victim.ID, db.GetOptions{
 				Preloads: map[string]db.GetOptions{"Pods": {}},
 			})
@@ -180,7 +180,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "victim", payload.Victim.ID, func() error {
-		victimRepo := db.InitVictimRepo(db.TaskDB)
+		victimRepo := db.InitVictimRepo(db.TaskDB.WithContext(ctx))
 		victim, ret := victimRepo.GetByID(payload.Victim.ID, db.GetOptions{Preloads: map[string]db.GetOptions{"Pods": {}}})
 		if !ret.OK {
 			if ret.Msg == i18n.Model.NotFound {
@@ -205,7 +205,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 				victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err,
 			)
 		}
-		ret = db.WithTransactionDB(db.TaskDB, func(tx *db.Tx) model.RetVal {
+		ret = db.WithTransactionDB(db.TaskDB.WithContext(ctx), func(tx *db.Tx) model.RetVal {
 			if ret = db.InitVictimRepo(tx).Update(victim.ID, db.UpdateVictimOptions{
 				Duration: new(time.Now().Sub(victim.Start)),
 			}); !ret.OK {

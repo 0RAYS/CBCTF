@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"context"
 	"maps"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -47,7 +49,10 @@ func Events(ctx *gin.Context) {
 		}
 	}
 	options.Models["Self"] = GetSelf(ctx).ID
-	if event, ret := db.InitEventRepo(db.DB).Create(options); ret.OK {
+	// Audit persistence must finish even if the client disconnects after a mutation.
+	auditCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx.Request.Context()), 5*time.Second)
+	defer cancel()
+	if event, ret := db.InitEventRepo(db.DB.WithContext(auditCtx)).Create(options); ret.OK {
 		for _, target := range webhook.SelectWebhook(event) {
 			if _, err := task.EnqueueWebhookTask(event, target); err != nil {
 				log.Logger.Warningf("Failed to enqueue webhook task: %s", err)

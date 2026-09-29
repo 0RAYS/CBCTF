@@ -250,13 +250,7 @@ func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest m
 	}
 
 	if challenge.Type == model.PodsChallengeType {
-		go func() {
-			victim, victimRet := db.InitVictimRepo(tx).HasAliveVictim(team.ID, challenge.ID)
-			if !victimRet.OK {
-				return
-			}
-			_ = ForceStopVictim(tx, victim)
-		}()
+		queueTeamVictimStop(tx, team.ID, challenge.ID)
 	}
 	return model.SuccessRetVal()
 }

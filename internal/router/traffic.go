@@ -17,8 +17,7 @@ func GetTraffics(ctx *gin.Context) {
 		return
 	}
 	victim := middleware.GetVictim(ctx)
-	// Init enables ContextWithFallback so analysis follows request cancellation.
-	data, ret := service.GetTraffic(ctx, victim, form)
+	data, ret := service.GetTraffic(ctx.Request.Context(), victim, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -27,7 +26,7 @@ func GetTraffics(ctx *gin.Context) {
 }
 
 func GetTrafficAnalysis(ctx *gin.Context) {
-	data, ret := service.GetTrafficAnalysis(ctx, middleware.GetVictim(ctx))
+	data, ret := service.GetTrafficAnalysis(ctx.Request.Context(), middleware.GetVictim(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -36,7 +35,7 @@ func GetTrafficAnalysis(ctx *gin.Context) {
 }
 
 func GetContestTrafficOverlaps(ctx *gin.Context) {
-	data, ret := service.GetContestTrafficOverlaps(ctx, middleware.GetContest(ctx))
+	data, ret := service.GetContestTrafficOverlaps(ctx.Request.Context(), middleware.GetContest(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

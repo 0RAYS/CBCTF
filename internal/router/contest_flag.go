@@ -19,7 +19,7 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.SubmitFlagEventType)
 	ret := service.SubmitContestFlag(
-		db.DB,
+		db.DB.WithContext(ctx.Request.Context()),
 		middleware.GetSelf(ctx),
 		middleware.GetTeam(ctx),
 		middleware.GetContest(ctx),
@@ -37,7 +37,7 @@ func SubmitFlag(ctx *gin.Context) {
 }
 
 func GetContestFlags(ctx *gin.Context) {
-	contestFlags, ret := service.ListContestFlags(db.DB, middleware.GetContestChallenge(ctx))
+	contestFlags, ret := service.ListContestFlags(db.DB.WithContext(ctx.Request.Context()), middleware.GetContestChallenge(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -56,7 +56,7 @@ func UpdateContestFlag(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeFlagEventType)
-	ret := service.UpdateContestFlag(db.DB, middleware.GetContestFlag(ctx), form)
+	ret := service.UpdateContestFlag(db.DB.WithContext(ctx.Request.Context()), middleware.GetContestFlag(ctx), form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

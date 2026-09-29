@@ -37,7 +37,7 @@ func CheckAuth(ctx *gin.Context) {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
 	}
-	user, ret := db.InitUserRepo(db.DB).GetByID(claims.UserID)
+	user, ret := db.InitUserRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(claims.UserID)
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
 		return

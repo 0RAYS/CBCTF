@@ -46,7 +46,7 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 		err := func() error {
 			challenge := payload.Challenge
 			generator := payload.Generator
-			generatorRepo := db.InitGeneratorRepo(db.TaskDB)
+			generatorRepo := db.InitGeneratorRepo(db.TaskDB.WithContext(ctx))
 			currentGenerator, ret := generatorRepo.GetByID(generator.ID)
 			if !ret.OK {
 				if ret.Msg == i18n.Model.NotFound {
@@ -94,15 +94,15 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 			return nil
 		}()
 		if err != nil && claimed && !cleanupQueued {
-			repo := db.InitGeneratorRepo(db.TaskDB)
+			cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), time.Minute)
+			defer cancel()
+			repo := db.InitGeneratorRepo(db.TaskDB.WithContext(cleanupCtx))
 			for _, status := range []string{model.PendingGeneratorStatus, model.RunningGeneratorStatus} {
 				_ = repo.UpdateIfStatus(payload.Generator.ID, status, db.UpdateGeneratorOptions{Status: new(model.TerminatingGeneratorStatus)})
 			}
 			if enqueueErr := EnqueueStopGeneratorTask(payload.Generator); enqueueErr != nil {
-				cleanupCtx, cancel := context.WithTimeout(context.Background(), time.Minute)
 				_ = redis.UnregisterGenerator(cleanupCtx, payload.Generator)
 				ret := k8s.StopGenerator(cleanupCtx, payload.Generator)
-				cancel()
 				if ret.OK {
 					_ = repo.Delete(payload.Generator.ID)
 				}
@@ -133,7 +133,7 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "generator", payload.Generator.ID, func() error {
-		generatorRepo := db.InitGeneratorRepo(db.TaskDB)
+		generatorRepo := db.InitGeneratorRepo(db.TaskDB.WithContext(ctx))
 		generator, ret := generatorRepo.GetByID(payload.Generator.ID)
 		if !ret.OK {
 			if ret.Msg == i18n.Model.NotFound {
@@ -148,13 +148,13 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 			log.Logger.Warningf("Failed to unregister generator before stop: generator_id=%d error=%v", generator.ID, err)
 		}
 		unregisterCancel()
-		ctx, cancel := context.WithTimeout(ctx, time.Minute)
-		ret = k8s.StopGenerator(ctx, generator)
+		stopCtx, cancel := context.WithTimeout(ctx, time.Minute)
+		ret = k8s.StopGenerator(stopCtx, generator)
 		cancel()
 		if !ret.OK {
 			return fmt.Errorf("stop generator failed: %s", ret.Msg)
 		}
-		ret = db.InitGeneratorRepo(db.TaskDB).Delete(generator.ID)
+		ret = generatorRepo.Delete(generator.ID)
 		if !ret.OK {
 			return fmt.Errorf("delete generator failed: %s", ret.Msg)
 		}

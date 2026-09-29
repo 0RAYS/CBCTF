@@ -152,7 +152,7 @@ func stopGeneratorResources(tx *gorm.DB, options db.GetOptions) model.RetVal {
 		if err := unregisterGenerator(generator); err != nil {
 			log.Logger.Warningf("Failed to unregister generator before resource deletion: generator_id=%d name=%s error=%v", generator.ID, generator.Name, err)
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		ctx, cancel := context.WithTimeout(tx.Statement.Context, time.Minute)
 		ret = k8s.StopGenerator(ctx, generator)
 		cancel()
 		if !ret.OK {
@@ -164,7 +164,7 @@ func stopGeneratorResources(tx *gorm.DB, options db.GetOptions) model.RetVal {
 }
 
 func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model.Generator, string, model.RetVal) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(tx.Statement.Context, 5*time.Second)
 	defer cancel()
 	generator, lockToken, err := redis.LockAvailableGenerator(ctx, contestID, challenge.ID)
 	if err == nil {

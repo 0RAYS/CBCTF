@@ -16,12 +16,12 @@ import (
 )
 
 func GetChallenge(ctx *gin.Context) {
-	challenge, ret := service.GetChallengeWithFlags(db.DB, middleware.GetChallenge(ctx))
+	challenge, ret := service.GetChallengeWithFlags(db.DB.WithContext(ctx.Request.Context()), middleware.GetChallenge(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(service.BuildChallengeView(db.DB, challenge))))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(service.BuildChallengeView(db.DB.WithContext(ctx.Request.Context()), challenge))))
 }
 
 func GetChallenges(ctx *gin.Context) {
@@ -30,7 +30,7 @@ func GetChallenges(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	challenges, count, ret := service.ListChallengeViews(db.DB, form)
+	challenges, count, ret := service.ListChallengeViews(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -48,7 +48,7 @@ func GetChallengeNotInContest(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	challenges, count, ret := service.ListChallengesNotInContest(db.DB, middleware.GetContest(ctx), form)
+	challenges, count, ret := service.ListChallengesNotInContest(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -66,7 +66,7 @@ func GetChallengeCategories(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	categories, ret := service.ListChallengeCategories(db.DB, form)
+	categories, ret := service.ListChallengeCategories(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -81,7 +81,7 @@ func CreateChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateChallengeEventType)
-	challenge, ret := service.CreateChallenge(db.DB, form)
+	challenge, ret := service.CreateChallenge(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -92,7 +92,7 @@ func CreateChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(service.BuildChallengeView(db.DB, challenge))))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(service.BuildChallengeView(db.DB.WithContext(ctx.Request.Context()), challenge))))
 }
 
 func UpdateChallenge(ctx *gin.Context) {
@@ -102,7 +102,7 @@ func UpdateChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateChallengeEventType)
-	ret := service.UpdateChallenge(db.DB, middleware.GetChallenge(ctx), form)
+	ret := service.UpdateChallenge(db.DB.WithContext(ctx.Request.Context()), middleware.GetChallenge(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -114,7 +114,7 @@ func UpdateChallenge(ctx *gin.Context) {
 func DeleteChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteChallengeEventType)
 	challenge := middleware.GetChallenge(ctx)
-	ret := service.DeleteChallenge(db.DB, challenge)
+	ret := service.DeleteChallenge(db.DB.WithContext(ctx.Request.Context()), challenge)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

@@ -17,7 +17,7 @@ func GetWebhooks(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	webhooks, count, ret := service.ListWebhooks(db.DB, form)
+	webhooks, count, ret := service.ListWebhooks(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -40,7 +40,7 @@ func CreateWebhook(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateWebhookEventType)
-	webhook, ret := service.CreateWebhook(db.DB, form)
+	webhook, ret := service.CreateWebhook(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -56,7 +56,7 @@ func UpdateWebhook(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateWebhookEventType)
-	if _, ret := service.UpdateWebhook(db.DB, middleware.GetWebhook(ctx), form); !ret.OK {
+	if _, ret := service.UpdateWebhook(db.DB.WithContext(ctx.Request.Context()), middleware.GetWebhook(ctx), form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -66,7 +66,7 @@ func UpdateWebhook(ctx *gin.Context) {
 
 func DeleteWebhook(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteWebhookEventType)
-	if ret := service.DeleteWebhook(db.DB, middleware.GetWebhook(ctx)); !ret.OK {
+	if ret := service.DeleteWebhook(db.DB.WithContext(ctx.Request.Context()), middleware.GetWebhook(ctx)); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}

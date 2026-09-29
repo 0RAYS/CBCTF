@@ -1,9 +1,11 @@
 package router
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -29,7 +31,9 @@ var (
 )
 
 func RegisterOauthRouter() {
-	oauthProviders, ret := service.ListEnabledOauthProviders(db.DB)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	oauthProviders, ret := service.ListEnabledOauthProviders(db.DB.WithContext(ctx))
 	if !ret.OK {
 		return
 	}
@@ -69,7 +73,7 @@ func Oauth(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
-	loginURL, ret := protocol.LoginURL(provider)
+	loginURL, ret := protocol.LoginURL(ctx.Request.Context(), provider)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -97,7 +101,7 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	user, ret := service.OauthLogin(db.DB, provider, result)
+	user, ret := service.OauthLogin(db.DB.WithContext(ctx.Request.Context()), provider, result)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -111,7 +115,7 @@ func OauthCallback(ctx *gin.Context) {
 	ctx.Set("Self", user)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	code := utils.UUID()
-	if ret = redis.SetOauthCode(code, token); !ret.OK {
+	if ret = redis.SetOauthCode(ctx.Request.Context(), code, token); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -127,7 +131,7 @@ func ExchangeOauthCode(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.OauthLoginEventType)
-	tempToken, ret := redis.GetAndDelOauthToken(code)
+	tempToken, ret := redis.GetAndDelOauthToken(ctx.Request.Context(), code)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -155,7 +159,7 @@ func GetOauthProviders(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	oauthProviders, count, ret := service.ListOauthProviders(db.DB, form)
+	oauthProviders, count, ret := service.ListOauthProviders(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -181,14 +185,14 @@ func CreateOauthProvider(ctx *gin.Context) {
 			resp.JSON(ctx, ret)
 			return
 		}
-		provider, ret = service.CreateCASProvider(db.DB, form)
+		provider, ret = service.CreateCASProvider(db.DB.WithContext(ctx.Request.Context()), form)
 	} else {
 		var form dto.CreateOauthProviderForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
 			resp.JSON(ctx, ret)
 			return
 		}
-		provider, ret = service.CreateOauthProvider(db.DB, form)
+		provider, ret = service.CreateOauthProvider(db.DB.WithContext(ctx.Request.Context()), form)
 	}
 	if !ret.OK {
 		resp.JSON(ctx, ret)
@@ -209,14 +213,14 @@ func UpdateOauthProvider(ctx *gin.Context) {
 			resp.JSON(ctx, ret)
 			return
 		}
-		newOauth, ret = service.UpdateCASProvider(db.DB, oldOauth, form)
+		newOauth, ret = service.UpdateCASProvider(db.DB.WithContext(ctx.Request.Context()), oldOauth, form)
 	} else {
 		var form dto.UpdateOauthProviderForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
 			resp.JSON(ctx, ret)
 			return
 		}
-		newOauth, ret = service.UpdateOauthProvider(db.DB, oldOauth, form)
+		newOauth, ret = service.UpdateOauthProvider(db.DB.WithContext(ctx.Request.Context()), oldOauth, form)
 	}
 	if !ret.OK {
 		resp.JSON(ctx, ret)
@@ -237,7 +241,7 @@ func UpdateOauthProvider(ctx *gin.Context) {
 func DeleteOauthProvider(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteOauthEventType)
 	provider := middleware.GetOauth(ctx)
-	if ret := service.DeleteOauthProvider(db.DB, provider); !ret.OK {
+	if ret := service.DeleteOauthProvider(db.DB.WithContext(ctx.Request.Context()), provider); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
