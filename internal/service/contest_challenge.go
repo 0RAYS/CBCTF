@@ -16,23 +16,35 @@ import (
 func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateContestChallengeForm) ([]model.ContestChallenge, []string, model.RetVal) {
 	contestChallengeL := make([]model.ContestChallenge, 0)
 	failedL := make([]string, 0)
+	batch := model.NewBatch(len(form.ChallengeIDs))
 	contestChallengeRepo := db.InitContestChallengeRepo(tx)
 	challengeRepo := db.InitChallengeRepo(tx)
 	for _, challengeRandID := range form.ChallengeIDs {
+		if tx.Statement.Context.Err() != nil {
+			return contestChallengeL, failedL, batch.Result(tx.Statement.Context)
+		}
 		challenge, ret := challengeRepo.GetByRandID(challengeRandID, db.GetOptions{
 			Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
 		})
 		if !ret.OK {
 			failedL = append(failedL, challengeRandID)
+			batch.Fail(challengeRandID, "lookup", ret)
+			if model.BatchDependencyFailed(ret) {
+				return contestChallengeL, failedL, batch.Result(tx.Statement.Context)
+			}
 			continue
 		}
 		unique, uniqueRet := contestChallengeRepo.IsUniqueContestChallenge(contest.ID, challenge.ID)
 		if !uniqueRet.OK {
-			return contestChallengeL, failedL, uniqueRet
+			failedL = append(failedL, challengeRandID)
+			batch.Fail(challengeRandID, "check_existing", uniqueRet)
+			return contestChallengeL, failedL, batch.Result(tx.Statement.Context)
 		}
 		if !unique {
+			batch.Skip(challengeRandID, "already_added")
 			continue
 		}
+		var created model.ContestChallenge
 		ret = db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
 			contestChallengeRepo := db.InitContestChallengeRepo(tx2)
 			contestFlagRepo := db.InitContestFlagRepo(tx2)
@@ -72,18 +84,24 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 			if !ret.OK {
 				return ret
 			}
-			contestChallengeL = append(contestChallengeL, contestChallenge)
+			created = contestChallenge
 			return model.SuccessRetVal()
 		})
 		if !ret.OK {
 			failedL = append(failedL, challengeRandID)
+			batch.Fail(challengeRandID, "transaction", ret)
+			if model.BatchDependencyFailed(ret) {
+				return contestChallengeL, failedL, batch.Result(tx.Statement.Context)
+			}
 		}
 		if ret.OK {
+			contestChallengeL = append(contestChallengeL, created)
+			batch.Success(challengeRandID, "committed")
 			warmChallengeImages(challenge)
 			warmGeneratorPool(contest.ID, challenge)
 		}
 	}
-	return contestChallengeL, failedL, model.SuccessRetVal()
+	return contestChallengeL, failedL, batch.Result(tx.Statement.Context)
 }
 
 func ListContestChallengeImages(tx *gorm.DB, contest model.Contest) ([]string, model.RetVal) {
