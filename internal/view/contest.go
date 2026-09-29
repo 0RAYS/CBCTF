@@ -3,6 +3,7 @@ package view
 import "CBCTF/internal/model"
 
 type ContestView struct {
+	Unavailable []string
 	Contest     model.Contest
 	TeamCount   int64
 	UserCount   int64

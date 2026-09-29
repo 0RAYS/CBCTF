@@ -11,9 +11,9 @@ import (
 
 func BuildContestView(tx *gorm.DB, contest model.Contest) view.ContestView {
 	contestRepo := db.InitContestRepo(tx)
-	teamCount, _ := contestRepo.CountTeams(contest.ID)
-	userCount, _ := contestRepo.CountUsers(contest.ID)
-	noticeCount, _ := contestRepo.CountNotices(contest.ID)
+	teamCount, teamRet := contestRepo.CountTeams(contest.ID)
+	userCount, userRet := contestRepo.CountUsers(contest.ID)
+	noticeCount, noticeRet := contestRepo.CountNotices(contest.ID)
 	result := view.ContestView{
 		Contest:     contest,
 		TeamCount:   teamCount,
@@ -21,13 +21,25 @@ func BuildContestView(tx *gorm.DB, contest model.Contest) view.ContestView {
 		NoticeCount: noticeCount,
 		StatsReady:  true,
 	}
-	champion, _, _ := GetTeamRanking(tx, contest, 1, 0)
+	for field, ret := range map[string]model.RetVal{"teams": teamRet, "users": userRet, "notices": noticeRet} {
+		if !ret.OK {
+			result.Unavailable = append(result.Unavailable, field)
+		}
+	}
+	champion, _, rankRet := GetTeamRanking(tx, contest, 1, 0)
+	if !rankRet.OK {
+		result.Unavailable = append(result.Unavailable, "highest")
+	}
 	if len(champion) > 0 {
 		result.Highest = champion[0].Score
 	}
-	result.SolvedCount, _ = db.InitSubmissionRepo(tx).Count(db.CountOptions{
+	var solveRet model.RetVal
+	result.SolvedCount, solveRet = db.InitSubmissionRepo(tx).Count(db.CountOptions{
 		Conditions: map[string]any{"solved": true, "contest_id": contest.ID},
 	})
+	if !solveRet.OK {
+		result.Unavailable = append(result.Unavailable, "solved")
+	}
 	return result
 }
 
@@ -51,16 +63,29 @@ func ListContests(tx *gorm.DB, form dto.ListModelsForm, admin bool) ([]view.Cont
 	}
 
 	contestRepo := db.InitContestRepo(tx)
-	teamCountMap, _ := contestRepo.CountTeamsMap(contestIDs...)
-	userCountMap, _ := contestRepo.CountUsersMap(contestIDs...)
+	teamCountMap, teamRet := contestRepo.CountTeamsMap(contestIDs...)
+	userCountMap, userRet := contestRepo.CountUsersMap(contestIDs...)
 	noticeCountMap := make(map[uint]int64, len(contests))
+	missingNotice := make(map[uint]bool)
 	for _, contest := range contests {
-		noticeCount, _ := contestRepo.CountNotices(contest.ID)
+		noticeCount, ret := contestRepo.CountNotices(contest.ID)
+		missingNotice[contest.ID] = !ret.OK
 		noticeCountMap[contest.ID] = noticeCount
 	}
 
 	for _, contest := range contests {
+		missing := make([]string, 0)
+		if !teamRet.OK {
+			missing = append(missing, "teams")
+		}
+		if !userRet.OK {
+			missing = append(missing, "users")
+		}
+		if missingNotice[contest.ID] {
+			missing = append(missing, "notices")
+		}
 		views = append(views, view.ContestView{
+			Unavailable: missing,
 			Contest:     contest,
 			TeamCount:   teamCountMap[contest.ID],
 			UserCount:   userCountMap[contest.ID],

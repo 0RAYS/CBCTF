@@ -1,6 +1,8 @@
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 
 function StatsSection({ stats, isLoading }) {
+  const { t } = useTranslation();
   if (!isLoading && (!stats || stats.length === 0)) {
     return null;
   }
@@ -25,7 +27,9 @@ function StatsSection({ stats, isLoading }) {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.06, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <span className="block text-3xl font-mono text-geek-400 leading-none mb-1">{stat.value}</span>
+                  <span className="block text-3xl font-mono text-geek-400 leading-none mb-1">
+                    {stat.value ?? t('common.notAvailable')}
+                  </span>
                   <span className="block text-sm text-neutral-400 font-mono tracking-wide">{stat.label}</span>
                 </motion.div>
               ))}

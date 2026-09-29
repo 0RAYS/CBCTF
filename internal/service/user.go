@@ -19,8 +19,15 @@ func BuildUserView(tx *gorm.DB, user model.User, includeCounts bool) view.UserVi
 		HasAdminAccess: db.InitPermissionRepo(tx).HasAdminAccess(user.ID),
 	}
 	if includeCounts {
-		result.TeamCount, _ = db.InitUserRepo(tx).CountTeams(user.ID)
-		result.ContestCount, _ = db.InitUserRepo(tx).CountContests(user.ID)
+		var ret model.RetVal
+		result.TeamCount, ret = db.InitUserRepo(tx).CountTeams(user.ID)
+		if !ret.OK {
+			result.Unavailable = append(result.Unavailable, "teams")
+		}
+		result.ContestCount, ret = db.InitUserRepo(tx).CountContests(user.ID)
+		if !ret.OK {
+			result.Unavailable = append(result.Unavailable, "contests")
+		}
 	}
 	return result
 }

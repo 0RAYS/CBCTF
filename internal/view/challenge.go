@@ -8,6 +8,7 @@ type ChallengeFlagView struct {
 }
 
 type ChallengeView struct {
+	Unavailable   []string
 	Challenge     model.Challenge
 	Flags         []ChallengeFlagView
 	DockerCompose string

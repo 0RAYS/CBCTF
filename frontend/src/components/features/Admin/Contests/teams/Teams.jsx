@@ -146,7 +146,7 @@ function AdminTeams({
         return (
           <span className="text-neutral-300 font-mono">
             {t('admin.contests.teams.memberCount', {
-              count: (team.users || 0).toLocaleString(locale),
+              count: team.users == null ? t('common.notAvailable') : team.users.toLocaleString(locale),
             })}
           </span>
         );

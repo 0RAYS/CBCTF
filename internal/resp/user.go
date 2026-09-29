@@ -28,5 +28,6 @@ func GetUserResp(userView view.UserView, admin bool) gin.H {
 		data["teams"] = userView.TeamCount
 		data["contests"] = userView.ContestCount
 	}
+	markUnavailable(data, userView.Unavailable)
 	return data
 }

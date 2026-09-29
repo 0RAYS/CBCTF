@@ -5,6 +5,7 @@ import (
 
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/view"
 )
@@ -25,7 +26,7 @@ func BuildChallengeView(tx *gorm.DB, challenge model.Challenge) view.ChallengeVi
 		result.DockerCompose = Template2Yaml(challenge.Template, challenge.ChallengeFlags)
 	}
 
-	file, _ := db.InitFileRepo(tx).Get(db.GetOptions{
+	file, ret := db.InitFileRepo(tx).Get(db.GetOptions{
 		Conditions: map[string]any{
 			"model":    model.Name(challenge),
 			"model_id": challenge.ID,
@@ -33,6 +34,9 @@ func BuildChallengeView(tx *gorm.DB, challenge model.Challenge) view.ChallengeVi
 		},
 	})
 	result.FileName = file.Filename
+	if !ret.OK && ret.Msg != i18n.Model.NotFound {
+		result.Unavailable = []string{"file"}
+	}
 	return result
 }
 

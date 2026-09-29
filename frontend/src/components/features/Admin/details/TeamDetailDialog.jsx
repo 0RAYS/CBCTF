@@ -108,7 +108,9 @@ function AdminTeamDetailDialog({
         </Card>
         <Card variant="default" padding="md">
           <div className="text-xs font-mono text-neutral-400 mb-1">{t('admin.contests.teams.detail.info.members')}</div>
-          <TruncatedText className="text-lg font-mono text-neutral-50">{team.users || 0}</TruncatedText>
+          <TruncatedText className="text-lg font-mono text-neutral-50">
+            {team.users ?? t('common.notAvailable')}
+          </TruncatedText>
         </Card>
       </div>
 

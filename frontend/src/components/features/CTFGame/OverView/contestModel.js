@@ -11,7 +11,7 @@ export function transformContestData(apiData) {
     status: getContestStatus(apiData.start, apiData.duration),
     startTime,
     endTime,
-    participants: apiData.users || 0,
+    participants: apiData.users ?? null,
     rules: apiData.rules ?? [],
     prizes: apiData.prizes ?? [],
     timeline: apiData.timelines ?? [],

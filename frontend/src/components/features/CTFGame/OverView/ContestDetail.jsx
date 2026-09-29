@@ -88,7 +88,7 @@ function ContestDetail({ contest, handleJoinContest }) {
               </div>
               <div>
                 <span className="text-neutral-400">{t('game.detail.labels.participants')}</span>
-                <div className="text-neutral-50 font-mono">{contest.participants || 0}</div>
+                <div className="text-neutral-50 font-mono">{contest.participants ?? t('common.notAvailable')}</div>
               </div>
             </div>
 

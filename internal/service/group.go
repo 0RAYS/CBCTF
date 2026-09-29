@@ -11,11 +11,15 @@ import (
 )
 
 func BuildGroupView(tx *gorm.DB, group model.Group) view.GroupView {
-	count, _ := db.InitGroupRepo(tx).CountUsers(group.ID)
-	return view.GroupView{
+	count, ret := db.InitGroupRepo(tx).CountUsers(group.ID)
+	result := view.GroupView{
 		Group:     group,
 		UserCount: count,
 	}
+	if !ret.OK {
+		result.Unavailable = []string{"users"}
+	}
+	return result
 }
 
 func ListGroups(tx *gorm.DB, form dto.ListModelsForm) ([]view.GroupView, int64, model.RetVal) {

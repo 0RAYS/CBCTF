@@ -49,7 +49,7 @@ function AdminGroups({
         return <span className="text-geek-400">{rolesMap[group.role_id] || '-'}</span>;
 
       case 'users':
-        return <span className="text-neutral-300">{group.users}</span>;
+        return <span className="text-neutral-300">{group.users ?? t('common.notAvailable')}</span>;
 
       case 'default':
         return group.default ? (

@@ -32,7 +32,9 @@ function ScoreboardStats({ totalTeams, totalSolves, highestScore, totalPlayers }
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2, delay: index * 0.05 }}
           >
-            {typeof stat.value === 'number' ? stat.value.toLocaleString(i18n.language || 'en-US') : stat.value}
+            {typeof stat.value === 'number'
+              ? stat.value.toLocaleString(i18n.language || 'en-US')
+              : (stat.value ?? t('common.notAvailable'))}
           </motion.div>
         </Card>
       ))}

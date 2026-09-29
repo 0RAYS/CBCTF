@@ -155,10 +155,10 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
       .then((response) => {
         if (ignore || response.code !== 200) return;
         setStats({
-          totalTeams: response.data.teams || 0,
-          totalSolves: response.data.solved || 0,
-          highestScore: response.data.highest || 0,
-          totalPlayers: response.data.users || 0,
+          totalTeams: response.data.teams,
+          totalSolves: response.data.solved,
+          highestScore: response.data.highest,
+          totalPlayers: response.data.users,
         });
       })
       .catch((error) => {

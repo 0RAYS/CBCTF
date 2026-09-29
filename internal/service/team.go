@@ -30,11 +30,15 @@ func UpdateTeam(tx *gorm.DB, team model.Team, form dto.UpdateTeamForm) model.Ret
 }
 
 func BuildTeamView(tx *gorm.DB, team model.Team) view.TeamView {
-	count, _ := db.InitTeamRepo(tx).CountUsers(team.ID)
-	return view.TeamView{
+	count, ret := db.InitTeamRepo(tx).CountUsers(team.ID)
+	result := view.TeamView{
 		Team:      team,
 		UserCount: count,
 	}
+	if !ret.OK {
+		result.Unavailable = []string{"users"}
+	}
+	return result
 }
 
 func AdminUpdateTeam(tx *gorm.DB, team model.Team, form dto.AdminUpdateTeamForm) model.RetVal {

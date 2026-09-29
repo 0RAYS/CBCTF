@@ -44,5 +44,6 @@ func GetContestResp(contestView view.ContestView, admin bool) gin.H {
 	if admin {
 		data["captcha"] = contest.Captcha
 	}
+	markUnavailable(data, contestView.Unavailable)
 	return data
 }
