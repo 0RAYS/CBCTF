@@ -120,6 +120,7 @@ func PullContestChallengeImage(ctx context.Context, form dto.PullImageForm) mode
 		}
 		images := targetImages[nodeName]
 		if err := task.EnqueuePrepullTargets(images, []string{nodeName}, form.PullPolicy); err != nil {
+			log.Logger.Warningf("Warmup enqueue failed: node=%s error=%v", nodeName, err)
 			batch.Fail(nodeName, "enqueue", model.RetVal{Msg: i18n.Task.EnqueueError})
 			return batch.Result(ctx)
 		}
