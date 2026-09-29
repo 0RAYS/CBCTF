@@ -1,6 +1,7 @@
 package db
 
 import (
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -17,15 +18,47 @@ type TrafficRepo struct {
 }
 
 // ReplaceAnalysis replaces a complete capture snapshot, including empty results.
-func (t *TrafficRepo) ReplaceAnalysis(victimID uint, ips []string, accesses []traffic.TrafficAccess) model.RetVal {
+func (t *TrafficRepo) ReplaceAnalysis(victimID uint, ips []string, accesses []traffic.TrafficAccess, report *traffic.AnalysisReport) model.RetVal {
 	res := t.DB.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "victim_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"ips", "accesses", "updated_at"}),
-	}).Create(&model.Traffic{VictimID: victimID, IPs: ips, Accesses: accesses})
+		DoUpdates: clause.AssignmentColumns([]string{"ips", "accesses", "analysis", "updated_at"}),
+	}).Create(&model.Traffic{VictimID: victimID, IPs: ips, Accesses: accesses, Analysis: report})
 	if res.Error != nil {
 		return model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
+}
+
+func (t *TrafficRepo) GetAnalysis(victimID uint) (model.Traffic, model.RetVal) {
+	var record model.Traffic
+	if err := t.DB.Where("victim_id = ?", victimID).Limit(1).Find(&record).Error; err != nil {
+		return record, model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": err.Error()}}
+	}
+	return record, model.SuccessRetVal()
+}
+
+func (t *TrafficRepo) KnownFlags(victim model.Victim) ([]string, model.RetVal) {
+	var values []string
+	var err error
+	if victim.TeamID.Valid && victim.ContestChallengeID.Valid {
+		err = t.DB.Model(&model.TeamFlag{}).
+			Joins("JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
+			Where("team_flags.team_id = ? AND contest_flags.contest_challenge_id = ?", victim.TeamID.V, victim.ContestChallengeID.V).
+			Pluck("team_flags.value", &values).Error
+	} else {
+		err = t.DB.Model(&model.ChallengeFlag{}).Where("challenge_id = ?", victim.ChallengeID).Pluck("value", &values).Error
+		static := make([]string, 0, len(values))
+		for _, value := range values {
+			if strings.HasPrefix(value, "static{") && strings.HasSuffix(value, "}") {
+				static = append(static, strings.TrimSuffix(strings.TrimPrefix(value, "static{"), "}"))
+			}
+		}
+		values = static
+	}
+	if err != nil {
+		return nil, model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": err.Error()}}
+	}
+	return values, model.SuccessRetVal()
 }
 
 func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {

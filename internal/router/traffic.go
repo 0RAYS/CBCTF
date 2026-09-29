@@ -17,8 +17,17 @@ func GetTraffics(ctx *gin.Context) {
 		return
 	}
 	victim := middleware.GetVictim(ctx)
-	// Gin's context does not forward cancellation unless ContextWithFallback is enabled.
-	data, ret := service.GetTraffic(ctx.Request.Context(), victim, form)
+	// Init enables ContextWithFallback so analysis follows request cancellation.
+	data, ret := service.GetTraffic(ctx, victim, form)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	resp.JSON(ctx, model.SuccessRetVal(data))
+}
+
+func GetTrafficAnalysis(ctx *gin.Context) {
+	data, ret := service.GetTrafficAnalysis(ctx, middleware.GetVictim(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

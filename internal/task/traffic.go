@@ -139,6 +139,14 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 	}
 	slices.Sort(ips)
 	accesses := traffic.CollectTrafficAccesses(result, victim.TrafficInternalIPs())
+	knownFlags, flagsRet := trafficRepo.KnownFlags(victim)
+	if !flagsRet.OK {
+		return flagsRet
+	}
+	report, err := traffic.AnalyzeDir(ctx, victim.TrafficBasePath(), knownFlags)
+	if err != nil {
+		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
+	}
 
 	log.Logger.Debugf("Collected IPs from pcaps: victim_id=%d connections=%d frpc_ips=%d unique_ips=%d duration=%s",
 		victim.ID, len(result.Connections), len(result.FrpcIPs), len(ips), time.Since(start))
@@ -156,7 +164,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 				}
 			}
 		}
-		return db.InitTrafficRepo(tx).ReplaceAnalysis(victim.ID, ips, accesses)
+		return db.InitTrafficRepo(tx).ReplaceAnalysis(victim.ID, ips, accesses, &report)
 	})
 	if !ret.OK {
 		return ret
