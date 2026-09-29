@@ -674,21 +674,41 @@ func ReadPcapDirWithContext(ctx context.Context, path string) (PcapDirResult, er
 // extractFrpcProxyIPs 从 frpc.pcap 中提取所有 Proxy Protocol header 里的真实客户端 srcIP。
 func extractFrpcProxyAccesses(ctx context.Context, path string) ([]TrafficAccess, error) {
 	accesses := make([]TrafficAccess, 0)
+	consume := func(data []byte, evidence Evidence) {
+		header, err := pp.Read(bufio.NewReader(bytes.NewReader(data)))
+		if err != nil || header.SourceAddr == nil {
+			return
+		}
+		ip, _, err := net.SplitHostPort(header.SourceAddr.String())
+		if err == nil {
+			accesses = append(accesses, TrafficAccess{IP: NormalizeTrafficIP(ip), Time: evidence.Time, Source: "proxy_protocol", Capture: evidence.Capture})
+		}
+	}
+	var incomplete bool
+	streams := newStreamCollector(consume, func(string) { incomplete = true })
+	streams.prefixOnly = true
 	err := walkTrafficPackets(ctx, path, func(packet gopacket.Packet, _ layers.LinkType) error {
-		transport := packet.TransportLayer()
-		if transport == nil {
+		c, ok := extractTrafficConnection(packet, nil)
+		if !ok {
 			return nil
 		}
-		header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload())))
-		if readErr != nil || header.SourceAddr == nil {
-			return nil
+		c.Capture = filepath.Base(path)
+		e := packetEvidence(c)
+		if tcp, ok := packet.Layer(layers.LayerTypeTCP).(*layers.TCP); ok {
+			streams.add(tcp, e)
+		} else if transport := packet.TransportLayer(); transport != nil {
+			consume(transport.LayerPayload(), e)
 		}
-		srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
-		if srcErr != nil || srcIP == "" {
-			return nil
-		}
-		accesses = append(accesses, TrafficAccess{IP: srcIP, Time: packet.Metadata().Timestamp, Source: "proxy_protocol", Capture: filepath.Base(path)})
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+	streams.flush()
+	// Never silently publish a complete-looking anti-cheat evidence index after
+	// an analysis resource limit or a capture gap.
+	if incomplete {
+		return nil, fmt.Errorf("incomplete FRP TCP evidence in %s", path)
+	}
 	return accesses, err
 }

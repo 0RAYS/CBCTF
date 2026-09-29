@@ -24,6 +24,7 @@ func Init() *gin.Engine {
 
 	gin.SetMode(strings.ToLower(config.Env.Gin.Mode))
 	router := gin.New()
+	router.ContextWithFallback = true
 
 	log.Logger.Infof("Trust proxies: %s", config.Env.Gin.Proxies)
 	if err := router.SetTrustedProxies(config.Env.Gin.Proxies); err != nil {
@@ -322,6 +323,7 @@ func Init() *gin.Engine {
 				{
 					adminTraffic.GET("/download", middleware.SetTrafficFile, DownloadFile(model.DownloadTrafficEventType))
 					adminTraffic.GET("", GetTraffics)
+					adminTraffic.GET("/analysis", GetTrafficAnalysis)
 				}
 				adminVictim.GET("/pods", GetVictimPods)
 				adminVictim.GET("/pods/logs", GetVictimPodLogs)
@@ -377,6 +379,7 @@ func Init() *gin.Engine {
 					{
 						adminContestVictimTraffic.GET("/download", middleware.SetTrafficFile, DownloadFile(model.DownloadTrafficEventType))
 						adminContestVictimTraffic.GET("", GetTraffics)
+						adminContestVictimTraffic.GET("/analysis", GetTrafficAnalysis)
 					}
 				}
 

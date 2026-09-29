@@ -7,5 +7,6 @@ type Traffic struct {
 	VictimID uint                    `gorm:"uniqueIndex;index" json:"victim_id"`
 	IPs      StringList              `gorm:"type:jsonb;default:'[]'" json:"ips"`
 	Accesses []traffic.TrafficAccess `gorm:"serializer:json;type:jsonb;default:'[]'" json:"accesses"`
+	Analysis *traffic.AnalysisReport `gorm:"serializer:json;type:jsonb" json:"analysis"`
 	BaseModel
 }

@@ -292,6 +292,7 @@ var RoutePermissions = map[string]string{
 	"DELETE /admin/victims":                         PermAdminVictimControl,
 	"GET /admin/victims/:victimID/traffic":          PermAdminTrafficRead,
 	"GET /admin/victims/:victimID/traffic/download": PermAdminTrafficRead,
+	"GET /admin/victims/:victimID/traffic/analysis": PermAdminTrafficRead,
 	"GET /admin/victims/:victimID/pods":             PermAdminVictimControl,
 	"GET /admin/victims/:victimID/pods/logs":        PermAdminVictimControl,
 
@@ -330,6 +331,7 @@ var RoutePermissions = map[string]string{
 	"GET /admin/contests/:contestID/teams/:teamID/victims":                            PermAdminContestTrafficRead,
 	"GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic":          PermAdminContestTrafficRead,
 	"GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download": PermAdminContestTrafficRead,
+	"GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/analysis": PermAdminContestTrafficRead,
 	"GET /admin/contests/:contestID/teams/:teamID/writeups":                           PermAdminTeamWriteupList,
 	"GET /admin/contests/:contestID/teams/:teamID/writeups/:fileID":                   PermAdminTeamWriteupRead,
 
