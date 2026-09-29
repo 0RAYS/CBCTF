@@ -585,22 +585,23 @@ func formatTrafficAddrPort(ip, port string) string {
 	return net.JoinHostPort(ip, port)
 }
 
-func EnrichPcapDirWithContext(ctx context.Context, path string) []error {
+func EnrichPcapDirWithContext(ctx context.Context, path string) ([]string, []SourceIssue, error) {
 	d, err := os.Stat(path)
 	if err != nil {
-		return []error{err}
+		return nil, nil, err
 	}
 	if !d.IsDir() {
-		return []error{fmt.Errorf("%s is a file", path)}
+		return nil, nil, fmt.Errorf("%s is a file", path)
 	}
 	dir, err := os.ReadDir(path)
 	if err != nil {
-		return []error{err}
+		return nil, nil, err
 	}
-	errors := make([]error, 0)
+	generated := make([]string, 0)
+	allIssues := make([]SourceIssue, 0)
 	for _, file := range dir {
 		if err = ctx.Err(); err != nil {
-			return append(errors, err)
+			return generated, allIssues, err
 		}
 		if file.IsDir() || !isOriginalTrafficCapture(file.Name()) {
 			continue
@@ -609,14 +610,14 @@ func EnrichPcapDirWithContext(ctx context.Context, path string) []error {
 		jsonl := filepath.Join(path, file.Name()+".connections.jsonl")
 		output := filepath.Join(path, file.Name()+".enrich.pcap")
 		issues, enrichErr := EnrichPcap(ctx, pcapPath, jsonl, output)
-		for _, issue := range issues {
-			errors = append(errors, fmt.Errorf("%s: %s", issue.File, issue.Error))
-		}
+		allIssues = append(allIssues, issues...)
 		if err = enrichErr; err != nil {
-			errors = append(errors, err)
+			allIssues = append(allIssues, SourceIssue{File: file.Name(), Phase: "enrichment", Error: err.Error()})
+		} else {
+			generated = append(generated, output)
 		}
 	}
-	return errors
+	return generated, allIssues, ctx.Err()
 }
 
 // frpcPcapName 是 frpc pod capture sidecar 写入的固定文件名。

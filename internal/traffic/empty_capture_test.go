@@ -54,8 +54,8 @@ func TestEmptyCapturesAcrossAnalysisReplayAndEnrichment(t *testing.T) {
 	if err != nil || len(result.Connections) != 0 || len(result.Accesses) != 0 {
 		t.Fatalf("empty replay/proxy evidence: %+v, %v", result, err)
 	}
-	if errs := EnrichPcapDirWithContext(ctx, dir); len(errs) != 0 {
-		t.Fatalf("empty capture enrichment: %v", errs)
+	if _, issues, err := EnrichPcapDirWithContext(ctx, dir); err != nil || len(issues) > 0 {
+		t.Fatalf("empty capture enrichment: %v %v", issues, err)
 	}
 	for _, name := range names {
 		connections, _, err := ReadPcapFile(ctx, filepath.Join(dir, name+".enrich.pcap"))
