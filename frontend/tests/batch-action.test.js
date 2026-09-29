@@ -82,3 +82,17 @@ for (const close of ['scope change', 'unmount']) {
     host.unmount();
   });
 }
+
+test('failed scan with committed nested evidence reports a warning and refreshes', async () => {
+  notices.length = 0;
+  const host = mountHook(() => useBatchAction(1));
+  const scan = { status: 'failed', requested: 1, succeeded: 0, skipped: 0, failed: 1, not_attempted: 0,
+    items: [{ id: 'web_ip', status: 'failed', phase: 'scan', details: batch }] };
+  let result;
+  await host.value.run(async () => ({ code: 500, data: scan }), { onResult: (value) => { result = value; } });
+  await host.flush();
+  assert.deepEqual(result, scan);
+  assert.deepEqual(host.value.result, scan);
+  assert.equal(notices[0].color, 'warning');
+  host.unmount();
+});

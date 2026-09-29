@@ -3,27 +3,38 @@ import { useTranslation } from 'react-i18next';
 import { checkContestCheats, deleteAllContestCheats, deleteContestCheat } from '../../../../api/admin/contest';
 import { toast } from '../../../../utils/toast';
 import { Button, Modal } from '../../../common';
+import useBatchAction from '../batch/useBatchAction.js';
+import BatchResultPanel from '../batch/BatchResultPanel.jsx';
 
 export default function CheatActionDialog({ contestId, action, cheat, onClose, onCompleted }) {
   const { t } = useTranslation();
-  const [pending, setPending] = useState(false);
+  const [deleting, setPending] = useState(false);
+  const scan = useBatchAction(JSON.stringify([contestId, action]));
+  const pending = deleting || scan.pending;
   const busy = useRef(false);
   const close = () => {
-    if (!busy.current) onClose();
+    if (!busy.current && !scan.pending) onClose();
   };
   const confirmKey = { delete: 'confirmDelete', deleteAll: 'confirmDeleteAll', check: 'confirmCheck' }[action];
 
   async function submit() {
+    if (action === 'check') {
+      await scan.run(() => checkContestCheats(contestId), {
+        successMessage: t('admin.contests.cheats.toast.checkSuccess'),
+        failureMessage: t('admin.contests.cheats.toast.checkFailed'),
+        onResult: (batch) => {
+          onCompleted(batch);
+          if (!batch || batch.status === 'success') onClose();
+        },
+      });
+      return;
+    }
     if (busy.current || (action === 'delete' && !cheat)) return;
     busy.current = true;
     setPending(true);
     try {
       const response =
-        action === 'delete'
-          ? await deleteContestCheat(contestId, cheat.id)
-          : action === 'deleteAll'
-            ? await deleteAllContestCheats(contestId)
-            : await checkContestCheats(contestId);
+        action === 'delete' ? await deleteContestCheat(contestId, cheat.id) : await deleteAllContestCheats(contestId);
       if (response.code !== 200) throw new Error(t(`admin.contests.cheats.toast.${action}Failed`));
       toast.success({ description: t(`admin.contests.cheats.toast.${action}Success`) });
       onCompleted();
@@ -53,6 +64,7 @@ export default function CheatActionDialog({ contestId, action, cheat, onClose, o
         </>
       }
     >
+      <BatchResultPanel result={scan.result} error={scan.error} />
       <p className="text-neutral-300">{t(`admin.contests.cheats.actions.${confirmKey}Prompt`)}</p>
     </Modal>
   );
