@@ -17,6 +17,9 @@ import (
 // Read synchronously: PacketSource.Packets hides read errors and can leak its
 // producer goroutine when a cancelled consumer stops reading.
 func walkTrafficPackets(ctx context.Context, path string, visit func(gopacket.Packet, layers.LinkType) error) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	f, err := os.Open(path)
 	if err != nil {
 		return err
@@ -25,6 +28,14 @@ func walkTrafficPackets(ctx context.Context, path string, visit func(gopacket.Pa
 	r := bufio.NewReader(f)
 	magic, err := r.Peek(4)
 	if err != nil {
+		if err == io.EOF {
+			// Capture sidecars can create a file before the first packet arrives.
+			// Only a genuinely empty file is an empty capture, not a partial header.
+			if len(magic) == 0 {
+				return ctx.Err()
+			}
+			return io.ErrUnexpectedEOF
+		}
 		return err
 	}
 	var source gopacket.PacketDataSource
