@@ -60,6 +60,34 @@ func (v Victim) TrafficZipPath() string {
 	return filepath.Join(v.TrafficBasePath(), "traffics.zip")
 }
 
+// TrafficInternalIPs uses recorded instance addresses, not traffic frequency or
+// public FRP endpoints (which belong to the platform, not the target network).
+func (v Victim) TrafficInternalIPs() map[string]bool {
+	ips := make(map[string]bool)
+	add := func(value string) {
+		if prefix, err := netip.ParsePrefix(value); err == nil {
+			value = prefix.Addr().String()
+		}
+		if ip, err := netip.ParseAddr(value); err == nil {
+			ips[ip.Unmap().String()] = true
+		}
+	}
+	for _, pod := range v.Pods {
+		for _, network := range pod.Spec.Networks {
+			add(network.Attachment.IP)
+		}
+	}
+	for _, pod := range v.Spec.Pods {
+		for _, network := range pod.Networks {
+			add(network.Attachment.IP)
+		}
+	}
+	for _, endpoint := range v.Endpoints {
+		add(endpoint.IP)
+	}
+	return ips
+}
+
 func (v Victim) RemoteAddr() []string {
 	data := make([]string, 0)
 	for _, endpoint := range v.ExposedEndpoints {

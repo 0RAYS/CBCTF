@@ -16,6 +16,7 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
+	"CBCTF/internal/traffic"
 )
 
 func ListCheats(tx *gorm.DB, contest model.Contest, form dto.GetCheatsForm) ([]model.Cheat, int64, int64, model.RetVal) {
@@ -149,6 +150,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 }
 
 func checkWhitelistIP(ip string) bool {
+	ip = traffic.NormalizeTrafficIP(ip)
 	addr, err := netip.ParseAddr(ip)
 	return err != nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
 		if strings.Contains(cidr, "/") {
@@ -158,7 +160,7 @@ func checkWhitelistIP(ip string) bool {
 			}
 			return prefix.Contains(addr)
 		}
-		return cidr == ip
+		return traffic.NormalizeTrafficIP(cidr) == ip
 	})
 }
 
@@ -233,7 +235,7 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 
 	ipTeamMap := make(map[string][]teamInfo)
 	for _, row := range rows {
-		if checkWhitelistIP(row.SrcIP) {
+		if !traffic.IsPublicTrafficIP(row.SrcIP) || checkWhitelistIP(row.SrcIP) {
 			continue
 		}
 		ipTeamMap[row.SrcIP] = append(ipTeamMap[row.SrcIP], teamInfo{

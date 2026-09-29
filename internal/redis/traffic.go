@@ -11,7 +11,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
+	"CBCTF/internal/traffic"
 )
 
 const (
@@ -24,7 +24,7 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	result, err := utils.ReadPcapDir(victim.TrafficBasePath())
+	result, err := traffic.ReadPcapDir(victim.TrafficBasePath())
 	if err != nil {
 		log.Logger.Warningf("Failed to read victim pcaps for cache: victim_id=%d path=%s error=%s", victim.ID, victim.TrafficBasePath(), err)
 		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
@@ -52,10 +52,10 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func GetTraffic(victim model.Victim) ([]utils.Connection, model.RetVal) {
+func GetTraffic(victim model.Victim) ([]traffic.Connection, model.RetVal) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	connections := make([]utils.Connection, 0)
+	connections := make([]traffic.Connection, 0)
 	results, err := RDB.ZRangeWithScores(ctx, fmt.Sprintf(trafficsKeyTmpl, victim.ID), 0, -1).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get traffic: %s", err)
@@ -70,7 +70,7 @@ func GetTraffic(victim model.Victim) ([]utils.Connection, model.RetVal) {
 
 	for _, cmd := range cmds {
 		str, _ := cmd.(*redis.StringCmd).Bytes()
-		var conn utils.Connection
+		var conn traffic.Connection
 		if err = msgpack.Unmarshal(str, &conn); err != nil {
 			log.Logger.Warningf("Failed to unmarshal: %s", err)
 			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}

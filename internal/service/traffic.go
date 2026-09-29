@@ -15,7 +15,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
-	"CBCTF/internal/utils"
+	"CBCTF/internal/traffic"
 )
 
 type trafficNodeAggregate struct {
@@ -51,7 +51,7 @@ type trafficEdgeAggregate struct {
 }
 
 type trafficProcessAggregate struct {
-	Info    utils.TrafficProcessInfo
+	Info    traffic.TrafficProcessInfo
 	Bytes   int64
 	Packets int64
 }
@@ -347,7 +347,7 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 	}, model.SuccessRetVal()
 }
 
-func loadTrafficConnections(victim model.Victim) ([]utils.Connection, model.RetVal) {
+func loadTrafficConnections(victim model.Victim) ([]traffic.Connection, model.RetVal) {
 	connections, ret := redis.GetTraffic(victim)
 	if !ret.OK {
 		return nil, ret
@@ -364,7 +364,7 @@ func loadTrafficConnections(victim model.Victim) ([]utils.Connection, model.RetV
 		return nil, ret
 	}
 	if len(connections) == 0 {
-		return make([]utils.Connection, 0), model.SuccessRetVal()
+		return make([]traffic.Connection, 0), model.SuccessRetVal()
 	}
 	return connections, model.SuccessRetVal()
 }
@@ -396,7 +396,7 @@ func emptyTrafficTopology(victim model.Victim, form dto.GetTrafficForm) resp.Tra
 	}
 }
 
-func calcTrafficTotalDuration(connections []utils.Connection) int64 {
+func calcTrafficTotalDuration(connections []traffic.Connection) int64 {
 	if len(connections) == 0 {
 		return 0
 	}
@@ -424,9 +424,9 @@ func clampTrafficWindow(start, duration, total int64) (int64, int64) {
 	return start, end
 }
 
-func sliceTrafficConnections(connections []utils.Connection, start, end int64) []utils.Connection {
+func sliceTrafficConnections(connections []traffic.Connection, start, end int64) []traffic.Connection {
 	if len(connections) == 0 {
-		return make([]utils.Connection, 0)
+		return make([]traffic.Connection, 0)
 	}
 	startAt := time.Duration(start) * time.Millisecond
 	endAt := time.Duration(end) * time.Millisecond
@@ -434,7 +434,7 @@ func sliceTrafficConnections(connections []utils.Connection, start, end int64) [
 		endAt = startAt + time.Millisecond
 	}
 
-	windowConnections := make([]utils.Connection, 0)
+	windowConnections := make([]traffic.Connection, 0)
 	for _, connection := range connections {
 		if connection.TimeShift < startAt {
 			continue
@@ -448,7 +448,7 @@ func sliceTrafficConnections(connections []utils.Connection, start, end int64) [
 }
 
 func buildTrafficTimelineBuckets(
-	connections []utils.Connection,
+	connections []traffic.Connection,
 	internalIPs map[string]bool,
 	bucketSizeMs int64,
 ) map[int64]*trafficBucketAggregate {
@@ -480,7 +480,7 @@ func buildTrafficTimelineBuckets(
 	return buckets
 }
 
-func collectVictimIPs(victim model.Victim, connections []utils.Connection) map[string]bool {
+func collectVictimIPs(victim model.Victim, connections []traffic.Connection) map[string]bool {
 	internalIPs := make(map[string]bool)
 	for _, pod := range victim.Pods {
 		for _, network := range pod.Spec.Networks {
@@ -739,7 +739,7 @@ func sortTrafficProtocolKeys(items map[string]int64) []string {
 	return keys
 }
 
-func addTrafficProcess(items map[string]*trafficProcessAggregate, process *utils.TrafficProcessInfo, bytes int64) {
+func addTrafficProcess(items map[string]*trafficProcessAggregate, process *traffic.TrafficProcessInfo, bytes int64) {
 	if items == nil || process == nil {
 		return
 	}
@@ -757,7 +757,7 @@ func addTrafficProcess(items map[string]*trafficProcessAggregate, process *utils
 	item.Packets++
 }
 
-func trafficProcessKey(process utils.TrafficProcessInfo) string {
+func trafficProcessKey(process traffic.TrafficProcessInfo) string {
 	pid := ""
 	if process.PID != nil {
 		pid = strconv.FormatInt(*process.PID, 10)
@@ -820,7 +820,7 @@ func dominantTrafficProcess(processes []resp.TrafficProcessResp) string {
 	return ""
 }
 
-func countTrafficProcesses(connections []utils.Connection) int {
+func countTrafficProcesses(connections []traffic.Connection) int {
 	seen := make(map[string]bool)
 	for _, connection := range connections {
 		if connection.Process == nil {
