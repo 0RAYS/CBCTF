@@ -40,11 +40,13 @@ func HandleLoadTrafficTask(ctx context.Context, t *asynq.Task) error {
 	}
 	victim := payload.Victim
 	log.Logger.Infof("Loading victim traffic: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
-	ret := LoadTraffic(ctx, db.TaskDB, victim)
-	if !ret.OK {
-		return fmt.Errorf("load traffic failed: %s", ret.Msg)
-	}
-	return nil
+	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "traffic", victim.ID, func() error {
+		ret := LoadTraffic(ctx, db.TaskDB, victim)
+		if !ret.OK {
+			return fmt.Errorf("load traffic failed: %s %v", ret.Msg, ret.Attr)
+		}
+		return nil
+	})
 }
 
 // LoadTraffic enrich pcap、打包归档，并提取流量涉及的所有 IP 写入 traffics 表。
@@ -64,32 +66,28 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 	if err := ctx.Err(); err != nil {
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	archive := func(victim model.Victim) (model.File, bool) {
+	var archiveIssues []traffic.SourceIssue
+	archive := func(victim model.Victim) (model.File, error) {
 		start := time.Now()
 		log.Logger.Debugf("Enrich pcap with process info: victim_id=%d path=%s", victim.ID, victim.TrafficBasePath())
-		if errs := traffic.EnrichPcapDirWithContext(ctx, victim.TrafficBasePath()); len(errs) > 0 {
-			for _, err := range errs {
-				log.Logger.Warningf("Enrich pcap error: %v", err)
-			}
-			return model.File{}, false
-		}
-		if err := ctx.Err(); err != nil {
-			log.Logger.Warningf("Traffic archive cancelled after enrichment: victim_id=%d error=%s", victim.ID, err)
-			return model.File{}, false
-		}
 		log.Logger.Debugf("Archiving victim traffic pcaps: victim_id=%d path=%s", victim.ID, victim.TrafficBasePath())
-		if err := utils.ZipWithContext(ctx, victim.TrafficBasePath(), victim.TrafficZipPath()); err != nil {
+		var err error
+		archiveIssues, err = traffic.Archive(ctx, victim.TrafficBasePath(), victim.TrafficZipPath())
+		for _, issue := range archiveIssues {
+			log.Logger.Warningf("Traffic enrichment incomplete: victim_id=%d file=%s error=%s", victim.ID, issue.File, issue.Error)
+		}
+		if err != nil {
 			log.Logger.Warningf("Failed to archive victim traffic pcaps: victim_id=%d error=%s", victim.ID, err)
-			return model.File{}, false
+			return model.File{}, err
 		}
 		if err := ctx.Err(); err != nil {
 			log.Logger.Warningf("Traffic archive cancelled after zip: victim_id=%d error=%s", victim.ID, err)
-			return model.File{}, false
+			return model.File{}, err
 		}
 		size, hash, err := utils.GetFileInfoByPath(ctx, victim.TrafficZipPath())
 		if err != nil {
 			log.Logger.Warningf("Failed to get traffic archive info: victim_id=%d path=%s error=%s", victim.ID, victim.TrafficZipPath(), err)
-			return model.File{}, false
+			return model.File{}, err
 		}
 		log.Logger.Debugf("Archived victim traffic pcaps: victim_id=%d size=%d duration=%s", victim.ID, size, time.Since(start))
 		return model.File{
@@ -102,11 +100,11 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 			Suffix:   ".zip",
 			Hash:     hash,
 			Type:     model.TrafficFileType,
-		}, true
+		}, nil
 	}
-	fileOptions, hasArchive := archive(victim)
-	if !hasArchive {
-		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": "traffic archive failed"}}
+	fileOptions, archiveErr := archive(victim)
+	if archiveErr != nil {
+		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": archiveErr.Error()}}
 	}
 	if err := ctx.Err(); err != nil {
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
@@ -150,21 +148,20 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	report.AddSourceIssues(result.SourceIssues...)
+	report.AddSourceIssues(archiveIssues...)
 
 	log.Logger.Debugf("Collected IPs from pcaps: victim_id=%d connections=%d frpc_ips=%d unique_ips=%d duration=%s",
 		victim.ID, len(result.Connections), len(result.FrpcIPs), len(ips), time.Since(start))
 
 	ret := db.WithTransactionDB(root, func(tx *db.Tx) model.RetVal {
-		if hasArchive {
-			fileRepo := db.InitFileRepo(tx)
-			count, ret := fileRepo.Count(db.CountOptions{Conditions: map[string]any{"model": fileOptions.Model, "model_id": victim.ID, "type": model.TrafficFileType}})
-			if !ret.OK {
-				return ret
-			}
-			if count == 0 {
-				if _, ret := fileRepo.Create(fileOptions); !ret.OK {
-					return model.RetVal{Msg: fmt.Sprintf("create traffic archive record failed: %s", ret.Msg)}
-				}
+		fileRepo := db.InitFileRepo(tx)
+		count, ret := fileRepo.Count(db.CountOptions{Conditions: map[string]any{"model": fileOptions.Model, "model_id": victim.ID, "type": model.TrafficFileType}})
+		if !ret.OK {
+			return ret
+		}
+		if count == 0 {
+			if _, ret := fileRepo.Create(fileOptions); !ret.OK {
+				return model.RetVal{Msg: fmt.Sprintf("create traffic archive record failed: %s", ret.Msg)}
 			}
 		}
 		return db.InitTrafficRepo(tx).ReplaceAnalysis(victim.ID, ips, accesses, &report, true)

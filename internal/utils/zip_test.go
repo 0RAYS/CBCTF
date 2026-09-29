@@ -14,7 +14,7 @@ func TestZipAtomicArchiveAndCancellation(t *testing.T) {
 		t.Fatal(err)
 	}
 	output := filepath.Join(dir, "traffics.zip")
-	if err := ZipWithContext(context.Background(), dir, output); err != nil {
+	if err := ZipWithContext(context.Background(), dir, output, nil); err != nil {
 		t.Fatal(err)
 	}
 	archive, err := zip.OpenReader(output)
@@ -40,14 +40,14 @@ func TestZipAtomicArchiveAndCancellation(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	if err = ZipWithContext(ctx, dir, output); err == nil {
+	if err = ZipWithContext(ctx, dir, output, nil); err == nil {
 		t.Fatal("cancel ignored")
 	}
 	after, err := os.ReadFile(output)
 	if err != nil || string(before) != string(after) {
 		t.Fatal("cancel corrupted existing archive")
 	}
-	if err = ZipWithContext(context.Background(), filepath.Join(dir, "missing"), output); err == nil {
+	if err = ZipWithContext(context.Background(), filepath.Join(dir, "missing"), output, nil); err == nil {
 		t.Fatal("walk error ignored")
 	}
 }

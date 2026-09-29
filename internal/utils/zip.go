@@ -9,10 +9,10 @@ import (
 )
 
 func Zip(src string, destZip string) error {
-	return ZipWithContext(context.Background(), src, destZip)
+	return ZipWithContext(context.Background(), src, destZip, nil)
 }
 
-func ZipWithContext(ctx context.Context, src string, destZip string) error {
+func ZipWithContext(ctx context.Context, src string, destZip string, include func(string) bool) error {
 	zipFile, err := os.CreateTemp(filepath.Dir(destZip), ".archive-*")
 	if err != nil {
 		return err
@@ -34,6 +34,9 @@ func ZipWithContext(ctx context.Context, src string, destZip string) error {
 			return err
 		}
 		if filepath.Clean(path) == filepath.Clean(destZip) || filepath.Clean(path) == filepath.Clean(zipFile.Name()) {
+			return nil
+		}
+		if !info.IsDir() && include != nil && !include(path) {
 			return nil
 		}
 		relPath, err := filepath.Rel(filepath.Dir(src), path)
