@@ -1,7 +1,9 @@
 package service
 
 import (
+	"sort"
 	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -93,7 +95,11 @@ func validateK8sSettings(form dto.UpdateSettingForm) model.RetVal {
 	return model.SuccessRetVal()
 }
 
+var settingsUpdateMu sync.Mutex
+
 func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal {
+	settingsUpdateMu.Lock()
+	defer settingsUpdateMu.Unlock()
 	if ret := validateK8sSettings(form); !ret.OK {
 		return ret
 	}
@@ -158,13 +164,31 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.RegistrationEnabledSettingKey:      form.RegistrationEnabled,
 		model.RegistrationDefaultGroupSettingKey: form.RegistrationDefaultGroup,
 	}
-	repo := db.InitSettingRepo(tx)
-	for key, value := range kv {
-		if ret := repo.Update(key, db.UpdateSettingOptions{Value: &model.SettingValue{V: value}}); !ret.OK {
-			return ret
+	var snapshot *config.Config
+	ret := db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
+		if err := tx.Exec("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", "cbctf:settings").Error; err != nil {
+			return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 		}
+		repo := db.InitSettingRepo(tx)
+		keys := make([]string, 0, len(kv))
+		for key := range kv {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+		for _, key := range keys {
+			value := kv[key]
+			if ret := repo.Update(key, db.UpdateSettingOptions{Value: &model.SettingValue{V: value}}); !ret.OK {
+				return ret
+			}
+		}
+		var ret model.RetVal
+		snapshot, ret = repo.ReadSnapshot()
+		return ret
+	})
+	if ret.OK {
+		config.Env = snapshot
 	}
-	return repo.ReadSettings()
+	return ret
 }
 
 func GetPublicSystemConfig() map[string]any {

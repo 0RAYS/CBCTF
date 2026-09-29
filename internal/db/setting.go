@@ -132,117 +132,133 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 }
 
 func (s *SettingRepo) ReadSettings() model.RetVal {
+	next, ret := s.ReadSnapshot()
+	if ret.OK {
+		config.Env = next
+	}
+	return ret
+}
+
+// Build a complete candidate without modifying the running configuration.
+// Callers updating settings use their transaction here and publish after commit.
+func (s *SettingRepo) ReadSnapshot() (*config.Config, model.RetVal) {
+	next := *config.Env
+	ret := s.readSettingsInto(&next)
+	return &next, ret
+}
+
+func (s *SettingRepo) readSettingsInto(next *config.Config) model.RetVal {
 	var ret model.RetVal
 
-	if config.Env.Host, ret = GetValue[string](s, model.HostSettingKey); !ret.OK {
+	if next.Host, ret = GetValue[string](s, model.HostSettingKey); !ret.OK {
 		return ret
 	}
 
-	if config.Env.AsyncQ.Log.Level, ret = GetValue[string](s, model.AsyncQLogLevelSettingKey); !ret.OK {
+	if next.AsyncQ.Log.Level, ret = GetValue[string](s, model.AsyncQLogLevelSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.AsyncQ.Queues.Victim, ret = GetValue[int](s, model.AsyncQVictimConcurrencyKey); !ret.OK {
+	if next.AsyncQ.Queues.Victim, ret = GetValue[int](s, model.AsyncQVictimConcurrencyKey); !ret.OK {
 		return ret
 	}
-	if config.Env.AsyncQ.Queues.Traffic, ret = GetValue[int](s, model.AsyncQTrafficConcurrencyKey); !ret.OK {
+	if next.AsyncQ.Queues.Traffic, ret = GetValue[int](s, model.AsyncQTrafficConcurrencyKey); !ret.OK {
 		return ret
 	}
-	if config.Env.AsyncQ.Queues.Generator, ret = GetValue[int](s, model.AsyncQGeneratorConcurrencyKey); !ret.OK {
+	if next.AsyncQ.Queues.Generator, ret = GetValue[int](s, model.AsyncQGeneratorConcurrencyKey); !ret.OK {
 		return ret
 	}
-	if config.Env.AsyncQ.Queues.Attachment, ret = GetValue[int](s, model.AsyncQAttachmentConcurrencyKey); !ret.OK {
+	if next.AsyncQ.Queues.Attachment, ret = GetValue[int](s, model.AsyncQAttachmentConcurrencyKey); !ret.OK {
 		return ret
 	}
-	if config.Env.AsyncQ.Queues.Email, ret = GetValue[int](s, model.AsyncQEmailConcurrencyKey); !ret.OK {
+	if next.AsyncQ.Queues.Email, ret = GetValue[int](s, model.AsyncQEmailConcurrencyKey); !ret.OK {
 		return ret
 	}
-	if config.Env.AsyncQ.Queues.Webhook, ret = GetValue[int](s, model.AsyncQWebhookConcurrencyKey); !ret.OK {
+	if next.AsyncQ.Queues.Webhook, ret = GetValue[int](s, model.AsyncQWebhookConcurrencyKey); !ret.OK {
 		return ret
 	}
-	if config.Env.AsyncQ.Queues.Image, ret = GetValue[int](s, model.AsyncQImageConcurrencyKey); !ret.OK {
-		return ret
-	}
-
-	if config.Env.Gin.Mode, ret = GetValue[string](s, model.GinModeSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.Upload.Picture, ret = GetValue[int](s, model.GinUploadPictureSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.Upload.Challenge, ret = GetValue[int](s, model.GinUploadChallengeSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.Upload.Writeup, ret = GetValue[int](s, model.GinUploadWriteupSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.Proxies, ret = GetValue[[]string](s, model.GinProxiesSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.RateLimit.Global, ret = GetValue[int](s, model.GinRateLimitGlobalSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.RateLimit.Whitelist, ret = GetValue[[]string](s, model.GinRateLimitWhitelistSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.Origins, ret = GetValue[[]string](s, model.GinOriginsSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.Log.Whitelist, ret = GetValue[[]string](s, model.GinLogWhitelistSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.JWT.Secret, ret = GetValue[string](s, model.GinJWTSecretSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.Metrics.Whitelist, ret = GetValue[[]string](s, model.GinMetricsWhitelistSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Gin.PProf.Whitelist, ret = GetValue[[]string](s, model.GinPProfWhitelistSettingKey); !ret.OK {
+	if next.AsyncQ.Queues.Image, ret = GetValue[int](s, model.AsyncQImageConcurrencyKey); !ret.OK {
 		return ret
 	}
 
-	if config.Env.K8S.Namespace, ret = GetValue[string](s, model.K8SNamespaceSettingKey); !ret.OK {
+	if next.Gin.Mode, ret = GetValue[string](s, model.GinModeSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.K8S.CaptureImage, ret = GetValue[string](s, model.K8SCaptureImageSettingKey); !ret.OK {
+	if next.Gin.Upload.Picture, ret = GetValue[int](s, model.GinUploadPictureSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.K8S.CaptureEnabled, ret = GetValue[bool](s, model.K8SCaptureEnabledSettingKey); !ret.OK {
+	if next.Gin.Upload.Challenge, ret = GetValue[int](s, model.GinUploadChallengeSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.K8S.PriorityClassName, ret = GetValue[string](s, model.K8SPriorityClassSettingKey); !ret.OK {
+	if next.Gin.Upload.Writeup, ret = GetValue[int](s, model.GinUploadWriteupSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.K8S.WorkerImage, ret = GetValue[string](s, model.K8SWorkerImageSettingKey); !ret.OK {
+	if next.Gin.Proxies, ret = GetValue[[]string](s, model.GinProxiesSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.K8S.GeneratorPoolSize, ret = GetValue[int](s, model.K8SGeneratorPoolSizeSettingKey); !ret.OK {
+	if next.Gin.RateLimit.Global, ret = GetValue[int](s, model.GinRateLimitGlobalSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.K8S.Frp.On, ret = GetValue[bool](s, model.K8SFrpOnSettingKey); !ret.OK {
+	if next.Gin.RateLimit.Whitelist, ret = GetValue[[]string](s, model.GinRateLimitWhitelistSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.K8S.Frp.FrpcImage, ret = GetValue[string](s, model.K8SFrpFrpcImageSettingKey); !ret.OK {
+	if next.Gin.Origins, ret = GetValue[[]string](s, model.GinOriginsSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.K8S.Frp.NginxImage, ret = GetValue[string](s, model.K8SFrpNginxImageSettingKey); !ret.OK {
+	if next.Gin.Log.Whitelist, ret = GetValue[[]string](s, model.GinLogWhitelistSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.K8S.Frp.Frps, ret = GetValue[[]config.FrpsConfig](s, model.K8SFrpFrpsSettingKey); !ret.OK {
+	if next.Gin.JWT.Secret, ret = GetValue[string](s, model.GinJWTSecretSettingKey); !ret.OK {
+		return ret
+	}
+	if next.Gin.Metrics.Whitelist, ret = GetValue[[]string](s, model.GinMetricsWhitelistSettingKey); !ret.OK {
+		return ret
+	}
+	if next.Gin.PProf.Whitelist, ret = GetValue[[]string](s, model.GinPProfWhitelistSettingKey); !ret.OK {
 		return ret
 	}
 
-	if config.Env.Cheat.IP.Whitelist, ret = GetValue[[]string](s, model.CheatIPWhitelistSettingKey); !ret.OK {
+	if next.K8S.Namespace, ret = GetValue[string](s, model.K8SNamespaceSettingKey); !ret.OK {
+		return ret
+	}
+	if next.K8S.CaptureImage, ret = GetValue[string](s, model.K8SCaptureImageSettingKey); !ret.OK {
+		return ret
+	}
+	if next.K8S.CaptureEnabled, ret = GetValue[bool](s, model.K8SCaptureEnabledSettingKey); !ret.OK {
+		return ret
+	}
+	if next.K8S.PriorityClassName, ret = GetValue[string](s, model.K8SPriorityClassSettingKey); !ret.OK {
+		return ret
+	}
+	if next.K8S.WorkerImage, ret = GetValue[string](s, model.K8SWorkerImageSettingKey); !ret.OK {
+		return ret
+	}
+	if next.K8S.GeneratorPoolSize, ret = GetValue[int](s, model.K8SGeneratorPoolSizeSettingKey); !ret.OK {
+		return ret
+	}
+	if next.K8S.Frp.On, ret = GetValue[bool](s, model.K8SFrpOnSettingKey); !ret.OK {
+		return ret
+	}
+	if next.K8S.Frp.FrpcImage, ret = GetValue[string](s, model.K8SFrpFrpcImageSettingKey); !ret.OK {
+		return ret
+	}
+	if next.K8S.Frp.NginxImage, ret = GetValue[string](s, model.K8SFrpNginxImageSettingKey); !ret.OK {
+		return ret
+	}
+	if next.K8S.Frp.Frps, ret = GetValue[[]config.FrpsConfig](s, model.K8SFrpFrpsSettingKey); !ret.OK {
 		return ret
 	}
 
-	if config.Env.Webhook.Whitelist, ret = GetValue[[]string](s, model.WebhookWhitelistSettingKey); !ret.OK {
+	if next.Cheat.IP.Whitelist, ret = GetValue[[]string](s, model.CheatIPWhitelistSettingKey); !ret.OK {
 		return ret
 	}
 
-	if config.Env.Registration.Enabled, ret = GetValue[bool](s, model.RegistrationEnabledSettingKey); !ret.OK {
+	if next.Webhook.Whitelist, ret = GetValue[[]string](s, model.WebhookWhitelistSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Registration.DefaultGroup, ret = GetValue[uint](s, model.RegistrationDefaultGroupSettingKey); !ret.OK {
+
+	if next.Registration.Enabled, ret = GetValue[bool](s, model.RegistrationEnabledSettingKey); !ret.OK {
+		return ret
+	}
+	if next.Registration.DefaultGroup, ret = GetValue[uint](s, model.RegistrationDefaultGroupSettingKey); !ret.OK {
 		return ret
 	}
 
