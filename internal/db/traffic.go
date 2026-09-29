@@ -9,38 +9,29 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/traffic"
 )
 
 type TrafficRepo struct {
 	BaseRepo[model.Traffic]
 }
 
+// ReplaceAnalysis replaces a complete capture snapshot, including empty results.
+func (t *TrafficRepo) ReplaceAnalysis(victimID uint, ips []string, accesses []traffic.TrafficAccess) model.RetVal {
+	res := t.DB.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "victim_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"ips", "accesses", "updated_at"}),
+	}).Create(&model.Traffic{VictimID: victimID, IPs: ips, Accesses: accesses})
+	if res.Error != nil {
+		return model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
 func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 	return &TrafficRepo{
 		DB: tx,
 	}
-}
-
-// UpsertIPs 写入或合并靶机的 IP 列表（ON CONFLICT 时合并去重）
-func (t *TrafficRepo) UpsertIPs(victimID uint, ips []string) model.RetVal {
-	if len(ips) == 0 {
-		return model.SuccessRetVal()
-	}
-	res := t.DB.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "victim_id"}},
-		DoUpdates: clause.Assignments(map[string]any{
-			"ips":        gorm.Expr("(SELECT jsonb_agg(DISTINCT val) FROM jsonb_array_elements_text(traffics.ips || EXCLUDED.ips) AS val)"),
-			"updated_at": gorm.Expr("NOW()"),
-		}),
-	}).Create(&model.Traffic{
-		VictimID: victimID,
-		IPs:      ips,
-	})
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to upsert traffic IPs: victim_id=%d error=%s", victimID, res.Error)
-		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": "Traffic", "Error": res.Error.Error()}}
-	}
-	return model.SuccessRetVal()
 }
 
 // GetVictimIPs 返回靶机的 IP 列表。
@@ -59,6 +50,7 @@ type TeamVictimIP struct {
 	FirstTime time.Time
 	SrcIP     string
 	TeamID    uint
+	VictimIDs []uint `gorm:"serializer:json"`
 }
 
 // ListSharedContestVictimIPs 返回同一比赛中出现在多支队伍靶机里的 IP。
@@ -72,17 +64,19 @@ func (t *TrafficRepo) ListSharedContestVictimIPs(contestID uint, start, end time
 		WITH expanded AS (
 			SELECT
 				victims.team_id,
-				ip_val,
-				victims.created_at
+				access->>'ip' AS ip_val,
+				(access->>'time')::timestamptz AS observed_at,
+				victims.id AS victim_id
 			FROM traffics
-			CROSS JOIN LATERAL jsonb_array_elements_text(traffics.ips) AS ip_val
+			CROSS JOIN LATERAL jsonb_array_elements(traffics.accesses) AS access
 			INNER JOIN victims ON victims.id = traffics.victim_id
 			INNER JOIN teams   ON teams.id   = victims.team_id AND teams.deleted_at IS NULL
 			WHERE
 				victims.contest_id     = ?
 				AND victims.team_id    IS NOT NULL
 				AND traffics.deleted_at IS NULL
-				AND victims.created_at BETWEEN ? AND ?
+				AND (access->>'time')::timestamptz >= ?
+				AND (access->>'time')::timestamptz < ?
 		),
 		shared_ips AS (
 			SELECT ip_val
@@ -93,7 +87,8 @@ func (t *TrafficRepo) ListSharedContestVictimIPs(contestID uint, start, end time
 		SELECT
 			e.team_id,
 			e.ip_val AS src_ip,
-			MIN(e.created_at) AS first_time
+			MIN(e.observed_at) AS first_time,
+			jsonb_agg(DISTINCT e.victim_id) AS victim_ids
 		FROM expanded e
 		INNER JOIN shared_ips s ON s.ip_val = e.ip_val
 		GROUP BY e.team_id, e.ip_val

@@ -14,6 +14,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/traffic"
 	"CBCTF/internal/utils"
 )
 
@@ -50,7 +51,10 @@ func HandleLoadTrafficTask(ctx context.Context, t *asynq.Task) error {
 func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.RetVal {
 	trafficRepo := db.InitTrafficRepo(root)
 
-	count, _ := trafficRepo.Count(db.CountOptions{Conditions: map[string]any{"victim_id": victim.ID}})
+	count, countRet := trafficRepo.Count(db.CountOptions{Conditions: map[string]any{"victim_id": victim.ID}})
+	if !countRet.OK {
+		return countRet
+	}
 	if count > 0 {
 		log.Logger.Debugf("Traffic already loaded: victim_id=%d", victim.ID)
 		return model.SuccessRetVal()
@@ -62,7 +66,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 	archive := func(victim model.Victim) (model.File, bool) {
 		start := time.Now()
 		log.Logger.Debugf("Enrich pcap with process info: victim_id=%d path=%s", victim.ID, victim.TrafficBasePath())
-		if errs := utils.EnrichPcapDirWithContext(ctx, victim.TrafficBasePath()); len(errs) > 0 {
+		if errs := traffic.EnrichPcapDirWithContext(ctx, victim.TrafficBasePath()); len(errs) > 0 {
 			for _, err := range errs {
 				log.Logger.Warningf("Enrich pcap error: %v", err)
 			}
@@ -99,11 +103,14 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 		}, true
 	}
 	fileOptions, hasArchive := archive(victim)
+	if !hasArchive {
+		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": "traffic archive failed"}}
+	}
 	if err := ctx.Err(); err != nil {
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	start := time.Now()
-	result, err := utils.ReadPcapDirWithContext(ctx, victim.TrafficBasePath())
+	result, err := traffic.ReadPcapDirWithContext(ctx, victim.TrafficBasePath())
 	if err != nil {
 		log.Logger.Warningf("Failed to read victim pcaps: victim_id=%d path=%s error=%s", victim.ID, victim.TrafficBasePath(), err)
 		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
@@ -131,17 +138,25 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 		ips = append(ips, ip)
 	}
 	slices.Sort(ips)
+	accesses := traffic.CollectTrafficAccesses(result, victim.TrafficInternalIPs())
 
 	log.Logger.Debugf("Collected IPs from pcaps: victim_id=%d connections=%d frpc_ips=%d unique_ips=%d duration=%s",
 		victim.ID, len(result.Connections), len(result.FrpcIPs), len(ips), time.Since(start))
 
 	ret := db.WithTransactionDB(root, func(tx *db.Tx) model.RetVal {
 		if hasArchive {
-			if _, ret := db.InitFileRepo(tx).Create(fileOptions); !ret.OK {
-				return model.RetVal{Msg: fmt.Sprintf("create traffic archive record failed: %s", ret.Msg)}
+			fileRepo := db.InitFileRepo(tx)
+			count, ret := fileRepo.Count(db.CountOptions{Conditions: map[string]any{"model": fileOptions.Model, "model_id": victim.ID, "type": model.TrafficFileType}})
+			if !ret.OK {
+				return ret
+			}
+			if count == 0 {
+				if _, ret := fileRepo.Create(fileOptions); !ret.OK {
+					return model.RetVal{Msg: fmt.Sprintf("create traffic archive record failed: %s", ret.Msg)}
+				}
 			}
 		}
-		return db.InitTrafficRepo(tx).UpsertIPs(victim.ID, ips)
+		return db.InitTrafficRepo(tx).ReplaceAnalysis(victim.ID, ips, accesses)
 	})
 	if !ret.OK {
 		return ret

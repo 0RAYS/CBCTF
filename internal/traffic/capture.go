@@ -1,4 +1,4 @@
-package utils
+package traffic
 
 import (
 	"bufio"
@@ -17,7 +17,6 @@ import (
 
 	"github.com/gopacket/gopacket"
 	"github.com/gopacket/gopacket/layers"
-	"github.com/gopacket/gopacket/pcap"
 	"github.com/gopacket/gopacket/pcapgo"
 	pp "github.com/pires/go-proxyproto"
 )
@@ -33,6 +32,10 @@ type Connection struct {
 	Subtype   string
 	Size      int
 	Process   *TrafficProcessInfo
+	Capture   string
+	SYN       bool
+	ACK       bool
+	ClientIP  string
 }
 
 type TrafficProcessInfo struct {
@@ -91,42 +94,29 @@ func ReadPcapFile(ctx context.Context, path string) ([]Connection, error) {
 	if file.IsDir() {
 		return nil, fmt.Errorf("%s is a directory", path)
 	}
-	handle, err := pcap.OpenOffline(path)
-	if err != nil {
-		return nil, err
-	}
-	defer handle.Close()
-	traffic := gopacket.NewPacketSource(handle, handle.LinkType())
 	processLookup, err := loadTrafficProcessLookup(path + ".connections.jsonl")
 	if err != nil {
 		return nil, err
 	}
 	var connections []Connection
 	var firstPacketTime time.Time
-	for packet := range traffic.Packets() {
-		if err = ctx.Err(); err != nil {
-			return nil, err
-		}
+	err = walkTrafficPackets(ctx, path, func(packet gopacket.Packet, _ layers.LinkType) error {
 		connection, ok := extractTrafficConnection(packet, processLookup)
 		if !ok {
-			continue
+			return nil
 		}
 		if firstPacketTime.IsZero() {
 			firstPacketTime = packet.Metadata().Timestamp
 		}
 		connection.TimeShift = packet.Metadata().Timestamp.Sub(firstPacketTime)
+		connection.Capture = filepath.Base(path)
 		connections = append(connections, connection)
-	}
-	return connections, nil
+		return nil
+	})
+	return connections, err
 }
 
 func EnrichPcap(ctx context.Context, pcapPath, jsonlPath, outputPath string) error {
-	handle, err := pcap.OpenOffline(pcapPath)
-	if err != nil {
-		return err
-	}
-	defer handle.Close()
-
 	processLookup, err := loadTrafficProcessLookup(jsonlPath)
 	if err != nil {
 		return err
@@ -140,24 +130,41 @@ func EnrichPcap(ctx context.Context, pcapPath, jsonlPath, outputPath string) err
 		_ = file.Close()
 	}(file)
 
-	writer, err := pcapgo.NewNgWriter(file, handle.LinkType())
-	if err != nil {
-		return err
-	}
-
-	traffic := gopacket.NewPacketSource(handle, handle.LinkType())
-	for packet := range traffic.Packets() {
-		if err = ctx.Err(); err != nil {
-			return err
+	var writer *pcapgo.NgWriter
+	interfaces := make(map[layers.LinkType]int)
+	err = walkTrafficPackets(ctx, pcapPath, func(packet gopacket.Packet, link layers.LinkType) error {
+		if writer == nil {
+			writer, err = pcapgo.NewNgWriter(file, link)
+			if err != nil {
+				return err
+			}
+			interfaces[link] = 0
+		}
+		index, ok := interfaces[link]
+		if !ok {
+			index, err = writer.AddInterface(pcapgo.NgInterface{LinkType: link, SnapLength: 0, TimestampResolution: 9})
+			if err != nil {
+				return err
+			}
+			interfaces[link] = index
 		}
 		connection, _ := extractTrafficConnection(packet, processLookup)
 		options := pcapgo.NgPacketOptions{}
 		if comment := buildTrafficProcessComment(connection.Process); comment != "" {
 			options.Comments = []string{comment}
 		}
-		if err = writer.WritePacketWithOptions(packet.Metadata().CaptureInfo, packet.Data(), options); err != nil {
-			return err
-		}
+		ci := packet.Metadata().CaptureInfo
+		ci.InterfaceIndex = index
+		return writer.WritePacketWithOptions(ci, packet.Data(), options)
+	})
+	if err != nil {
+		return err
+	}
+	if writer == nil {
+		writer, err = pcapgo.NewNgWriter(file, layers.LinkTypeEthernet)
+	}
+	if err != nil {
+		return err
 	}
 	return writer.Flush()
 }
@@ -168,20 +175,24 @@ func extractTrafficConnection(packet gopacket.Packet, processLookup trafficProce
 	if !ok {
 		return Connection{}, false
 	}
-	connection.SrcIP = src
-	connection.DstIP = dst
+	connection.SrcIP = NormalizeTrafficIP(src)
+	connection.DstIP = NormalizeTrafficIP(dst)
+	if connection.SrcIP == "" || connection.DstIP == "" {
+		return Connection{}, false
+	}
 	connection.SrcPort = srcPort
 	connection.DstPort = dstPort
 	connection.Type, connection.Subtype = extractTrafficProtocols(packet, baseLayerIndex)
 	connection.Process = findTrafficProcess(processLookup, connection)
+	if tcp, ok := packet.Layer(layers.LayerTypeTCP).(*layers.TCP); ok {
+		connection.SYN, connection.ACK = tcp.SYN, tcp.ACK
+	}
 	if transport := packet.TransportLayer(); transport != nil {
-		if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil {
+		if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil && header.SourceAddr != nil && header.DestinationAddr != nil {
 			srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
-			dstIP, _, dstErr := net.SplitHostPort(header.DestinationAddr.String())
-			if srcErr == nil && dstErr == nil {
-				connection.SrcIP = srcIP
-				connection.DstIP = dstIP
-				connection.Subtype = "Proxy"
+			if srcErr == nil {
+				// Preserve the captured network endpoints for internal topology.
+				connection.ClientIP = NormalizeTrafficIP(srcIP)
 			}
 		}
 	}
@@ -194,15 +205,18 @@ func extractTrafficConnection(packet gopacket.Packet, processLookup trafficProce
 func isIgnoredTrafficIP(value string) bool {
 	ip := net.ParseIP(strings.TrimSpace(value))
 	if ip == nil {
-		return false
+		return true
 	}
 	if ip.IsLoopback() || ip.IsUnspecified() || ip.IsMulticast() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
 		return true
 	}
 	if ipv4 := ip.To4(); ipv4 != nil {
-		return ipv4.Equal(net.IPv4bcast)
+		if ipv4.Equal(net.IPv4bcast) {
+			return true
+		}
 	}
-	return false
+	// RFC1918/ULA addresses remain available for target-network replay.
+	return !ip.IsPrivate() && !IsPublicTrafficIP(value)
 }
 
 func buildTrafficProcessComment(process *TrafficProcessInfo) string {
@@ -557,7 +571,7 @@ func EnrichPcapDirWithContext(ctx context.Context, path string) []error {
 		if err = ctx.Err(); err != nil {
 			return append(errors, err)
 		}
-		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
+		if file.IsDir() || !isOriginalTrafficCapture(file.Name()) {
 			continue
 		}
 		pcapPath := filepath.Join(path, file.Name())
@@ -579,6 +593,7 @@ const frpcPcapName = "frpc.pcap"
 type PcapDirResult struct {
 	Connections []Connection
 	FrpcIPs     []string
+	Accesses    []TrafficAccess
 }
 
 func ReadPcapDir(path string) (PcapDirResult, error) {
@@ -600,29 +615,31 @@ func ReadPcapDirWithContext(ctx context.Context, path string) (PcapDirResult, er
 
 	connections := make([]Connection, 0)
 	frpcIPSet := make(map[string]struct{})
+	accesses := make([]TrafficAccess, 0)
 
 	for _, file := range dir {
 		if err = ctx.Err(); err != nil {
 			return PcapDirResult{}, err
 		}
-		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
+		if file.IsDir() || !isOriginalTrafficCapture(file.Name()) {
 			continue
 		}
 		fullPath := filepath.Join(path, file.Name())
 		if file.Name() == frpcPcapName {
 			// frpc 流量：只提取 Proxy Protocol 中的真实客户端 IP，其余包跳过。
-			ips, readErr := extractFrpcProxyIPs(ctx, fullPath)
+			observations, readErr := extractFrpcProxyAccesses(ctx, fullPath)
 			if readErr != nil {
-				continue
+				return PcapDirResult{}, readErr
 			}
-			for _, ip := range ips {
-				frpcIPSet[ip] = struct{}{}
+			accesses = append(accesses, observations...)
+			for _, access := range observations {
+				frpcIPSet[access.IP] = struct{}{}
 			}
 		} else {
 			// 普通 pod 流量：完整分析，进入拓扑展示。
 			packetConnections, readErr := ReadPcapFile(ctx, fullPath)
 			if readErr != nil {
-				continue
+				return PcapDirResult{}, readErr
 			}
 			connections = append(connections, packetConnections...)
 		}
@@ -645,44 +662,28 @@ func ReadPcapDirWithContext(ctx context.Context, path string) (PcapDirResult, er
 	return PcapDirResult{
 		Connections: connections,
 		FrpcIPs:     frpcIPs,
+		Accesses:    accesses,
 	}, nil
 }
 
 // extractFrpcProxyIPs 从 frpc.pcap 中提取所有 Proxy Protocol header 里的真实客户端 srcIP。
-func extractFrpcProxyIPs(ctx context.Context, path string) ([]string, error) {
-	handle, err := pcap.OpenOffline(path)
-	if err != nil {
-		return nil, err
-	}
-	defer handle.Close()
-
-	traffic := gopacket.NewPacketSource(handle, handle.LinkType())
-	seen := make(map[string]struct{})
-	for packet := range traffic.Packets() {
-		if err = ctx.Err(); err != nil {
-			return nil, err
-		}
-		if packet.Layer(layers.LayerTypeIPv6) != nil {
-			continue
-		}
+func extractFrpcProxyAccesses(ctx context.Context, path string) ([]TrafficAccess, error) {
+	accesses := make([]TrafficAccess, 0)
+	err := walkTrafficPackets(ctx, path, func(packet gopacket.Packet, _ layers.LinkType) error {
 		transport := packet.TransportLayer()
 		if transport == nil {
-			continue
+			return nil
 		}
 		header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload())))
-		if readErr != nil {
-			continue
+		if readErr != nil || header.SourceAddr == nil {
+			return nil
 		}
 		srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
 		if srcErr != nil || srcIP == "" {
-			continue
+			return nil
 		}
-		seen[srcIP] = struct{}{}
-	}
-
-	ips := make([]string, 0, len(seen))
-	for ip := range seen {
-		ips = append(ips, ip)
-	}
-	return ips, nil
+		accesses = append(accesses, TrafficAccess{IP: srcIP, Time: packet.Metadata().Timestamp, Source: "proxy_protocol", Capture: filepath.Base(path)})
+		return nil
+	})
+	return accesses, err
 }
