@@ -83,12 +83,17 @@ func updateUserRankingTask() model.RetVal {
 		userScore[contestFlag.UserID] += score
 	}
 
-	for _, user := range users {
-		userRepo.Update(user.ID, db.UpdateUserOptions{
-			Score:  new(math.Trunc(userScore[user.ID]*100) / 100),
-			Solved: new(userSolvedCount[user.ID]),
-		})
+	ret = db.WithTransactionDB(db.CronDB, func(tx *db.Tx) model.RetVal {
+		for _, user := range users {
+			if ret := db.InitUserRepo(tx).Update(user.ID, db.UpdateUserOptions{Score: new(math.Trunc(userScore[user.ID]*100) / 100), Solved: new(userSolvedCount[user.ID])}); !ret.OK {
+				return ret
+			}
+		}
+		return model.SuccessRetVal()
+	})
+	if !ret.OK {
+		return ret
 	}
-	service.UpdateUserRanking(db.CronDB, -1, -1)
-	return model.SuccessRetVal()
+	_, _, ret = service.UpdateUserRanking(db.CronDB, -1, -1)
+	return ret
 }
