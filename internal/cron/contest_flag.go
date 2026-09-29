@@ -1,7 +1,8 @@
 package cron
 
 import (
-	"sync"
+	"context"
+	"fmt"
 	"time"
 
 	"CBCTF/internal/db"
@@ -9,53 +10,58 @@ import (
 	"CBCTF/internal/service"
 )
 
-// updateFlagScore 依据数据库, 更新 model.Flag 的分数和解题人数
-// 正常情况下该定时任务无意义, 每次有新解出时即更新 current_score 和 solvers
-// 当 submissions 且 model.Submission.Solved == true 时的数据减少 (队伍解散 引发的数据删除), 该函数才有意义
 func updateFlagScoreTask() model.RetVal {
-	job, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", model.UpdateFlagScoreCronJob)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	root := db.CronDB.WithContext(ctx)
+	job, ret := db.InitCronJobRepo(root).GetByUniqueField("name", model.UpdateFlagScoreCronJob)
 	if !ret.OK {
 		return ret
 	}
-	contestRepo := db.InitContestRepo(db.CronDB)
-	contests, _, ret := contestRepo.List(-1, -1)
+	contests, ret := db.InitContestRepo(root).FindAll()
 	if !ret.OK {
 		return ret
 	}
+	ids := make([]uint, 0, len(contests))
 	for _, contest := range contests {
-		if time.Now().Sub(contest.Start.Add(contest.Duration)) > job.Schedule*2 {
-			continue
+		if time.Since(contest.Start.Add(contest.Duration)) <= job.Schedule*2 {
+			ids = append(ids, contest.ID)
 		}
-		contestChallengeRepo := db.InitContestChallengeRepo(db.CronDB)
-		contestChallengeL, _, ret := contestChallengeRepo.List(-1, -1, db.GetOptions{
-			Conditions: map[string]any{"contest_id": contest.ID},
-			Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
+	}
+	flags, ret := db.InitContestFlagRepo(root).FindAll(db.GetOptions{Conditions: map[string]any{"contest_id": ids}})
+	if !ret.OK {
+		return ret
+	}
+	batch := model.NewBatch(len(flags))
+	for _, flag := range flags {
+		if ctx.Err() != nil {
+			return batch.Result(ctx)
+		}
+		ret = db.WithTransactionDB(root, func(tx *db.Tx) model.RetVal {
+			// Share the database row lock with flag submission across replicas.
+			repo := db.InitContestFlagRepo(tx)
+			current, ret := repo.GetByIDForUpdate(flag.ID)
+			if !ret.OK {
+				return ret
+			}
+			solvers, score, ret := service.CalcContestFlagState(tx, current)
+			if !ret.OK {
+				return ret
+			}
+			if solvers == current.Solvers && score == current.CurrentScore {
+				return model.SuccessRetVal()
+			}
+			return repo.Update(current.ID, db.UpdateContestFlagOptions{CurrentScore: &score, Solvers: &solvers})
 		})
-		if !ret.OK {
-			continue
-		}
-		for _, contestChallenge := range contestChallengeL {
-			for _, contestFlag := range contestChallenge.ContestFlags {
-				mu, _ := service.SolvedMutex.LoadOrStore(contestFlag.ID, &sync.Mutex{})
-				mu.(*sync.Mutex).Lock()
-				contestFlagRepo := db.InitContestFlagRepo(db.CronDB)
-				solvers, currentScore, ret := service.CalcContestFlagState(db.CronDB, contestFlag)
-				if !ret.OK {
-					mu.(*sync.Mutex).Unlock()
-					continue
-				}
-				if solvers != contestFlag.Solvers || currentScore != contestFlag.CurrentScore {
-					if ret = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
-						CurrentScore: &currentScore,
-						Solvers:      &solvers,
-					}); !ret.OK {
-						mu.(*sync.Mutex).Unlock()
-						continue
-					}
-				}
-				mu.(*sync.Mutex).Unlock()
+		key := fmt.Sprint(flag.ID)
+		if ret.OK {
+			batch.Success(key, "updated")
+		} else {
+			batch.Fail(key, "update_score", ret)
+			if model.BatchDependencyFailed(ret) {
+				return batch.Result(ctx)
 			}
 		}
 	}
-	return model.SuccessRetVal()
+	return batch.Result(ctx)
 }

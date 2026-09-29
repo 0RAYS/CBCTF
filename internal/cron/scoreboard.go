@@ -1,6 +1,8 @@
 package cron
 
 import (
+	"context"
+	"fmt"
 	"math"
 	"time"
 
@@ -11,22 +13,39 @@ import (
 
 // updateTeamRankingTask 全量更新 model.Team 的分数和排名
 func updateTeamRankingTask() model.RetVal {
-	job, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", model.UpdateTeamRankingCronJob)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	root := db.CronDB.WithContext(ctx)
+	job, ret := db.InitCronJobRepo(root).GetByUniqueField("name", model.UpdateTeamRankingCronJob)
 	if !ret.OK {
 		return ret
 	}
-	repo := db.InitContestRepo(db.CronDB)
+	repo := db.InitContestRepo(root)
 	contests, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"hidden": false}})
 	if !ret.OK {
 		return ret
 	}
+	batch := model.NewBatch(len(contests))
 	for _, contest := range contests {
+		if ctx.Err() != nil {
+			return batch.Result(ctx)
+		}
+		key := fmt.Sprint(contest.ID)
 		if time.Now().Sub(contest.Start.Add(contest.Duration)) > job.Schedule*2 {
+			batch.Skip(key, "outside_refresh_window")
 			continue
 		}
-		service.UpdateTeamRanking(db.CronDB, contest, -1, -1)
+		_, _, ret := service.UpdateTeamRanking(root, contest, -1, -1)
+		if ret.OK {
+			batch.Success(key, "published")
+		} else {
+			batch.Fail(key, "refresh_ranking", ret)
+			if model.BatchDependencyFailed(ret) {
+				return batch.Result(ctx)
+			}
+		}
 	}
-	return model.SuccessRetVal()
+	return batch.Result(ctx)
 }
 
 // updateUserRankingTask 全量更新 model.User 的分数和排名
