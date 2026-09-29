@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../../../common';
 import Checkbox from '../../../common/Checkbox.jsx';
+import TrafficSourceIssues from './TrafficSourceIssues.jsx';
 import { ANALYSIS_TABS, evidenceOffset, filterAnalysisRows, victimOverlaps } from './trafficAnalysisModel.js';
 import { formatBytes } from './trafficPresentation.js';
 
@@ -157,6 +158,7 @@ export default function TrafficAnalysisPanel({
               </ul>
             </details>
           ) : null}
+          <TrafficSourceIssues issues={report.source_issues} />
           <div className="mt-3 flex flex-wrap gap-2" role="tablist" aria-label={label('title')}>
             {ANALYSIS_TABS.filter((key) => key !== 'overlaps' || contestId).map((key) => (
               <button

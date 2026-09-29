@@ -497,6 +497,7 @@
           "live": "实时快照 · 最多复用 15 秒",
           "truncated": "分析不完整，请查看下方限制说明",
           "warnings": "分析限制（{{count}}）",
+          "sourceIssues": "未完整处理的数据源（{{count}}）— 已保留有效证据",
           "packets": "报文数：{{count}}",
           "verified": "与已知 flag 精确匹配",
           "candidate": "未经确认的候选 flag",
@@ -536,6 +537,7 @@
             "long_dns_query": "较长 DNS 查询"
           },
           "warningCodes": {
+            "capture_source_incomplete": "部分抓包数据源未能完整处理",
             "capture_snaplen_truncated": "抓包时发生报文截断",
             "ip_fragments_not_reassembled": "IP 分片未重组",
             "stream_count_limit": "达到 TCP 流数量上限",

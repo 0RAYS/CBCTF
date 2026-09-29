@@ -149,6 +149,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 	if err != nil {
 		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
+	report.AddSourceIssues(result.SourceIssues...)
 
 	log.Logger.Debugf("Collected IPs from pcaps: victim_id=%d connections=%d frpc_ips=%d unique_ips=%d duration=%s",
 		victim.ID, len(result.Connections), len(result.FrpcIPs), len(ips), time.Since(start))

@@ -102,8 +102,9 @@ func TestTrafficReaderErrorsAndEnrichment(t *testing.T) {
 	if err = os.WriteFile(filepath.Join(dir, "broken.pcap"), []byte("broken"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = ReadPcapDir(context.Background(), dir, nil); err == nil {
-		t.Fatal("capture error silently ignored")
+	partial, err := ReadPcapDir(context.Background(), dir, nil)
+	if err != nil || len(partial.SourceIssues) != 1 || len(partial.Connections) != 1 {
+		t.Fatalf("capture failure must retain valid traffic and report coverage: %+v %v", partial, err)
 	}
 }
 

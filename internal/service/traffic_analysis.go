@@ -25,11 +25,11 @@ func GetTrafficAnalysis(ctx context.Context, victim model.Victim) (TrafficAnalys
 	if !ret.OK {
 		return TrafficAnalysisResult{}, ret
 	}
-	if record.Archived {
+	if record.Archived && record.Analysis != nil && !record.Analysis.Partial {
 		return TrafficAnalysisResult{Report: record.Analysis, Accesses: record.Accesses, Archived: true}, model.SuccessRetVal()
 	}
 	if record.ID != 0 && time.Since(record.UpdatedAt) < 15*time.Second {
-		return TrafficAnalysisResult{Report: record.Analysis, Accesses: record.Accesses}, model.SuccessRetVal()
+		return TrafficAnalysisResult{Report: record.Analysis, Accesses: record.Accesses, Archived: record.Archived}, model.SuccessRetVal()
 	}
 	flags, ret := repo.KnownFlags(victim)
 	if !ret.OK {
@@ -44,6 +44,7 @@ func GetTrafficAnalysis(ctx context.Context, victim model.Victim) (TrafficAnalys
 		return TrafficAnalysisResult{}, model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	accesses := traffic.CollectTrafficAccesses(result, victim.TrafficInternalIPs())
+	report.AddSourceIssues(result.SourceIssues...)
 	ipSet := make(map[string]bool)
 	for _, c := range result.Connections {
 		ipSet[c.SrcIP] = true
@@ -57,8 +58,12 @@ func GetTrafficAnalysis(ctx context.Context, victim model.Victim) (TrafficAnalys
 		ips = append(ips, ip)
 	}
 	sort.Strings(ips)
-	if ret = repo.ReplaceAnalysis(victim.ID, ips, accesses, &report, false); !ret.OK {
+	if ret = repo.ReplaceAnalysis(victim.ID, ips, accesses, &report, record.Archived); !ret.OK {
 		return TrafficAnalysisResult{}, ret
 	}
-	return TrafficAnalysisResult{Report: &report, Accesses: accesses}, model.SuccessRetVal()
+	stored, ret := repo.GetAnalysis(victim.ID)
+	if !ret.OK {
+		return TrafficAnalysisResult{}, ret
+	}
+	return TrafficAnalysisResult{Report: stored.Analysis, Accesses: stored.Accesses, Archived: stored.Archived}, model.SuccessRetVal()
 }

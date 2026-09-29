@@ -498,6 +498,7 @@
           "live": "Live snapshot · reused for up to 15 seconds",
           "truncated": "Incomplete analysis — see limitations below",
           "warnings": "Analysis limitations ({{count}})",
+          "sourceIssues": "Incomplete capture sources ({{count}}) — valid evidence is retained",
           "packets": "Packets: {{count}}",
           "verified": "Exact known-flag match",
           "candidate": "Unverified flag candidate",
@@ -537,6 +538,7 @@
             "long_dns_query": "Long DNS query"
           },
           "warningCodes": {
+            "capture_source_incomplete": "Some capture sources could not be fully processed",
             "capture_snaplen_truncated": "Packets were truncated during capture",
             "ip_fragments_not_reassembled": "IP fragments were not reassembled",
             "stream_count_limit": "TCP stream-count limit reached",

@@ -2,7 +2,6 @@ package traffic
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -55,16 +54,19 @@ type DNSRecord struct {
 }
 
 type AnalysisReport struct {
-	Sessions    []SessionSummary  `json:"sessions"`
-	Indicators  []AttackIndicator `json:"indicators"`
-	MetricScope string            `json:"metric_scope"`
-	Flags       []FlagFinding     `json:"flags"`
-	HTTP        []HTTPRecord      `json:"http"`
-	DNS         []DNSRecord       `json:"dns"`
-	Warnings    []string          `json:"warnings"`
-	Truncated   bool              `json:"truncated"`
-	Packets     int64             `json:"packets"`
-	Bytes       int64             `json:"bytes"`
+	Partial      bool                `json:"partial"`
+	SourceIssues []SourceIssue       `json:"source_issues"`
+	Files        []CaptureFileResult `json:"files"`
+	Sessions     []SessionSummary    `json:"sessions"`
+	Indicators   []AttackIndicator   `json:"indicators"`
+	MetricScope  string              `json:"metric_scope"`
+	Flags        []FlagFinding       `json:"flags"`
+	HTTP         []HTTPRecord        `json:"http"`
+	DNS          []DNSRecord         `json:"dns"`
+	Warnings     []string            `json:"warnings"`
+	Truncated    bool                `json:"truncated"`
+	Packets      int64               `json:"packets"`
+	Bytes        int64               `json:"bytes"`
 }
 
 type analyzer struct {
@@ -105,6 +107,9 @@ func packetEvidence(c Connection) Evidence {
 // AnalyzeDir analyzes original captures only. Every decoded finding carries its
 // capture, directional endpoints, and the time range of the contributing stream.
 func AnalyzeDir(ctx context.Context, path string, options AnalysisOptions) (AnalysisReport, error) {
+	if err := ctx.Err(); err != nil {
+		return AnalysisReport{}, err
+	}
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return AnalysisReport{}, err
@@ -112,10 +117,14 @@ func AnalyzeDir(ctx context.Context, path string, options AnalysisOptions) (Anal
 	a := newAnalyzer(ctx, options.KnownFlags)
 	a.internalIPs = options.InternalIPs
 	for _, file := range files {
+		if err = ctx.Err(); err != nil {
+			return AnalysisReport{}, err
+		}
 		if file.IsDir() || !isOriginalTrafficCapture(file.Name()) || file.Name() == frpcPcapName {
 			continue
 		}
 		streams := newStreamCollector(func(data []byte, evidence Evidence) { a.analyzeContent(data, evidence) }, func(code string) { a.report.Truncated = true; a.warn(code) })
+		before := a.report.Packets
 		err = walkTrafficPackets(ctx, filepath.Join(path, file.Name()), func(packet gopacket.Packet, _ layers.LinkType) error {
 			c, ok := extractTrafficConnection(packet, nil)
 			if !ok {
@@ -163,9 +172,15 @@ func AnalyzeDir(ctx context.Context, path string, options AnalysisOptions) (Anal
 			}
 			return ctx.Err()
 		})
-		if err != nil {
-			return AnalysisReport{}, fmt.Errorf("analyze %s: %w", file.Name(), err)
+		if ctx.Err() != nil {
+			return AnalysisReport{}, ctx.Err()
 		}
+		status := "processed"
+		if err != nil {
+			status = "partial"
+			a.report.AddSourceIssues(SourceIssue{File: file.Name(), Phase: "analysis", Error: err.Error()})
+		}
+		a.report.Files = append(a.report.Files, CaptureFileResult{File: file.Name(), Status: status, Packets: a.report.Packets - before})
 		streams.flush()
 		if err = ctx.Err(); err != nil {
 			return AnalysisReport{}, err
