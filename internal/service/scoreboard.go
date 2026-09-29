@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
@@ -14,34 +15,48 @@ import (
 )
 
 func UpdateTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([]model.Team, int64, model.RetVal) {
-	var (
-		repo          = db.InitTeamRepo(tx)
-		teams, _, ret = repo.List(-1, -1, db.GetOptions{
-			Conditions: map[string]any{"contest_id": contest.ID, "banned": false},
-		})
-	)
+	var snapshot []model.Team
+	ret := db.WithTransactionDB(tx, func(work *gorm.DB) model.RetVal {
+		repo := db.InitTeamRepo(work.Clauses(clause.Locking{Strength: "UPDATE"}))
+		teams, ret := repo.FindAll(db.GetOptions{Conditions: map[string]any{"contest_id": contest.ID, "banned": false}, Sort: []string{"id"}})
+		if !ret.OK {
+			return ret
+		}
+		scores, ret := CalcTeamScores(work, contest.Blood, teams...)
+		if !ret.OK {
+			return ret
+		}
+		for _, team := range teams {
+			if ret := db.InitTeamRepo(work).Update(team.ID, db.UpdateTeamOptions{Score: new(scores[team.ID])}); !ret.OK {
+				return ret
+			}
+		}
+		var ret2 model.RetVal
+		snapshot, ret2 = rankedTeams(work, contest.ID)
+		if !ret2.OK {
+			return ret2
+		}
+		for i := range snapshot {
+			snapshot[i].Rank = i + 1
+			if ret := db.InitTeamRepo(work).Update(snapshot[i].ID, db.UpdateTeamOptions{Rank: new(i + 1)}); !ret.OK {
+				return ret
+			}
+		}
+		snapshot, ret2 = rankedTeams(work, contest.ID)
+		return ret2
+	})
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	scoreMap, ret := CalcTeamScores(tx, contest.Blood, teams...)
-	if !ret.OK {
+	if ret = redis.UpdateTeamRanking(tx.Statement.Context, contest.ID, snapshot); !ret.OK {
 		return nil, 0, ret
 	}
-	for i := range teams {
-		teams[i].Score = scoreMap[teams[i].ID]
-	}
-	if ret = redis.UpdateTeamRanking(contest.ID, teams); !ret.OK {
-		return nil, 0, ret
-	}
-	teams, count, ret := GetTeamRanking(tx, contest, limit, offset)
-	if !ret.OK {
-		return nil, 0, ret
-	}
-	for i, team := range teams {
-		teams[i].Rank = i + 1
-		repo.Update(team.ID, db.UpdateTeamOptions{Score: &team.Score, Rank: new(i + 1)})
-	}
-	return teams, count, model.SuccessRetVal()
+	start, end := utils.TidyPaginate(len(snapshot), limit, offset)
+	return snapshot[start:end], int64(len(snapshot)), model.SuccessRetVal()
+}
+
+func rankedTeams(tx *gorm.DB, contestID uint) ([]model.Team, model.RetVal) {
+	return db.InitTeamRepo(tx).FindAll(db.GetOptions{Conditions: map[string]any{"contest_id": contestID, "banned": false}, Sort: []string{"score DESC", "last ASC", "id ASC"}})
 }
 
 func GetTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([]model.Team, int64, model.RetVal) {
@@ -56,8 +71,16 @@ func GetTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([]mo
 		return nil, count, model.SuccessRetVal()
 	}
 	teams, ret := redis.GetTeamRanking(tx.Statement.Context, contest.ID, int64(start), int64(end-1))
-	if !ret.OK || (end-start > 0 && len(teams) == 0 && count > 0) {
-		return UpdateTeamRanking(tx, contest, limit, offset)
+	if !ret.OK || len(teams) != end-start {
+		// Cache failure is not a reason to mutate scores or recursively rebuild.
+		var dbRet model.RetVal
+		teams, _, dbRet = db.InitTeamRepo(tx).List(end-start, start, db.GetOptions{Conditions: map[string]any{"contest_id": contest.ID, "banned": false}, Sort: []string{"score DESC", "last ASC", "id ASC"}})
+		if !dbRet.OK {
+			return nil, count, dbRet
+		}
+	}
+	for i := range teams {
+		teams[i].Rank = start + i + 1
 	}
 	return teams, count, model.SuccessRetVal()
 }
@@ -65,14 +88,16 @@ func GetTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([]mo
 func UpdateUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, model.RetVal) {
 	users, _, ret := db.InitUserRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"banned": false},
+		Sort:       []string{"score DESC", "solved DESC", "id ASC"},
 	})
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	if ret = redis.UpdateUserRanking(users); !ret.OK {
+	if ret = redis.UpdateUserRanking(tx.Statement.Context, users); !ret.OK {
 		return nil, 0, ret
 	}
-	return GetUserRanking(tx, limit, offset)
+	start, end := utils.TidyPaginate(len(users), limit, offset)
+	return users[start:end], int64(len(users)), model.SuccessRetVal()
 }
 
 func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, model.RetVal) {
@@ -87,8 +112,12 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, model.
 		return nil, count, model.SuccessRetVal()
 	}
 	users, ret := redis.GetUserRanking(tx.Statement.Context, int64(start), int64(end-1))
-	if !ret.OK || (end-start > 0 && len(users) == 0 && count > 0) {
-		return UpdateUserRanking(tx, limit, offset)
+	if !ret.OK || len(users) != end-start {
+		var dbRet model.RetVal
+		users, _, dbRet = db.InitUserRepo(tx).List(end-start, start, db.GetOptions{Conditions: map[string]any{"banned": false}, Sort: []string{"score DESC", "solved DESC", "id ASC"}})
+		if !dbRet.OK {
+			return nil, count, dbRet
+		}
 	}
 	return users, count, model.SuccessRetVal()
 }
