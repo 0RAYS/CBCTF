@@ -75,5 +75,7 @@ test('collection normalization is independent and retains image and participant 
   assert.deepEqual(result.timeline, []);
   assert.equal(result.image, DEFAULT_CONTEST_IMAGE);
   assert.equal(result.participants, 0);
-  assert.equal(transformContestData({ ...contest, users: undefined }).participants, 0);
+  assert.equal(transformContestData({ ...contest, users: undefined }).participants, null);
+  assert.equal(transformContestData({ ...contest, users: null }).participants, null);
+  assert.equal(transformContestData({ ...contest, users: 0 }).participants, 0);
 });

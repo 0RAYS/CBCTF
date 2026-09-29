@@ -16,5 +16,6 @@ func GetGroupResp(groupView view.GroupView) gin.H {
 		"role_id":     group.RoleID,
 		"users":       groupView.UserCount,
 	}
+	markUnavailable(data, groupView.Unavailable)
 	return data
 }

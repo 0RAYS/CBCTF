@@ -53,11 +53,11 @@ function AdminUserDetailDialog({ isOpen, onClose, user }) {
           </Card>
           <Card variant="default" padding="md">
             <div className="text-xs font-mono text-neutral-400 mb-1">{t('admin.users.detail.info.contests')}</div>
-            <div className="text-lg font-mono text-neutral-50">{user.contests ?? 0}</div>
+            <div className="text-lg font-mono text-neutral-50">{user.contests ?? t('common.notAvailable')}</div>
           </Card>
           <Card variant="default" padding="md">
             <div className="text-xs font-mono text-neutral-400 mb-1">{t('admin.users.detail.info.teams')}</div>
-            <div className="text-lg font-mono text-neutral-50">{user.teams ?? 0}</div>
+            <div className="text-lg font-mono text-neutral-50">{user.teams ?? t('common.notAvailable')}</div>
           </Card>
           {user.provider && (
             <Card variant="default" padding="md" className="col-span-2">

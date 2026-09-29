@@ -56,5 +56,6 @@ func GetTeamResp(teamView view.TeamView, isAdmin bool) gin.H {
 	if isAdmin {
 		data["captcha"] = team.Captcha
 	}
+	markUnavailable(data, teamView.Unavailable)
 	return data
 }

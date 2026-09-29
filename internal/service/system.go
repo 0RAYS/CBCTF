@@ -34,28 +34,42 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 		for _, contest := range contests {
 			contestIDs = append(contestIDs, contest.ID)
 		}
-		userCountMap, _ := repo.CountUsersMap(contestIDs...)
-		teamCountMap, _ := repo.CountTeamsMap(contestIDs...)
+		userCountMap, userRet := repo.CountUsersMap(contestIDs...)
+		teamCountMap, teamRet := repo.CountTeamsMap(contestIDs...)
 		limit := min(len(contests), 3)
 		for i := range limit {
 			contest := contests[i]
+			var users, teams any
+			if userRet.OK {
+				users = userCountMap[contest.ID]
+			}
+			if teamRet.OK {
+				teams = teamCountMap[contest.ID]
+			}
 			data["upcoming"] = append(data["upcoming"].([]gin.H), gin.H{
 				"name":     contest.Name,
 				"start":    contest.Start,
 				"duration": int64(contest.Duration.Seconds()),
-				"users":    userCountMap[contest.ID],
-				"teams":    teamCountMap[contest.ID],
+				"users":    users,
+				"teams":    teams,
 				"picture":  contest.Picture,
 			})
 		}
 		data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "CTF Events", "value": count})
 	}
-	count, _ = db.InitUserRepo(tx).Count()
-	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Activate CTFers", "value": count})
-	count, _ = db.InitChallengeRepo(tx).Count()
-	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Challenges", "value": count})
-	count, _ = db.InitSubmissionRepo(tx).Count()
-	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Submissions", "value": count})
+	appendCount := func(label string, count int64, ret model.RetVal) {
+		var value any
+		if ret.OK {
+			value = count
+		}
+		data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": label, "value": value})
+	}
+	count, ret = db.InitUserRepo(tx).Count()
+	appendCount("Activate CTFers", count, ret)
+	count, ret = db.InitChallengeRepo(tx).Count()
+	appendCount("Challenges", count, ret)
+	count, ret = db.InitSubmissionRepo(tx).Count()
+	appendCount("Submissions", count, ret)
 	users, _, _ := GetUserRanking(tx, 5, 0)
 	for _, user := range users {
 		data["scoreboard"] = append(data["scoreboard"].([]gin.H), gin.H{

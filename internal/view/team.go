@@ -3,8 +3,9 @@ package view
 import "CBCTF/internal/model"
 
 type TeamView struct {
-	Team      model.Team
-	UserCount int64
+	Unavailable []string
+	Team        model.Team
+	UserCount   int64
 }
 
 type TeamFlagInfoView struct {

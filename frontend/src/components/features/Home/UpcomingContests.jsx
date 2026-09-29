@@ -66,7 +66,7 @@ function UpcomingContests({ contests = [], isLoading }) {
 
                     <div className="pt-3 border-t border-neutral-600/50 flex items-center justify-between gap-4 text-sm font-mono">
                       <span className="text-neutral-500">{t('common.teams')}</span>
-                      <span className="text-geek-400">{contest.teams}</span>
+                      <span className="text-geek-400">{contest.teams ?? t('common.notAvailable')}</span>
                     </div>
                   </div>
                 </motion.div>

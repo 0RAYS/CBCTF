@@ -12,7 +12,7 @@ func GetChallengeResp(challengeView view.ChallengeView) gin.H {
 	for _, flag := range challengeView.Flags {
 		flags = append(flags, gin.H{"id": flag.ID, "value": flag.Value})
 	}
-	return gin.H{
+	data := gin.H{
 		"id":               challenge.RandID,
 		"name":             challenge.Name,
 		"description":      challenge.Description,
@@ -24,6 +24,8 @@ func GetChallengeResp(challengeView view.ChallengeView) gin.H {
 		"network_policies": challenge.NetworkPolicies,
 		"file":             challengeView.FileName,
 	}
+	markUnavailable(data, challengeView.Unavailable)
+	return data
 }
 
 func GetSimpleChallengeResp(challengeView view.SimpleChallengeView) gin.H {

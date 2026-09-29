@@ -133,10 +133,10 @@ function AdminContests({
             <span>{t('admin.contests.metrics.teamSize', { count: contest.size })}</span>
             <span>
               {t('admin.contests.metrics.registrations', {
-                count: contest.users,
+                count: contest.users ?? t('common.notAvailable'),
               })}
             </span>
-            <span>{t('admin.contests.metrics.teams', { count: contest.teams })}</span>
+            <span>{t('admin.contests.metrics.teams', { count: contest.teams ?? t('common.notAvailable') })}</span>
           </div>
         );
 

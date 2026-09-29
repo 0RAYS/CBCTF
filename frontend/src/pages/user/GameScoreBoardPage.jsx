@@ -54,10 +54,10 @@ function ContestScoreboard({ contestId }) {
         if (rankResponse.code === 200 && teamResponse.code === 200 && contestInfoResponse.code === 200) {
           setScoreboardData({
             stats: {
-              totalTeams: contestInfoResponse.data.teams || 0,
-              totalPlayers: contestInfoResponse.data.users || 0,
-              totalSolves: contestInfoResponse.data.solved || 0,
-              highestScore: contestInfoResponse.data.highest || 0,
+              totalTeams: contestInfoResponse.data.teams,
+              totalPlayers: contestInfoResponse.data.users,
+              totalSolves: contestInfoResponse.data.solved,
+              highestScore: contestInfoResponse.data.highest,
             },
             teams: (rankResponse.data.teams || []).map(teamTransform),
             userTeam: teamResponse.data ? teamTransform(teamResponse.data) : null,
