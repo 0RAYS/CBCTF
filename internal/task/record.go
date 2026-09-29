@@ -12,6 +12,7 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 )
 
 var (
@@ -20,9 +21,18 @@ var (
 )
 
 func appendTaskRecord(record model.Task) {
+	if record.RecordID == "" {
+		record.RecordID = utils.UUID()
+	}
 	taskRecordMutex.Lock()
 	taskRecordPool = append(taskRecordPool, record)
 	taskRecordMutex.Unlock()
+}
+
+func RestoreTaskRecords(records []model.Task) {
+	taskRecordMutex.Lock()
+	defer taskRecordMutex.Unlock()
+	taskRecordPool = append(records, taskRecordPool...)
 }
 
 func DrainTaskRecordPool() []model.Task {

@@ -6,6 +6,7 @@ import (
 )
 
 type Request struct {
+	RecordID  string    `gorm:"type:varchar(36);uniqueIndex;not null;default:gen_random_uuid()" json:"-"`
 	Time      time.Time `gorm:"default:null;index:idx_requests_user_ip_time_active,priority:3,where:deleted_at IS NULL" json:"time"`
 	IP        string    `gorm:"index:idx_requests_user_ip,priority:2;index:idx_requests_user_ip_time_active,priority:2,where:deleted_at IS NULL;index" json:"ip"`
 	Method    string    `json:"method"`

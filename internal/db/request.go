@@ -4,10 +4,12 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 )
 
 type RequestRepo struct {
@@ -24,7 +26,12 @@ func (r *RequestRepo) Create(requests ...model.Request) model.RetVal {
 	if len(requests) == 0 {
 		return model.SuccessRetVal()
 	}
-	if res := r.DB.Model(&model.Request{}).CreateInBatches(requests, 200); res.Error != nil {
+	for i := range requests {
+		if requests[i].RecordID == "" {
+			requests[i].RecordID = utils.UUID()
+		}
+	}
+	if res := r.DB.Model(&model.Request{}).Omit("id").Clauses(clause.OnConflict{Columns: []clause.Column{{Name: "record_id"}}, DoNothing: true}).CreateInBatches(requests, 200); res.Error != nil {
 		log.Logger.Warningf("Failed to create requests: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Name(model.Request{}), "Error": res.Error}}
 	}
