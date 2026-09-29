@@ -136,7 +136,9 @@ func Init() {
 	if ret := InitUserRepo(DB).InitAdmin(); !ret.OK {
 		log.Logger.Fatalf("Failed to init Admin: %v", ret)
 	}
-	InitOauthRepo(DB).RegisterDefault()
+	if ret := InitOauthRepo(DB).RegisterDefault(); !ret.OK {
+		log.Logger.Fatalf("Failed to init OAuth providers: %s %v", ret.Msg, ret.Attr)
+	}
 }
 
 func openPostgresPool(name string, maxOpenConns, maxIdleConns int, level log.Level) *gorm.DB {
