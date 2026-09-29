@@ -92,13 +92,14 @@ func AddContestChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateContestChallengeEventType)
-	contestChallenges, failed, _ := service.CreateContestChallenge(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
+	contestChallenges, failed, ret := service.CreateContestChallenge(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
 	data := make([]gin.H, 0, len(contestChallenges))
 	for _, contestChallenge := range contestChallenges {
 		data = append(data, resp.GetAdminContestChallengeResp(contestChallenge))
 	}
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(gin.H{"contest_challenge": data, "failed": failed}))
+	ctx.Set(middleware.CTXEventSuccessKey, ret.OK)
+	ret.Data = gin.H{"contest_challenge": data, "failed": failed, "batch": ret.Data}
+	resp.JSON(ctx, ret)
 }
 
 func UpdateContestChallenge(ctx *gin.Context) {
