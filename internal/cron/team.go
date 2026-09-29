@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"fmt"
 	"time"
 
 	"CBCTF/internal/db"
@@ -37,12 +38,26 @@ func clearEmptyTeamTask() model.RetVal {
 	if !ret.OK {
 		return ret
 	}
+	batch := model.NewBatch(len(teams))
 	for _, team := range teams {
-		if userCountMap[team.ID] == 0 {
-			if ret = repo.Delete(team.ID); ret.OK {
-				log.Logger.Infof("Delete empty team: %d", team.ID)
+		if db.CronDB.Statement.Context.Err() != nil {
+			return batch.Result(db.CronDB.Statement.Context)
+		}
+		key := fmt.Sprint(team.ID)
+		if userCountMap[team.ID] != 0 {
+			batch.Skip(key, "not_empty")
+			continue
+		}
+		ret = db.WithTransactionDB(db.CronDB, func(tx *db.Tx) model.RetVal { return db.InitTeamRepo(tx).Delete(team.ID) })
+		if ret.OK {
+			batch.Success(key, "deleted")
+			log.Logger.Infof("Delete empty team: %d", team.ID)
+		} else {
+			batch.Fail(key, "delete", ret)
+			if model.BatchDependencyFailed(ret) {
+				return batch.Result(db.CronDB.Statement.Context)
 			}
 		}
 	}
-	return model.SuccessRetVal()
+	return batch.Result(db.CronDB.Statement.Context)
 }
