@@ -11,6 +11,9 @@ import VictimLogDialog from './VictimLogDialog';
 import VictimStatusBadge from './VictimStatusBadge';
 import useVictimList from './useVictimList';
 import { isVictimStoppable } from './victimPayload';
+import useBatchAction from '../batch/useBatchAction.js';
+import BatchResultPanel from '../batch/BatchResultPanel.jsx';
+import { remainingBatchIds } from '../batch/batchModel.js';
 
 export default function VictimInventory({ scope, renderQuickActions }) {
   const { t, i18n } = useTranslation();
@@ -19,23 +22,25 @@ export default function VictimInventory({ scope, renderQuickActions }) {
   const [trafficVictim, setTrafficVictim] = useState(null);
   const [logVictim, setLogVictim] = useState(null);
   const { translationKey, contestId } = scope;
+  const stopAction = useBatchAction(JSON.stringify([translationKey, contestId]));
 
   const stopSelected = async () => {
     if (!list.selectedContainers.length) {
       toast.warning({ description: t(`${translationKey}.toast.selectStopRequired`) });
       return;
     }
-    try {
-      const response = await scope.stopVictims(list.selectedContainers);
-      if (response.code === 200) {
-        toast.success({ description: t(`${translationKey}.toast.taskDispatched`) });
-        list.setSelectedContainers([]);
+    const ids = [...list.selectedContainers];
+    await stopAction.run(() => scope.stopVictims(ids), {
+      successMessage: t(`${translationKey}.toast.taskDispatched`),
+      failureMessage: t(`${translationKey}.toast.taskDispatchFailed`),
+      onResult: (batch) => {
+        list.setSelectedContainers((selected) =>
+          batch ? remainingBatchIds(selected, batch) : selected.filter((id) => !ids.includes(id))
+        );
         list.refresh();
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t(`${translationKey}.toast.taskDispatchFailed`) });
-    }
-    setStopOpen(false);
+        if (!batch || batch.status === 'success') setStopOpen(false);
+      },
+    });
   };
 
   const downloadTraffic = async (victim) => {
@@ -70,6 +75,7 @@ export default function VictimInventory({ scope, renderQuickActions }) {
   return (
     <div className="w-full mx-auto space-y-6">
       <VictimStats stats={list.stats} t={t} translationKey={translationKey} />
+      <BatchResultPanel result={stopAction.result} error={stopAction.error} queued />
       {renderQuickActions?.(list.refresh)}
       <VictimFilters
         scope={scope}
@@ -97,7 +103,12 @@ export default function VictimInventory({ scope, renderQuickActions }) {
       <VictimStopDialog
         t={t}
         isOpen={stopOpen}
-        onClose={() => setStopOpen(false)}
+        onClose={() => {
+          if (!stopAction.pending) setStopOpen(false);
+        }}
+        pending={stopAction.pending}
+        batchResult={stopAction.result}
+        error={stopAction.error}
         onConfirm={stopSelected}
         selectedCount={list.selectedContainers.length}
         translationKey={translationKey}

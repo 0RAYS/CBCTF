@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getBatchResult, hasBatchProgress, batchTone, remainingBatchIds, remainingGeneratorCounts, batchRows } from '../src/components/features/Admin/batch/batchModel.js';
+import { getBatchResult, hasBatchProgress, batchTone, remainingBatchIds, remainingGeneratorCounts, remainingVictimChallenges, batchRows } from '../src/components/features/Admin/batch/batchModel.js';
 
 test('partial responses are read even with a non-200 business code', () => {
   const batch = { status: 'partial', requested: 3, succeeded: 1, failed: 1, skipped: 0, not_attempted: 1, items: [] };
@@ -26,4 +26,15 @@ test('nested failed scans still surface successful evidence and error paths', ()
   assert.equal(hasBatchProgress(batch), true);
   assert.equal(batchTone(batch), 'warning');
   assert.equal(batchRows(batch)[2].path, 'web_ip / 1.1.1.1');
+});
+
+test('victim retry removes only challenges completed for every sampled team', () => {
+  const batch = { requested: 6, items: [
+    { id: 'team:1/challenge:a', status: 'success' },
+    { id: 'team:2/challenge:a', status: 'skipped' },
+    { id: 'team:1/challenge:b', status: 'success' },
+    { id: 'team:2/challenge:b', status: 'failed' },
+  ] };
+  assert.deepEqual(remainingVictimChallenges(['a', 'b', 'c'], batch), ['b', 'c']);
+  assert.deepEqual(remainingVictimChallenges([], batch), []);
 });

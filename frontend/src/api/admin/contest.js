@@ -324,6 +324,7 @@ export const stopContestVictims = (contestId, victimIds) => {
   return request({
     url: `/admin/contests/${contestId}/victims`,
     method: 'DELETE',
+    noToast: true,
     data: {
       victims: victimIds,
     },
@@ -335,6 +336,7 @@ export const startContestVictims = (contestId, challenges, teamRatio, duration) 
   return request({
     url: `/admin/contests/${contestId}/victims`,
     method: 'POST',
+    noToast: true,
     data: {
       challenges,
       team_ratio: teamRatio,

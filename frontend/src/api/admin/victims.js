@@ -7,6 +7,7 @@ export const stopVictims = (victimIds) =>
     url: '/admin/victims',
     method: 'DELETE',
     data: { victims: victimIds },
+    noToast: true,
   });
 
 export const getVictimTraffic = (victimId, params = {}, signal) =>
