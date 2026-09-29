@@ -7,6 +7,13 @@ import (
 	"CBCTF/internal/model"
 )
 
+// StartupFailure means observed workload state is terminal. API/cache failures
+// remain ordinary errors so a transient read outage does not destroy workloads.
+type StartupFailure struct{ Err error }
+
+func (e *StartupFailure) Error() string { return e.Err.Error() }
+func (e *StartupFailure) Unwrap() error { return e.Err }
+
 // VictimReady Readiness is evaluated from shared caches; start workers only submit objects.
 func VictimReady(ctx context.Context, victim *model.Victim) (bool, error) {
 	if !victim.Resources.Submitted {
@@ -16,7 +23,7 @@ func VictimReady(ctx context.Context, victim *model.Victim) (bool, error) {
 	for _, record := range victim.Pods {
 		uid := victim.Resources.UIDs[record.Name]
 		if uid == "" {
-			return false, fmt.Errorf("missing submitted UID for %s", record.Name)
+			return false, &StartupFailure{Err: fmt.Errorf("missing submitted UID for %s", record.Name)}
 		}
 		if len(record.Spec.Containers) > 0 && record.Spec.Containers[0].KubeVirt {
 			vm, err := cachedVM(ctx, record.Name)
@@ -27,7 +34,7 @@ func VictimReady(ctx context.Context, victim *model.Victim) (bool, error) {
 				return false, nil
 			}
 			if string(vm.UID) != uid || vm.DeletionTimestamp != nil {
-				return false, fmt.Errorf("VM %s replaced or terminating", record.Name)
+				return false, &StartupFailure{Err: fmt.Errorf("VM %s replaced or terminating", record.Name)}
 			}
 			if !vm.Status.Ready {
 				return false, nil
@@ -42,11 +49,14 @@ func VictimReady(ctx context.Context, victim *model.Victim) (bool, error) {
 			return false, nil
 		}
 		if string(pod.UID) != uid {
-			return false, fmt.Errorf("pod %s replaced", record.Name)
+			return false, &StartupFailure{Err: fmt.Errorf("pod %s replaced", record.Name)}
 		}
 		ready, err := podStartupComplete(pod)
-		if err != nil || !ready {
-			return false, err
+		if err != nil {
+			return false, &StartupFailure{Err: err}
+		}
+		if !ready {
+			return false, nil
 		}
 		hosts[record.Name] = pod.Status.HostIP
 	}

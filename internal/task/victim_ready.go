@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -66,7 +67,10 @@ func reconcileVictim(ctx context.Context, id uint) error {
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-	if err != nil || expired {
+	if err != nil && !shouldStopUnreadyVictim(expired, err) {
+		return fmt.Errorf("read victim readiness (will retry): %w", err)
+	}
+	if shouldStopUnreadyVictim(expired, err) {
 		log.Logger.Warningf("Victim readiness failed: victim_id=%d expired=%t error=%v", id, expired, err)
 		// Queue under the same workload lock before changing status. A crash in
 		// between leaves either a retryable pending record or durable cleanup.
@@ -93,4 +97,9 @@ func reconcileVictim(ctx context.Context, id uint) error {
 	}
 	log.Logger.Infof("Victim is running: victim_id=%d", id)
 	return nil
+}
+
+func shouldStopUnreadyVictim(expired bool, err error) bool {
+	var terminal *k8s.StartupFailure
+	return expired || errors.As(err, &terminal)
 }
