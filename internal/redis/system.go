@@ -10,7 +10,9 @@ import (
 	"github.com/shirou/gopsutil/mem"
 
 	"CBCTF/internal/config"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 )
 
 const systemMetricsKey = "system:metrics"
@@ -65,23 +67,27 @@ func SaveMetrics(metrics *SystemMetrics) error {
 	return nil
 }
 
-func GetMetrics(ctx context.Context) []SystemMetrics {
+func GetMetrics(ctx context.Context) ([]SystemMetrics, int, model.RetVal) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	metrics := make([]SystemMetrics, 0)
 	data, err := RDB.LRange(ctx, systemMetricsKey, 0, -1).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get system metrics: %s", err)
-		return metrics
+		return metrics, 0, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": systemMetricsKey, "Error": err.Error()}}
 	}
+	skipped := 0
 	for _, d := range data {
 		var m SystemMetrics
 		err = json.Unmarshal([]byte(d), &m)
 		if err != nil {
-			log.Logger.Warningf("Failed to parse system metrics: %s", err)
-			return metrics
+			skipped++
+			continue
 		}
 		metrics = append(metrics, m)
 	}
-	return metrics
+	if skipped > 0 {
+		log.Logger.Warningf("Skipped invalid metric samples: count=%d", skipped)
+	}
+	return metrics, skipped, model.SuccessRetVal()
 }

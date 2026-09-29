@@ -225,6 +225,7 @@
       }
     },
     "dashboard": {
+      "partialStats": "部分统计暂不可用，已保留可用的采样数据。",
       "realtime": "实时监控",
       "cards": {
         "requestIp": "IP",

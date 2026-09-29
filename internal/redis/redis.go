@@ -41,13 +41,13 @@ func Stop() {
 	}
 }
 
-func Count() int64 {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func Count(ctx context.Context) (int64, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	count, err := RDB.DBSize(ctx).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get cache total: %s", err)
-		return 0
+		return 0, err
 	}
-	return count
+	return count, nil
 }
