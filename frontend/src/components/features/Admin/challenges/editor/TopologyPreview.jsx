@@ -1,7 +1,10 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
+import './TopologyPreview.css';
 
 export default function TopologyPreview({ topology }) {
   const { t } = useTranslation();
+  const markerId = useId();
   if (topology.nodes.length === 0) {
     return (
       <div className="rounded-md border border-neutral-700 bg-black/20 p-4 text-center font-mono text-sm text-neutral-500">
@@ -29,43 +32,92 @@ export default function TopologyPreview({ topology }) {
         <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
             <marker
-              id="topology-arrow-allow"
-              viewBox="0 0 10 10"
+              id={`${markerId}-allow`}
+              viewBox="0 0 16 16"
               refX="8"
-              refY="5"
-              markerWidth="3"
-              markerHeight="3"
-              orient="auto-start-reverse"
+              refY="8"
+              markerUnits="userSpaceOnUse"
+              markerWidth="4.5"
+              markerHeight="4.5"
+              orient="auto"
             >
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#22c55e" />
+              <path
+                d="M 2 2 L 14 8 L 2 14 L 5 8 Z"
+                fill="#4ade80"
+                stroke="#0a0a0a"
+                strokeWidth="1"
+                strokeDasharray="none"
+                strokeOpacity="1"
+                strokeLinejoin="round"
+              />
             </marker>
             <marker
-              id="topology-arrow-deny"
-              viewBox="0 0 10 10"
+              id={`${markerId}-deny`}
+              viewBox="0 0 16 16"
               refX="8"
-              refY="5"
-              markerWidth="3"
-              markerHeight="3"
-              orient="auto-start-reverse"
+              refY="8"
+              markerUnits="userSpaceOnUse"
+              markerWidth="4.5"
+              markerHeight="4.5"
+              orient="auto"
             >
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#f87171" />
+              <path
+                d="M 4 2 H 6 V 14 H 4 Z M 10 2 H 12 V 14 H 10 Z"
+                fill="#f87171"
+                stroke="#0a0a0a"
+                strokeWidth="1"
+                strokeDasharray="none"
+                strokeOpacity="1"
+                strokeLinejoin="round"
+              />
             </marker>
           </defs>
-          {topology.connections.map((connection, index) => {
-            const offset = (index % 2 === 0 ? 1 : -1) * 2.5;
-            const midX = (connection.source.x + connection.target.x) / 2 + offset;
-            const midY = (connection.source.y + connection.target.y) / 2 - offset;
+          {topology.connections.map((connection) => {
+            const { source, target } = connection;
+            const dx = target.x - source.x;
+            const dy = target.y - source.y;
+            const distance = Math.hypot(dx, dy) || 1;
+            // A perpendicular bend puts reverse connections on opposite sides.
+            const controlX = (source.x + target.x) / 2 - (dy / distance) * 6;
+            const controlY = (source.y + target.y) / 2 + (dx / distance) * 6;
+            const startControlX = (source.x + controlX) / 2;
+            const startControlY = (source.y + controlY) / 2;
+            const endControlX = (controlX + target.x) / 2;
+            const endControlY = (controlY + target.y) / 2;
+            const midX = (startControlX + endControlX) / 2;
+            const midY = (startControlY + endControlY) / 2;
+            // Split the curve so its midpoint can carry an arrow outside the node cards.
+            const path = `M ${source.x} ${source.y} Q ${startControlX} ${startControlY} ${midX} ${midY} Q ${endControlX} ${endControlY} ${target.x} ${target.y}`;
             return (
-              <path
+              <g
                 key={connection.id}
-                d={`M ${connection.source.x} ${connection.source.y} Q ${midX} ${midY} ${connection.target.x} ${connection.target.y}`}
+                className={`topology-connection ${connection.allowed ? 'topology-connection-allow' : 'topology-connection-deny'}`}
                 fill="none"
-                stroke={connection.allowed ? '#22c55e' : '#f87171'}
-                strokeWidth="0.35"
-                strokeDasharray={connection.allowed ? 'none' : '1.2 1.2'}
-                markerEnd={`url(#${connection.allowed ? 'topology-arrow-allow' : 'topology-arrow-deny'})`}
-                opacity={connection.allowed ? 0.75 : 0.55}
-              />
+                pointerEvents="none"
+              >
+                <path d={path} stroke="transparent" strokeWidth="2.5" pointerEvents="stroke" />
+                <g className="topology-connection-visual">
+                  <path
+                    className="topology-connection-line"
+                    d={path}
+                    stroke={connection.allowed ? '#22c55e' : '#f87171'}
+                    strokeWidth="0.35"
+                    strokeDasharray={connection.allowed ? 'none' : '1.2 1.2'}
+                    strokeOpacity={connection.allowed ? 0.75 : 0.65}
+                  />
+                  {connection.allowed && (
+                    <path
+                      className="topology-connection-flow"
+                      d={path}
+                      stroke="#bbf7d0"
+                      strokeWidth="0.6"
+                      strokeDasharray="0.9 1.5"
+                      strokeLinecap="round"
+                    />
+                  )}
+                  <path d={path} markerMid={`url(#${markerId}-${connection.allowed ? 'allow' : 'deny'})`} />
+                </g>
+              </g>
             );
           })}
         </svg>
