@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"slices"
 
 	"gorm.io/gorm"
 
@@ -70,39 +69,8 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 			if !ret.OK {
 				return ret
 			}
-			if provider.GroupsClaim != "" {
-				groupRepo := db.InitGroupRepo(tx)
-				if groups, groupsOK := utils.GetClaimRawValue[[]string](response, provider.GroupsClaim); groupsOK {
-					// 同步所有组
-					for _, groupName := range groups {
-						group, groupRet := groupRepo.GetByUniqueField("name", groupName)
-						if !groupRet.OK {
-							continue
-						}
-						if !userRepo.IsInGroup(user.ID, group.Name) {
-							db.AppendUserToGroup(tx, user, group)
-						}
-					}
-					// 尝试添加到管理员组
-					if slices.Contains(groups, provider.AdminGroup) {
-						if !userRepo.IsInGroup(user.ID, model.AdminGroupName) {
-							adminGroup, adminGroupRet := db.InitGroupRepo(tx).GetByUniqueField("name", model.AdminGroupName)
-							if adminGroupRet.OK {
-								db.AppendUserToGroup(tx, user, adminGroup)
-							}
-						}
-					}
-				}
-			}
-			// 获取组声明或加组失败后尝试加入默认组
-			if provider.DefaultGroup != 0 {
-				defaultGroup, defaultGroupRet := db.InitGroupRepo(tx).GetByID(provider.DefaultGroup)
-				if defaultGroupRet.OK {
-					// 最终都无法获取到组则放弃加组
-					if !userRepo.IsInGroup(user.ID, defaultGroup.Name) {
-						db.AppendUserToGroup(tx, user, defaultGroup)
-					}
-				}
+			if ret = assignOAuthGroups(tx, user, provider, response); !ret.OK {
+				return ret
 			}
 			prometheus.RecordUserRegister(provider.Provider)
 		} else {

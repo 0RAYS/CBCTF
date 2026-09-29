@@ -105,23 +105,21 @@ func InitOauthRepo(tx *gorm.DB) *OauthRepo {
 	}
 }
 
-func (o *OauthRepo) RegisterDefault() {
-	if count, _ := o.Count(); count > 0 {
-		return
-	}
-	github := oa.GetDefaultGithubOauth()
-	_, ret := o.GetByUniqueField("provider", github.Provider)
+func (o *OauthRepo) RegisterDefault() model.RetVal {
+	count, ret := o.Count()
 	if !ret.OK {
-		o.Create(github)
+		return ret
 	}
-	hduhelp := oa.GetDefaultHDUHelpOauth()
-	_, ret = o.GetByUniqueField("provider", hduhelp.Provider)
-	if !ret.OK {
-		o.Create(hduhelp)
+	if count > 0 {
+		return model.SuccessRetVal()
 	}
-	hducas := oa.GetDefaultHDUCASOauth()
-	_, ret = o.GetByUniqueField("provider", hducas.Provider)
-	if !ret.OK {
-		o.Create(hducas)
-	}
+	return WithTransactionDB(o.DB, func(tx *gorm.DB) model.RetVal {
+		repo := InitOauthRepo(tx)
+		for _, provider := range []model.Oauth{oa.GetDefaultGithubOauth(), oa.GetDefaultHDUHelpOauth(), oa.GetDefaultHDUCASOauth()} {
+			if _, ret := repo.Create(provider); !ret.OK {
+				return ret
+			}
+		}
+		return model.SuccessRetVal()
+	})
 }
