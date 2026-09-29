@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"fmt"
 	"time"
 
 	"CBCTF/internal/db"
@@ -17,13 +18,21 @@ func checkCheatTask() model.RetVal {
 	if !ret.OK {
 		return ret
 	}
+	batch := model.NewBatch(len(contests))
 	for _, contest := range contests {
+		if db.CronDB.Statement.Context.Err() != nil {
+			return batch.Result(db.CronDB.Statement.Context)
+		}
+		key := fmt.Sprint(contest.ID)
 		if time.Now().Sub(contest.Start.Add(contest.Duration)) > job.Schedule*2 {
+			batch.Skip(key, "outside_scan_window")
 			continue
 		}
-		service.CheckWebReqIP(db.CronDB, contest)
-		service.CheckVictimReqIP(db.CronDB, contest)
-		service.CheckWrongFlag(db.CronDB, contest)
+		ret := service.RunCheatChecks(db.CronDB, contest)
+		batch.Record(key, "scan", ret)
+		if !ret.OK && model.BatchDependencyFailed(ret) {
+			return batch.Result(db.CronDB.Statement.Context)
+		}
 	}
-	return model.SuccessRetVal()
+	return batch.Result(db.CronDB.Statement.Context)
 }

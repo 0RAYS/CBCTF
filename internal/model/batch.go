@@ -8,10 +8,11 @@ import (
 )
 
 type BatchItem struct {
-	ID     string `json:"id"`
-	Phase  string `json:"phase"`
-	Status string `json:"status"`
-	Code   string `json:"code,omitempty"`
+	Details *BatchResult `json:"details,omitempty"`
+	ID      string       `json:"id"`
+	Phase   string       `json:"phase"`
+	Status  string       `json:"status"`
+	Code    string       `json:"code,omitempty"`
 }
 
 type BatchResult struct {
@@ -35,7 +36,17 @@ func (b *BatchResult) Skip(id, reason string) {
 }
 func (b *BatchResult) Fail(id, phase string, ret RetVal) {
 	b.Failed++
-	b.Items = append(b.Items, BatchItem{ID: id, Phase: phase, Status: "failed", Code: ret.Msg})
+	details, _ := ret.Data.(*BatchResult)
+	b.Items = append(b.Items, BatchItem{ID: id, Phase: phase, Status: "failed", Code: ret.Msg, Details: details})
+}
+
+func (b *BatchResult) Record(id, phase string, ret RetVal) {
+	if ret.OK {
+		b.Success(id, phase)
+		b.Items[len(b.Items)-1].Details, _ = ret.Data.(*BatchResult)
+	} else {
+		b.Fail(id, phase, ret)
+	}
 }
 func (b *BatchResult) Result(ctx context.Context) RetVal {
 	b.NotAttempted = max(0, b.Requested-b.Succeeded-b.Skipped-b.Failed)
@@ -58,6 +69,25 @@ func (b *BatchResult) Result(ctx context.Context) RetVal {
 // Database/queue read-write failures invalidate later decisions. Domain errors
 // (not found, already running, quota, validation) remain per-object outcomes.
 func BatchDependencyFailed(ret RetVal) bool {
+	if batch, ok := ret.Data.(*BatchResult); ok {
+		if batch.Status == "cancelled" {
+			return true
+		}
+		for _, item := range batch.Items {
+			if item.Status == "failed" {
+				nested := RetVal{Msg: item.Code}
+				if item.Details != nil {
+					nested.Data = item.Details
+				}
+				if BatchDependencyFailed(nested) {
+					return true
+				}
+			}
+		}
+	}
+	if strings.HasPrefix(ret.Msg, "model.") && (strings.HasSuffix(ret.Msg, ".createError") || strings.HasSuffix(ret.Msg, ".updateError") || strings.HasSuffix(ret.Msg, ".deleteError")) {
+		return true
+	}
 	return strings.HasSuffix(ret.Msg, ".getError") || ret.Msg == i18n.Common.UnknownError || ret.Msg == i18n.Model.CreateError || ret.Msg == i18n.Model.UpdateError || ret.Msg == i18n.Model.DeleteError || ret.Msg == i18n.Task.EnqueueError ||
 		(strings.HasPrefix(ret.Msg, "redis.") && ret.Msg != i18n.Redis.NotFound && ret.Msg != i18n.Redis.NoAvailablePort)
 }

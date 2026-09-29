@@ -65,9 +65,7 @@ func CheckCheat(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ManualCheckCheatEventType)
 	contest := middleware.GetContest(ctx)
 	tx := db.DB.WithContext(ctx.Request.Context())
-	service.CheckWebReqIP(tx, contest)
-	service.CheckVictimReqIP(tx, contest)
-	service.CheckWrongFlag(tx, contest)
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal())
+	ret := service.RunCheatChecks(tx, contest)
+	ctx.Set(middleware.CTXEventSuccessKey, ret.OK)
+	resp.JSON(ctx, ret)
 }

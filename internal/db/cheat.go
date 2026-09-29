@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
@@ -53,7 +54,7 @@ func InitCheatRepo(tx *gorm.DB) *CheatRepo {
 
 var CheatMutex sync.Map
 
-func (c *CheatRepo) Create(cheat model.Cheat) (model.Cheat, model.RetVal) {
+func (c *CheatRepo) Create(cheat model.Cheat) (model.Cheat, bool, model.RetVal) {
 	keys := make([]string, 0)
 	for k := range cheat.Model {
 		keys = append(keys, k)
@@ -77,17 +78,24 @@ func (c *CheatRepo) Create(cheat model.Cheat) (model.Cheat, model.RetVal) {
 
 	var existing model.Cheat
 	if res := c.DB.Where("hash = ?", cheat.Hash).First(&existing); res.Error == nil {
-		return existing, model.SuccessRetVal()
+		return existing, false, model.SuccessRetVal()
 	} else if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		log.Logger.Warningf("Failed to query Cheat by hash: %s", res.Error)
-		return model.Cheat{}, model.RetVal{Msg: i18n.Model.Cheat.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
+		return model.Cheat{}, false, model.RetVal{Msg: i18n.Model.Cheat.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 
-	if res := c.DB.Create(&cheat); res.Error != nil {
+	res := c.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(&cheat)
+	if res.Error != nil {
 		log.Logger.Warningf("Failed to create Cheat: %s", res.Error)
-		return model.Cheat{}, model.RetVal{Msg: i18n.Model.Cheat.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
+		return model.Cheat{}, false, model.RetVal{Msg: i18n.Model.Cheat.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	return cheat, model.SuccessRetVal()
+	if res.RowsAffected == 0 {
+		if err := c.DB.Where("hash = ?", cheat.Hash).First(&existing).Error; err != nil {
+			return model.Cheat{}, false, model.RetVal{Msg: i18n.Model.Cheat.CreateError, Attr: map[string]any{"Error": err.Error()}}
+		}
+		return existing, false, model.SuccessRetVal()
+	}
+	return cheat, true, model.SuccessRetVal()
 }
 
 func (c *CheatRepo) DeleteByContestID(idL ...uint) model.RetVal {
