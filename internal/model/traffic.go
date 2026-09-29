@@ -8,5 +8,6 @@ type Traffic struct {
 	IPs      StringList              `gorm:"type:jsonb;default:'[]'" json:"ips"`
 	Accesses []traffic.TrafficAccess `gorm:"serializer:json;type:jsonb;default:'[]'" json:"accesses"`
 	Analysis *traffic.AnalysisReport `gorm:"serializer:json;type:jsonb" json:"analysis"`
+	Archived bool                    `gorm:"default:false" json:"archived"`
 	BaseModel
 }

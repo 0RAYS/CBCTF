@@ -55,29 +55,42 @@ type DNSRecord struct {
 }
 
 type AnalysisReport struct {
-	Flags     []FlagFinding `json:"flags"`
-	HTTP      []HTTPRecord  `json:"http"`
-	DNS       []DNSRecord   `json:"dns"`
-	Warnings  []string      `json:"warnings"`
-	Truncated bool          `json:"truncated"`
-	Packets   int64         `json:"packets"`
-	Bytes     int64         `json:"bytes"`
+	Sessions    []SessionSummary  `json:"sessions"`
+	Indicators  []AttackIndicator `json:"indicators"`
+	MetricScope string            `json:"metric_scope"`
+	Flags       []FlagFinding     `json:"flags"`
+	HTTP        []HTTPRecord      `json:"http"`
+	DNS         []DNSRecord       `json:"dns"`
+	Warnings    []string          `json:"warnings"`
+	Truncated   bool              `json:"truncated"`
+	Packets     int64             `json:"packets"`
+	Bytes       int64             `json:"bytes"`
 }
 
 type analyzer struct {
-	report    AnalysisReport
-	known     []string
-	seenFlags map[string]bool
-	warnings  map[string]bool
-	ctx       context.Context
+	internalIPs    map[string]bool
+	sessions       map[string]*SessionSummary
+	seenIndicators map[string]bool
+	scans          map[string]*scanWindow
+	outbound       map[string]int64
+	report         AnalysisReport
+	known          []string
+	seenFlags      map[string]bool
+	warnings       map[string]bool
+	ctx            context.Context
 }
 
 func newAnalyzer(ctx context.Context, known []string) *analyzer {
 	return &analyzer{ctx: ctx, known: known, seenFlags: make(map[string]bool), warnings: make(map[string]bool),
-		report: AnalysisReport{Flags: []FlagFinding{}, HTTP: []HTTPRecord{}, DNS: []DNSRecord{}, Warnings: []string{}}}
+		sessions: make(map[string]*SessionSummary), seenIndicators: make(map[string]bool), scans: make(map[string]*scanWindow), outbound: make(map[string]int64),
+		report: AnalysisReport{Flags: []FlagFinding{}, HTTP: []HTTPRecord{}, DNS: []DNSRecord{}, Warnings: []string{}, Sessions: []SessionSummary{}, Indicators: []AttackIndicator{}, MetricScope: "capture_observations"}}
 }
 
 func (a *analyzer) warn(code string) {
+	switch code {
+	case "capture_snaplen_truncated", "ip_fragments_not_reassembled", "http_body_incomplete", "content_decode_error", "zip_incomplete":
+		a.report.Truncated = true
+	}
 	if !a.warnings[code] {
 		a.warnings[code] = true
 		a.report.Warnings = append(a.report.Warnings, code)
@@ -91,12 +104,13 @@ func packetEvidence(c Connection) Evidence {
 
 // AnalyzeDir analyzes original captures only. Every decoded finding carries its
 // capture, directional endpoints, and the time range of the contributing stream.
-func AnalyzeDir(ctx context.Context, path string, knownFlags []string) (AnalysisReport, error) {
+func AnalyzeDir(ctx context.Context, path string, options AnalysisOptions) (AnalysisReport, error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return AnalysisReport{}, err
 	}
-	a := newAnalyzer(ctx, knownFlags)
+	a := newAnalyzer(ctx, options.KnownFlags)
+	a.internalIPs = options.InternalIPs
 	for _, file := range files {
 		if file.IsDir() || !isOriginalTrafficCapture(file.Name()) || file.Name() == frpcPcapName {
 			continue
@@ -109,6 +123,7 @@ func AnalyzeDir(ctx context.Context, path string, knownFlags []string) (Analysis
 			}
 			c.Capture = file.Name()
 			evidence := packetEvidence(c)
+			a.observe(c)
 			a.report.Packets++
 			a.report.Bytes += int64(c.Size)
 			if packet.Metadata().CaptureLength < packet.Metadata().Length {
@@ -129,6 +144,9 @@ func AnalyzeDir(ctx context.Context, path string, knownFlags []string) (Analysis
 			}
 			if dns, ok := packet.Layer(layers.LayerTypeDNS).(*layers.DNS); ok {
 				for _, question := range dns.Questions {
+					if !dns.QR && len(question.Name) > 100 {
+						a.indicator("long_dns_query", "info", string(question.Name), evidence)
+					}
 					if len(a.report.DNS) >= maxFindings {
 						a.report.Truncated = true
 						a.warn("dns_limit")
@@ -153,6 +171,7 @@ func AnalyzeDir(ctx context.Context, path string, knownFlags []string) (Analysis
 			return AnalysisReport{}, err
 		}
 	}
+	a.finishActivity()
 	sort.SliceStable(a.report.Flags, func(i, j int) bool { return a.report.Flags[i].Evidence.Time.Before(a.report.Flags[j].Evidence.Time) })
 	sort.Strings(a.report.Warnings)
 	return a.report, nil
@@ -160,4 +179,9 @@ func AnalyzeDir(ctx context.Context, path string, knownFlags []string) (Analysis
 
 func evidenceKey(e Evidence) string {
 	return strings.Join([]string{e.Capture, e.SrcIP, e.SrcPort, e.DstIP, e.DstPort, e.Time.UTC().Format(time.RFC3339Nano)}, "|")
+}
+
+type AnalysisOptions struct {
+	KnownFlags  []string
+	InternalIPs map[string]bool
 }

@@ -34,3 +34,12 @@ func GetTrafficAnalysis(ctx *gin.Context) {
 	}
 	resp.JSON(ctx, model.SuccessRetVal(data))
 }
+
+func GetContestTrafficOverlaps(ctx *gin.Context) {
+	data, ret := service.GetContestTrafficOverlaps(ctx, middleware.GetContest(ctx))
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	resp.JSON(ctx, model.SuccessRetVal(data))
+}

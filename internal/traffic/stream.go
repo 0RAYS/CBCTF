@@ -1,6 +1,7 @@
 package traffic
 
 import (
+	"bytes"
 	"sort"
 
 	"github.com/gopacket/gopacket/layers"
@@ -100,6 +101,13 @@ func (s *streamCollector) emit(stream *tcpStream) {
 			next = segment.seq
 		} else if delta < 0 {
 			skip := int(-int64(delta))
+			if skip <= len(data) {
+				overlap := min(skip, len(segment.data))
+				if !bytes.Equal(data[len(data)-skip:len(data)-skip+overlap], segment.data[:overlap]) {
+					s.warn("tcp_overlap_conflict")
+					return
+				}
+			}
 			if skip >= len(segment.data) {
 				continue
 			}

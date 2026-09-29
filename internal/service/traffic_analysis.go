@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"CBCTF/internal/db"
@@ -24,20 +25,40 @@ func GetTrafficAnalysis(ctx context.Context, victim model.Victim) (TrafficAnalys
 	if !ret.OK {
 		return TrafficAnalysisResult{}, ret
 	}
-	if record.ID != 0 {
+	if record.Archived {
 		return TrafficAnalysisResult{Report: record.Analysis, Accesses: record.Accesses, Archived: true}, model.SuccessRetVal()
+	}
+	if record.ID != 0 && time.Since(record.UpdatedAt) < 15*time.Second {
+		return TrafficAnalysisResult{Report: record.Analysis, Accesses: record.Accesses}, model.SuccessRetVal()
 	}
 	flags, ret := repo.KnownFlags(victim)
 	if !ret.OK {
 		return TrafficAnalysisResult{}, ret
 	}
-	report, err := traffic.AnalyzeDir(ctx, victim.TrafficBasePath(), flags)
+	report, err := traffic.AnalyzeDir(ctx, victim.TrafficBasePath(), traffic.AnalysisOptions{KnownFlags: flags, InternalIPs: victim.TrafficInternalIPs()})
 	if err != nil {
 		return TrafficAnalysisResult{}, model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	result, err := traffic.ReadPcapDirWithContext(ctx, victim.TrafficBasePath())
+	result, err := traffic.ReadPcapDir(ctx, victim.TrafficBasePath(), victim.TrafficProxyPorts())
 	if err != nil {
 		return TrafficAnalysisResult{}, model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	return TrafficAnalysisResult{Report: &report, Accesses: traffic.CollectTrafficAccesses(result, victim.TrafficInternalIPs())}, model.SuccessRetVal()
+	accesses := traffic.CollectTrafficAccesses(result, victim.TrafficInternalIPs())
+	ipSet := make(map[string]bool)
+	for _, c := range result.Connections {
+		ipSet[c.SrcIP] = true
+		ipSet[c.DstIP] = true
+	}
+	for _, access := range accesses {
+		ipSet[access.IP] = true
+	}
+	ips := make([]string, 0, len(ipSet))
+	for ip := range ipSet {
+		ips = append(ips, ip)
+	}
+	sort.Strings(ips)
+	if ret = repo.ReplaceAnalysis(victim.ID, ips, accesses, &report, false); !ret.OK {
+		return TrafficAnalysisResult{}, ret
+	}
+	return TrafficAnalysisResult{Report: &report, Accesses: accesses}, model.SuccessRetVal()
 }

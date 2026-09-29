@@ -13,26 +13,27 @@ func Zip(src string, destZip string) error {
 }
 
 func ZipWithContext(ctx context.Context, src string, destZip string) error {
-	zipFile, err := os.Create(destZip)
+	zipFile, err := os.CreateTemp(filepath.Dir(destZip), ".archive-*")
 	if err != nil {
 		return err
 	}
 	defer func() {
 		_ = zipFile.Close()
+		_ = os.Remove(zipFile.Name())
 	}()
 	zipWriter := zip.NewWriter(zipFile)
 	defer func() {
 		_ = zipWriter.Close()
 	}()
 
-	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
-		if err = ctx.Err(); err != nil {
-			return err
-		}
+	err = filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if filepath.Clean(path) == filepath.Clean(destZip) {
+		if err = ctx.Err(); err != nil {
+			return err
+		}
+		if filepath.Clean(path) == filepath.Clean(destZip) || filepath.Clean(path) == filepath.Clean(zipFile.Name()) {
 			return nil
 		}
 		relPath, err := filepath.Rel(filepath.Dir(src), path)
@@ -60,6 +61,16 @@ func ZipWithContext(ctx context.Context, src string, destZip string) error {
 		_, err = io.Copy(w, contextReader{ctx: ctx, reader: f})
 		return err
 	})
+	if err != nil {
+		return err
+	}
+	if err = zipWriter.Close(); err != nil {
+		return err
+	}
+	if err = zipFile.Close(); err != nil {
+		return err
+	}
+	return os.Rename(zipFile.Name(), destZip)
 }
 
 type contextReader struct {

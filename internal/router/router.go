@@ -356,6 +356,7 @@ func Init() *gin.Engine {
 			adminContest.GET("/rank", GetTeamRanking)
 			adminContest.GET("/scoreboard", GetScoreboard)
 			adminContest.GET("/timeline", GetRankTimeline)
+			adminContest.GET("/traffic/overlaps", GetContestTrafficOverlaps)
 			adminContest.GET("/writeups/export", ExportContestWriteups)
 
 			adminContest.GET("/teams", GetTeams)
