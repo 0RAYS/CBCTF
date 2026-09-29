@@ -164,6 +164,9 @@ func openPostgresPool(name string, maxOpenConns, maxIdleConns int, level log.Lev
 	if err != nil {
 		log.Logger.Fatalf("Failed to connect database pool %q: %s", name, err)
 	}
+	if err = pool.Use(JSONUpdates{}); err != nil {
+		log.Logger.Fatalf("Failed to configure JSON serializers for pool %q: %s", name, err)
+	}
 	if sql, err := pool.DB(); err != nil {
 		log.Logger.Fatalf("Failed to get database pool %q: %s", name, err)
 	} else {

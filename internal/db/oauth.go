@@ -21,7 +21,7 @@ type UpdateOauthOptions struct {
 	ClientSecret     *string
 	Provider         *string
 	Uri              *string
-	Scopes           *model.StringList
+	Scopes           *[]string
 	IDClaim          *string
 	NameClaim        *string
 	EmailClaim       *string

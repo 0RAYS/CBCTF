@@ -48,10 +48,10 @@ type CreateContestChallengeForm struct {
 }
 
 type UpdateContestChallengeForm struct {
-	Name        *string           `form:"name" json:"name" binding:"omitempty,min=1"`
-	Description *string           `form:"description" json:"description"`
-	Hidden      *bool             `form:"hidden" json:"hidden"`
-	Attempt     *int64            `form:"attempt" json:"attempt" binding:"omitempty,gte=0"`
-	Hints       *model.StringList `form:"hints" json:"hints"`
-	Tags        *model.StringList `form:"tags" json:"tags"`
+	Name        *string   `form:"name" json:"name" binding:"omitempty,min=1"`
+	Description *string   `form:"description" json:"description"`
+	Hidden      *bool     `form:"hidden" json:"hidden"`
+	Attempt     *int64    `form:"attempt" json:"attempt" binding:"omitempty,gte=0"`
+	Hints       *[]string `form:"hints" json:"hints"`
+	Tags        *[]string `form:"tags" json:"tags"`
 }

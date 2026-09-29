@@ -6,6 +6,6 @@ type Pod struct {
 	VictimID uint    `json:"victim_id"`
 	Victim   Victim  `json:"-"`
 	Name     string  `json:"name"`
-	Spec     PodSpec `gorm:"type:jsonb" json:"-"`
+	Spec     PodSpec `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
 	BaseModel
 }

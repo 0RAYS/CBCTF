@@ -136,9 +136,9 @@ var EventTypes = []string{
 }
 
 type Event struct {
-	Models UintMap `gorm:"type:jsonb" json:"models"`
-	Type   string  `json:"type"`
-	IP     string  `json:"ip"`
+	Models map[string]uint `gorm:"serializer:json;type:jsonb;default:'{}'" json:"models"`
+	Type   string          `json:"type"`
+	IP     string          `json:"ip"`
 	BaseModel
 	Success bool `json:"success"`
 }

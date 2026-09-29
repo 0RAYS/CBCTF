@@ -136,7 +136,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 
 		cheatRepo.Create(model.Cheat{
 			ContestID:  contest.ID,
-			Model:      model.CheatRefModel{model.Name(model.Team{}): teamIDs},
+			Model:      map[string][]uint{model.Name(model.Team{}): teamIDs},
 			IP:         submission.IP,
 			Comment:    submission.Value,
 			Reason:     fmt.Sprintf(string(model.SubmitOtherTeamFlagTmpl), submission.TeamID, strings.Trim(tmp.String(), ", "), contest.ID),
@@ -209,7 +209,7 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 
 		cheatRepo.Create(model.Cheat{
 			ContestID:  contest.ID,
-			Model:      model.CheatRefModel{model.Name(model.User{}): userIDs},
+			Model:      map[string][]uint{model.Name(model.User{}): userIDs},
 			IP:         ip,
 			Comment:    ip,
 			Reason:     fmt.Sprintf(string(model.ReqWebSameIPTmpl), fmt.Sprintf("User %s", strings.Join(str, ","))),
@@ -265,7 +265,7 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 
 		cheatRepo.Create(model.Cheat{
 			ContestID:  contest.ID,
-			Model:      model.CheatRefModel{model.Name(model.Team{}): teamIDs},
+			Model:      map[string][]uint{model.Name(model.Team{}): teamIDs},
 			IP:         ip,
 			Comment:    ip,
 			Reason:     fmt.Sprintf(string(model.ReqVictimSameIPTmpl), fmt.Sprintf("Team %s", strings.Join(str, ","))),

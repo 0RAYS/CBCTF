@@ -1,9 +1,6 @@
 package model
 
 import (
-	"database/sql/driver"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"CBCTF/internal/i18n"
@@ -40,9 +37,9 @@ type Contest struct {
 	Blood             bool               `gorm:"default:true" json:"blood"`
 	Hidden            bool               `gorm:"default:true;index" json:"hidden"`
 	Victims           int64              `gorm:"default:1" json:"victims"`
-	Rules             StringList         `gorm:"type:jsonb" json:"rules"`
-	Prizes            Prizes             `gorm:"type:jsonb" json:"prizes"`
-	Timelines         Timelines          `gorm:"type:jsonb" json:"timelines"`
+	Rules             []string           `gorm:"serializer:json;type:jsonb;default:'[]'" json:"rules"`
+	Prizes            []Prize            `gorm:"serializer:json;type:jsonb;default:'[]'" json:"prizes"`
+	Timelines         []Timeline         `gorm:"serializer:json;type:jsonb;default:'[]'" json:"timelines"`
 	BaseModel
 }
 
@@ -73,34 +70,8 @@ type Prize struct {
 	Description string `json:"description"`
 }
 
-type Prizes []Prize
-
-func (p Prizes) Value() (driver.Value, error) {
-	return json.Marshal(p)
-}
-
-func (p *Prizes) Scan(value any) error {
-	if err := scanJSON(value, p); err != nil {
-		return fmt.Errorf("failed to scan Prizes value")
-	}
-	return nil
-}
-
 type Timeline struct {
 	Date        time.Time `json:"date"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-}
-
-type Timelines []Timeline
-
-func (t Timelines) Value() (driver.Value, error) {
-	return json.Marshal(t)
-}
-
-func (t *Timelines) Scan(value any) error {
-	if err := scanJSON(value, t); err != nil {
-		return fmt.Errorf("failed to scan Timelines value")
-	}
-	return nil
 }

@@ -57,3 +57,29 @@ func (f *FilePath) Scan(value any) error {
 	*f = FilePath(filepath.Join(config.Env.Path, strings.TrimLeft(string(bytes), `/\`)))
 	return nil
 }
+
+type FileURL string
+
+func (a FileURL) Value() (driver.Value, error) {
+	if a == "" {
+		return nil, nil
+	}
+	return strings.TrimPrefix(string(a), config.Env.Host), nil
+}
+
+func (a *FileURL) Scan(value any) error {
+	bytes, err := scanBytes(value)
+	if err != nil {
+		return fmt.Errorf("failed to scan FileURL: %v", value)
+	}
+	if len(bytes) == 0 {
+		*a = ""
+		return nil
+	}
+	if strings.HasPrefix(string(bytes), "https://") || strings.HasPrefix(string(bytes), "http://") {
+		*a = FileURL(bytes)
+	} else {
+		*a = FileURL(config.Env.Host + string(bytes))
+	}
+	return nil
+}

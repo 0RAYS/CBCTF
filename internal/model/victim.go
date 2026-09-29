@@ -33,11 +33,11 @@ const (
 type Victim struct {
 	Start            time.Time        `gorm:"default:null" json:"start"`
 	Status           string           `gorm:"index" json:"status"`
-	Resources        VictimResources  `gorm:"default:null;type:jsonb" json:"-"`
+	Resources        VictimResources  `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
 	Pods             []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Endpoints        Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
 	ExposedEndpoints Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
-	Spec             VictimSpec       `gorm:"default:null;type:jsonb" json:"-"`
+	Spec             VictimSpec       `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
 	ContestChallenge ContestChallenge `json:"-"`
 	Team             Team             `json:"-"`
 	Contest          Contest          `json:"-"`

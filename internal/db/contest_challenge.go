@@ -17,8 +17,8 @@ type UpdateContestChallengeOptions struct {
 	Description *string
 	Hidden      *bool
 	Attempt     *int64
-	Hints       *model.StringList
-	Tags        *model.StringList
+	Hints       *[]string
+	Tags        *[]string
 }
 
 func (u UpdateContestChallengeOptions) Convert2Map() map[string]any {

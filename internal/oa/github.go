@@ -32,7 +32,7 @@ func GetDefaultGithubOauth() model.Oauth {
 		ClientSecret:     "",
 		Provider:         "Github",
 		Uri:              "github",
-		Scopes:           model.StringList{"user:email"},
+		Scopes:           []string{"user:email"},
 		IDClaim:          "{id}",
 		NameClaim:        "{login}",
 		EmailClaim:       "{email}",

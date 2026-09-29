@@ -36,7 +36,7 @@ func Events(ctx *gin.Context) {
 		Type:    t,
 		Success: ctx.GetBool(CTXEventSuccessKey),
 		IP:      ctx.ClientIP(),
-		Models:  make(model.UintMap),
+		Models:  make(map[string]uint),
 	}
 	for _, m := range models {
 		if id := m.GetBaseModel().ID; id > 0 {
@@ -44,7 +44,7 @@ func Events(ctx *gin.Context) {
 		}
 	}
 	if value, ok := ctx.Get(CTXEventModelsKey); ok {
-		if eventModels, ok := value.(model.UintMap); ok {
+		if eventModels, ok := value.(map[string]uint); ok {
 			maps.Copy(options.Models, eventModels)
 		}
 	}

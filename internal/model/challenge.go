@@ -42,7 +42,7 @@ type Challenge struct {
 	Type              ChallengeType      `gorm:"index" json:"type"`
 	GeneratorImage    string             `json:"generator_image"`
 	NetworkPolicies   NetworkPolicies    `gorm:"type:jsonb" json:"network_policies"`
-	Template          ChallengeTemplate  `gorm:"type:jsonb" json:"-"`
+	Template          ChallengeTemplate  `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
 	BaseModel
 }
 

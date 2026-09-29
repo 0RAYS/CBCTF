@@ -63,7 +63,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 		victim.ID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods), victim.Spec.NetworkPlan.Name != "", config.Env.K8S.Frp.On,
 	)
 	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag})
-	victim.Resources.UIDs = make(model.StringMap)
+	victim.Resources.UIDs = make(map[string]string)
 	workloadCtx, ret := createVictimRoot(ctx, victim, "workloads")
 	if !ret.OK {
 		return victim, ret
@@ -292,7 +292,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	}
 
 	victim.Resources.NetworkPlan = victim.Spec.NetworkPlan
-	victim.Resources.PodNames = make(model.StringList, 0, len(pods))
+	victim.Resources.PodNames = make([]string, 0, len(pods))
 	for _, pod := range pods {
 		victim.Resources.PodNames = append(victim.Resources.PodNames, pod.Name)
 	}
