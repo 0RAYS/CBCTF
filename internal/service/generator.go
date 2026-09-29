@@ -177,23 +177,34 @@ func stopGeneratorResources(tx *gorm.DB, options db.GetOptions) model.RetVal {
 	if !ret.OK {
 		return ret
 	}
+	batch := model.NewBatch(len(generators))
 	for _, generator := range generators {
+		if tx.Statement.Context.Err() != nil {
+			return batch.Result(tx.Statement.Context)
+		}
+		key := fmt.Sprint(generator.ID)
 		switch generator.Status {
 		case model.WaitingGeneratorStatus, model.StoppedGeneratorStatus:
+			batch.Skip(key, "not_provisioned")
 			continue
 		}
+		steps := model.NewBatch(2)
 		if err := unregisterGenerator(generator); err != nil {
+			steps.Fail(key, "unregister", model.RetVal{Msg: i18n.Redis.DeleteError})
 			log.Logger.Warningf("Failed to unregister generator before resource deletion: generator_id=%d name=%s error=%v", generator.ID, generator.Name, err)
+		} else {
+			steps.Success(key, "unregister")
 		}
 		ctx, cancel := context.WithTimeout(tx.Statement.Context, time.Minute)
 		ret = k8s.StopGenerator(ctx, generator)
 		cancel()
-		if !ret.OK {
-			return ret
+		steps.Record(key, "stop_resources", ret)
+		batch.Record(key, "cleanup", steps.Result(tx.Statement.Context))
+		if ret.OK {
+			log.Logger.Infof("Stopped generator resources before model deletion: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
 		}
-		log.Logger.Infof("Stopped generator resources before model deletion: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
 	}
-	return model.SuccessRetVal()
+	return batch.Result(tx.Statement.Context)
 }
 
 func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model.Generator, string, model.RetVal) {
