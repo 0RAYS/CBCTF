@@ -70,8 +70,8 @@ flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 # 1. 构建前端（静态文件会被嵌入二进制）
 cd frontend && pnpm install && pnpm run build && cd ..
 
-# 2. 构建后端（流量抓取功能依赖 libpcap，需启用 CGO）
-CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
+# 2. 构建后端（抓包由 sidecar 完成，离线流量分析不依赖 libpcap/CGO）
+go build -ldflags="-s -w" -trimpath -o CBCTF .
 ```
 
 也可直接使用 Docker 完成两阶段构建：
