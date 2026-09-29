@@ -28,7 +28,6 @@
 - [认证与 OAuth](/guide/features/auth.md): 配置 CBCTF 本地认证、邮箱验证、OAuth/OIDC 登录和用户组自动分配。
 - [定时任务](/guide/features/cronjobs.md): 配置 CBCTF 定时任务的运行间隔、服务器启动时立即执行行为，并查看执行统计和管理 API。
 - [Webhook](/guide/features/webhook.md): 按实际事件列表、秒级超时与主机白名单配置 Webhook，检查投递历史和重试。
-- [后端上下文与 JSON 数据模型](/guide/features/backend.md): CBCTF 后端的请求取消、后台任务生命周期与 GORM JSONB 序列化约定。
 
 ## 管理员
 
