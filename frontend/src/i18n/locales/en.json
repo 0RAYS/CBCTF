@@ -225,6 +225,7 @@
       }
     },
     "dashboard": {
+      "partialStats": "Some statistics are unavailable. Available samples have been retained.",
       "realtime": "Live Monitoring",
       "cards": {
         "requestIp": "IP",

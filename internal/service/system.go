@@ -69,15 +69,40 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 
 func GetSystemStatus(tx *gorm.DB) map[string]any {
 	ret := make(map[string]any)
-	ret["metrics"] = redis.GetMetrics(tx.Statement.Context)
-	ret["users"], _ = db.InitUserRepo(tx).Count()
-	ret["contests"], _ = db.InitContestRepo(tx).Count()
-	ret["ip"], _ = db.InitRequestRepo(tx).CountIP()
-	ret["challenges"], _ = db.InitChallengeRepo(tx).Count()
-	ret["submissions"], _ = db.InitSubmissionRepo(tx).Count(db.CountOptions{Deleted: true})
-	ret["victims"], _ = db.InitVictimRepo(tx).Count(db.CountOptions{Deleted: true})
-	ret["requests"], _ = db.InitRequestRepo(tx).Count(db.CountOptions{Deleted: true})
-	ret["cache"] = redis.Count()
+	unavailable := make([]string, 0)
+	metrics, skipped, metricRet := redis.GetMetrics(tx.Statement.Context)
+	ret["metrics"], ret["metrics_skipped"] = metrics, skipped
+	if !metricRet.OK {
+		unavailable = append(unavailable, "metrics")
+	}
+	for _, counter := range []struct {
+		name string
+		read func() (int64, model.RetVal)
+	}{
+		{"users", func() (int64, model.RetVal) { return db.InitUserRepo(tx).Count() }},
+		{"contests", func() (int64, model.RetVal) { return db.InitContestRepo(tx).Count() }},
+		{"ip", db.InitRequestRepo(tx).CountIP},
+		{"challenges", func() (int64, model.RetVal) { return db.InitChallengeRepo(tx).Count() }},
+		{"submissions", func() (int64, model.RetVal) { return db.InitSubmissionRepo(tx).Count(db.CountOptions{Deleted: true}) }},
+		{"victims", func() (int64, model.RetVal) { return db.InitVictimRepo(tx).Count(db.CountOptions{Deleted: true}) }},
+		{"requests", func() (int64, model.RetVal) { return db.InitRequestRepo(tx).Count(db.CountOptions{Deleted: true}) }},
+	} {
+		value, result := counter.read()
+		if result.OK {
+			ret[counter.name] = value
+		} else {
+			ret[counter.name] = nil
+			unavailable = append(unavailable, counter.name)
+		}
+	}
+	cache, err := redis.Count(tx.Statement.Context)
+	if err == nil {
+		ret["cache"] = cache
+	} else {
+		ret["cache"] = nil
+		unavailable = append(unavailable, "cache")
+	}
+	ret["unavailable"] = unavailable
 	return ret
 }
 

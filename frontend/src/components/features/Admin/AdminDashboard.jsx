@@ -43,19 +43,30 @@ function AdminDashboard({ status, chartContent, extraContent }) {
             <span className="text-neutral-400 text-sm">{t('admin.dashboard.realtime')}</span>
           </div>
         </div>
+        {status?.unavailable?.length || status?.metrics_skipped ? (
+          <p role="status" className="mb-4 text-sm text-amber-300">
+            {t('admin.dashboard.partialStats')}
+          </p>
+        ) : null}
 
         {/* 图表区域 - 由外部传入 */}
         {chartContent && <div className="mb-5 border border-neutral-600 rounded-md bg-neutral-900">{chartContent}</div>}
 
         {/* 状态卡片网格 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <StatCard title={t('admin.dashboard.cards.requestIp')} value={status?.ip || t('common.notAvailable')} />
-          <StatCard title={t('admin.dashboard.cards.users')} value={status?.users || 0} />
-          <StatCard title={t('admin.dashboard.cards.contests')} value={status?.contests || 0} />
-          <StatCard title={t('admin.dashboard.cards.challenges')} value={status?.challenges || 0} />
-          <StatCard title={t('admin.dashboard.cards.victims')} value={status?.victims || 0} />
-          <StatCard title={t('admin.dashboard.cards.submissions')} value={status?.submissions || 0} />
-          <StatCard title={t('admin.dashboard.cards.requests')} value={status?.requests || 0} />
+          <StatCard title={t('admin.dashboard.cards.requestIp')} value={status?.ip ?? t('common.notAvailable')} />
+          <StatCard title={t('admin.dashboard.cards.users')} value={status?.users ?? t('common.notAvailable')} />
+          <StatCard title={t('admin.dashboard.cards.contests')} value={status?.contests ?? t('common.notAvailable')} />
+          <StatCard
+            title={t('admin.dashboard.cards.challenges')}
+            value={status?.challenges ?? t('common.notAvailable')}
+          />
+          <StatCard title={t('admin.dashboard.cards.victims')} value={status?.victims ?? t('common.notAvailable')} />
+          <StatCard
+            title={t('admin.dashboard.cards.submissions')}
+            value={status?.submissions ?? t('common.notAvailable')}
+          />
+          <StatCard title={t('admin.dashboard.cards.requests')} value={status?.requests ?? t('common.notAvailable')} />
           <StatCard
             title={t('admin.dashboard.cards.responseTime')}
             value={status?.duration ? `${status.duration} ms` : t('common.notAvailable')}
@@ -63,7 +74,7 @@ function AdminDashboard({ status, chartContent, extraContent }) {
           <StatCard title={t('admin.dashboard.cards.downlink')} value={formatBytes(status?.sent)} />
           <StatCard title={t('admin.dashboard.cards.uplink')} value={formatBytes(status?.recv)} />
           <StatCard title={t('admin.dashboard.cards.totalTraffic')} value={formatBytes(status?.io)} />
-          <StatCard title={t('admin.dashboard.cards.cacheSize')} value={status?.cache || 0} />
+          <StatCard title={t('admin.dashboard.cards.cacheSize')} value={status?.cache ?? t('common.notAvailable')} />
         </div>
       </motion.div>
 
