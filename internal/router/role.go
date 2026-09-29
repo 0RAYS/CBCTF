@@ -18,7 +18,7 @@ func GetRole(ctx *gin.Context) {
 }
 
 func GetRolePermissions(ctx *gin.Context) {
-	permissions, ret := service.GetRolePermissions(db.DB, middleware.GetRole(ctx))
+	permissions, ret := service.GetRolePermissions(db.DB.WithContext(ctx.Request.Context()), middleware.GetRole(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -36,7 +36,7 @@ func GetRoles(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	roles, count, ret := service.ListRoles(db.DB, form)
+	roles, count, ret := service.ListRoles(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -55,7 +55,7 @@ func CreateRole(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateRoleEventType)
-	role, ret := service.CreateRole(db.DB, form)
+	role, ret := service.CreateRole(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -73,7 +73,7 @@ func UpdateRole(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateRoleEventType)
 	role := middleware.GetRole(ctx)
-	ret := service.UpdateRole(db.DB, role, form)
+	ret := service.UpdateRole(db.DB.WithContext(ctx.Request.Context()), role, form)
 	if ret.OK {
 		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -84,7 +84,7 @@ func UpdateRole(ctx *gin.Context) {
 func DeleteRole(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteRoleEventType)
 	role := middleware.GetRole(ctx)
-	ret := service.DeleteRole(db.DB, role)
+	ret := service.DeleteRole(db.DB.WithContext(ctx.Request.Context()), role)
 	if ret.OK {
 		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -100,7 +100,7 @@ func AssignPermission(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.AssignPermissionEventType)
 	role := middleware.GetRole(ctx)
-	ret := service.AssignPermission(db.DB, role, form)
+	ret := service.AssignPermission(db.DB.WithContext(ctx.Request.Context()), role, form)
 	if ret.OK {
 		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -116,7 +116,7 @@ func RevokePermission(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.RevokePermissionEventType)
 	role := middleware.GetRole(ctx)
-	ret := service.RevokePermission(db.DB, role, form)
+	ret := service.RevokePermission(db.DB.WithContext(ctx.Request.Context()), role, form)
 	if ret.OK {
 		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)

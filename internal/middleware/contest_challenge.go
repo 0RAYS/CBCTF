@@ -24,14 +24,14 @@ func CheckChallengeType(t model.ChallengeType) gin.HandlerFunc {
 func CheckSolved(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	contestChallenge := GetContestChallenge(ctx)
-	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+	contestFlags, _, ret := db.InitContestFlagRepo(db.DB.WithContext(ctx.Request.Context())).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	if service.CheckIfSolved(db.DB, team, contestFlags) {
+	if service.CheckIfSolved(db.DB.WithContext(ctx.Request.Context()), team, contestFlags) {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.TeamFlag.AlreadySolved})
 		return
 	}

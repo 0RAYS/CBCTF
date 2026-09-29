@@ -55,7 +55,7 @@ func GetTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([]mo
 	if end-start <= 0 {
 		return nil, count, model.SuccessRetVal()
 	}
-	teams, ret := redis.GetTeamRanking(contest.ID, int64(start), int64(end-1))
+	teams, ret := redis.GetTeamRanking(tx.Statement.Context, contest.ID, int64(start), int64(end-1))
 	if !ret.OK || (end-start > 0 && len(teams) == 0 && count > 0) {
 		return UpdateTeamRanking(tx, contest, limit, offset)
 	}
@@ -86,7 +86,7 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, model.
 	if end-start <= 0 {
 		return nil, count, model.SuccessRetVal()
 	}
-	users, ret := redis.GetUserRanking(int64(start), int64(end-1))
+	users, ret := redis.GetUserRanking(tx.Statement.Context, int64(start), int64(end-1))
 	if !ret.OK || (end-start > 0 && len(users) == 0 && count > 0) {
 		return UpdateUserRanking(tx, limit, offset)
 	}

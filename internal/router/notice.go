@@ -17,7 +17,7 @@ func GetNotices(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	notices, count, ret := service.ListNotices(db.DB, middleware.GetContest(ctx), form)
+	notices, count, ret := service.ListNotices(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -36,7 +36,7 @@ func CreateNotice(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateNoticeEventType)
-	notice, ret := service.CreateNotice(db.DB, middleware.GetContest(ctx), form)
+	notice, ret := service.CreateNotice(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -53,7 +53,7 @@ func UpdateNotice(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateNoticeEventType)
 	notice := middleware.GetNotice(ctx)
-	ret := service.UpdateNotice(db.DB, notice, form)
+	ret := service.UpdateNotice(db.DB.WithContext(ctx.Request.Context()), notice, form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -63,7 +63,7 @@ func UpdateNotice(ctx *gin.Context) {
 func DeleteNotice(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteNoticeEventType)
 	notice := middleware.GetNotice(ctx)
-	ret := service.DeleteNotice(db.DB, notice)
+	ret := service.DeleteNotice(db.DB.WithContext(ctx.Request.Context()), notice)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

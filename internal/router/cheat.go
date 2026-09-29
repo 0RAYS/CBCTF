@@ -17,7 +17,7 @@ func GetCheats(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	cheats, count, checked, ret := service.ListCheats(db.DB, middleware.GetContest(ctx), form)
+	cheats, count, checked, ret := service.ListCheats(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -37,7 +37,7 @@ func UpdateCheat(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateCheatEventType)
 	cheat := middleware.GetCheat(ctx)
-	ret := service.UpdateCheat(db.DB, cheat, form)
+	ret := service.UpdateCheat(db.DB.WithContext(ctx.Request.Context()), cheat, form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -49,10 +49,10 @@ func DeleteCheat(all bool) gin.HandlerFunc {
 		var ret model.RetVal
 		if all {
 			ctx.Set(middleware.CTXEventTypeKey, model.DeleteAllCheatEventType)
-			ret = service.DeleteContestCheats(db.DB, middleware.GetContest(ctx))
+			ret = service.DeleteContestCheats(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx))
 		} else {
 			ctx.Set(middleware.CTXEventTypeKey, model.DeleteCheatEventType)
-			ret = service.DeleteCheat(db.DB, middleware.GetCheat(ctx))
+			ret = service.DeleteCheat(db.DB.WithContext(ctx.Request.Context()), middleware.GetCheat(ctx))
 		}
 		if ret.OK {
 			ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -64,9 +64,10 @@ func DeleteCheat(all bool) gin.HandlerFunc {
 func CheckCheat(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ManualCheckCheatEventType)
 	contest := middleware.GetContest(ctx)
-	service.CheckWebReqIP(db.DB, contest)
-	service.CheckVictimReqIP(db.DB, contest)
-	service.CheckWrongFlag(db.DB, contest)
+	tx := db.DB.WithContext(ctx.Request.Context())
+	service.CheckWebReqIP(tx, contest)
+	service.CheckVictimReqIP(tx, contest)
+	service.CheckWrongFlag(tx, contest)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

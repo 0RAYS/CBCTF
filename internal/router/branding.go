@@ -12,7 +12,7 @@ import (
 )
 
 func GetBranding(ctx *gin.Context) {
-	branding, ret := service.GetDefaultBranding(db.DB)
+	branding, ret := service.GetDefaultBranding(db.DB.WithContext(ctx.Request.Context()))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -27,7 +27,7 @@ func UpdateBranding(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateBrandingEventType)
-	branding, ret := service.UpdateBranding(db.DB, form)
+	branding, ret := service.UpdateBranding(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

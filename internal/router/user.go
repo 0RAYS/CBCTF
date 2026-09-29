@@ -20,12 +20,12 @@ func GetUser(ctx *gin.Context) {
 	} else {
 		user = middleware.GetSelf(ctx)
 	}
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB, user, includeCounts), includeCounts)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB.WithContext(ctx.Request.Context()), user, includeCounts), includeCounts)))
 }
 
 func GetAccessibleRoutes(ctx *gin.Context) {
 	userID := middleware.GetSelf(ctx).ID
-	routes, ret := service.GetAccessibleRoutes(db.DB, userID)
+	routes, ret := service.GetAccessibleRoutes(db.DB.WithContext(ctx.Request.Context()), userID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -39,7 +39,7 @@ func GetUsers(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	users, count, ret := service.ListUsers(db.DB, form)
+	users, count, ret := service.ListUsers(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -58,13 +58,13 @@ func CreateUser(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateUserEventType)
-	user, ret := service.AdminCreateUser(db.DB, form)
+	user, ret := service.AdminCreateUser(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB, user, true), true)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB.WithContext(ctx.Request.Context()), user, true), true)))
 }
 
 func ChangePwd(ctx *gin.Context) {
@@ -74,7 +74,7 @@ func ChangePwd(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
-	ret := service.ChangeUserPwd(db.DB, middleware.GetSelf(ctx), form)
+	ret := service.ChangeUserPwd(db.DB.WithContext(ctx.Request.Context()), middleware.GetSelf(ctx), form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -94,7 +94,7 @@ func UpdateUser(ctx *gin.Context) {
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
 		user = middleware.GetUser(ctx)
-		ret = service.UpdateUser(db.DB, user, form)
+		ret = service.UpdateUser(db.DB.WithContext(ctx.Request.Context()), user, form)
 	} else {
 		var form dto.UpdateSelfForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
@@ -103,7 +103,7 @@ func UpdateUser(ctx *gin.Context) {
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
 		user = middleware.GetSelf(ctx)
-		ret = service.UpdateSelf(db.DB, user, form)
+		ret = service.UpdateSelf(db.DB.WithContext(ctx.Request.Context()), user, form)
 	}
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -122,11 +122,11 @@ func DeleteUser(ctx *gin.Context) {
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		user = middleware.GetSelf(ctx)
-		ret = service.DeleteSelf(db.DB, user, form)
+		ret = service.DeleteSelf(db.DB.WithContext(ctx.Request.Context()), user, form)
 	} else {
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		user = middleware.GetUser(ctx)
-		ret = service.DeleteUser(db.DB, user)
+		ret = service.DeleteUser(db.DB.WithContext(ctx.Request.Context()), user)
 	}
 	if !ret.OK {
 		resp.JSON(ctx, ret)

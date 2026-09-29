@@ -1,12 +1,13 @@
 package oa
 
 import (
+	"context"
 	"net/http"
 
 	"CBCTF/internal/model"
 )
 
-type ProviderCallback func(provider model.Oauth, client *http.Client, response map[string]any) error
+type ProviderCallback func(ctx context.Context, provider model.Oauth, client *http.Client, response map[string]any) error
 
 type ProviderMatcher func(provider model.Oauth) bool
 
@@ -28,13 +29,13 @@ func Init() {
 	RegisterProtocol(NewCASProtocol())
 }
 
-func ApplyUserInfoCallback(provider model.Oauth, client *http.Client, response map[string]any) error {
+func ApplyUserInfoCallback(ctx context.Context, provider model.Oauth, client *http.Client, response map[string]any) error {
 	for _, handler := range providerHandlers {
 		if handler.match != nil && handler.match(provider) {
 			if handler.callback == nil {
 				return nil
 			}
-			return handler.callback(provider, client, response)
+			return handler.callback(ctx, provider, client, response)
 		}
 	}
 	return nil

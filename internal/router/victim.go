@@ -23,7 +23,7 @@ func StartVictim(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	ret := service.StartVictim(db.DB, user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
+	ret := service.StartVictim(db.DB.WithContext(ctx.Request.Context()), user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -32,7 +32,7 @@ func StartVictim(ctx *gin.Context) {
 
 func ExtendVictimDuration(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ExtendVictimEventType)
-	victim, ret := service.ExtendVictimDuration(db.DB, middleware.GetTeam(ctx), middleware.GetChallenge(ctx))
+	victim, ret := service.ExtendVictimDuration(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx), middleware.GetChallenge(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -48,7 +48,7 @@ func ExtendVictimDuration(ctx *gin.Context) {
 
 func StopVictim(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
-	if ret := service.StopAliveVictim(db.DB, middleware.GetTeam(ctx), middleware.GetChallenge(ctx)); !ret.OK {
+	if ret := service.StopAliveVictim(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx), middleware.GetChallenge(ctx)); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -62,7 +62,7 @@ func GetVictimHistories(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	victims, count, ret := service.ListVictimHistories(db.DB, middleware.GetTeam(ctx), form)
+	victims, count, ret := service.ListVictimHistories(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -81,7 +81,7 @@ func GetVictims(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	victims, running, total, ret := service.GetVictims(db.DB, contest, form)
+	victims, running, total, ret := service.GetVictims(db.DB.WithContext(ctx.Request.Context()), contest, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -107,7 +107,7 @@ func StartVictims(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	contest := middleware.GetContest(ctx)
-	ret := service.StartVictims(db.TaskDB, contest, form)
+	ret := service.StartVictims(db.DB.WithContext(ctx.Request.Context()), contest, form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -121,9 +121,9 @@ func StopVictims(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
-	go service.StopVictims(db.TaskDB, middleware.GetContest(ctx).ID, form)
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal())
+	ret := service.StopVictims(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx).ID, form)
+	ctx.Set(middleware.CTXEventSuccessKey, ret.OK)
+	resp.JSON(ctx, ret)
 }
 
 // GetVictimPods 列出指定 victim 关联的 Pods（pending/running/terminating 状态）

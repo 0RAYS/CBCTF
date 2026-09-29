@@ -1,6 +1,7 @@
 package oa
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -46,8 +47,12 @@ func IsGithubProvider(provider model.Oauth) bool {
 	return strings.HasPrefix(strings.ToLower(provider.UserInfoURL), "https://api.github.com/")
 }
 
-func SetGithubEmail(_ model.Oauth, client *http.Client, data map[string]any) error {
-	response, err := client.Get("https://api.github.com/user/emails")
+func SetGithubEmail(ctx context.Context, _ model.Oauth, client *http.Client, data map[string]any) error {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://api.github.com/user/emails", nil)
+	if err != nil {
+		return err
+	}
+	response, err := client.Do(request)
 	if err != nil {
 		return err
 	}

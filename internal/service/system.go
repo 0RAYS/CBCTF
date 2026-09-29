@@ -67,7 +67,7 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 
 func GetSystemStatus(tx *gorm.DB) map[string]any {
 	ret := make(map[string]any)
-	ret["metrics"] = redis.GetMetrics()
+	ret["metrics"] = redis.GetMetrics(tx.Statement.Context)
 	ret["users"], _ = db.InitUserRepo(tx).Count()
 	ret["contests"], _ = db.InitContestRepo(tx).Count()
 	ret["ip"], _ = db.InitRequestRepo(tx).CountIP()

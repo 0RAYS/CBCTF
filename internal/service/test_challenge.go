@@ -52,7 +52,7 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	}
 	generator = current
 	log.Logger.Infof("Generating test attachment: challenge_id=%d generator_id=%d", challenge.ID, generator.ID)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(tx.Statement.Context, time.Minute)
 	ret = k8s.GenAttachment(ctx, challenge, generator, 0, flags)
 	cancel()
 	generatorRepo := db.InitGeneratorRepo(tx)

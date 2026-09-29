@@ -1,6 +1,7 @@
 package oa
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 
 	"CBCTF/internal/model"
@@ -16,7 +17,7 @@ type Protocol interface {
 	ID() string
 	// LoginURL builds the URL the end-user's browser is redirected to in
 	// order to start authentication.
-	LoginURL(provider model.Oauth) (string, model.RetVal)
+	LoginURL(ctx context.Context, provider model.Oauth) (string, model.RetVal)
 	// Exchange consumes the authentication callback request and returns the
 	// normalized claims map consumed by service.OauthLogin.
 	Exchange(ctx *gin.Context, provider model.Oauth) (map[string]any, model.RetVal)

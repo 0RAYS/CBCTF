@@ -18,7 +18,7 @@ func GetCronJobs(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	cronJobs, count, ret := service.ListCronJobs(db.DB, form)
+	cronJobs, count, ret := service.ListCronJobs(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -41,7 +41,7 @@ func UpdateCronJob(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateCronJobEventType)
-	cronJob, ret := service.UpdateCronJob(db.DB, middleware.GetCronJob(ctx), form)
+	cronJob, ret := service.UpdateCronJob(db.DB.WithContext(ctx.Request.Context()), middleware.GetCronJob(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

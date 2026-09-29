@@ -14,7 +14,7 @@ import (
 
 func GetGroup(ctx *gin.Context) {
 	group := middleware.GetGroup(ctx)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetGroupResp(service.BuildGroupView(db.DB, group))))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetGroupResp(service.BuildGroupView(db.DB.WithContext(ctx.Request.Context()), group))))
 }
 
 func GetGroupUsers(ctx *gin.Context) {
@@ -24,7 +24,7 @@ func GetGroupUsers(ctx *gin.Context) {
 		return
 	}
 	group := middleware.GetGroup(ctx)
-	users, count, ret := service.ListGroupUsers(db.DB, group, form)
+	users, count, ret := service.ListGroupUsers(db.DB.WithContext(ctx.Request.Context()), group, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -43,7 +43,7 @@ func GetGroupAvailableUsers(ctx *gin.Context) {
 		return
 	}
 	group := middleware.GetGroup(ctx)
-	users, count, ret := service.ListUsersNotInGroup(db.DB, group, form)
+	users, count, ret := service.ListUsersNotInGroup(db.DB.WithContext(ctx.Request.Context()), group, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -61,7 +61,7 @@ func GetGroups(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	groups, count, ret := service.ListGroups(db.DB, form)
+	groups, count, ret := service.ListGroups(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -80,14 +80,14 @@ func CreateGroup(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateGroupEventType)
-	group, ret := service.CreateGroup(db.DB, form)
+	group, ret := service.CreateGroup(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		redis.DeleteRBAC()
 		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetGroupResp(service.BuildGroupView(db.DB, group))))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetGroupResp(service.BuildGroupView(db.DB.WithContext(ctx.Request.Context()), group))))
 }
 
 func UpdateGroup(ctx *gin.Context) {
@@ -98,7 +98,7 @@ func UpdateGroup(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateGroupEventType)
 	group := middleware.GetGroup(ctx)
-	ret := service.UpdateGroup(db.DB, group, form)
+	ret := service.UpdateGroup(db.DB.WithContext(ctx.Request.Context()), group, form)
 	if ret.OK {
 		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -109,7 +109,7 @@ func UpdateGroup(ctx *gin.Context) {
 func DeleteGroup(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteGroupEventType)
 	group := middleware.GetGroup(ctx)
-	ret := service.DeleteGroup(db.DB, group)
+	ret := service.DeleteGroup(db.DB.WithContext(ctx.Request.Context()), group)
 	if ret.OK {
 		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -125,7 +125,7 @@ func AssignUserToGroup(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.AssignUserGroupEventType)
 	group := middleware.GetGroup(ctx)
-	user, ret := service.AssignUserToGroup(db.DB, group, form)
+	user, ret := service.AssignUserToGroup(db.DB.WithContext(ctx.Request.Context()), group, form)
 	if ret.OK {
 		redis.DeleteUserRBAC(user.ID)
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -141,7 +141,7 @@ func RemoveUserFromGroup(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.RemoveUserGroupEventType)
 	group := middleware.GetGroup(ctx)
-	user, ret := service.RemoveUserFromGroup(db.DB, group, form)
+	user, ret := service.RemoveUserFromGroup(db.DB.WithContext(ctx.Request.Context()), group, form)
 	if ret.OK {
 		redis.DeleteUserRBAC(user.ID)
 		ctx.Set(middleware.CTXEventSuccessKey, true)

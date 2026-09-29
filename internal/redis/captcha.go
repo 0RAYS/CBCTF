@@ -30,8 +30,8 @@ end
 return 0
 `)
 
-func SetCaptchaAnswer(id, answer string) model.RetVal {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func SetCaptchaAnswer(ctx context.Context, id, answer string) model.RetVal {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	key := fmt.Sprintf(captchaKeyTmpl, id)
 	if err := RDB.Set(ctx, key, strings.TrimSpace(answer), captchaTTL).Err(); err != nil {
@@ -41,8 +41,8 @@ func SetCaptchaAnswer(id, answer string) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func VerifyCaptcha(id, answer string) model.RetVal {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func VerifyCaptcha(ctx context.Context, id, answer string) model.RetVal {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	key := fmt.Sprintf(captchaKeyTmpl, id)
 	result, err := consumeCaptchaScript.Run(ctx, RDB, []string{key}, strings.TrimSpace(answer)).Int()

@@ -17,7 +17,7 @@ func GetContestChallenges(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	challenges, count, ret := service.ListContestChallengeViews(db.DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), form)
+	challenges, count, ret := service.ListContestChallengeViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), middleware.GetTeam(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -37,7 +37,7 @@ func GetAllContestChallenges(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	contestChallenges, count, ret := service.ListAdminContestChallenges(db.DB, middleware.GetContest(ctx), form)
+	contestChallenges, count, ret := service.ListAdminContestChallenges(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -63,7 +63,7 @@ func GetContestChallengeCategories(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	categories, ret := service.ListContestChallengeCategories(db.DB, middleware.GetContest(ctx), form)
+	categories, ret := service.ListContestChallengeCategories(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -73,7 +73,7 @@ func GetContestChallengeCategories(ctx *gin.Context) {
 
 func GetContestChallengeStatus(ctx *gin.Context) {
 	status, ret := service.GetContestChallengeStatus(
-		db.DB,
+		db.DB.WithContext(ctx.Request.Context()),
 		middleware.GetTeam(ctx),
 		middleware.GetChallenge(ctx),
 		middleware.GetContestChallenge(ctx),
@@ -92,7 +92,7 @@ func AddContestChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateContestChallengeEventType)
-	contestChallenges, failed, _ := service.CreateContestChallenge(db.DB, middleware.GetContest(ctx), form)
+	contestChallenges, failed, _ := service.CreateContestChallenge(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
 	data := make([]gin.H, 0, len(contestChallenges))
 	for _, contestChallenge := range contestChallenges {
 		data = append(data, resp.GetAdminContestChallengeResp(contestChallenge))
@@ -108,7 +108,7 @@ func UpdateContestChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeEventType)
-	ret := service.UpdateContestChallenge(db.DB, middleware.GetContestChallenge(ctx), form)
+	ret := service.UpdateContestChallenge(db.DB.WithContext(ctx.Request.Context()), middleware.GetContestChallenge(ctx), form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -117,7 +117,7 @@ func UpdateContestChallenge(ctx *gin.Context) {
 
 func DeleteContestChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestChallengeEventType)
-	ret := service.DeleteContestChallenge(db.DB, middleware.GetContestChallenge(ctx))
+	ret := service.DeleteContestChallenge(db.DB.WithContext(ctx.Request.Context()), middleware.GetContestChallenge(ctx))
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -125,7 +125,7 @@ func DeleteContestChallenge(ctx *gin.Context) {
 }
 
 func GetContestFlagSolvers(ctx *gin.Context) {
-	solvers, ret := service.ListContestFlagSolvers(db.DB, middleware.GetContestFlag(ctx))
+	solvers, ret := service.ListContestFlagSolvers(db.DB.WithContext(ctx.Request.Context()), middleware.GetContestFlag(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

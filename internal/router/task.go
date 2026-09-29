@@ -17,7 +17,7 @@ func GetTasks(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	tasks, count, queues, ret := service.ListTasks(db.DB, form)
+	tasks, count, queues, ret := service.ListTasks(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

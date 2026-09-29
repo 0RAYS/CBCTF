@@ -45,8 +45,8 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, model.RetVal) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func GetTeamRanking(ctx context.Context, contestID uint, start int64, end int64) ([]model.Team, model.RetVal) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	key := fmt.Sprintf(teamRankingKeyTmpl, contestID)
 	teams := make([]model.Team, 0)
@@ -93,8 +93,8 @@ func UpdateUserRanking(users []model.User) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func GetUserRanking(start int64, end int64) ([]model.User, model.RetVal) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func GetUserRanking(ctx context.Context, start int64, end int64) ([]model.User, model.RetVal) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	results, err := RDB.ZRevRangeWithScores(ctx, userRankingKey, start, end).Result()
 	if err != nil {

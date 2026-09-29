@@ -17,7 +17,7 @@ func GetTeamRanking(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	teams, count, ret := service.GetTeamRankingViews(db.DB, middleware.GetContest(ctx), form.Limit, form.Offset, middleware.IsFullAccess(ctx))
+	teams, count, ret := service.GetTeamRankingViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form.Limit, form.Offset, middleware.IsFullAccess(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -37,7 +37,7 @@ func GetScoreboard(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	teams, count, ret := service.GetScoreboardViews(db.DB, middleware.GetContest(ctx), form.Limit, form.Offset, middleware.IsFullAccess(ctx))
+	teams, count, ret := service.GetScoreboardViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form.Limit, form.Offset, middleware.IsFullAccess(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -47,7 +47,7 @@ func GetScoreboard(ctx *gin.Context) {
 }
 
 func GetRankTimeline(ctx *gin.Context) {
-	data, ret := service.GetRankTimelineViews(db.DB, middleware.GetContest(ctx))
+	data, ret := service.GetRankTimelineViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

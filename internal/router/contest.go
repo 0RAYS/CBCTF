@@ -12,7 +12,7 @@ import (
 )
 
 func GetContest(ctx *gin.Context) {
-	contestView := service.BuildContestView(db.DB, middleware.GetContest(ctx))
+	contestView := service.BuildContestView(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx))
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(contestView, middleware.IsFullAccess(ctx))))
 }
 
@@ -22,7 +22,7 @@ func GetContests(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	contests, count, ret := service.ListContests(db.DB, form, middleware.IsFullAccess(ctx))
+	contests, count, ret := service.ListContests(db.DB.WithContext(ctx.Request.Context()), form, middleware.IsFullAccess(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -41,13 +41,13 @@ func CreateContest(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateContestEventType)
-	contest, ret := service.CreateContest(db.DB, form)
+	contest, ret := service.CreateContest(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(service.BuildContestView(db.DB, contest), true)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(service.BuildContestView(db.DB.WithContext(ctx.Request.Context()), contest), true)))
 }
 
 func UpdateContest(ctx *gin.Context) {
@@ -58,7 +58,7 @@ func UpdateContest(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestEventType)
 	contest := middleware.GetContest(ctx)
-	ret := service.UpdateContest(db.DB, contest, form)
+	ret := service.UpdateContest(db.DB.WithContext(ctx.Request.Context()), contest, form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -67,7 +67,7 @@ func UpdateContest(ctx *gin.Context) {
 
 func DeleteContest(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestEventType)
-	ret := service.DeleteContest(db.DB, middleware.GetContest(ctx))
+	ret := service.DeleteContest(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx))
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

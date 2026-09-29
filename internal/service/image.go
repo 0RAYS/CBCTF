@@ -62,14 +62,14 @@ func warmChallengeImages(challenge model.Challenge) {
 	}
 }
 
-func ListNodeImages() (map[string][]string, model.RetVal) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func ListNodeImages(ctx context.Context) (map[string][]string, model.RetVal) {
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 	return k8s.ListNodeImages(ctx)
 }
 
-func PullContestChallengeImage(form dto.PullImageForm) model.RetVal {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func PullContestChallengeImage(ctx context.Context, form dto.PullImageForm) model.RetVal {
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 	if form.PullPolicy == string(corev1.PullNever) {
 		return model.SuccessRetVal()

@@ -82,11 +82,11 @@ func (h *LogHook) Fire(entry *logrus.Entry) error {
 	return nil
 }
 
-func GetLogs(start, end int64, minLevel string) ([]string, model.RetVal) {
+func GetLogs(ctx context.Context, start, end int64, minLevel string) ([]string, model.RetVal) {
 	if end < start {
 		return []string{}, model.SuccessRetVal()
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	logs, err := RDB.LRange(ctx, logKey, 0, MaxLogScanLimit).Result()
 	if err != nil {

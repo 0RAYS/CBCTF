@@ -21,8 +21,8 @@ const (
 	userRBACTTL     = 5 * time.Minute
 )
 
-func SetUserRBAC(userID uint, permissions []string) model.RetVal {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func SetUserRBAC(ctx context.Context, userID uint, permissions []string) model.RetVal {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	data, _ := msgpack.Marshal(permissions)
 	if err := RDB.Set(ctx, fmt.Sprintf(userRBACKeyTmpl, userID), data, userRBACTTL).Err(); err != nil {
@@ -32,8 +32,8 @@ func SetUserRBAC(userID uint, permissions []string) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func CheckUserRBAC(userID uint, permission string) (bool, model.RetVal) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func CheckUserRBAC(ctx context.Context, userID uint, permission string) (bool, model.RetVal) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	data, err := RDB.Get(ctx, fmt.Sprintf(userRBACKeyTmpl, userID)).Result()
 	if err != nil {

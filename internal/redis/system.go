@@ -65,8 +65,8 @@ func SaveMetrics(metrics *SystemMetrics) error {
 	return nil
 }
 
-func GetMetrics() []SystemMetrics {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func GetMetrics(ctx context.Context) []SystemMetrics {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	metrics := make([]SystemMetrics, 0)
 	data, err := RDB.LRange(ctx, systemMetricsKey, 0, -1).Result()

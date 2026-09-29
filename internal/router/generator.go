@@ -22,7 +22,7 @@ func GetGenerators(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	generators, count, ret := service.ListGenerators(db.DB, middleware.GetContest(ctx), form)
+	generators, count, ret := service.ListGenerators(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -42,9 +42,9 @@ func StartGenerator(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StartGeneratorEventType)
 	contest := middleware.GetContest(ctx)
-	go service.StartGenerators(db.TaskDB, contest.ID, form)
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal())
+	ret := service.StartGenerators(db.DB.WithContext(ctx.Request.Context()), contest.ID, form)
+	ctx.Set(middleware.CTXEventSuccessKey, ret.OK)
+	resp.JSON(ctx, ret)
 }
 
 func StopGenerator(ctx *gin.Context) {
@@ -54,9 +54,9 @@ func StopGenerator(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StopGeneratorEventType)
-	go service.StopGenerators(db.TaskDB, middleware.GetContest(ctx).ID, form)
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal())
+	ret := service.StopGenerators(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx).ID, form)
+	ctx.Set(middleware.CTXEventSuccessKey, ret.OK)
+	resp.JSON(ctx, ret)
 }
 
 // GetGeneratorLogs 获取指定 generator 的 Pod 日志（pending/running/terminating 状态）

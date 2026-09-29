@@ -76,13 +76,7 @@ func SubmitContestFlag(
 		return ret
 	}
 	if solved {
-		go func() {
-			victim, victimRet := db.InitVictimRepo(tx).HasAliveVictim(team.ID, challenge.ID)
-			if !victimRet.OK {
-				return
-			}
-			_ = ForceStopVictim(tx, victim)
-		}()
+		queueTeamVictimStop(tx, team.ID, challenge.ID)
 	}
 	return model.SuccessRetVal()
 }

@@ -1,6 +1,7 @@
 package oa
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -45,10 +46,10 @@ func (*oauth2Protocol) config(provider model.Oauth) *oauth2.Config {
 	return config
 }
 
-func (o *oauth2Protocol) LoginURL(provider model.Oauth) (string, model.RetVal) {
+func (o *oauth2Protocol) LoginURL(ctx context.Context, provider model.Oauth) (string, model.RetVal) {
 	state := utils.UUID()
 	verifier := oauth2.GenerateVerifier()
-	if ret := redis.SetOauthState(provider.Provider, state, verifier); !ret.OK {
+	if ret := redis.SetOauthState(ctx, provider.Provider, state, verifier); !ret.OK {
 		return "", ret
 	}
 	url := o.config(provider).AuthCodeURL(state, oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier))
@@ -60,20 +61,25 @@ func (o *oauth2Protocol) Exchange(ctx *gin.Context, provider model.Oauth) (map[s
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		return nil, ret
 	}
-	defer redis.DelOauthState(provider.Provider, form.State)
-	verifier, ret := redis.GetOauthVerifier(provider.Provider, form.State)
+	verifier, ret := redis.ConsumeOauthVerifier(ctx.Request.Context(), provider.Provider, form.State)
 	if !ret.OK {
 		return nil, ret
 	}
 	oauthConfig := o.config(provider)
-	tok, err := oauthConfig.Exchange(ctx, form.Code, oauth2.VerifierOption(verifier))
+	requestCtx, cancel := context.WithTimeout(ctx.Request.Context(), 20*time.Second)
+	defer cancel()
+	tok, err := oauthConfig.Exchange(requestCtx, form.Code, oauth2.VerifierOption(verifier))
 	if err != nil {
 		log.Logger.Warningf("Failed to get token for provider %s: %s", provider.Provider, err)
 		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	client := oauthConfig.Client(ctx, tok)
+	client := oauthConfig.Client(requestCtx, tok)
 	client.Timeout = time.Second * 10
-	response, err := client.Get(provider.UserInfoURL)
+	request, err := http.NewRequestWithContext(requestCtx, http.MethodGet, provider.UserInfoURL, nil)
+	if err != nil {
+		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+	}
+	response, err := client.Do(request)
 	if err != nil {
 		log.Logger.Warningf("Failed to get User info by provider %s: %s", provider.Provider, err)
 		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
@@ -94,7 +100,7 @@ func (o *oauth2Protocol) Exchange(ctx *gin.Context, provider model.Oauth) (map[s
 		log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
 		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	if err = ApplyUserInfoCallback(provider, client, result); err != nil {
+	if err = ApplyUserInfoCallback(requestCtx, provider, client, result); err != nil {
 		log.Logger.Warningf("Failed to apply oauth callback for provider %s: %s", provider.Provider, err)
 	}
 	return result, model.SuccessRetVal()

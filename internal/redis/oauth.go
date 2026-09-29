@@ -20,8 +20,8 @@ const (
 	oauthCodeTTL     = 30 * time.Second
 )
 
-func SetOauthState(provider, state, verifier string) model.RetVal {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func SetOauthState(ctx context.Context, provider, state, verifier string) model.RetVal {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	if err := RDB.Set(ctx, fmt.Sprintf(oauthKeyTmpl, provider, state), verifier, oauthStateTTL).Err(); err != nil {
 		log.Logger.Warningf("Failed to set oauth state for provider %s: %s", provider, err)
@@ -30,10 +30,10 @@ func SetOauthState(provider, state, verifier string) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func GetOauthVerifier(provider, state string) (string, model.RetVal) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func ConsumeOauthVerifier(ctx context.Context, provider, state string) (string, model.RetVal) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	verifier, err := RDB.Get(ctx, fmt.Sprintf(oauthKeyTmpl, provider, state)).Result()
+	verifier, err := RDB.GetDel(ctx, fmt.Sprintf(oauthKeyTmpl, provider, state)).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return "", model.RetVal{Msg: i18n.Redis.NotFound, Attr: map[string]any{"Key": fmt.Sprintf(oauthKeyTmpl, provider, state)}}
@@ -44,18 +44,8 @@ func GetOauthVerifier(provider, state string) (string, model.RetVal) {
 	return verifier, model.SuccessRetVal()
 }
 
-func DelOauthState(provider string, state string) model.RetVal {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-	if err := RDB.Del(ctx, fmt.Sprintf(oauthKeyTmpl, provider, state)).Err(); err != nil {
-		log.Logger.Warningf("Failed to delete oauth state for provider %s: %s", provider, err)
-		return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": fmt.Sprintf(oauthKeyTmpl, provider, state), "Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
-}
-
-func SetOauthCode(code, token string) model.RetVal {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func SetOauthCode(ctx context.Context, code, token string) model.RetVal {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	if err := RDB.Set(ctx, fmt.Sprintf(oauthCodeKeyTmpl, code), token, oauthCodeTTL).Err(); err != nil {
 		log.Logger.Warningf("Failed to set oauth code: %s", err)
@@ -64,8 +54,8 @@ func SetOauthCode(code, token string) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func GetAndDelOauthToken(code string) (string, model.RetVal) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+func GetAndDelOauthToken(ctx context.Context, code string) (string, model.RetVal) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	token, err := RDB.GetDel(ctx, fmt.Sprintf(oauthCodeKeyTmpl, code)).Result()
 	if err != nil {

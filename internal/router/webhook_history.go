@@ -17,7 +17,7 @@ func GetWebhookHistory(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	histories, count, ret := service.ListWebhookHistories(db.DB, middleware.GetWebhook(ctx), form)
+	histories, count, ret := service.ListWebhookHistories(db.DB.WithContext(ctx.Request.Context()), middleware.GetWebhook(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

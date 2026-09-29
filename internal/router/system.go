@@ -23,7 +23,7 @@ import (
 )
 
 func HomePage(ctx *gin.Context) {
-	resp.JSON(ctx, model.SuccessRetVal(service.GetHomePageData(db.DB)))
+	resp.JSON(ctx, model.SuccessRetVal(service.GetHomePageData(db.DB.WithContext(ctx.Request.Context()))))
 }
 
 func PublicSystemConfig(ctx *gin.Context) {
@@ -44,7 +44,7 @@ func SystemStatus(ctx *gin.Context) {
 		ret["recv"] = ioStats[0].BytesRecv
 	}
 
-	maps.Copy(ret, service.GetSystemStatus(db.DB))
+	maps.Copy(ret, service.GetSystemStatus(db.DB.WithContext(ctx.Request.Context())))
 	if middleware.TotalRequests.Load() == 0 {
 		ret["duration"] = 0
 	} else {
@@ -59,7 +59,7 @@ func GetLogs(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	data, ret := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit-1), form.Level)
+	data, ret := redis.GetLogs(ctx.Request.Context(), int64(form.Offset), int64(form.Offset+form.Limit-1), form.Level)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -148,7 +148,7 @@ func UpdateSystem(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSettingEventType)
-	if ret := service.UpdateSystemSettings(db.DB, form); !ret.OK {
+	if ret := service.UpdateSystemSettings(db.DB.WithContext(ctx.Request.Context()), form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
