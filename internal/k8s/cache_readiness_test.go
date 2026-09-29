@@ -29,7 +29,7 @@ func TestSharedPodCacheAndVictimReadiness(t *testing.T) {
 		Pods: []model.Pod{{Name: "web"}},
 		Resources: model.VictimResources{
 			Submitted: true,
-			UIDs:      model.StringMap{"web": "first"},
+			UIDs:      map[string]string{"web": "first"},
 			NodePorts: []model.NodePortEndpoint{
 				{
 					PodName:  "web",

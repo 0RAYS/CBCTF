@@ -16,11 +16,11 @@ type UpdateWebhookOptions struct {
 	Name        *string
 	URL         *string
 	Method      *string
-	Headers     *model.StringMap
+	Headers     *map[string]string
 	Timeout     *int64
 	Retry       *int
 	On          *bool
-	Events      *model.StringList
+	Events      *[]string
 	Success     *int64
 	SuccessLast *time.Time
 	Failure     *int64

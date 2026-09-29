@@ -96,13 +96,13 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 				MemoryBytes: containerTemplate.Memory,
 			},
 			WorkingDir:   containerTemplate.WorkingDir,
-			Command:      append(model.StringList(nil), containerTemplate.Command...),
-			Environment:  make(model.StringMap),
+			Command:      append([]string(nil), containerTemplate.Command...),
+			Environment:  make(map[string]string),
 			KubeVirt:     containerTemplate.KubeVirt,
 			Bootloader:   containerTemplate.Bootloader,
 			SecureBoot:   containerTemplate.SecureBoot,
 			UserData:     containerTemplate.UserData,
-			VolumeMounts: append(model.XVolumes(nil), containerTemplate.VolumeMounts...),
+			VolumeMounts: append([]model.XVolume(nil), containerTemplate.VolumeMounts...),
 			Exposes:      append(model.Exposes(nil), containerTemplate.Exposes...),
 		}
 		maps.Copy(containerSpec.Environment, containerTemplate.Environment)

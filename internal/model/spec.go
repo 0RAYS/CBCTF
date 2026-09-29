@@ -1,9 +1,6 @@
 package model
 
 import (
-	"database/sql/driver"
-	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
@@ -25,8 +22,6 @@ type XVolume struct {
 	Path    string `yaml:"path"`
 	Content string `yaml:"content"`
 }
-
-type XVolumes []XVolume
 
 type XBoot struct {
 	Bootloader string `json:"bootloader" yaml:"bootloader"`
@@ -114,32 +109,21 @@ type FlagBinding struct {
 	Target       string          `json:"target"`
 }
 
-func (f FlagBinding) Value() (driver.Value, error) {
-	return json.Marshal(f)
-}
-
-func (f *FlagBinding) Scan(value any) error {
-	if err := scanJSON(value, f); err != nil {
-		return fmt.Errorf("failed to scan FlagBinding value")
-	}
-	return nil
-}
-
 type ChallengeContainerTemplate struct {
-	Key          string          `json:"key"`
-	Name         string          `json:"name"`
-	Image        string          `json:"image"`
-	CPU          float32         `json:"cpu"`
-	Memory       int64           `json:"memory"`
-	WorkingDir   string          `json:"working_dir"`
-	Command      StringList      `json:"command"`
-	Environment  StringMap       `json:"environment"`
-	KubeVirt     bool            `json:"kubevirt"`
-	Bootloader   string          `json:"bootloader"`
-	SecureBoot   bool            `json:"secure_boot"`
-	UserData     CloudInitConfig `json:"user_data"`
-	VolumeMounts XVolumes        `json:"volume_mounts"`
-	Exposes      Exposes         `json:"exposes"`
+	Key          string            `json:"key"`
+	Name         string            `json:"name"`
+	Image        string            `json:"image"`
+	CPU          float32           `json:"cpu"`
+	Memory       int64             `json:"memory"`
+	WorkingDir   string            `json:"working_dir"`
+	Command      []string          `json:"command"`
+	Environment  map[string]string `json:"environment"`
+	KubeVirt     bool              `json:"kubevirt"`
+	Bootloader   string            `json:"bootloader"`
+	SecureBoot   bool              `json:"secure_boot"`
+	UserData     CloudInitConfig   `json:"user_data"`
+	VolumeMounts []XVolume         `json:"volume_mounts"`
+	Exposes      Exposes           `json:"exposes"`
 }
 
 type ChallengePodTemplate struct {
@@ -154,34 +138,20 @@ type ChallengeTemplate struct {
 	Pods []ChallengePodTemplate `json:"pods"`
 }
 
-func (c ChallengeTemplate) Value() (driver.Value, error) {
-	if len(c.Pods) == 0 {
-		return nil, nil
-	}
-	return json.Marshal(c)
-}
-
-func (c *ChallengeTemplate) Scan(value any) error {
-	if err := scanJSON(value, c); err != nil {
-		return fmt.Errorf("failed to scan ChallengeTemplate value")
-	}
-	return nil
-}
-
 type VictimContainerSpec struct {
-	Key          string          `json:"key"`
-	Name         string          `json:"name"`
-	Image        string          `json:"image"`
-	Resources    ResourceSpec    `json:"resources"`
-	WorkingDir   string          `json:"working_dir"`
-	Command      StringList      `json:"command"`
-	Environment  StringMap       `json:"environment"`
-	KubeVirt     bool            `json:"kubevirt"`
-	Bootloader   string          `json:"bootloader"`
-	SecureBoot   bool            `json:"secure_boot"`
-	UserData     CloudInitConfig `json:"user_data"`
-	VolumeMounts XVolumes        `json:"volume_mounts"`
-	Exposes      Exposes         `json:"exposes"`
+	Key          string            `json:"key"`
+	Name         string            `json:"name"`
+	Image        string            `json:"image"`
+	Resources    ResourceSpec      `json:"resources"`
+	WorkingDir   string            `json:"working_dir"`
+	Command      []string          `json:"command"`
+	Environment  map[string]string `json:"environment"`
+	KubeVirt     bool              `json:"kubevirt"`
+	Bootloader   string            `json:"bootloader"`
+	SecureBoot   bool              `json:"secure_boot"`
+	UserData     CloudInitConfig   `json:"user_data"`
+	VolumeMounts []XVolume         `json:"volume_mounts"`
+	Exposes      Exposes           `json:"exposes"`
 }
 
 type ResourceSpec struct {
@@ -196,17 +166,6 @@ type PodSpec struct {
 	Containers   []VictimContainerSpec `json:"containers"`
 }
 
-func (p PodSpec) Value() (driver.Value, error) {
-	return json.Marshal(p)
-}
-
-func (p *PodSpec) Scan(value any) error {
-	if err := scanJSON(value, p); err != nil {
-		return fmt.Errorf("failed to scan PodSpec value")
-	}
-	return nil
-}
-
 type VictimSpec struct {
 	Pods            []PodSpec       `json:"pods"`
 	NetworkPlan     VPC             `json:"network_plan"`
@@ -214,42 +173,17 @@ type VictimSpec struct {
 	FrpEnabled      bool            `json:"frp_enabled"`
 }
 
-func (v VictimSpec) Value() (driver.Value, error) {
-	if len(v.Pods) == 0 && v.NetworkPlan.Name == "" && len(v.NetworkPolicies) == 0 && !v.FrpEnabled {
-		return nil, nil
-	}
-	return json.Marshal(v)
-}
-
-func (v *VictimSpec) Scan(value any) error {
-	if err := scanJSON(value, v); err != nil {
-		return fmt.Errorf("failed to scan VictimSpec value")
-	}
-	return nil
-}
-
 type VictimResources struct {
 	Submitted     bool               `json:"submitted"`
 	ReadyDeadline time.Time          `json:"ready_deadline"`
-	UIDs          StringMap          `json:"uids"`
+	UIDs          map[string]string  `json:"uids"`
 	NodePorts     []NodePortEndpoint `json:"node_ports"`
 	NetworkPlan   VPC                `json:"network_plan"`
-	PodNames      StringList         `json:"pod_names"`
-	FrpcPodNames  StringList         `json:"frpc_pod_names"`
+	PodNames      []string           `json:"pod_names"`
+	FrpcPodNames  []string           `json:"frpc_pod_names"`
 }
 
 type NodePortEndpoint struct {
 	PodName  string   `json:"pod_name"`
 	Endpoint Endpoint `json:"endpoint"`
-}
-
-func (v VictimResources) Value() (driver.Value, error) {
-	return json.Marshal(v)
-}
-
-func (v *VictimResources) Scan(value any) error {
-	if err := scanJSON(value, v); err != nil {
-		return fmt.Errorf("failed to scan VictimResources value")
-	}
-	return nil
 }

@@ -37,7 +37,7 @@ type CreateChallengeForm struct {
 	Type            model.ChallengeType   `form:"type" json:"type" binding:"required,oneof=static dynamic pods"`
 	Description     string                `form:"description" json:"description"`
 	Category        string                `form:"category" json:"category"`
-	Flags           model.StringList      `form:"flags" json:"flags"`
+	Flags           []string              `form:"flags" json:"flags"`
 	GeneratorImage  string                `form:"generator_image" json:"generator_image" binding:"required_if=Type dynamic"`
 	DockerCompose   string                `form:"docker_compose" json:"docker_compose" binding:"required_if=Type pods"`
 	NetworkPolicies model.NetworkPolicies `form:"network_policies" json:"network_policies" `

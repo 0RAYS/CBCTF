@@ -8,5 +8,6 @@
   "contest",
   "auth",
   "cronjobs",
-  "webhook"
+  "webhook",
+  "backend"
 ]

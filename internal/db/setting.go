@@ -41,7 +41,7 @@ func (s *SettingRepo) Get(key string, optionsL ...GetOptions) (model.Setting, mo
 func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.RetVal {
 	var count uint
 	data := options.Convert2Map()
-	if value, ok := data["value"]; !ok || value == nil || reflect.ValueOf(value.(model.SettingValue).V).IsNil() {
+	if value, ok := data["value"]; !ok || value == nil || absentSettingValue(value.(model.SettingValue).V) {
 		return model.SuccessRetVal()
 	}
 	for {
@@ -65,6 +65,18 @@ func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.Ret
 		break
 	}
 	return model.SuccessRetVal()
+}
+
+func absentSettingValue(value any) bool {
+	rv := reflect.ValueOf(value)
+	if !rv.IsValid() {
+		return true
+	}
+	switch rv.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
+		return rv.IsNil()
+	}
+	return false
 }
 
 func (s *SettingRepo) InitSettings() model.RetVal {

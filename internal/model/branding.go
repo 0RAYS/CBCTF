@@ -1,8 +1,6 @@
 package model
 
 import (
-	"database/sql/driver"
-	"encoding/json"
 	"fmt"
 
 	"CBCTF/internal/config"
@@ -15,17 +13,6 @@ type LocalizedText struct {
 	En   string `json:"en"`
 }
 
-func (l LocalizedText) Value() (driver.Value, error) {
-	return json.Marshal(l)
-}
-
-func (l *LocalizedText) Scan(value any) error {
-	if err := scanJSON(value, l); err != nil {
-		return fmt.Errorf("failed to scan LocalizedText value")
-	}
-	return nil
-}
-
 type BrandingHeroContent struct {
 	TitlePrefix     LocalizedText `json:"title_prefix"`
 	TitleHighlight  LocalizedText `json:"title_highlight"`
@@ -35,32 +22,10 @@ type BrandingHeroContent struct {
 	SecondaryAction LocalizedText `json:"secondary_action"`
 }
 
-func (b BrandingHeroContent) Value() (driver.Value, error) {
-	return json.Marshal(b)
-}
-
-func (b *BrandingHeroContent) Scan(value any) error {
-	if err := scanJSON(value, b); err != nil {
-		return fmt.Errorf("failed to scan BrandingHeroContent value")
-	}
-	return nil
-}
-
 type BrandingSectionContent struct {
 	TitlePrefix    LocalizedText `json:"title_prefix"`
 	TitleHighlight LocalizedText `json:"title_highlight"`
 	Subtitle       LocalizedText `json:"subtitle"`
-}
-
-func (b BrandingSectionContent) Value() (driver.Value, error) {
-	return json.Marshal(b)
-}
-
-func (b *BrandingSectionContent) Scan(value any) error {
-	if err := scanJSON(value, b); err != nil {
-		return fmt.Errorf("failed to scan BrandingSectionContent value")
-	}
-	return nil
 }
 
 type BrandingActionSectionContent struct {
@@ -70,17 +35,6 @@ type BrandingActionSectionContent struct {
 	Action         LocalizedText `json:"action"`
 }
 
-func (b BrandingActionSectionContent) Value() (driver.Value, error) {
-	return json.Marshal(b)
-}
-
-func (b *BrandingActionSectionContent) Scan(value any) error {
-	if err := scanJSON(value, b); err != nil {
-		return fmt.Errorf("failed to scan BrandingActionSectionContent value")
-	}
-	return nil
-}
-
 type BrandingHomeContent struct {
 	Hero           BrandingHeroContent          `json:"hero"`
 	ChallengeTypes BrandingSectionContent       `json:"challenge_types"`
@@ -88,31 +42,20 @@ type BrandingHomeContent struct {
 	Leaderboard    BrandingActionSectionContent `json:"leaderboard"`
 }
 
-func (b BrandingHomeContent) Value() (driver.Value, error) {
-	return json.Marshal(b)
-}
-
-func (b *BrandingHomeContent) Scan(value any) error {
-	if err := scanJSON(value, b); err != nil {
-		return fmt.Errorf("failed to scan BrandingHomeContent value")
-	}
-	return nil
-}
-
 type Branding struct {
 	Code               string              `gorm:"type:varchar(64);uniqueIndex:idx_brandings_code_active,where:deleted_at IS NULL;not null" json:"code"`
-	SiteName           LocalizedText       `gorm:"type:jsonb;not null" json:"site_name"`
-	AdminName          LocalizedText       `gorm:"type:jsonb;not null" json:"admin_name"`
-	BrowserTitle       LocalizedText       `gorm:"type:jsonb;not null" json:"browser_title"`
-	BrowserDescription LocalizedText       `gorm:"type:jsonb;not null" json:"browser_description"`
-	FooterCopyright    LocalizedText       `gorm:"type:jsonb;not null" json:"footer_copyright"`
+	SiteName           LocalizedText       `gorm:"serializer:json;type:jsonb;not null;default:'{}'" json:"site_name"`
+	AdminName          LocalizedText       `gorm:"serializer:json;type:jsonb;not null;default:'{}'" json:"admin_name"`
+	BrowserTitle       LocalizedText       `gorm:"serializer:json;type:jsonb;not null;default:'{}'" json:"browser_title"`
+	BrowserDescription LocalizedText       `gorm:"serializer:json;type:jsonb;not null;default:'{}'" json:"browser_description"`
+	FooterCopyright    LocalizedText       `gorm:"serializer:json;type:jsonb;not null;default:'{}'" json:"footer_copyright"`
 	FooterICPNumber    string              `gorm:"type:varchar(128)" json:"footer_icp_number"`
 	FooterICPLink      string              `gorm:"type:varchar(255)" json:"footer_icp_link"`
 	FooterContactEmail string              `gorm:"type:varchar(255)" json:"footer_contact_email"`
 	FooterGithubURL    string              `gorm:"type:varchar(255)" json:"footer_github_url"`
 	HomeLogo           FileURL             `json:"home_logo"`
-	HomeLogoAlt        LocalizedText       `gorm:"type:jsonb;not null" json:"home_logo_alt"`
-	Home               BrandingHomeContent `gorm:"type:jsonb;not null" json:"home"`
+	HomeLogoAlt        LocalizedText       `gorm:"serializer:json;type:jsonb;not null;default:'{}'" json:"home_logo_alt"`
+	Home               BrandingHomeContent `gorm:"serializer:json;type:jsonb;not null;default:'{}'" json:"home"`
 	BaseModel
 }
 

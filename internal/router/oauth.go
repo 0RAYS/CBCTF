@@ -148,7 +148,7 @@ func ExchangeOauthCode(ctx *gin.Context) {
 		return
 	}
 	setAuthCookie(ctx, token)
-	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Self": claims.UserID})
+	ctx.Set(middleware.CTXEventModelsKey, map[string]uint{"Self": claims.UserID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

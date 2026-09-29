@@ -1,9 +1,6 @@
 package model
 
 import (
-	"database/sql/driver"
-	"encoding/json"
-	"fmt"
 	"time"
 )
 
@@ -27,31 +24,15 @@ const (
 )
 
 type Cheat struct {
-	Time       time.Time       `gorm:"default:null" json:"time"`
-	Model      CheatRefModel   `gorm:"default:null;type:jsonb" json:"model"`
-	IP         string          `json:"ip"`
-	Reason     string          `json:"reason"`
-	ReasonType CheatReasonType `gorm:"index" json:"reason_type"`
-	Type       CheatType       `json:"type"`
-	Hash       string          `gorm:"type:varchar(32);uniqueIndex:idx_cheats_hash_active,where:deleted_at IS NULL;not null" json:"hash"`
-	Comment    string          `json:"comment"`
+	Time       time.Time         `gorm:"default:null" json:"time"`
+	Model      map[string][]uint `gorm:"serializer:json;type:jsonb;default:'{}'" json:"model"`
+	IP         string            `json:"ip"`
+	Reason     string            `json:"reason"`
+	ReasonType CheatReasonType   `gorm:"index" json:"reason_type"`
+	Type       CheatType         `json:"type"`
+	Hash       string            `gorm:"type:varchar(32);uniqueIndex:idx_cheats_hash_active,where:deleted_at IS NULL;not null" json:"hash"`
+	Comment    string            `json:"comment"`
 	BaseModel
 	ContestID uint `gorm:"index" json:"contest_id"`
 	Checked   bool `gorm:"index" json:"checked"`
-}
-
-type CheatRefModel map[string][]uint
-
-func (c CheatRefModel) Value() (driver.Value, error) {
-	if len(c) == 0 {
-		return nil, nil
-	}
-	return json.Marshal(c)
-}
-
-func (c *CheatRefModel) Scan(value any) error {
-	if err := scanJSON(value, c); err != nil {
-		return fmt.Errorf("failed to scan CheatRefModel value")
-	}
-	return nil
 }

@@ -17,9 +17,9 @@ import (
 )
 
 type Payload struct {
-	Models model.UintMap `json:"models"`
-	Type   string        `json:"type"`
-	IP     string        `json:"ip"`
+	Models map[string]uint `json:"models"`
+	Type   string          `json:"type"`
+	IP     string          `json:"ip"`
 }
 
 var (

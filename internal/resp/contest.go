@@ -10,13 +10,13 @@ import (
 func GetContestResp(contestView view.ContestView, admin bool) gin.H {
 	contest := contestView.Contest
 	if contest.Rules == nil {
-		contest.Rules = model.StringList{}
+		contest.Rules = []string{}
 	}
 	if contest.Prizes == nil {
-		contest.Prizes = model.Prizes{}
+		contest.Prizes = []model.Prize{}
 	}
 	if contest.Timelines == nil {
-		contest.Timelines = model.Timelines{}
+		contest.Timelines = []model.Timeline{}
 	}
 	data := gin.H{
 		"id":          contest.ID,

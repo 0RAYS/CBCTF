@@ -18,7 +18,7 @@ type ContestChallenge struct {
 	Category     string        `gorm:"index" json:"category"`
 	Hidden       bool          `gorm:"index" json:"hidden"`
 	Attempt      int64         `json:"attempt"`
-	Hints        StringList    `gorm:"default:null;type:jsonb" json:"hints"`
-	Tags         StringList    `gorm:"default:null;type:jsonb" json:"tags"`
+	Hints        []string      `gorm:"serializer:json;type:jsonb;default:'[]'" json:"hints"`
+	Tags         []string      `gorm:"serializer:json;type:jsonb;default:'[]'" json:"tags"`
 	BaseModel
 }

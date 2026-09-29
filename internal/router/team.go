@@ -126,7 +126,7 @@ func KickMember(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Operator": middleware.GetSelf(ctx).ID})
+	ctx.Set(middleware.CTXEventModelsKey, map[string]uint{"Operator": middleware.GetSelf(ctx).ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
@@ -143,7 +143,7 @@ func JoinTeam(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
+	ctx.Set(middleware.CTXEventModelsKey, map[string]uint{"Team": team.ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
@@ -160,7 +160,7 @@ func CreateTeam(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
+	ctx.Set(middleware.CTXEventModelsKey, map[string]uint{"Team": team.ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
@@ -172,7 +172,7 @@ func LeaveTeam(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": middleware.GetTeam(ctx).ID})
+	ctx.Set(middleware.CTXEventModelsKey, map[string]uint{"Team": middleware.GetTeam(ctx).ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

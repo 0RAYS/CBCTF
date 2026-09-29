@@ -11,8 +11,8 @@ import (
 
 func TestMergedFilesPreserveSameBasenameAndContainerPaths(t *testing.T) {
 	containers := []model.VictimContainerSpec{
-		{VolumeMounts: model.XVolumes{{Path: "/root/flag", Content: "first"}, {Path: "/app/flag", Content: "second"}}},
-		{VolumeMounts: model.XVolumes{{Path: "/root/flag", Content: "third"}}},
+		{VolumeMounts: []model.XVolume{{Path: "/root/flag", Content: "first"}, {Path: "/app/flag", Content: "second"}}},
+		{VolumeMounts: []model.XVolume{{Path: "/root/flag", Content: "third"}}},
 	}
 	data, mounts := challengeFileMounts(containers)
 	if len(data) != 3 {

@@ -135,13 +135,13 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 			}
 
 			volumeTargets := make(map[string]struct{})
-			if volumes, ok := service.Extensions[model.XVolumesExtension].(model.XVolumes); ok {
+			if volumes, ok := service.Extensions[model.XVolumesExtension].([]model.XVolume); ok {
 				for _, volume := range volumes {
 					target := strings.TrimSpace(volume.Path)
 					if target == "" {
 						return invalidComposeYamlRetVal(fmt.Sprintf("%s file Flag mount path is required", label))
 					}
-					if _, ok := volumeTargets[target]; ok {
+					if _, ok = volumeTargets[target]; ok {
 						return invalidComposeYamlRetVal(fmt.Sprintf("%s file Flag target must be unique within the same service", label))
 					}
 					volumeTargets[target] = struct{}{}
@@ -154,10 +154,15 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 		}
 		serviceNetworkNames := make(map[string]struct{})
 		for networkName, network := range service.Networks {
+			// compose-go injects an implicit default network even when the YAML
+			// requests the shared Pod mode. It needs no static IP configuration.
+			if !hasVpcNetworks && networkName == "default" {
+				continue
+			}
 			if network == nil {
 				return invalidComposeYamlRetVal(fmt.Sprintf("%s empty network config", label))
 			}
-			name := strings.TrimSpace(networkName)
+			name = strings.TrimSpace(networkName)
 			if name == "" {
 				return invalidComposeYamlRetVal(fmt.Sprintf("%s network name is required", label))
 			}
@@ -202,7 +207,7 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []model.ChallengeFlag, model.RetVal) {
 	prefix := utils.RandHexStr(10)
 	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix, map[string]any{
-		model.XVolumesExtension:   model.XVolumes{},
+		model.XVolumesExtension:   []model.XVolume{},
 		model.XKubeVirtExtension:  false,
 		model.XBootExtension:      model.XBoot{},
 		model.XCloudInitExtension: model.XCloudInit{},
@@ -267,7 +272,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 		}
 		containerKey := strings.ToLower(name)
 		podKey := containerKey
-		environment := make(model.StringMap)
+		environment := make(map[string]string)
 		for k, v := range app.Environment {
 			if !strings.HasPrefix(k, model.EnvFlagPrefix) {
 				environment[k] = *v
@@ -329,7 +334,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 			CPU:         app.CPUS,
 			Memory:      int64(app.MemLimit),
 			WorkingDir:  app.WorkingDir,
-			Command:     model.StringList(app.Command),
+			Command:     app.Command,
 			Environment: environment,
 			Exposes:     append(model.Exposes(nil), ports...),
 		}
@@ -356,7 +361,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 				}
 			}
 		}
-		if volumes, ok := app.Extensions[model.XVolumesExtension].(model.XVolumes); ok {
+		if volumes, ok := app.Extensions[model.XVolumesExtension].([]model.XVolume); ok {
 			for _, volume := range volumes {
 				if volume.Path == "" {
 					continue

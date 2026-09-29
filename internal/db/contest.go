@@ -26,9 +26,9 @@ type UpdateContestOptions struct {
 	Blood       *bool
 	Hidden      *bool
 	Victims     *int64
-	Rules       *model.StringList
-	Prizes      *model.Prizes
-	Timelines   *model.Timelines
+	Rules       *[]string
+	Prizes      *[]model.Prize
+	Timelines   *[]model.Timeline
 }
 
 func (u UpdateContestOptions) Convert2Map() map[string]any {

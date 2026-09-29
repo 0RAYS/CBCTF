@@ -41,7 +41,7 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 					service.Environment[key] = new(value)
 				}
 			}
-			xVolumes := make(model.XVolumes, 0)
+			xVolumes := make([]model.XVolume, 0)
 			for _, flag := range challengeFlags {
 				if flag.Binding.PodKey != pod.Key || flag.Binding.ContainerKey != container.Key {
 					continue

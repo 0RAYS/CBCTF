@@ -24,7 +24,7 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 			form.Victims = 1
 		}
 		if len(form.Rules) == 0 {
-			form.Rules = model.StringList{
+			form.Rules = []string{
 				"参赛者必须遵守比赛规则和道德准则",
 				"禁止攻击比赛平台和其他参赛者",
 				"禁止分享题目答案和解题思路",
@@ -36,7 +36,7 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 		}
 		if len(form.Timelines) == 0 {
 			duration := time.Duration(form.Duration) * time.Second
-			form.Timelines = model.Timelines{
+			form.Timelines = []model.Timeline{
 				{
 					Date:        form.Start,
 					Title:       "比赛开始",
@@ -55,7 +55,7 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 			}
 		}
 		if len(form.Prizes) == 0 {
-			form.Prizes = model.Prizes{
+			form.Prizes = []model.Prize{
 				{
 					Amount:      "$0",
 					Description: "",

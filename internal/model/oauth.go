@@ -6,25 +6,25 @@ const (
 )
 
 type Oauth struct {
-	Protocol         string     `gorm:"type:varchar(32);not null;default:'oauth2'" json:"protocol"`
-	AuthURL          string     `json:"auth_url"`
-	TokenURL         string     `json:"token_url"`
-	UserInfoURL      string     `json:"user_info_url"`
-	CallbackURL      string     `json:"callback_url"`
-	ClientID         string     `json:"client_id"`
-	ClientSecret     string     `json:"client_secret"`
-	Provider         string     `gorm:"type:varchar(255);uniqueIndex:idx_oauth_provider_active,where:deleted_at IS NULL;not null" json:"provider"`
-	Uri              string     `json:"uri"`
-	Scopes           StringList `gorm:"type:jsonb" json:"scopes"`
-	IDClaim          string     `json:"id_claim"`
-	NameClaim        string     `json:"name_claim"`
-	EmailClaim       string     `json:"email_claim"`
-	PictureClaim     string     `json:"picture_claim"`
-	DescriptionClaim string     `json:"description_claim"`
-	GroupsClaim      string     `json:"groups_claim"`
-	AdminGroup       string     `json:"admin_group"`
-	DefaultGroup     uint       `json:"default_group"`
-	On               bool       `json:"on"`
-	Picture          FileURL    `json:"picture"`
+	Protocol         string   `gorm:"type:varchar(32);not null;default:'oauth2'" json:"protocol"`
+	AuthURL          string   `json:"auth_url"`
+	TokenURL         string   `json:"token_url"`
+	UserInfoURL      string   `json:"user_info_url"`
+	CallbackURL      string   `json:"callback_url"`
+	ClientID         string   `json:"client_id"`
+	ClientSecret     string   `json:"client_secret"`
+	Provider         string   `gorm:"type:varchar(255);uniqueIndex:idx_oauth_provider_active,where:deleted_at IS NULL;not null" json:"provider"`
+	Uri              string   `json:"uri"`
+	Scopes           []string `gorm:"serializer:json;type:jsonb;default:'[]'" json:"scopes"`
+	IDClaim          string   `json:"id_claim"`
+	NameClaim        string   `json:"name_claim"`
+	EmailClaim       string   `json:"email_claim"`
+	PictureClaim     string   `json:"picture_claim"`
+	DescriptionClaim string   `json:"description_claim"`
+	GroupsClaim      string   `json:"groups_claim"`
+	AdminGroup       string   `json:"admin_group"`
+	DefaultGroup     uint     `json:"default_group"`
+	On               bool     `json:"on"`
+	Picture          FileURL  `json:"picture"`
 	BaseModel
 }
