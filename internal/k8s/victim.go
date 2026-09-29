@@ -451,7 +451,14 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	}
 	if firstErr.OK {
 		for _, endpoint := range victim.ExposedEndpoints {
-			redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
+			if err := ctx.Err(); err != nil {
+				return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+			}
+			ret := redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
+			if !ret.OK {
+				log.Logger.Warningf("Failed to release FRPS reservation: victim_id=%d host=%s port=%d protocol=%s reason=%s", victim.ID, endpoint.IP, endpoint.Port, endpoint.Protocol, ret.Msg)
+			}
+			tryDelete(ret)
 		}
 	}
 	if firstErr.OK {
