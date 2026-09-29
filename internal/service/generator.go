@@ -24,10 +24,6 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 	if len(form.Challenges) == 0 {
 		return model.SuccessRetVal()
 	}
-	challengeCount := make(map[string]int)
-	for _, challenge := range form.Challenges {
-		challengeCount[challenge] = challengeCount[challenge] + 1
-	}
 	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"type": model.DynamicChallengeType, "rand_id": form.Challenges},
 	})
@@ -36,49 +32,63 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 	}
 	contestChallengeRepo := db.InitContestChallengeRepo(tx)
 	generatorRepo := db.InitGeneratorRepo(tx)
-	queued, failedCreate, failedEnqueue := 0, 0, 0
+	byID := make(map[string]model.Challenge, len(challenges))
 	for _, challenge := range challenges {
+		byID[challenge.RandID] = challenge
+	}
+	batch := model.NewBatch(len(form.Challenges))
+	for index, randID := range form.Challenges {
+		if tx.Statement.Context.Err() != nil {
+			return batch.Result(tx.Statement.Context)
+		}
+		key := fmt.Sprintf("challenge:%s/instance:%d", randID, index+1)
+		challenge, exists := byID[randID]
+		if !exists {
+			batch.Fail(key, "lookup", model.RetVal{Msg: i18n.Model.NotFound})
+			continue
+		}
 		if contestID > 0 {
 			_, ret = contestChallengeRepo.Get(db.GetOptions{
 				Conditions: map[string]any{"contest_id": contestID, "challenge_id": challenge.ID},
 			})
 			if !ret.OK {
-				continue
-			}
-		}
-		for range challengeCount[challenge.RandID] {
-			generator, ret := generatorRepo.Create(model.Generator{
-				WorkerToken:   utils.RandHexStr(64),
-				Image:         challenge.GeneratorImage,
-				ChallengeID:   challenge.ID,
-				ChallengeName: challenge.Name,
-				ContestID:     sql.Null[uint]{V: contestID, Valid: contestID > 0},
-				Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandHexStr(6)),
-				Status:        model.WaitingGeneratorStatus,
-			})
-			if !ret.OK {
-				failedCreate++
-				continue
-			}
-			if _, err := task.EnqueueStartGeneratorTask(challenge, generator); err != nil {
-				failedEnqueue++
-				log.Logger.Warningf("Failed to enqueue start generator task: generator_id=%d name=%s challenge_id=%d error=%v", generator.ID, generator.Name, challenge.ID, err)
-				if ret := generatorRepo.Delete(generator.ID); !ret.OK {
-					log.Logger.Warningf(
-						"Failed to delete generator after enqueue failure: generator_id=%d name=%s challenge_id=%d reason=%s",
-						generator.ID, generator.Name, challenge.ID, ret.Msg,
-					)
+				batch.Fail(key, "contest_membership", ret)
+				if model.BatchDependencyFailed(ret) {
+					return batch.Result(tx.Statement.Context)
 				}
 				continue
 			}
-			queued++
 		}
+		generator, ret := generatorRepo.Create(model.Generator{
+			WorkerToken:   utils.RandHexStr(64),
+			Image:         challenge.GeneratorImage,
+			ChallengeID:   challenge.ID,
+			ChallengeName: challenge.Name,
+			ContestID:     sql.Null[uint]{V: contestID, Valid: contestID > 0},
+			Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandHexStr(6)),
+			Status:        model.WaitingGeneratorStatus,
+		})
+		if !ret.OK {
+			batch.Fail(key, "create", ret)
+			if model.BatchDependencyFailed(ret) {
+				return batch.Result(tx.Statement.Context)
+			}
+			continue
+		}
+		if _, err := task.EnqueueStartGeneratorTask(challenge, generator); err != nil {
+			batch.Fail(fmt.Sprintf("%s/generator:%d", key, generator.ID), "enqueue", model.RetVal{Msg: i18n.Task.EnqueueError})
+			log.Logger.Warningf("Failed to enqueue start generator task: generator_id=%d name=%s challenge_id=%d error=%v", generator.ID, generator.Name, challenge.ID, err)
+			if ret := generatorRepo.Delete(generator.ID); !ret.OK {
+				log.Logger.Warningf(
+					"Failed to delete generator after enqueue failure: generator_id=%d name=%s challenge_id=%d reason=%s",
+					generator.ID, generator.Name, challenge.ID, ret.Msg,
+				)
+			}
+			return batch.Result(tx.Statement.Context)
+		}
+		batch.Success(fmt.Sprintf("%s/generator:%d", key, generator.ID), "queued")
 	}
-	log.Logger.Infof(
-		"Batch start generators completed: contest_id=%d requested=%d matched_challenges=%d queued=%d failed_create=%d failed_enqueue=%d",
-		contestID, len(form.Challenges), len(challenges), queued, failedCreate, failedEnqueue,
-	)
-	return model.SuccessRetVal()
+	return batch.Result(tx.Statement.Context)
 }
 
 func warmGeneratorPool(contestID uint, challenge model.Challenge) {
@@ -93,7 +103,7 @@ func StopGenerators(tx *gorm.DB, contestID uint, form dto.StopGeneratorsForm) mo
 	if len(form.Generators) == 0 {
 		return model.SuccessRetVal()
 	}
-	options := db.GetOptions{Conditions: map[string]any{"id": form.Generators}}
+	options := db.GetOptions{Conditions: map[string]any{"id": form.Generators}, Deleted: true}
 	if contestID > 0 {
 		options.Conditions["contest_id"] = contestID
 	}
@@ -101,13 +111,36 @@ func StopGenerators(tx *gorm.DB, contestID uint, form dto.StopGeneratorsForm) mo
 	if !ret.OK {
 		return ret
 	}
+	byID := make(map[uint]model.Generator, len(generators))
 	for _, generator := range generators {
-		if ret = StopGenerator(tx, generator); !ret.OK {
-			log.Logger.Warningf("Skip stopping generator: generator_id=%d name=%s status=%s reason=%s", generator.ID, generator.Name, generator.Status, ret.Msg)
+		byID[generator.ID] = generator
+	}
+	batch := model.NewBatch(len(form.Generators))
+	for _, id := range form.Generators {
+		if tx.Statement.Context.Err() != nil {
+			return batch.Result(tx.Statement.Context)
+		}
+		key := fmt.Sprint(id)
+		generator, exists := byID[id]
+		if !exists {
+			batch.Fail(key, "lookup", model.RetVal{Msg: i18n.Model.NotFound})
+			continue
+		}
+		if generator.Status == model.TerminatingGeneratorStatus || generator.Status == model.StoppedGeneratorStatus {
+			batch.Skip(key, "already_stopping")
+			continue
+		}
+		ret = StopGenerator(tx, generator)
+		if ret.OK {
+			batch.Success(key, "queued")
+		} else {
+			batch.Fail(key, "stop", ret)
+			if model.BatchDependencyFailed(ret) {
+				return batch.Result(tx.Statement.Context)
+			}
 		}
 	}
-	log.Logger.Infof("Batch stop generators requested: requested=%d matched=%d", len(form.Generators), len(generators))
-	return model.SuccessRetVal()
+	return batch.Result(tx.Statement.Context)
 }
 
 func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {
