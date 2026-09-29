@@ -205,6 +205,7 @@ test('extracted business models/parsers/serializers stay isolated from runtime l
     'components/features/Admin/challenges/editor/networkPolicy.js',
     'components/features/Admin/cheats/payloads.js',
     'components/features/Admin/generators/generatorUtils.js',
+    'components/features/Admin/batch/batchModel.js',
     'components/features/Admin/images/imageModel.js',
     'components/features/Admin/oauth/payload.js',
     'components/features/Admin/rbac/payloads.js',

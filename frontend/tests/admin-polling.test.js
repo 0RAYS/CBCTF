@@ -346,3 +346,38 @@ test('generator: empty start selection emits a warning description without sendi
     [{ color: 'warning', description: 'toast.selectRequired' }]
   );
 });
+
+test('generator: partial start refreshes, stays open and retains only remaining counts', async (t) => {
+  const f = fixture(t, 'generator');
+  await f.resolve(0, 'running');
+  f.value.openStart();
+  await f.flush();
+  const pending = f.value.start({ challenge: 2 });
+  f.mutations[0].resolve({ code: 500, data: {
+    status: 'partial', requested: 2, succeeded: 1, failed: 1, skipped: 0, not_attempted: 0,
+    items: [{ id: 'challenge:challenge/instance:1/generator:10', status: 'success' }, { id: 'challenge:challenge/instance:2', status: 'failed' }],
+  } });
+  await pending;
+  await f.flush();
+  assert.equal(f.value.startModalOpen, true);
+  assert.deepEqual(f.value.startCounts, { challenge: 1 });
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.value.batchResult.status, 'partial');
+  assert.equal(notices[0].color, 'warning');
+});
+
+test('generator: partial stop refreshes and removes only completed IDs', async (t) => {
+  const f = fixture(t, 'generator');
+  f.calls[0].resolve({ code: 200, data: { generators: [{ id: 1, status: 'running' }, { id: 2, status: 'running' }], count: 2 } });
+  await f.flush();
+  f.value.toggleSelectAll();
+  await f.flush();
+  const pending = f.value.stop();
+  f.mutations[0].resolve({ code: 500, data: { status: 'partial', succeeded: 1, failed: 1, skipped: 0, not_attempted: 0,
+    items: [{ id: '1', status: 'success' }, { id: '2', status: 'failed' }] } });
+  await pending;
+  await f.flush();
+  assert.deepEqual(f.value.selectedIds, [2]);
+  assert.equal(f.calls.length, 2);
+  assert.equal(notices[0].color, 'warning');
+});
