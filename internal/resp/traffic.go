@@ -9,18 +9,20 @@ type TrafficWindowResp struct {
 }
 
 type TrafficSummaryResp struct {
-	TotalBytes    int64 `json:"total_bytes"`
-	TotalPackets  int64 `json:"total_packets"`
-	IngressBytes  int64 `json:"ingress_bytes"`
-	EgressBytes   int64 `json:"egress_bytes"`
-	InternalBytes int64 `json:"internal_bytes"`
-	ExternalNodes int   `json:"external_nodes"`
-	InternalNodes int   `json:"internal_nodes"`
-	VisibleEdges  int   `json:"visible_edges"`
-	VisibleNodes  int   `json:"visible_nodes"`
-	PeakTimeMs    int64 `json:"peak_time_ms"`
-	PeakBytes     int64 `json:"peak_bytes"`
-	ProcessCount  int   `json:"process_count"`
+	TotalConnections int   `json:"total_connections"`
+	TotalBytes       int64 `json:"total_bytes"`
+	TotalPackets     int64 `json:"total_packets"`
+	IngressBytes     int64 `json:"ingress_bytes"`
+	EgressBytes      int64 `json:"egress_bytes"`
+	InternalBytes    int64 `json:"internal_bytes"`
+	ExternalBytes    int64 `json:"external_bytes"`
+	ExternalNodes    int   `json:"external_nodes"`
+	InternalNodes    int   `json:"internal_nodes"`
+	VisibleEdges     int   `json:"visible_edges"`
+	VisibleNodes     int   `json:"visible_nodes"`
+	PeakTimeMs       int64 `json:"peak_time_ms"`
+	PeakBytes        int64 `json:"peak_bytes"`
+	ProcessCount     int   `json:"process_count"`
 }
 
 type TrafficProcessResp struct {
@@ -103,15 +105,17 @@ type TrafficRankingResp struct {
 }
 
 type TrafficTopologyResp struct {
-	Window          TrafficWindowResp           `json:"window"`
-	TotalDuration   int64                       `json:"total_duration"`
-	AvailableSlices []int64                     `json:"available_slices"`
-	Center          TrafficCenterResp           `json:"center"`
-	Summary         TrafficSummaryResp          `json:"summary"`
-	Nodes           []TrafficNodeResp           `json:"nodes"`
-	Edges           []TrafficEdgeResp           `json:"edges"`
-	Timeline        []TrafficTimelineBucketResp `json:"timeline"`
-	TopTalkers      []TrafficRankingResp        `json:"top_talkers"`
-	TopEdges        []TrafficRankingResp        `json:"top_edges"`
-	IPs             []string                    `json:"ips"`
+	StartedAt        string                      `json:"started_at"`
+	TimelineBucketMs int64                       `json:"timeline_bucket_ms"`
+	Window           TrafficWindowResp           `json:"window"`
+	TotalDuration    int64                       `json:"total_duration"`
+	AvailableSlices  []int64                     `json:"available_slices"`
+	Center           TrafficCenterResp           `json:"center"`
+	Summary          TrafficSummaryResp          `json:"summary"`
+	Nodes            []TrafficNodeResp           `json:"nodes"`
+	Edges            []TrafficEdgeResp           `json:"edges"`
+	Timeline         []TrafficTimelineBucketResp `json:"timeline"`
+	TopTalkers       []TrafficRankingResp        `json:"top_talkers"`
+	TopEdges         []TrafficRankingResp        `json:"top_edges"`
+	IPs              []string                    `json:"ips"`
 }

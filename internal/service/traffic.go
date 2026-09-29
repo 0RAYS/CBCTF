@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"net/netip"
 	"slices"
@@ -32,6 +33,7 @@ type trafficNodeAggregate struct {
 	Connections   int64
 	protocolBytes map[string]int64
 	processes     map[string]*trafficProcessAggregate
+	flows         map[string]bool
 }
 
 type trafficEdgeAggregate struct {
@@ -48,6 +50,7 @@ type trafficEdgeAggregate struct {
 	protocolBytes map[string]int64
 	appBytes      map[string]int64
 	processes     map[string]*trafficProcessAggregate
+	flows         map[string]bool
 }
 
 type trafficProcessAggregate struct {
@@ -79,8 +82,8 @@ type trafficRankingAggregate struct {
 
 const DefaultTrafficDurationMs int64 = 1000
 
-func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopologyResp, model.RetVal) {
-	connections, ret := loadTrafficConnections(victim)
+func GetTraffic(ctx context.Context, victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopologyResp, model.RetVal) {
+	connections, ret := loadTrafficConnections(ctx, victim)
 	if !ret.OK {
 		return resp.TrafficTopologyResp{}, ret
 	}
@@ -99,16 +102,25 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 
 	totalDuration := calcTrafficTotalDuration(connections)
 	start, end := clampTrafficWindow(form.TimeShift, form.Duration, totalDuration)
-	internalIPs := collectVictimIPs(victim, connections)
+	internalIPs := victim.TrafficInternalIPs()
 	servicesByIP := collectVictimServicesByIP(victim)
-	timelineBuckets := buildTrafficTimelineBuckets(connections, internalIPs, form.Duration)
+	bucketSize := max(DefaultTrafficDurationMs, (totalDuration+1999)/2000)
+	timelineBuckets := buildTrafficTimelineBuckets(connections, internalIPs, bucketSize)
 	windowConnections := sliceTrafficConnections(connections, start, end)
 	totalPackets := int64(len(windowConnections))
 
 	nodes := make(map[string]*trafficNodeAggregate)
 	edges := make(map[string]*trafficEdgeAggregate)
+	// Keep configured target nodes present during idle replay windows.
+	for ip := range internalIPs {
+		services := servicesByIP[ip]
+		nodes[ip] = &trafficNodeAggregate{ID: ip, IP: ip, Label: buildTrafficNodeLabel(ip, true, services),
+			Kind: "victim", Side: "center", Zone: "victim", Service: dominantTrafficService(services), Services: services,
+			protocolBytes: make(map[string]int64), processes: make(map[string]*trafficProcessAggregate), flows: make(map[string]bool)}
+	}
 
 	summary := resp.TrafficSummaryResp{}
+	allFlows := make(map[string]bool)
 	topTalkers := make([]trafficRankingAggregate, 0)
 	topEdges := make([]trafficRankingAggregate, 0)
 
@@ -125,8 +137,10 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 			summary.IngressBytes += packetBytes
 		} else if direction == "egress" {
 			summary.EgressBytes += packetBytes
-		} else {
+		} else if direction == "internal" {
 			summary.InternalBytes += packetBytes
+		} else {
+			summary.ExternalBytes += packetBytes
 		}
 
 		protocol := normalizeTrafficProtocol(connection.Type)
@@ -146,12 +160,16 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 				protocolBytes: make(map[string]int64),
 				appBytes:      make(map[string]int64),
 				processes:     make(map[string]*trafficProcessAggregate),
+				flows:         make(map[string]bool),
 			}
 			edges[edgeID] = edge
 		}
 		edge.Bytes += packetBytes
 		edge.Packets++
-		edge.Connections++
+		flow := connection.FlowKey()
+		allFlows[flow] = true
+		edge.flows[flow] = true
+		edge.Connections = int64(len(edge.flows))
 		edge.protocolBytes[protocol] += packetBytes
 		edge.appBytes[app] += packetBytes
 		addTrafficProcess(edge.processes, connection.Process, packetBytes)
@@ -171,12 +189,14 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 					Services:      services,
 					protocolBytes: make(map[string]int64),
 					processes:     make(map[string]*trafficProcessAggregate),
+					flows:         make(map[string]bool),
 				}
 				nodes[ip] = node
 			}
 			node.Bytes += packetBytes
 			node.Packets++
-			node.Connections++
+			node.flows[flow] = true
+			node.Connections = int64(len(node.flows))
 			node.protocolBytes[protocol] += packetBytes
 			addTrafficProcess(node.processes, connection.Process, packetBytes)
 		}
@@ -322,8 +342,11 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 	summary.VisibleEdges = len(edgeList)
 	summary.VisibleNodes = len(nodeList)
 	summary.ProcessCount = countTrafficProcesses(windowConnections)
+	summary.TotalConnections = len(allFlows)
 
 	return resp.TrafficTopologyResp{
+		StartedAt:        connections[0].Time.UTC().Format(time.RFC3339Nano),
+		TimelineBucketMs: bucketSize,
 		Window: resp.TrafficWindowResp{
 			Start:      start,
 			End:        end,
@@ -347,19 +370,21 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 	}, model.SuccessRetVal()
 }
 
-func loadTrafficConnections(victim model.Victim) ([]traffic.Connection, model.RetVal) {
-	connections, ret := redis.GetTraffic(victim)
+func loadTrafficConnections(ctx context.Context, victim model.Victim) ([]traffic.Connection, model.RetVal) {
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
+	connections, ret := redis.GetTraffic(ctx, victim)
 	if !ret.OK {
 		return nil, ret
 	}
-	if len(connections) > 0 {
+	if connections != nil {
 		return connections, model.SuccessRetVal()
 	}
-	ret = redis.UpdateTraffics(victim)
+	ret = redis.UpdateTraffics(ctx, victim)
 	if !ret.OK {
 		return nil, ret
 	}
-	connections, ret = redis.GetTraffic(victim)
+	connections, ret = redis.GetTraffic(ctx, victim)
 	if !ret.OK {
 		return nil, ret
 	}
@@ -374,6 +399,13 @@ func emptyTrafficTopology(victim model.Victim, form dto.GetTrafficForm) resp.Tra
 	if duration <= 0 {
 		duration = DefaultTrafficDurationMs
 	}
+	nodes := make([]resp.TrafficNodeResp, 0)
+	services := collectVictimServicesByIP(victim)
+	for ip := range victim.TrafficInternalIPs() {
+		nodes = append(nodes, resp.TrafficNodeResp{ID: ip, IP: ip, Label: buildTrafficNodeLabel(ip, true, services[ip]),
+			Kind: "victim", Side: "center", Zone: "victim", Service: dominantTrafficService(services[ip]), Services: services[ip], Protocols: []string{}})
+	}
+	sort.Slice(nodes, func(i, j int) bool { return nodes[i].IP < nodes[j].IP })
 	return resp.TrafficTopologyResp{
 		Window: resp.TrafficWindowResp{
 			Start:    form.TimeShift,
@@ -387,8 +419,8 @@ func emptyTrafficTopology(victim model.Victim, form dto.GetTrafficForm) resp.Tra
 			Label:   buildTrafficCenterLabel(victim),
 			Exposed: victim.RemoteAddr(),
 		},
-		Summary:    resp.TrafficSummaryResp{},
-		Nodes:      make([]resp.TrafficNodeResp, 0),
+		Summary:    resp.TrafficSummaryResp{InternalNodes: len(nodes), VisibleNodes: len(nodes)},
+		Nodes:      nodes,
 		Edges:      make([]resp.TrafficEdgeResp, 0),
 		Timeline:   make([]resp.TrafficTimelineBucketResp, 0),
 		TopTalkers: make([]resp.TrafficRankingResp, 0),
@@ -414,13 +446,7 @@ func clampTrafficWindow(start, duration, total int64) (int64, int64) {
 	if total > 0 && start > total {
 		start = total
 	}
-	end := start + duration
-	if total > 0 && end > total {
-		end = total
-	}
-	if end < start {
-		end = start
-	}
+	end := start + min(duration, max(0, total-start))
 	return start, end
 }
 
@@ -428,23 +454,9 @@ func sliceTrafficConnections(connections []traffic.Connection, start, end int64)
 	if len(connections) == 0 {
 		return make([]traffic.Connection, 0)
 	}
-	startAt := time.Duration(start) * time.Millisecond
-	endAt := time.Duration(end) * time.Millisecond
-	if end == start {
-		endAt = startAt + time.Millisecond
-	}
-
-	windowConnections := make([]traffic.Connection, 0)
-	for _, connection := range connections {
-		if connection.TimeShift < startAt {
-			continue
-		}
-		if connection.TimeShift >= endAt {
-			break
-		}
-		windowConnections = append(windowConnections, connection)
-	}
-	return windowConnections
+	first := sort.Search(len(connections), func(i int) bool { return connections[i].TimeShift.Milliseconds() >= start })
+	last := sort.Search(len(connections), func(i int) bool { return connections[i].TimeShift.Milliseconds() >= end })
+	return connections[first:last]
 }
 
 func buildTrafficTimelineBuckets(
@@ -480,64 +492,6 @@ func buildTrafficTimelineBuckets(
 	return buckets
 }
 
-func collectVictimIPs(victim model.Victim, connections []traffic.Connection) map[string]bool {
-	internalIPs := make(map[string]bool)
-	for _, pod := range victim.Pods {
-		for _, network := range pod.Spec.Networks {
-			if network.Attachment.IP != "" {
-				internalIPs[network.Attachment.IP] = true
-			}
-		}
-	}
-	for _, pod := range victim.Spec.Pods {
-		for _, network := range pod.Networks {
-			if network.Attachment.IP != "" {
-				internalIPs[network.Attachment.IP] = true
-			}
-		}
-	}
-	for _, endpoint := range victim.Endpoints {
-		if endpoint.IP != "" {
-			internalIPs[endpoint.IP] = true
-		}
-	}
-	for _, endpoint := range victim.ExposedEndpoints {
-		if endpoint.IP != "" {
-			internalIPs[endpoint.IP] = true
-		}
-	}
-	if len(internalIPs) > 0 {
-		return internalIPs
-	}
-
-	freq := make(map[string]int)
-	for _, connection := range connections {
-		freq[connection.SrcIP]++
-		freq[connection.DstIP]++
-	}
-	type kv struct {
-		IP    string
-		Count int
-	}
-	ordered := make([]kv, 0, len(freq))
-	for ip, count := range freq {
-		ordered = append(ordered, kv{IP: ip, Count: count})
-	}
-	sort.Slice(ordered, func(i, j int) bool {
-		if ordered[i].Count != ordered[j].Count {
-			return ordered[i].Count > ordered[j].Count
-		}
-		return ordered[i].IP < ordered[j].IP
-	})
-	for _, item := range ordered {
-		internalIPs[item.IP] = true
-		if len(internalIPs) >= 3 {
-			break
-		}
-	}
-	return internalIPs
-}
-
 func collectVictimServicesByIP(victim model.Victim) map[string][]string {
 	servicesByIP := make(map[string][]string)
 	for _, pod := range victim.Pods {
@@ -565,8 +519,12 @@ func addPodServicesByIP(servicesByIP map[string][]string, podSpec model.PodSpec)
 		return
 	}
 	for _, network := range podSpec.Networks {
-		if network.Attachment.IP != "" {
-			servicesByIP[network.Attachment.IP] = append(servicesByIP[network.Attachment.IP], services...)
+		ip := network.Attachment.IP
+		if prefix, err := netip.ParsePrefix(ip); err == nil {
+			ip = prefix.Addr().String()
+		}
+		if ip = traffic.NormalizeTrafficIP(ip); ip != "" {
+			servicesByIP[ip] = append(servicesByIP[ip], services...)
 		}
 	}
 }
@@ -608,8 +566,10 @@ func trafficDirection(srcInternal, dstInternal bool) string {
 		return "ingress"
 	case srcInternal && !dstInternal:
 		return "egress"
-	default:
+	case srcInternal && dstInternal:
 		return "internal"
+	default:
+		return "external"
 	}
 }
 
