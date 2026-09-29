@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"encoding/json"
 	"sync"
 	"time"
 
@@ -54,6 +55,13 @@ func exec(name string, task func() model.RetVal) func() {
 		result := task()
 		duration := time.Since(start).Seconds()
 		prometheus.RecordCronJob(name, duration, result.OK)
+		if !result.OK {
+			details, marshalErr := json.Marshal(result.Data)
+			if marshalErr != nil {
+				details = []byte("unavailable")
+			}
+			log.Logger.Warningf("%s failed: %s attributes=%v details=%s, processing time: %s", name, result.Msg, result.Attr, details, time.Duration(duration*float64(time.Second)))
+		}
 		now := time.Now()
 		cronjob, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", name)
 		if !ret.OK {
@@ -63,9 +71,7 @@ func exec(name string, task func() model.RetVal) func() {
 		if ret = db.InitCronJobRepo(db.CronDB).UpdateStatus(cronjob.ID, result.OK, now); !ret.OK {
 			log.Logger.Warningf("Failed to update cron last runtime %s: %s", name, ret.Msg)
 		}
-		if !result.OK {
-			log.Logger.Warningf("%s failed: %s, processing time: %s", name, result.Msg, time.Duration(duration*float64(time.Second)))
-		} else if duration > time.Second.Seconds() {
+		if result.OK && duration > time.Second.Seconds() {
 			log.Logger.Debugf("%s processing time: %s", name, time.Duration(duration*float64(time.Second)))
 		}
 	}

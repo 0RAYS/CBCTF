@@ -66,10 +66,10 @@ type ipUserInfo struct {
 	UserID uint
 }
 
-func shouldKeepUserGroup(contestID uint, userIDs []uint, teamRepo *db.TeamRepo) bool {
+func shouldKeepUserGroup(contestID uint, userIDs []uint, teamRepo *db.TeamRepo) (bool, model.RetVal) {
 	userTeamMap, ret := teamRepo.GetUserTeamMap(contestID, userIDs...)
 	if !ret.OK {
-		return false
+		return false, ret
 	}
 
 	teamSet := make(map[uint]struct{})
@@ -83,15 +83,15 @@ func shouldKeepUserGroup(contestID uint, userIDs []uint, teamRepo *db.TeamRepo) 
 		teamSet[teamID] = struct{}{}
 	}
 	if len(teamSet) == 0 {
-		return missingTeam && len(userIDs) > 1
+		return missingTeam && len(userIDs) > 1, model.SuccessRetVal()
 	}
-	return len(teamSet) > 1 || missingTeam
+	return len(teamSet) > 1 || missingTeam, model.SuccessRetVal()
 }
 
-func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
+func CheckWrongFlag(tx *gorm.DB, contest model.Contest) model.RetVal {
 	rows, ret := db.InitTeamFlagRepo(tx).ListContestWrongFlagSubmissions(contest.ID, contest.Start, contest.Start.Add(contest.Duration))
 	if !ret.OK {
-		return
+		return ret
 	}
 
 	type submissionDetail struct {
@@ -121,8 +121,14 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 	}
 
 	cheatRepo := db.InitCheatRepo(tx)
-	for _, submission := range submissionMap {
+	batch := model.NewBatch(len(submissionMap))
+	for submissionID, submission := range submissionMap {
+		if tx.Statement.Context.Err() != nil {
+			return batch.Result(tx.Statement.Context)
+		}
+		key := fmt.Sprint(submissionID)
 		if len(submission.Others) == 0 {
+			batch.Skip(key, "no_cross_team_match")
 			continue
 		}
 
@@ -134,7 +140,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 		}
 		teamIDs = append(teamIDs, submission.TeamID)
 
-		cheatRepo.Create(model.Cheat{
+		_, created, ret := cheatRepo.Create(model.Cheat{
 			ContestID:  contest.ID,
 			Model:      map[string][]uint{model.Name(model.Team{}): teamIDs},
 			IP:         submission.IP,
@@ -145,8 +151,11 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 			Checked:    false,
 			Time:       submission.CreatedAt,
 		})
-		prometheus.RecordCheatDetection(contest.ID, string(model.ReasonTypeWrongFlagType))
+		if !recordCheatOutcome(batch, key, ret, created, contest.ID, model.ReasonTypeWrongFlagType) {
+			return batch.Result(tx.Statement.Context)
+		}
 	}
+	return batch.Result(tx.Statement.Context)
 }
 
 func checkWhitelistIP(ip string) bool {
@@ -164,10 +173,10 @@ func checkWhitelistIP(ip string) bool {
 	})
 }
 
-func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
+func CheckWebReqIP(tx *gorm.DB, contest model.Contest) model.RetVal {
 	rows, ret := db.InitRequestRepo(tx).ListSharedContestUserIPs(contest.ID, contest.Start, contest.Start.Add(contest.Duration))
 	if !ret.OK {
-		return
+		return ret
 	}
 
 	ipUserMap := make(map[string][]ipUserInfo)
@@ -183,8 +192,13 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 
 	teamRepo := db.InitTeamRepo(tx)
 	cheatRepo := db.InitCheatRepo(tx)
+	batch := model.NewBatch(len(ipUserMap))
 	for ip, users := range ipUserMap {
+		if tx.Statement.Context.Err() != nil {
+			return batch.Result(tx.Statement.Context)
+		}
 		if len(users) <= 1 {
+			batch.Skip(ip, "single_user")
 			continue
 		}
 
@@ -192,7 +206,13 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 		for _, user := range users {
 			userIDs = append(userIDs, user.UserID)
 		}
-		if !shouldKeepUserGroup(contest.ID, userIDs, teamRepo) {
+		keep, ret := shouldKeepUserGroup(contest.ID, userIDs, teamRepo)
+		if !ret.OK {
+			batch.Fail(ip, "read_team_membership", ret)
+			return batch.Result(tx.Statement.Context)
+		}
+		if !keep {
+			batch.Skip(ip, "same_team")
 			continue
 		}
 
@@ -207,7 +227,7 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 			}
 		}
 
-		cheatRepo.Create(model.Cheat{
+		_, created, ret := cheatRepo.Create(model.Cheat{
 			ContestID:  contest.ID,
 			Model:      map[string][]uint{model.Name(model.User{}): userIDs},
 			IP:         ip,
@@ -218,11 +238,14 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 			Checked:    false,
 			Time:       earliest,
 		})
-		prometheus.RecordCheatDetection(contest.ID, string(model.ReasonTypeSameWebIPType))
+		if !recordCheatOutcome(batch, ip, ret, created, contest.ID, model.ReasonTypeSameWebIPType) {
+			return batch.Result(tx.Statement.Context)
+		}
 	}
+	return batch.Result(tx.Statement.Context)
 }
 
-func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
+func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) model.RetVal {
 	type teamInfo struct {
 		Time time.Time
 		ID   uint
@@ -230,7 +253,7 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 
 	rows, ret := db.InitTrafficRepo(tx).ListSharedContestVictimIPs(contest.ID, contest.Start, contest.Start.Add(contest.Duration))
 	if !ret.OK {
-		return
+		return ret
 	}
 
 	ipTeamMap := make(map[string][]teamInfo)
@@ -245,8 +268,13 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 	}
 
 	cheatRepo := db.InitCheatRepo(tx)
+	batch := model.NewBatch(len(ipTeamMap))
 	for ip, teams := range ipTeamMap {
+		if tx.Statement.Context.Err() != nil {
+			return batch.Result(tx.Statement.Context)
+		}
 		if len(teams) <= 1 {
+			batch.Skip(ip, "single_team")
 			continue
 		}
 
@@ -263,7 +291,7 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 			}
 		}
 
-		cheatRepo.Create(model.Cheat{
+		_, created, ret := cheatRepo.Create(model.Cheat{
 			ContestID:  contest.ID,
 			Model:      map[string][]uint{model.Name(model.Team{}): teamIDs},
 			IP:         ip,
@@ -274,6 +302,42 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 			Checked:    false,
 			Time:       earliest,
 		})
-		prometheus.RecordCheatDetection(contest.ID, string(model.ReasonTypeSameVictimIPType))
+		if !recordCheatOutcome(batch, ip, ret, created, contest.ID, model.ReasonTypeSameVictimIPType) {
+			return batch.Result(tx.Statement.Context)
+		}
 	}
+	return batch.Result(tx.Statement.Context)
+}
+
+func recordCheatOutcome(batch *model.BatchResult, id string, ret model.RetVal, created bool, contestID uint, reason model.CheatReasonType) bool {
+	if !ret.OK {
+		batch.Fail(id, "write_evidence", ret)
+		return !model.BatchDependencyFailed(ret)
+	}
+	if !created {
+		batch.Skip(id, "existing_evidence")
+		return true
+	}
+	batch.Success(id, "created")
+	prometheus.RecordCheatDetection(contestID, string(reason))
+	return true
+}
+
+func RunCheatChecks(tx *gorm.DB, contest model.Contest) model.RetVal {
+	checks := []struct {
+		name string
+		run  func(*gorm.DB, model.Contest) model.RetVal
+	}{{"web_ip", CheckWebReqIP}, {"victim_ip", CheckVictimReqIP}, {"wrong_flag", CheckWrongFlag}}
+	batch := model.NewBatch(len(checks))
+	for _, check := range checks {
+		if tx.Statement.Context.Err() != nil {
+			return batch.Result(tx.Statement.Context)
+		}
+		ret := check.run(tx, contest)
+		batch.Record(check.name, "scan", ret)
+		if !ret.OK && model.BatchDependencyFailed(ret) {
+			return batch.Result(tx.Statement.Context)
+		}
+	}
+	return batch.Result(tx.Statement.Context)
 }
