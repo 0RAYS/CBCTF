@@ -21,7 +21,12 @@ func CheckIfGenerated(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	if !service.CheckIfGenerated(db.DB.WithContext(ctx.Request.Context()), team, contestFlags) {
+	generated, ret := service.CheckIfGenerated(db.DB.WithContext(ctx.Request.Context()), team, contestFlags)
+	if !ret.OK {
+		resp.AbortJSON(ctx, ret)
+		return
+	}
+	if !generated {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.TeamFlag.NotFound})
 		return
 	}

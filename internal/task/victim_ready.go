@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -51,7 +52,13 @@ func startReadinessController() {
 func reconcileVictim(ctx context.Context, id uint) error {
 	repo := db.InitVictimRepo(db.TaskDB.WithContext(ctx))
 	victim, ret := repo.GetByID(id, db.GetOptions{Preloads: map[string]db.GetOptions{"Pods": {}}})
-	if !ret.OK || victim.Status != model.PendingVictimStatus {
+	if !ret.OK {
+		if ret.Msg == i18n.Model.NotFound {
+			return nil
+		}
+		return fmt.Errorf("read victim readiness: %s %v", ret.Msg, ret.Attr)
+	}
+	if victim.Status != model.PendingVictimStatus {
 		return nil
 	}
 	ready, err := k8s.VictimReady(ctx, &victim)

@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"strings"
 
 	"gorm.io/gorm"
 
@@ -83,6 +82,9 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 			teamFlagL = append(teamFlagL, teamFlag)
 			continue
 		}
+		if ret.Msg != i18n.Model.NotFound {
+			return nil, ret
+		}
 		options := model.TeamFlag{
 			TeamID:          team.ID,
 			ContestFlagID:   contestFlag.ID,
@@ -93,18 +95,9 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 		if prefix := contest.Prefix; prefix != "" {
 			options.Value = fmt.Sprintf("%s{%s}", contest.Prefix, options.Value)
 		}
-		teamFlag, ret = teamFlagRepo.Create(options)
+		teamFlag, ret = teamFlagRepo.CreateIfAbsent(options)
 		if !ret.OK {
-			errMsg, ok := ret.Attr["Error"].(string)
-			if !ok || !strings.Contains(strings.ToLower(errMsg), "duplicate key") {
-				return nil, ret
-			}
-			teamFlag, ret = teamFlagRepo.Get(db.GetOptions{
-				Conditions: map[string]any{"team_id": team.ID, "contest_flag_id": contestFlag.ID},
-			})
-			if !ret.OK {
-				return nil, ret
-			}
+			return nil, ret
 		}
 		teamFlagL = append(teamFlagL, teamFlag)
 	}
@@ -144,16 +137,19 @@ func UpdateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 	return CreateTeamFlag(tx, team, contest, contestChallenge)
 }
 
-func CheckIfGenerated(tx *gorm.DB, team model.Team, contestFlags []model.ContestFlag) bool {
+func CheckIfGenerated(tx *gorm.DB, team model.Team, contestFlags []model.ContestFlag) (bool, model.RetVal) {
 	if len(contestFlags) == 0 {
-		return true
+		return true, model.SuccessRetVal()
 	}
 	contestFlagIDL := make([]uint, 0, len(contestFlags))
 	for _, contestFlag := range contestFlags {
 		contestFlagIDL = append(contestFlagIDL, contestFlag.ID)
 	}
 	count, ret := db.InitTeamFlagRepo(tx).CountGenerated(team.ID, contestFlagIDL...)
-	return ret.OK && count == int64(len(contestFlags))
+	if !ret.OK {
+		return false, ret
+	}
+	return count == int64(len(contestFlags)), model.SuccessRetVal()
 }
 
 func ListTeamFlagViews(tx *gorm.DB, team model.Team) ([]view.TeamFlagChallengeView, model.RetVal) {
