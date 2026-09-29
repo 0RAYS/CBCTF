@@ -15,6 +15,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
+	"CBCTF/internal/utils"
 )
 
 var TotalDuration atomic.Int64
@@ -26,9 +27,18 @@ var (
 )
 
 func AppendRequest(request model.Request) {
+	if request.RecordID == "" {
+		request.RecordID = utils.UUID()
+	}
 	RequestsMutex.Lock()
 	RequestsPool = append(RequestsPool, request)
 	RequestsMutex.Unlock()
+}
+
+func RestoreRequests(requests []model.Request) {
+	RequestsMutex.Lock()
+	defer RequestsMutex.Unlock()
+	RequestsPool = append(requests, RequestsPool...)
 }
 
 func DrainRequestsPool() []model.Request {

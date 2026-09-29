@@ -12,6 +12,7 @@ const (
 // Task stores terminal task execution records only.
 // A record is written when a task succeeds or when it finally fails.
 type Task struct {
+	RecordID    string    `gorm:"type:varchar(36);uniqueIndex;not null;default:gen_random_uuid()" json:"-"`
 	TaskID      string    `gorm:"type:varchar(255);index;not null" json:"task_id"`
 	Type        string    `gorm:"type:varchar(255);index;not null" json:"type"`
 	Queue       string    `gorm:"type:varchar(255);index;not null" json:"queue"`
