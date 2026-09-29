@@ -90,6 +90,9 @@ func (s *streamCollector) emit(stream *tcpStream) {
 	next := stream.segments[0].seq
 	if stream.syn && next != stream.initial+1 {
 		s.warn("tcp_capture_gap")
+		if s.prefixOnly {
+			return
+		}
 	}
 	for _, segment := range stream.segments {
 		delta := int32(segment.seq - next)
@@ -98,6 +101,9 @@ func (s *streamCollector) emit(stream *tcpStream) {
 			s.consume(data, stream.evidence)
 			data = nil
 			s.warn("tcp_capture_gap")
+			if s.prefixOnly {
+				return
+			}
 			next = segment.seq
 		} else if delta < 0 {
 			skip := int(-int64(delta))

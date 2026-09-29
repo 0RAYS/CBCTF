@@ -41,7 +41,7 @@ func TestEmptyCapturesAcrossAnalysisReplayAndEnrichment(t *testing.T) {
 	names := writeEmptyTrafficCaptures(t, dir)
 	ctx := context.Background()
 	for _, name := range names {
-		connections, err := ReadPcapFile(ctx, filepath.Join(dir, name))
+		connections, _, err := ReadPcapFile(ctx, filepath.Join(dir, name))
 		if err != nil || len(connections) != 0 {
 			t.Fatalf("empty capture %s: %d connections, %v", name, len(connections), err)
 		}
@@ -58,7 +58,7 @@ func TestEmptyCapturesAcrossAnalysisReplayAndEnrichment(t *testing.T) {
 		t.Fatalf("empty capture enrichment: %v", errs)
 	}
 	for _, name := range names {
-		connections, err := ReadPcapFile(ctx, filepath.Join(dir, name+".enrich.pcap"))
+		connections, _, err := ReadPcapFile(ctx, filepath.Join(dir, name+".enrich.pcap"))
 		if err != nil || len(connections) != 0 {
 			t.Fatalf("invalid empty enriched capture %s: %v", name, err)
 		}
@@ -91,14 +91,14 @@ func TestEmptyCaptureHandlingPreservesCancellationAndHeaderErrors(t *testing.T) 
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, err := ReadPcapFile(ctx, path); !errors.Is(err, context.Canceled) {
+	if _, _, err := ReadPcapFile(ctx, path); !errors.Is(err, context.Canceled) {
 		t.Fatalf("empty capture swallowed cancellation: %v", err)
 	}
 	for _, data := range [][]byte{{0xd4}, {0xd4, 0xc3, 0xb2}, {0xd4, 0xc3, 0xb2, 0xa1}, {10, 13, 13, 10}, []byte("broken capture")} {
 		if err := os.WriteFile(path, data, 0600); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := ReadPcapFile(context.Background(), path); err == nil {
+		if _, _, err := ReadPcapFile(context.Background(), path); err == nil {
 			t.Fatalf("partial or corrupt header accepted as empty: %x", data)
 		} else if len(data) < 4 && !errors.Is(err, io.ErrUnexpectedEOF) {
 			t.Fatalf("partial magic should report truncation: %v", err)

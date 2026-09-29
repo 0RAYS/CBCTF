@@ -87,7 +87,7 @@ func TestTrafficReaderErrorsAndEnrichment(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "pod-test.pcap")
 	writeTrafficTestCapture(t, path, "hello")
-	if err := EnrichPcap(context.Background(), path, path+".connections.jsonl", path+".enrich.pcap"); err != nil {
+	if _, err := EnrichPcap(context.Background(), path, path+".connections.jsonl", path+".enrich.pcap"); err != nil {
 		t.Fatal(err)
 	}
 	result, err := ReadPcapDir(context.Background(), dir, nil)
@@ -96,7 +96,7 @@ func TestTrafficReaderErrorsAndEnrichment(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, err = ReadPcapFile(ctx, path); err == nil {
+	if _, _, err = ReadPcapFile(ctx, path); err == nil {
 		t.Fatal("cancellation ignored")
 	}
 	if err = os.WriteFile(filepath.Join(dir, "broken.pcap"), []byte("broken"), 0600); err != nil {
