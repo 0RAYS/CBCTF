@@ -1,5 +1,6 @@
 import { IconPlayerPlay, IconSearch } from '@tabler/icons-react';
 import { Button, Chip, Modal, Pagination } from '../../../common';
+import BatchResultPanel from '../batch/BatchResultPanel.jsx';
 
 export function VictimStartDialog({
   t,
@@ -13,6 +14,9 @@ export function VictimStartDialog({
   totalTeamCount,
   victimDurationSeconds,
   formatVictimDuration,
+  pending,
+  batchResult,
+  error,
 }) {
   return (
     <Modal
@@ -21,16 +25,26 @@ export function VictimStartDialog({
       title={t('admin.contests.containers.modals.startTitle')}
       footer={
         <>
-          <Button size="sm" variant="ghost" onClick={onClose}>
+          <Button size="sm" variant="ghost" onClick={onClose} disabled={pending}>
             {t('common.cancel')}
           </Button>
-          <Button size="sm" variant="primary" onClick={onConfirm}>
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={onConfirm}
+            disabled={pending || selectedChallenges.length === 0}
+            loading={pending}
+          >
             {t('admin.contests.containers.modals.startConfirm')}
           </Button>
         </>
       }
     >
       <div className="space-y-4">
+        <BatchResultPanel result={batchResult} error={error} queued />
+        {batchResult && batchResult.status !== 'success' ? (
+          <p className="text-xs text-amber-200">{t('admin.batch.randomRetryHint')}</p>
+        ) : null}
         <div className="flex items-center gap-3">
           <IconPlayerPlay size={20} className="text-geek-400" />
           <p className="text-neutral-300 font-mono">{t('admin.contests.containers.modals.startPrompt')}</p>

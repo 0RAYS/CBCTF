@@ -9,6 +9,9 @@ import { buildVictimStartPayload, estimateVictimTeams } from './victimPayload';
 import useVictimCandidates from './useVictimCandidates';
 import VictimCandidatePicker from './VictimCandidatePicker';
 import { VictimStartDialog } from './VictimStartDialogs';
+import useBatchAction from '../batch/useBatchAction.js';
+import BatchResultPanel from '../batch/BatchResultPanel.jsx';
+import { remainingVictimChallenges } from '../batch/batchModel.js';
 
 export default function ContestVictimStart({ contestId, onStarted }) {
   const { t } = useTranslation();
@@ -17,6 +20,7 @@ export default function ContestVictimStart({ contestId, onStarted }) {
   const [randomTeamPercentage, setRandomTeamPercentage] = useState(50);
   const [victimDurationInput, setVictimDurationInput] = useState('7200');
   const [startOpen, setStartOpen] = useState(false);
+  const startAction = useBatchAction(contestId);
   const payload = buildVictimStartPayload(candidates.selectedChallenges, randomTeamPercentage, victimDurationInput);
   const victimDurationSeconds = payload.duration;
   const isVictimDurationValid = victimDurationSeconds > 0;
@@ -46,17 +50,21 @@ export default function ContestVictimStart({ contestId, onStarted }) {
       toast.warning({ description: t('admin.contests.containers.toast.selectStartRequired') });
       return;
     }
-    try {
-      const response = await startContestVictims(contestId, payload.challenges, payload.team_ratio, payload.duration);
-      if (response.code === 200) {
-        toast.success({ description: t('admin.contests.containers.toast.taskDispatched') });
-        candidates.setSelectedChallenges([]);
-        onStarted();
+    await startAction.run(
+      () => startContestVictims(contestId, payload.challenges, payload.team_ratio, payload.duration),
+      {
+        successMessage: t('admin.contests.containers.toast.taskDispatched'),
+        failureMessage: t('admin.contests.containers.toast.taskDispatchFailed'),
+        onResult: (batch) => {
+          const remaining = batch ? remainingVictimChallenges(payload.challenges, batch) : [];
+          candidates.setSelectedChallenges((selected) =>
+            selected.filter((id) => !payload.challenges.includes(id) || remaining.includes(id))
+          );
+          onStarted();
+          if (!batch || batch.status === 'success') setStartOpen(false);
+        },
       }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.containers.toast.taskDispatchFailed') });
-    }
-    setStartOpen(false);
+    );
   };
 
   const formatVictimDuration = (seconds) => {
@@ -85,6 +93,10 @@ export default function ContestVictimStart({ contestId, onStarted }) {
 
   return (
     <>
+      <BatchResultPanel result={startAction.result} error={startAction.error} queued />
+      {startAction.result && startAction.result.status !== 'success' ? (
+        <p className="text-xs text-amber-200">{t('admin.batch.randomRetryHint')}</p>
+      ) : null}
       <style>{`
         .slider::-webkit-slider-thumb {
           appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #597ef7;
@@ -180,7 +192,9 @@ export default function ContestVictimStart({ contestId, onStarted }) {
               align="icon-left"
               icon={<IconPlayerPlay size={14} />}
               onClick={() => setStartOpen(true)}
-              disabled={!payload.challenges.length || !selectedTeamCount || !isVictimDurationValid}
+              disabled={
+                startAction.pending || !payload.challenges.length || !selectedTeamCount || !isVictimDurationValid
+              }
               className="!text-xs !h-7 !px-3"
             >
               {t('admin.contests.containers.quickActions.startButton', {
@@ -194,7 +208,12 @@ export default function ContestVictimStart({ contestId, onStarted }) {
       <VictimStartDialog
         t={t}
         isOpen={startOpen}
-        onClose={() => setStartOpen(false)}
+        onClose={() => {
+          if (!startAction.pending) setStartOpen(false);
+        }}
+        pending={startAction.pending}
+        batchResult={startAction.result}
+        error={startAction.error}
         onConfirm={start}
         selectedChallenges={candidates.selectedChallenges}
         challenges={candidates.selectedChallengeDetails}

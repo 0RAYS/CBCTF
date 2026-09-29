@@ -44,3 +44,12 @@ export function batchRows(batch, parents = []) {
     return item.details ? [row, ...batchRows(item.details, path)] : [row];
   });
 }
+
+export function remainingVictimChallenges(ids, batch) {
+  const teamsPerChallenge = batch.requested / ids.length;
+  if (!Number.isInteger(teamsPerChallenge) || teamsPerChallenge <= 0) return ids;
+  return ids.filter((id) => {
+    const items = batch.items.filter((item) => item.id.endsWith(`/challenge:${id}`));
+    return items.length !== teamsPerChallenge || items.some((item) => !['success', 'skipped'].includes(item.status));
+  });
+}
