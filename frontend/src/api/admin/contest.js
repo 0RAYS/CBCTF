@@ -414,6 +414,7 @@ export const checkContestCheats = (contestId) => {
   return request({
     url: `/admin/contests/${contestId}/cheats`,
     method: 'POST',
+    noToast: true,
   });
 };
 

@@ -12,6 +12,7 @@ import CheatReviewDialog from './CheatReviewDialog';
 import CheatActionDialog from './CheatActionDialog';
 import CheatsTable from './CheatsTable';
 import { cheatListParams } from './payloads';
+import BatchResultPanel from '../batch/BatchResultPanel.jsx';
 
 export default function CheatsManager({ contestId }) {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ export default function CheatsManager({ contestId }) {
   const [loading, setLoading] = useState(true);
   const [revision, setRevision] = useState(0);
   const [dialog, setDialog] = useState(null);
+  const [scanResult, setScanResult] = useState(null);
   const pageSize = 20;
   const { openUserDetail, renderUserDetailDialog } = useUserDetailDialog();
   const { openTeamDetail, renderTeamDetailDialog } = useTeamDetailDialog(contestId);
@@ -75,6 +77,7 @@ export default function CheatsManager({ contestId }) {
 
   return (
     <div className="w-full mx-auto space-y-6">
+      <BatchResultPanel result={scanResult} />
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex flex-wrap items-center justify-end gap-2 mb-6">
           <Button size="sm" variant="ghost" onClick={() => openAction('check')} className="bg-black/30!">
@@ -181,7 +184,10 @@ export default function CheatsManager({ contestId }) {
           action={dialog.action}
           cheat={dialog.cheat}
           onClose={closeDialog}
-          onCompleted={refresh}
+          onCompleted={(batch) => {
+            if (batch) setScanResult(batch);
+            refresh();
+          }}
         />
       )}
       {renderUserDetailDialog()}
