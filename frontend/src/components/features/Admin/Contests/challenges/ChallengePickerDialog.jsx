@@ -3,6 +3,7 @@ import { IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, Chip, EmptyState, Modal, Pagination, Spinner } from '../../../../common';
 import Checkbox from '../../../../common/Checkbox';
+import BatchResultPanel from '../../batch/BatchResultPanel.jsx';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../../config/challengeChips';
 
 /**
@@ -33,6 +34,8 @@ function AdminContestChallengeSelector({
   pageSize = 10,
   loading = false,
   saving = false,
+  batchResult,
+  error,
   searchQuery = '',
   descQuery = '',
   category = 'all',
@@ -78,6 +81,7 @@ function AdminContestChallengeSelector({
         </>
       }
     >
+      <BatchResultPanel result={batchResult} error={error} />
       {/* 搜索和过滤 */}
       <div className="p-4 border-b border-neutral-700">
         <div className="flex flex-col sm:flex-row gap-4 mb-3">
