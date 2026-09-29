@@ -1,7 +1,9 @@
 package prometheus
 
 import (
+	"context"
 	"strconv"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -11,6 +13,7 @@ import (
 
 // CTFCollector implements prometheus.Collector and reads metrics from DB state.
 type CTFCollector struct {
+	collectionSuccessDesc   *prometheus.Desc
 	contestTeamsDesc        *prometheus.Desc
 	contestParticipantsDesc *prometheus.Desc
 	victimsActiveDesc       *prometheus.Desc
@@ -19,6 +22,7 @@ type CTFCollector struct {
 
 func NewCTFCollector() *CTFCollector {
 	return &CTFCollector{
+		collectionSuccessDesc: prometheus.NewDesc("cbctf_ctf_collection_success", "Whether all CTF database metrics were collected", nil, nil),
 		contestTeamsDesc: prometheus.NewDesc(
 			"cbctf_contest_teams_total",
 			"Number of teams per contest (DB-driven)",
@@ -43,6 +47,7 @@ func NewCTFCollector() *CTFCollector {
 }
 
 func (c *CTFCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.collectionSuccessDesc
 	ch <- c.contestTeamsDesc
 	ch <- c.contestParticipantsDesc
 	ch <- c.victimsActiveDesc
@@ -50,32 +55,48 @@ func (c *CTFCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *CTFCollector) Collect(ch chan<- prometheus.Metric) {
+	success := float64(1)
+	defer func() { ch <- prometheus.MustNewConstMetric(c.collectionSuccessDesc, prometheus.GaugeValue, success) }()
 	if db.DB == nil {
+		success = 0
 		return
 	}
 
-	contestRepo := db.InitContestRepo(db.DB)
-	contests, _, _ := contestRepo.List(-1, -1)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	root := db.DB.WithContext(ctx)
+	contestRepo := db.InitContestRepo(root)
+	contests, _, contestRet := contestRepo.List(-1, -1)
+	if !contestRet.OK {
+		success = 0
+	}
 	contestIDL := make([]uint, 0, len(contests))
 	for _, contest := range contests {
 		contestIDL = append(contestIDL, contest.ID)
 	}
-	userCountMap, _ := contestRepo.CountUsersMap(contestIDL...)
-	teamCountMap, _ := contestRepo.CountTeamsMap(contestIDL...)
+	userCountMap, userRet := contestRepo.CountUsersMap(contestIDL...)
+	teamCountMap, teamRet := contestRepo.CountTeamsMap(contestIDL...)
+	if !userRet.OK || !teamRet.OK {
+		success = 0
+	}
 
 	for _, contest := range contests {
-		ch <- prometheus.MustNewConstMetric(
-			c.contestParticipantsDesc,
-			prometheus.GaugeValue,
-			float64(userCountMap[contest.ID]),
-			strconv.FormatUint(uint64(contest.ID), 10),
-		)
-		ch <- prometheus.MustNewConstMetric(
-			c.contestTeamsDesc,
-			prometheus.GaugeValue,
-			float64(teamCountMap[contest.ID]),
-			strconv.FormatUint(uint64(contest.ID), 10),
-		)
+		if userRet.OK {
+			ch <- prometheus.MustNewConstMetric(
+				c.contestParticipantsDesc,
+				prometheus.GaugeValue,
+				float64(userCountMap[contest.ID]),
+				strconv.FormatUint(uint64(contest.ID), 10),
+			)
+		}
+		if teamRet.OK {
+			ch <- prometheus.MustNewConstMetric(
+				c.contestTeamsDesc,
+				prometheus.GaugeValue,
+				float64(teamCountMap[contest.ID]),
+				strconv.FormatUint(uint64(contest.ID), 10),
+			)
+		}
 	}
 
 	type victimStatusCount struct {
@@ -83,7 +104,10 @@ func (c *CTFCollector) Collect(ch chan<- prometheus.Metric) {
 		Count  int64  `gorm:"column:count"`
 	}
 	rows := make([]victimStatusCount, 0)
-	_ = db.DB.Model(&model.Victim{}).Select("status, count(*) AS count").Group("status").Scan(&rows).Error
+	if err := root.Model(&model.Victim{}).Select("status, count(*) AS count").Group("status").Scan(&rows).Error; err != nil {
+		success = 0
+		return
+	}
 	running := int64(0)
 	for _, row := range rows {
 		ch <- prometheus.MustNewConstMetric(c.victimsDesc, prometheus.GaugeValue, float64(row.Count), row.Status)

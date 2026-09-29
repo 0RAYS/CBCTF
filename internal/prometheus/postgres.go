@@ -1,10 +1,12 @@
 package prometheus
 
 import (
+	"context"
 	"database/sql"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"gorm.io/gorm"
 
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
@@ -13,6 +15,7 @@ import (
 const postgresMetricPrefix = "postgres_"
 
 type PostgresCollector struct {
+	collectionSuccessDesc *prometheus.Desc
 	replicationLagDesc    *prometheus.Desc
 	postmasterStartedDesc *prometheus.Desc
 	databaseSizeDesc      *prometheus.Desc
@@ -53,6 +56,7 @@ func NewPostgresCollector() *PostgresCollector {
 	tableLabels := []string{"datname", "schemaname", "relname"}
 
 	return &PostgresCollector{
+		collectionSuccessDesc: prometheus.NewDesc(postgresMetricPrefix+"collection_success", "Whether a PostgreSQL metric section was collected", []string{"section"}, labels),
 		replicationLagDesc: prometheus.NewDesc(
 			postgresMetricPrefix+"lag",
 			"Replication lag behind master in seconds",
@@ -110,6 +114,7 @@ func newPostgresTableDesc(metric, help string, variableLabels []string, constLab
 }
 
 func (c *PostgresCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.collectionSuccessDesc
 	descs := []*prometheus.Desc{
 		c.replicationLagDesc, c.postmasterStartedDesc, c.databaseSizeDesc, c.recordCountDesc,
 		c.seqScanDesc, c.seqTupReadDesc, c.idxScanDesc, c.idxTupFetchDesc, c.nTupInsDesc, c.nTupUpdDesc,
@@ -125,50 +130,60 @@ func (c *PostgresCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *PostgresCollector) Collect(ch chan<- prometheus.Metric) {
-	if db.DB == nil {
-		return
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	for _, section := range []struct {
+		name    string
+		collect func(*gorm.DB, chan<- prometheus.Metric) bool
+	}{
+		{"replication_lag", c.collectReplicationLag}, {"postmaster_start", c.collectPostmasterStart},
+		{"database_size", c.collectDatabaseSize}, {"table_stats", c.collectTableStats},
+		{"table_io", c.collectTableIOStats}, {"record_count", c.collectRecordCount},
+	} {
+		success := float64(0)
+		if db.DB != nil && section.collect(db.DB.WithContext(ctx), ch) {
+			success = 1
+		}
+		ch <- prometheus.MustNewConstMetric(c.collectionSuccessDesc, prometheus.GaugeValue, success, section.name)
 	}
-	c.collectReplicationLag(ch)
-	c.collectPostmasterStart(ch)
-	c.collectDatabaseSize(ch)
-	c.collectTableStats(ch)
-	c.collectTableIOStats(ch)
-	c.collectRecordCount(ch)
 }
 
-func (c *PostgresCollector) collectReplicationLag(ch chan<- prometheus.Metric) {
+func (c *PostgresCollector) collectReplicationLag(root *gorm.DB, ch chan<- prometheus.Metric) bool {
 	var lag float64
-	if err := db.DB.Raw(
+	if err := root.Raw(
 		"SELECT CASE WHEN NOT pg_is_in_recovery() THEN 0 ELSE GREATEST(0, EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))) END AS lag",
 	).Scan(&lag).Error; err != nil {
-		return
+		return false
 	}
 	ch <- prometheus.MustNewConstMetric(c.replicationLagDesc, prometheus.GaugeValue, lag)
+	return true
 }
 
-func (c *PostgresCollector) collectPostmasterStart(ch chan<- prometheus.Metric) {
+func (c *PostgresCollector) collectPostmasterStart(root *gorm.DB, ch chan<- prometheus.Metric) bool {
 	var started time.Time
-	if err := db.DB.Raw("SELECT pg_postmaster_start_time() AS start_time_seconds").Scan(&started).Error; err != nil {
-		return
+	if err := root.Raw("SELECT pg_postmaster_start_time() AS start_time_seconds").Scan(&started).Error; err != nil {
+		return false
 	}
 	ch <- prometheus.MustNewConstMetric(c.postmasterStartedDesc, prometheus.GaugeValue, float64(started.Unix()))
+	return true
 }
 
-func (c *PostgresCollector) collectDatabaseSize(ch chan<- prometheus.Metric) {
+func (c *PostgresCollector) collectDatabaseSize(root *gorm.DB, ch chan<- prometheus.Metric) bool {
 	type row struct {
 		DatName   string `gorm:"column:datname"`
 		SizeBytes int64  `gorm:"column:size_bytes"`
 	}
 	var rows []row
-	if err := db.DB.Raw("SELECT pg_database.datname, pg_database_size(pg_database.datname) AS size_bytes FROM pg_database").Scan(&rows).Error; err != nil {
-		return
+	if err := root.Raw("SELECT pg_database.datname, pg_database_size(pg_database.datname) AS size_bytes FROM pg_database").Scan(&rows).Error; err != nil {
+		return false
 	}
 	for _, row := range rows {
 		ch <- prometheus.MustNewConstMetric(c.databaseSizeDesc, prometheus.GaugeValue, float64(row.SizeBytes), row.DatName)
 	}
+	return true
 }
 
-func (c *PostgresCollector) collectTableStats(ch chan<- prometheus.Metric) {
+func (c *PostgresCollector) collectTableStats(root *gorm.DB, ch chan<- prometheus.Metric) bool {
 	type row struct {
 		LastVacuum           sql.NullTime `gorm:"column:last_vacuum"`
 		LastAutovacuum       sql.NullTime `gorm:"column:last_autovacuum"`
@@ -194,7 +209,7 @@ func (c *PostgresCollector) collectTableStats(ch chan<- prometheus.Metric) {
 		AutoanalyzeCount     int64        `gorm:"column:autoanalyze_count"`
 	}
 	var rows []row
-	if err := db.DB.Raw(`
+	if err := root.Raw(`
 		SELECT
 			current_database() AS datname,
 			schemaname,
@@ -219,7 +234,7 @@ func (c *PostgresCollector) collectTableStats(ch chan<- prometheus.Metric) {
 			analyze_count,
 			autoanalyze_count
 		FROM pg_stat_user_tables`).Scan(&rows).Error; err != nil {
-		return
+		return false
 	}
 	for _, row := range rows {
 		labels := []string{row.DatName, row.SchemaName, row.Relname}
@@ -243,9 +258,10 @@ func (c *PostgresCollector) collectTableStats(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(c.analyzeCountDesc, prometheus.CounterValue, float64(row.AnalyzeCount), labels...)
 		ch <- prometheus.MustNewConstMetric(c.autoanalyzeCountDesc, prometheus.CounterValue, float64(row.AutoanalyzeCount), labels...)
 	}
+	return true
 }
 
-func (c *PostgresCollector) collectTableIOStats(ch chan<- prometheus.Metric) {
+func (c *PostgresCollector) collectTableIOStats(root *gorm.DB, ch chan<- prometheus.Metric) bool {
 	type row struct {
 		DatName       string `gorm:"column:datname"`
 		SchemaName    string `gorm:"column:schemaname"`
@@ -260,7 +276,7 @@ func (c *PostgresCollector) collectTableIOStats(ch chan<- prometheus.Metric) {
 		TidxBlksHit   int64  `gorm:"column:tidx_blks_hit"`
 	}
 	var rows []row
-	if err := db.DB.Raw(`
+	if err := root.Raw(`
 		SELECT
 			current_database() AS datname,
 			schemaname,
@@ -274,7 +290,7 @@ func (c *PostgresCollector) collectTableIOStats(ch chan<- prometheus.Metric) {
 			tidx_blks_read,
 			tidx_blks_hit
 		FROM pg_statio_user_tables`).Scan(&rows).Error; err != nil {
-		return
+		return false
 	}
 	for _, row := range rows {
 		labels := []string{row.DatName, row.SchemaName, row.Relname}
@@ -287,27 +303,29 @@ func (c *PostgresCollector) collectTableIOStats(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(c.toastIdxBlksReadDesc, prometheus.CounterValue, float64(row.TidxBlksRead), labels...)
 		ch <- prometheus.MustNewConstMetric(c.toastIdxBlksHitDesc, prometheus.CounterValue, float64(row.TidxBlksHit), labels...)
 	}
+	return true
 }
 
-func (c *PostgresCollector) collectRecordCount(ch chan<- prometheus.Metric) {
+func (c *PostgresCollector) collectRecordCount(root *gorm.DB, ch chan<- prometheus.Metric) bool {
 	type row struct {
 		TableSchema string  `gorm:"column:table_schema"`
 		TableName   string  `gorm:"column:table_name"`
 		RowsCount   float64 `gorm:"column:rows_count"`
 	}
 	var rows []row
-	if err := db.DB.Raw(`
+	if err := root.Raw(`
 		SELECT
 			schemaname AS table_schema,
 			relname AS table_name,
 			n_live_tup AS rows_count
 		FROM pg_stat_user_tables
 		ORDER BY n_live_tup DESC`).Scan(&rows).Error; err != nil {
-		return
+		return false
 	}
 	for _, row := range rows {
 		ch <- prometheus.MustNewConstMetric(c.recordCountDesc, prometheus.GaugeValue, row.RowsCount, row.TableSchema, row.TableName)
 	}
+	return true
 }
 
 func unixTime(value sql.NullTime) float64 {
