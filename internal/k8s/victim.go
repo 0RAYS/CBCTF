@@ -420,13 +420,7 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		"Deleting victim k8s resources: victim_id=%d team_id=%d challenge_id=%d exposed_endpoints=%d",
 		victim.ID, victim.TeamID.V, victim.ChallengeID, len(victim.ExposedEndpoints),
 	)
-	var firstErr model.RetVal
-	tryDelete := func(ret model.RetVal) {
-		if !ret.OK && firstErr.OK {
-			firstErr = ret
-		}
-	}
-	firstErr = model.SuccessRetVal()
+	batch := model.NewBatch(len(victim.Spec.NetworkPlan.Subnets) + len(victim.ExposedEndpoints))
 	// Stop VM controllers before their Pods; retain CNI and NetworkPolicies until
 	// every workload (including FRP/capture sidecars) has disappeared.
 	if err := deleteVictimRoot(ctx, victim, "workloads"); err != nil {
@@ -439,34 +433,38 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VictimNetwork", "Error": err.Error()}}
 	}
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
+		if ctx.Err() != nil {
+			return batch.Result(ctx)
+		}
 		if subnet != nil {
-			tryDelete(DeleteIPCollection(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
+			batch.Record(subnet.Name, "delete_subnet_ips", DeleteIPCollection(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
+		} else {
+			batch.Skip("", "no_subnet")
 		}
 	}
-	if !firstErr.OK {
-		return firstErr
+	if batch.Failed > 0 {
+		return batch.Result(ctx)
 	}
 	if err := deleteVictimVPC(ctx, victim); err != nil {
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
 	}
-	if firstErr.OK {
-		for _, endpoint := range victim.ExposedEndpoints {
-			if err := ctx.Err(); err != nil {
-				return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
-			}
-			ret := redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
-			if !ret.OK {
-				log.Logger.Warningf("Failed to release FRPS reservation: victim_id=%d host=%s port=%d protocol=%s reason=%s", victim.ID, endpoint.IP, endpoint.Port, endpoint.Protocol, ret.Msg)
-			}
-			tryDelete(ret)
+	for _, endpoint := range victim.ExposedEndpoints {
+		if ctx.Err() != nil {
+			return batch.Result(ctx)
 		}
+		ret := redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
+		if !ret.OK {
+			log.Logger.Warningf("Failed to release FRPS reservation: victim_id=%d host=%s port=%d protocol=%s reason=%s", victim.ID, endpoint.IP, endpoint.Port, endpoint.Protocol, ret.Msg)
+		}
+		batch.Record(fmt.Sprintf("%s:%d/%s", endpoint.IP, endpoint.Port, endpoint.Protocol), "release_frps_port", ret)
 	}
-	if firstErr.OK {
+	result := batch.Result(ctx)
+	if result.OK {
 		log.Logger.Debugf("Deleted victim k8s resources: victim_id=%d", victim.ID)
 	} else {
-		log.Logger.Warningf("Victim k8s cleanup incomplete: victim_id=%d error=%s", victim.ID, firstErr.Msg)
+		log.Logger.Warningf("Victim k8s cleanup incomplete: victim_id=%d error=%s", victim.ID, result.Msg)
 	}
-	return firstErr
+	return result
 }
 
 func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVal {

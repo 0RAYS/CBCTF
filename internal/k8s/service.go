@@ -105,10 +105,12 @@ func DeleteServiceCollection(ctx context.Context, labels map[string]string) mode
 	if !ret.OK || services == nil {
 		return ret
 	}
+	batch := model.NewBatch(len(services.Items))
 	for _, service := range services.Items {
-		if ret = DeleteService(ctx, service.Name); !ret.OK {
-			return ret
+		if ctx.Err() != nil {
+			return batch.Result(ctx)
 		}
+		batch.Record(service.Name, "delete_service", DeleteService(ctx, service.Name))
 	}
-	return model.SuccessRetVal()
+	return batch.Result(ctx)
 }
