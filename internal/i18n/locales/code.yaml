@@ -1,6 +1,7 @@
 common:
   success: "200"
   unknownError: "500"
+  batchIncomplete: "500"
 response:
   badRequest: "400"
   unauthorized: "401"

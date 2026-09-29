@@ -1,6 +1,7 @@
 common:
   success: "操作成功"
   unknownError: "未知错误: {{.Error}}"
+  batchIncomplete: "批量处理未全部完成：成功 {{.Succeeded}}，失败 {{.Failed}}，跳过 {{.Skipped}}，未执行 {{.NotAttempted}}"
 response:
   badRequest: "请求参数无效: {{.Error}}"
   unauthorized: "请先登录"

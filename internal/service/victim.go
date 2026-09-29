@@ -249,6 +249,8 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	if _, ret := victimRepo.HasAliveVictim(teamID, challengeID); ret.OK {
 		log.Logger.Debugf("Start victim rejected: team_id=%d challenge_id=%d already has alive victim", teamID, challengeID)
 		return model.RetVal{Msg: i18n.Model.Victim.NotStartable}
+	} else if ret.Msg != i18n.Model.NotFound {
+		return ret
 	}
 	challenge, ret := challengeRepo.GetByID(challengeID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
@@ -305,7 +307,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		if cleanupRet := db.InitVictimRepo(tx).Delete(victim.ID); !cleanupRet.OK {
 			log.Logger.Warningf("Failed to cleanup victim after enqueue failure: victim_id=%d reason=%s", victim.ID, cleanupRet.Msg)
 		}
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	log.Logger.Infof(
 		"Start victim queued: victim_id=%d user_id=%d team_id=%d challenge_id=%d contest_id=%d duration=%s pods=%d",
@@ -459,7 +461,6 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 	if len(form.Challenges) == 0 || form.TeamRatio <= 0 || form.TeamRatio > 1 {
 		return model.SuccessRetVal()
 	}
-	requestedChallenges := len(form.Challenges)
 	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"type": model.PodsChallengeType, "rand_id": form.Challenges},
 	})
@@ -476,7 +477,7 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 	if !ret.OK {
 		return ret
 	}
-	if len(challengeIDL) == 0 || len(teams) == 0 {
+	if len(teams) == 0 {
 		return model.SuccessRetVal()
 	}
 	teamCount := int(float64(len(teams)) * form.TeamRatio)
@@ -494,50 +495,70 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 	if !ret.OK {
 		return ret
 	}
-	if len(contestChallenges) == 0 {
-		return model.SuccessRetVal()
+	randIDs := make(map[uint]string, len(challenges))
+	for _, challenge := range challenges {
+		randIDs[challenge.ID] = challenge.RandID
+	}
+	byRandID := make(map[string]model.ContestChallenge, len(contestChallenges))
+	for _, challenge := range contestChallenges {
+		byRandID[randIDs[challenge.ChallengeID]] = challenge
 	}
 	duration := time.Duration(form.Duration) * time.Second
-	queued, skippedSolved, skippedFlag, failedStart := 0, 0, 0, 0
-	for _, contestChallenge := range contestChallenges {
+	batch := model.NewBatch(len(form.Challenges) * len(teams))
+	for _, randID := range form.Challenges {
+		contestChallenge, exists := byRandID[randID]
 		for _, team := range teams {
+			if tx.Statement.Context.Err() != nil {
+				return batch.Result(tx.Statement.Context)
+			}
+			id := fmt.Sprintf("team:%d/challenge:%s", team.ID, randID)
+			if !exists {
+				batch.Fail(id, "lookup", model.RetVal{Msg: i18n.Model.NotFound})
+				continue
+			}
 			solved, checkRet := CheckIfSolved(tx, team, contestChallenge.ContestFlags)
 			if !checkRet.OK {
-				return checkRet
+				batch.Fail(id, "read_solved", checkRet)
+				return batch.Result(tx.Statement.Context)
 			}
 			if solved {
-				skippedSolved++
+				batch.Skip(id, "already_solved")
 				continue
 			}
 			generated, checkRet := CheckIfGenerated(tx, team, contestChallenge.ContestFlags)
 			if !checkRet.OK {
-				return checkRet
+				batch.Fail(id, "read_flags", checkRet)
+				return batch.Result(tx.Statement.Context)
 			}
 			if !generated {
 				if _, ret = CreateTeamFlag(tx, team, contest, contestChallenge); !ret.OK {
-					skippedFlag++
+					batch.Fail(id, "create_flags", ret)
+					if model.BatchDependencyFailed(ret) {
+						return batch.Result(tx.Statement.Context)
+					}
 					continue
 				}
 			}
 			if ret = StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID, duration); ret.OK {
-				queued++
+				batch.Success(id, "queued")
+			} else if ret.Msg == i18n.Model.Victim.NotStartable {
+				batch.Skip(id, "already_active")
 			} else {
-				failedStart++
+				batch.Fail(id, "start", ret)
+				if model.BatchDependencyFailed(ret) {
+					return batch.Result(tx.Statement.Context)
+				}
 			}
 		}
 	}
-	log.Logger.Infof(
-		"Batch start victims completed: contest_id=%d requested_challenges=%d matched_challenges=%d selected_teams=%d queued=%d skipped_solved=%d skipped_flag=%d failed_start=%d duration=%s",
-		contest.ID, requestedChallenges, len(contestChallenges), len(teams), queued, skippedSolved, skippedFlag, failedStart, duration,
-	)
-	return model.SuccessRetVal()
+	return batch.Result(tx.Statement.Context)
 }
 
 func StopVictims(tx *gorm.DB, contestID uint, form dto.StopVictimsForm) model.RetVal {
 	if len(form.Victims) == 0 {
 		return model.SuccessRetVal()
 	}
-	options := db.GetOptions{Conditions: map[string]any{"id": form.Victims}}
+	options := db.GetOptions{Conditions: map[string]any{"id": form.Victims}, Deleted: true}
 	if contestID > 0 {
 		options.Conditions["contest_id"] = contestID
 	}
@@ -545,11 +566,34 @@ func StopVictims(tx *gorm.DB, contestID uint, form dto.StopVictimsForm) model.Re
 	if !ret.OK {
 		return ret
 	}
+	byID := make(map[uint]model.Victim, len(victims))
 	for _, victim := range victims {
-		if ret = StopVictim(tx, victim); !ret.OK {
-			log.Logger.Warningf("Skip stopping victim: victim_id=%d status=%s reason=%s", victim.ID, victim.Status, ret.Msg)
+		byID[victim.ID] = victim
+	}
+	batch := model.NewBatch(len(form.Victims))
+	for _, id := range form.Victims {
+		if tx.Statement.Context.Err() != nil {
+			return batch.Result(tx.Statement.Context)
+		}
+		key := fmt.Sprint(id)
+		victim, exists := byID[id]
+		if !exists {
+			batch.Fail(key, "lookup", model.RetVal{Msg: i18n.Model.NotFound})
+			continue
+		}
+		if victim.Status == model.TerminatingVictimStatus || victim.Status == model.StoppedVictimStatus {
+			batch.Skip(key, "already_stopping")
+			continue
+		}
+		ret = StopVictim(tx, victim)
+		if ret.OK {
+			batch.Success(key, "queued")
+		} else {
+			batch.Fail(key, "stop", ret)
+			if model.BatchDependencyFailed(ret) {
+				return batch.Result(tx.Statement.Context)
+			}
 		}
 	}
-	log.Logger.Infof("Batch stop victims requested: requested=%d matched=%d", len(form.Victims), len(victims))
-	return model.SuccessRetVal()
+	return batch.Result(tx.Statement.Context)
 }
