@@ -108,10 +108,22 @@ func PullContestChallengeImage(ctx context.Context, form dto.PullImageForm) mode
 		targetImages[nodeName] = append(targetImages[nodeName], imageName)
 	}
 
-	for nodeName, images := range targetImages {
-		if err := task.EnqueuePrepullTargets(images, []string{nodeName}, form.PullPolicy); err != nil {
-			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
-		}
+	names := make([]string, 0, len(targetImages))
+	for name := range targetImages {
+		names = append(names, name)
 	}
-	return model.SuccessRetVal()
+	slices.Sort(names)
+	batch := model.NewBatch(len(names))
+	for _, nodeName := range names {
+		if ctx.Err() != nil {
+			return batch.Result(ctx)
+		}
+		images := targetImages[nodeName]
+		if err := task.EnqueuePrepullTargets(images, []string{nodeName}, form.PullPolicy); err != nil {
+			batch.Fail(nodeName, "enqueue", model.RetVal{Msg: i18n.Task.EnqueueError})
+			return batch.Result(ctx)
+		}
+		batch.Success(nodeName, "queued")
+	}
+	return batch.Result(ctx)
 }

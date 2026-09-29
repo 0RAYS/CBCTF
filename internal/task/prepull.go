@@ -62,5 +62,10 @@ func HandlePrepullTask(ctx context.Context, t *asynq.Task) error {
 	}
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
-	return k8s.PrepullImages(ctx, payload.Images, payload.Nodes, payload.PullPolicy)
+	err := k8s.PrepullImages(ctx, payload.Images, payload.Nodes, payload.PullPolicy)
+	var partial *k8s.PartialPrepullError
+	if errors.As(err, &partial) {
+		return errors.Join(err, asynq.SkipRetry)
+	}
+	return err
 }

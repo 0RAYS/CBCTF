@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -19,6 +20,13 @@ import (
 func imageFailureKey(image string) string {
 	return fmt.Sprintf("prepull:%s:%x", globalNamespace, sha256.Sum256([]byte(NormalizeImage(image))))
 }
+
+// Some Jobs were already submitted. Retrying the original batch (especially
+// Always) would repeat successful side effects; callers should target failures.
+type PartialPrepullError struct{ Err error }
+
+func (e *PartialPrepullError) Error() string { return e.Err.Error() }
+func (e *PartialPrepullError) Unwrap() error { return e.Err }
 
 // NormalizeImage uses one identity for warmup, failure tracking and image inventories.
 func NormalizeImage(image string) string {
@@ -123,7 +131,23 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 		return fmt.Errorf("sync image warmup observer: %w", ctx.Err())
 	}
 	pending := make(map[pullTarget]bool)
+	var failures []error
+	submitted := 0
+	finish := func() error {
+		err := errors.Join(failures...)
+		if err != nil {
+			err = fmt.Errorf("image warmup failed: %w", err)
+		}
+		if err != nil && submitted > 0 {
+			return &PartialPrepullError{Err: err}
+		}
+		return err
+	}
 	for _, node := range nodes {
+		if ctx.Err() != nil {
+			failures = append(failures, ctx.Err())
+			return finish()
+		}
 		if len(selectedNodes) > 0 && !slices.Contains(selectedNodes, node.Name) {
 			continue
 		}
@@ -133,13 +157,17 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 			_, present := inventory[NormalizeImage(image)]
 			if pullPolicy == string(corev1.PullIfNotPresent) && present {
 				if err := redis.RDB.HDel(ctx, imageFailureKey(image), node.Name).Err(); err != nil {
-					return err
+					failures = append(failures, fmt.Errorf("clear image status %s/%s: %w", node.Name, image, err))
 				}
 			} else {
 				missing = append(missing, image)
 			}
 		}
 		for i := 0; i < len(missing); i += 5 {
+			if ctx.Err() != nil {
+				failures = append(failures, ctx.Err())
+				return finish()
+			}
 			chunk := missing[i:min(i+5, len(missing))]
 			_, ret = CreateJob(ctx, CreateJobOptions{
 				Name:         "prepull-" + utils.RandHexStr(20),
@@ -149,14 +177,15 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 				SelectedNode: node.Name,
 			})
 			if !ret.OK {
-				return resourceError(ret)
+				failures = append(failures, fmt.Errorf("create warmup job node=%s images=%v: %w", node.Name, chunk, resourceError(ret)))
+				continue
 			}
+			submitted++
 			for _, image := range chunk {
 				pending[pullTarget{node: node.Name, image: image}] = true
 			}
 		}
 	}
-	failures := 0
 	for len(pending) > 0 {
 		for target, result := range observed.snapshot() {
 			if !pending[target] {
@@ -164,29 +193,27 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 			}
 			if result.pulled {
 				if err := redis.RDB.HDel(ctx, imageFailureKey(target.image), target.node).Err(); err != nil {
-					return err
+					failures = append(failures, fmt.Errorf("clear image status %s/%s: %w", target.node, target.image, err))
 				}
 			} else {
 				if err := redis.RDB.HSet(ctx, imageFailureKey(target.image), target.node, result.reason).Err(); err != nil {
-					return err
+					failures = append(failures, fmt.Errorf("save image status %s/%s: %w", target.node, target.image, err))
 				}
-				failures++
+				failures = append(failures, fmt.Errorf("pull image %s/%s: %s", target.node, target.image, result.reason))
 			}
 			delete(pending, target)
 		}
 		if len(pending) == 0 {
-			if failures > 0 {
-				return fmt.Errorf("image warmup failed for %d node/image pairs", failures)
-			}
-			return nil
+			return finish()
 		}
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("image warmup incomplete (%d node/image pairs): %w", len(pending), ctx.Err())
+			failures = append(failures, fmt.Errorf("image warmup incomplete (%d node/image pairs): %w", len(pending), ctx.Err()))
+			return finish()
 		case <-observed.changed:
 		}
 	}
-	return nil
+	return finish()
 }
 
 func containerImages(containers []corev1.Container) []string {
