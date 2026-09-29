@@ -28,7 +28,11 @@ func Submit(
 		if ret := submissionRepo.LockAttemptScope(team.ID, contestChallenge.ID); !ret.OK {
 			return model.Submission{}, ret
 		}
-		if contestChallenge.Attempt <= CountAttempts(tx, team, contestChallenge) {
+		attempts, ret := CountAttempts(tx, team, contestChallenge)
+		if !ret.OK {
+			return model.Submission{}, ret
+		}
+		if contestChallenge.Attempt <= attempts {
 			return model.Submission{}, model.RetVal{Msg: i18n.Model.Submission.NotAllowed}
 		}
 	}
@@ -143,23 +147,22 @@ func Submit(
 	return submission, model.SuccessRetVal()
 }
 
-func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) int64 {
-	count, _ := db.InitSubmissionRepo(tx).Count(db.CountOptions{
+func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (int64, model.RetVal) {
+	return db.InitSubmissionRepo(tx).Count(db.CountOptions{
 		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID, "solved": false},
 	})
-	return count
 }
 
 // CheckIfSolved contestChallenge 需要预加载 ContestFlags
-func CheckIfSolved(tx *gorm.DB, team model.Team, contestFlags []model.ContestFlag) bool {
+func CheckIfSolved(tx *gorm.DB, team model.Team, contestFlags []model.ContestFlag) (bool, model.RetVal) {
 	if len(contestFlags) == 0 {
-		return true
+		return true, model.SuccessRetVal()
 	}
 	solvedCount, ret := db.InitTeamFlagRepo(tx).CountSolvedForChallenge(team.ID, contestFlags[0].ContestChallengeID)
 	if !ret.OK {
-		return false
+		return false, ret
 	}
-	return solvedCount == int64(len(contestFlags))
+	return solvedCount == int64(len(contestFlags)), model.SuccessRetVal()
 }
 
 func ListTeamSubmissions(tx *gorm.DB, team model.Team, form dto.ListModelsForm) ([]model.Submission, int64, model.RetVal) {

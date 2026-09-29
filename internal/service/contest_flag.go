@@ -21,6 +21,9 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 		return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound}
 	}
 	teamFlag, ret := db.InitTeamFlagRepo(tx).GetByContestChallengeAndValue(team.ID, contestChallenge.ID, value)
+	if !ret.OK && ret.Msg != i18n.Model.TeamFlag.NotFound {
+		return false, model.ContestFlag{}, model.TeamFlag{}, ret
+	}
 	if ret.OK {
 		for _, contestFlag := range contestFlagL {
 			if contestFlag.ID != teamFlag.ContestFlagID {
@@ -69,7 +72,13 @@ func SubmitContestFlag(
 		if !listRet.OK {
 			return listRet
 		}
-		solved = contestChallenge.Type == model.PodsChallengeType && CheckIfSolved(tx2, team, contestFlags)
+		if contestChallenge.Type == model.PodsChallengeType {
+			var checkRet model.RetVal
+			solved, checkRet = CheckIfSolved(tx2, team, contestFlags)
+			if !checkRet.OK {
+				return checkRet
+			}
+		}
 		return model.SuccessRetVal()
 	})
 	if !ret.OK {

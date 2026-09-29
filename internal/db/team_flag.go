@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
@@ -12,6 +13,16 @@ import (
 
 type TeamFlagRepo struct {
 	BaseRepo[model.TeamFlag]
+}
+
+// ON CONFLICT avoids aborting an enclosing PostgreSQL transaction when two
+// requests initialize the same flag concurrently. The stored value wins.
+func (t *TeamFlagRepo) CreateIfAbsent(flag model.TeamFlag) (model.TeamFlag, model.RetVal) {
+	res := t.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(&flag)
+	if res.Error != nil {
+		return model.TeamFlag{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return t.Get(GetOptions{Conditions: map[string]any{"team_id": flag.TeamID, "contest_flag_id": flag.ContestFlagID}})
 }
 
 type UpdateTeamFlagRepo struct {

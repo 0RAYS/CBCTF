@@ -58,11 +58,17 @@ func (c *ContestChallengeRepo) DeleteByChallengeID(challengeIDL ...uint) model.R
 	return c.DeleteByFieldID("challenge_id", challengeIDL...)
 }
 
-func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challengeID uint) bool {
+func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challengeID uint) (bool, model.RetVal) {
 	_, ret := c.Get(GetOptions{
 		Conditions: map[string]any{"contest_id": contestID, "challenge_id": challengeID},
 	})
-	return !ret.OK
+	if ret.OK {
+		return false, model.SuccessRetVal()
+	}
+	if ret.Msg == i18n.Model.NotFound {
+		return true, model.SuccessRetVal()
+	}
+	return false, ret
 }
 
 func (c *ContestChallengeRepo) ListCategories(contestID uint, t model.ChallengeType) ([]string, model.RetVal) {

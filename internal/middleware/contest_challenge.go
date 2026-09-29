@@ -31,7 +31,12 @@ func CheckSolved(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	if service.CheckIfSolved(db.DB.WithContext(ctx.Request.Context()), team, contestFlags) {
+	solved, ret := service.CheckIfSolved(db.DB.WithContext(ctx.Request.Context()), team, contestFlags)
+	if !ret.OK {
+		resp.AbortJSON(ctx, ret)
+		return
+	}
+	if solved {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.TeamFlag.AlreadySolved})
 		return
 	}

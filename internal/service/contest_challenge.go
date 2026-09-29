@@ -26,7 +26,11 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 			failedL = append(failedL, challengeRandID)
 			continue
 		}
-		if !contestChallengeRepo.IsUniqueContestChallenge(contest.ID, challenge.ID) {
+		unique, uniqueRet := contestChallengeRepo.IsUniqueContestChallenge(contest.ID, challenge.ID)
+		if !uniqueRet.OK {
+			return contestChallengeL, failedL, uniqueRet
+		}
+		if !unique {
 			continue
 		}
 		ret = db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
@@ -120,15 +124,27 @@ func buildContestChallengeFileName(tx *gorm.DB, challenge model.Challenge, teamI
 	return filename
 }
 
-func BuildContestChallengeRuntimeView(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) view.ContestChallengeView {
+func BuildContestChallengeRuntimeView(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (view.ContestChallengeView, model.RetVal) {
+	attempts, ret := CountAttempts(tx, team, contestChallenge)
+	if !ret.OK {
+		return view.ContestChallengeView{}, ret
+	}
+	generated, ret := CheckIfGenerated(tx, team, contestChallenge.ContestFlags)
+	if !ret.OK {
+		return view.ContestChallengeView{}, ret
+	}
+	solved, ret := CheckIfSolved(tx, team, contestChallenge.ContestFlags)
+	if !ret.OK {
+		return view.ContestChallengeView{}, ret
+	}
 	return view.ContestChallengeView{
 		ContestChallenge: contestChallenge,
-		Attempts:         CountAttempts(tx, team, contestChallenge),
-		Init:             CheckIfGenerated(tx, team, contestChallenge.ContestFlags),
-		Solved:           CheckIfSolved(tx, team, contestChallenge.ContestFlags),
+		Attempts:         attempts,
+		Init:             generated,
+		Solved:           solved,
 		Remote:           GetVictimStatus(tx, team.ID, contestChallenge.Challenge),
 		FileName:         buildContestChallengeFileName(tx, contestChallenge.Challenge, team.ID),
-	}
+	}, model.SuccessRetVal()
 }
 
 func ListContestChallengeViews(tx *gorm.DB, contest model.Contest, team model.Team, form dto.GetContestChallengesForm) ([]view.ContestChallengeView, int64, model.RetVal) {
@@ -163,7 +179,11 @@ func ListContestChallengeViews(tx *gorm.DB, contest model.Contest, team model.Te
 	}
 	views := make([]view.ContestChallengeView, 0, len(contestChallenges))
 	for _, contestChallenge := range contestChallenges {
-		views = append(views, BuildContestChallengeRuntimeView(tx, team, contestChallenge))
+		item, ret := BuildContestChallengeRuntimeView(tx, team, contestChallenge)
+		if !ret.OK {
+			return nil, count, ret
+		}
+		views = append(views, item)
 	}
 	return views, count, model.SuccessRetVal()
 }
@@ -197,12 +217,18 @@ func GetContestChallengeStatus(tx *gorm.DB, team model.Team, challenge model.Cha
 	if !ret.OK {
 		return view.ContestChallengeStatusView{}, ret
 	}
+	contestChallenge.ContestFlags = contestFlags
+	contestChallenge.Challenge = challenge
+	state, ret := BuildContestChallengeRuntimeView(tx, team, contestChallenge)
+	if !ret.OK {
+		return view.ContestChallengeStatusView{}, ret
+	}
 	return view.ContestChallengeStatusView{
-		Attempts: CountAttempts(tx, team, contestChallenge),
-		Init:     CheckIfGenerated(tx, team, contestFlags),
-		Solved:   CheckIfSolved(tx, team, contestFlags),
-		Remote:   GetVictimStatus(tx, team.ID, challenge),
-		FileName: buildContestChallengeFileName(tx, challenge, team.ID),
+		Attempts: state.Attempts,
+		Init:     state.Init,
+		Solved:   state.Solved,
+		Remote:   state.Remote,
+		FileName: state.FileName,
 	}, model.SuccessRetVal()
 }
 

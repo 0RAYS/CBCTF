@@ -39,7 +39,10 @@ func TestChallengeListAndStatusUseDownloadNameInsteadOfServerPath(t *testing.T) 
 		t.Fatal(err)
 	}
 	contestChallenge := model.ContestChallenge{Challenge: challenge}
-	list := BuildContestChallengeRuntimeView(tx, model.Team{}, contestChallenge)
+	list, listRet := BuildContestChallengeRuntimeView(tx, model.Team{}, contestChallenge)
+	if !listRet.OK {
+		t.Fatalf("runtime view: %+v", listRet)
+	}
 	status, ret := GetContestChallengeStatus(tx, model.Team{}, challenge, contestChallenge)
 	if !ret.OK {
 		t.Fatal(ret)

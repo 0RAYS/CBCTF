@@ -501,11 +501,19 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 	queued, skippedSolved, skippedFlag, failedStart := 0, 0, 0, 0
 	for _, contestChallenge := range contestChallenges {
 		for _, team := range teams {
-			if CheckIfSolved(tx, team, contestChallenge.ContestFlags) {
+			solved, checkRet := CheckIfSolved(tx, team, contestChallenge.ContestFlags)
+			if !checkRet.OK {
+				return checkRet
+			}
+			if solved {
 				skippedSolved++
 				continue
 			}
-			if !CheckIfGenerated(tx, team, contestChallenge.ContestFlags) {
+			generated, checkRet := CheckIfGenerated(tx, team, contestChallenge.ContestFlags)
+			if !checkRet.OK {
+				return checkRet
+			}
+			if !generated {
 				if _, ret = CreateTeamFlag(tx, team, contest, contestChallenge); !ret.OK {
 					skippedFlag++
 					continue
