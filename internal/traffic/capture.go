@@ -604,12 +604,17 @@ const frpcPcapName = "frpc.pcap"
 //   - Connections：普通 pod 流量，用于拓扑展示。
 //   - FrpcIPs：frpc pod 经 Proxy Protocol 传递的真实客户端 IP。
 type PcapDirResult struct {
-	Connections []Connection
-	FrpcIPs     []string
-	Accesses    []TrafficAccess
+	Connections  []Connection
+	FrpcIPs      []string
+	Accesses     []TrafficAccess
+	SourceIssues []SourceIssue
+	Files        []CaptureFileResult
 }
 
 func ReadPcapDir(ctx context.Context, path string, proxyPorts map[uint16]bool) (PcapDirResult, error) {
+	if err := ctx.Err(); err != nil {
+		return PcapDirResult{}, err
+	}
 	d, err := os.Stat(path)
 	if err != nil {
 		return PcapDirResult{}, err
@@ -625,6 +630,8 @@ func ReadPcapDir(ctx context.Context, path string, proxyPorts map[uint16]bool) (
 	connections := make([]Connection, 0)
 	frpcIPSet := make(map[string]struct{})
 	accesses := make([]TrafficAccess, 0)
+	issues := make([]SourceIssue, 0)
+	files := make([]CaptureFileResult, 0)
 
 	for _, file := range dir {
 		if err = ctx.Err(); err != nil {
@@ -637,8 +644,11 @@ func ReadPcapDir(ctx context.Context, path string, proxyPorts map[uint16]bool) (
 		if file.Name() == frpcPcapName {
 			// frpc 流量：只提取 Proxy Protocol 中的真实客户端 IP，其余包跳过。
 			observations, readErr := extractFrpcProxyAccesses(ctx, fullPath, proxyPorts)
+			if ctx.Err() != nil {
+				return PcapDirResult{}, ctx.Err()
+			}
 			if readErr != nil {
-				return PcapDirResult{}, readErr
+				issues = append(issues, SourceIssue{File: file.Name(), Phase: "proxy", Error: readErr.Error()})
 			}
 			accesses = append(accesses, observations...)
 			for _, access := range observations {
@@ -647,9 +657,15 @@ func ReadPcapDir(ctx context.Context, path string, proxyPorts map[uint16]bool) (
 		} else {
 			// 普通 pod 流量：完整分析，进入拓扑展示。
 			packetConnections, readErr := ReadPcapFile(ctx, fullPath)
-			if readErr != nil {
-				return PcapDirResult{}, readErr
+			if ctx.Err() != nil {
+				return PcapDirResult{}, ctx.Err()
 			}
+			status := "processed"
+			if readErr != nil {
+				status = "partial"
+				issues = append(issues, SourceIssue{File: file.Name(), Phase: "replay", Error: readErr.Error()})
+			}
+			files = append(files, CaptureFileResult{File: file.Name(), Status: status, Packets: int64(len(packetConnections))})
 			connections = append(connections, packetConnections...)
 		}
 	}
@@ -670,9 +686,11 @@ func ReadPcapDir(ctx context.Context, path string, proxyPorts map[uint16]bool) (
 	slices.Sort(frpcIPs)
 
 	return PcapDirResult{
-		Connections: connections,
-		FrpcIPs:     frpcIPs,
-		Accesses:    accesses,
+		Connections:  connections,
+		FrpcIPs:      frpcIPs,
+		Accesses:     accesses,
+		SourceIssues: issues,
+		Files:        files,
 	}, nil
 }
 

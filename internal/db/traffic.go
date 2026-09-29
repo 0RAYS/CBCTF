@@ -18,10 +18,20 @@ type TrafficRepo struct {
 
 // ReplaceAnalysis replaces a complete capture snapshot, including empty results.
 func (t *TrafficRepo) ReplaceAnalysis(victimID uint, ips []string, accesses []traffic.TrafficAccess, report *traffic.AnalysisReport, archived bool) model.RetVal {
+	updates := clause.AssignmentColumns([]string{"ips", "accesses", "analysis", "archived", "updated_at"})
+	if report != nil && report.Partial {
+		// A failed source cannot retract observations already persisted in the
+		// authoritative database. Merge positive evidence until a complete scan.
+		updates = clause.Assignments(map[string]any{
+			"ips":      gorm.Expr("(SELECT COALESCE(jsonb_agg(DISTINCT value), '[]'::jsonb) FROM jsonb_array_elements(COALESCE(traffics.ips, '[]'::jsonb) || EXCLUDED.ips))"),
+			"accesses": gorm.Expr("(SELECT COALESCE(jsonb_agg(DISTINCT value), '[]'::jsonb) FROM jsonb_array_elements(COALESCE(traffics.accesses, '[]'::jsonb) || EXCLUDED.accesses))"),
+			"analysis": gorm.Expr("EXCLUDED.analysis"), "archived": gorm.Expr("EXCLUDED.archived"), "updated_at": gorm.Expr("EXCLUDED.updated_at"),
+		})
+	}
 	res := t.DB.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "victim_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"ips", "accesses", "analysis", "archived", "updated_at"}),
-		Where:     clause.Where{Exprs: []clause.Expression{clause.Expr{SQL: "NOT traffics.archived"}}},
+		DoUpdates: updates,
+		Where:     clause.Where{Exprs: []clause.Expression{clause.Expr{SQL: "NOT traffics.archived OR (EXCLUDED.archived AND traffics.analysis->>'partial' = 'true')"}}},
 	}).Create(&model.Traffic{VictimID: victimID, IPs: ips, Accesses: accesses, Analysis: report, Archived: archived})
 	if res.Error != nil {
 		return model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": res.Error.Error()}}

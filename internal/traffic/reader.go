@@ -59,6 +59,9 @@ func walkTrafficPackets(ctx context.Context, path string, visit func(gopacket.Pa
 		}
 		data, ci, readErr := source.ReadPacketData()
 		if readErr == io.EOF {
+			if ci.CaptureLength > 0 || len(data) > 0 {
+				return fmt.Errorf("read %s: %w", path, io.ErrUnexpectedEOF)
+			}
 			return nil
 		}
 		if readErr != nil {

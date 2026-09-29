@@ -13,6 +13,7 @@ import useTrafficPlayback from './useTrafficPlayback.js';
 import useTrafficSession from './useTrafficSession.js';
 import useTrafficAnalysis from './useTrafficAnalysis.js';
 import TrafficAnalysisPanel from './TrafficAnalysisPanel.jsx';
+import TrafficSourceIssues from './TrafficSourceIssues.jsx';
 
 export default function TrafficGraphDialog({ isOpen, onClose, container, contestId, teamId, fetchTraffic }) {
   const { t } = useTranslation();
@@ -97,6 +98,7 @@ export default function TrafficGraphDialog({ isOpen, onClose, container, contest
             />
           </div>
           <TrafficSummary summary={topology?.summary || {}} />
+          <TrafficSourceIssues issues={topology?.source_issues} />
           {session.fetchError ? (
             <p role="alert" className="text-sm text-red-300">
               {t('admin.contests.trafficGraph.toast.fetchFailed')}

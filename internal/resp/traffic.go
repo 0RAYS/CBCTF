@@ -1,5 +1,7 @@
 package resp
 
+import "CBCTF/internal/traffic"
+
 type TrafficWindowResp struct {
 	Start      int64 `json:"start"`
 	End        int64 `json:"end"`
@@ -105,6 +107,8 @@ type TrafficRankingResp struct {
 }
 
 type TrafficTopologyResp struct {
+	SourceIssues     []traffic.SourceIssue       `json:"source_issues"`
+	Files            []traffic.CaptureFileResult `json:"files"`
 	StartedAt        string                      `json:"started_at"`
 	TimelineBucketMs int64                       `json:"timeline_bucket_ms"`
 	Window           TrafficWindowResp           `json:"window"`

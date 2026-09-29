@@ -12,7 +12,9 @@ import (
 
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
@@ -83,10 +85,11 @@ type trafficRankingAggregate struct {
 const DefaultTrafficDurationMs int64 = 1000
 
 func GetTraffic(ctx context.Context, victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopologyResp, model.RetVal) {
-	connections, ret := loadTrafficConnections(ctx, victim)
+	snapshot, ret := loadTrafficSnapshot(ctx, victim)
 	if !ret.OK {
 		return resp.TrafficTopologyResp{}, ret
 	}
+	connections := snapshot.Connections
 
 	// 从 DB 读取该靶机所有已知 IP（不受时间窗口限制）
 	ips, ret := db.InitTrafficRepo(db.DB.WithContext(ctx)).GetVictimIPs(victim.ID)
@@ -97,6 +100,8 @@ func GetTraffic(ctx context.Context, victim model.Victim, form dto.GetTrafficFor
 	if len(connections) == 0 {
 		empty := emptyTrafficTopology(victim, form)
 		empty.IPs = ips
+		empty.SourceIssues = snapshot.SourceIssues
+		empty.Files = snapshot.Files
 		return empty, model.SuccessRetVal()
 	}
 
@@ -346,6 +351,8 @@ func GetTraffic(ctx context.Context, victim model.Victim, form dto.GetTrafficFor
 
 	return resp.TrafficTopologyResp{
 		StartedAt:        connections[0].Time.UTC().Format(time.RFC3339Nano),
+		SourceIssues:     snapshot.SourceIssues,
+		Files:            snapshot.Files,
 		TimelineBucketMs: bucketSize,
 		Window: resp.TrafficWindowResp{
 			Start:      start,
@@ -370,28 +377,21 @@ func GetTraffic(ctx context.Context, victim model.Victim, form dto.GetTrafficFor
 	}, model.SuccessRetVal()
 }
 
-func loadTrafficConnections(ctx context.Context, victim model.Victim) ([]traffic.Connection, model.RetVal) {
+func loadTrafficSnapshot(ctx context.Context, victim model.Victim) (*traffic.PcapDirResult, model.RetVal) {
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
-	connections, ret := redis.GetTraffic(ctx, victim)
-	if !ret.OK {
-		return nil, ret
+	snapshot, ret := redis.GetTraffic(ctx, victim)
+	if ret.OK && snapshot != nil {
+		return snapshot, ret
 	}
-	if connections != nil {
-		return connections, model.SuccessRetVal()
+	result, err := traffic.ReadPcapDir(ctx, victim.TrafficBasePath(), victim.TrafficProxyPorts())
+	if err != nil {
+		return nil, model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	ret = redis.UpdateTraffics(ctx, victim)
-	if !ret.OK {
-		return nil, ret
+	if ret = redis.StoreTraffic(ctx, victim, &result); !ret.OK {
+		log.Logger.Warningf("Traffic cache unavailable: victim_id=%d reason=%s", victim.ID, ret.Msg)
 	}
-	connections, ret = redis.GetTraffic(ctx, victim)
-	if !ret.OK {
-		return nil, ret
-	}
-	if len(connections) == 0 {
-		return make([]traffic.Connection, 0), model.SuccessRetVal()
-	}
-	return connections, model.SuccessRetVal()
+	return &result, model.SuccessRetVal()
 }
 
 func emptyTrafficTopology(victim model.Victim, form dto.GetTrafficForm) resp.TrafficTopologyResp {

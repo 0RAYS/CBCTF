@@ -98,10 +98,14 @@ func TestEmptyCaptureHandlingPreservesCancellationAndHeaderErrors(t *testing.T) 
 		if err := os.WriteFile(path, data, 0600); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := AnalyzeDir(context.Background(), dir, AnalysisOptions{}); err == nil {
+		if _, err := ReadPcapFile(context.Background(), path); err == nil {
 			t.Fatalf("partial or corrupt header accepted as empty: %x", data)
 		} else if len(data) < 4 && !errors.Is(err, io.ErrUnexpectedEOF) {
 			t.Fatalf("partial magic should report truncation: %v", err)
+		}
+		report, err := AnalyzeDir(context.Background(), dir, AnalysisOptions{})
+		if err != nil || !report.Partial || len(report.SourceIssues) != 1 {
+			t.Fatalf("file error lost from partial report: %+v %v", report, err)
 		}
 	}
 }
