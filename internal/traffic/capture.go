@@ -88,17 +88,17 @@ type trafficProcessKey struct {
 	Remote   string
 }
 
-func ReadPcapFile(ctx context.Context, path string) ([]Connection, error) {
+func ReadPcapFile(ctx context.Context, path string) ([]Connection, []SourceIssue, error) {
 	file, err := os.Stat(path)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if file.IsDir() {
-		return nil, fmt.Errorf("%s is a directory", path)
+		return nil, nil, fmt.Errorf("%s is a directory", path)
 	}
-	processLookup, err := loadTrafficProcessLookup(path + ".connections.jsonl")
+	processLookup, issues, err := loadTrafficProcessLookup(ctx, path+".connections.jsonl")
 	if err != nil {
-		return nil, err
+		return nil, issues, err
 	}
 	var connections []Connection
 	var firstPacketTime time.Time
@@ -115,15 +115,18 @@ func ReadPcapFile(ctx context.Context, path string) ([]Connection, error) {
 		connections = append(connections, connection)
 		return nil
 	})
-	return connections, err
+	return connections, issues, err
 }
 
-func EnrichPcap(ctx context.Context, pcapPath, jsonlPath, outputPath string) error {
-	processLookup, err := loadTrafficProcessLookup(jsonlPath)
+func EnrichPcap(ctx context.Context, pcapPath, jsonlPath, outputPath string) ([]SourceIssue, error) {
+	processLookup, issues, err := loadTrafficProcessLookup(ctx, jsonlPath)
 	if err != nil {
-		return err
+		return issues, err
 	}
+	return issues, enrichPcap(ctx, pcapPath, outputPath, processLookup)
+}
 
+func enrichPcap(ctx context.Context, pcapPath, outputPath string, processLookup trafficProcessLookup) error {
 	file, err := os.CreateTemp(filepath.Dir(outputPath), ".traffic-enrich-*")
 	if err != nil {
 		return err
@@ -388,38 +391,52 @@ func findTrafficLayerIndex(layersL []gopacket.Layer, target gopacket.LayerType) 
 	return -1
 }
 
-func loadTrafficProcessLookup(path string) (trafficProcessLookup, error) {
+func loadTrafficProcessLookup(ctx context.Context, path string) (trafficProcessLookup, []SourceIssue, error) {
 	lookup := make(trafficProcessLookup)
+	issues := make([]SourceIssue, 0)
+	warn := func(err error) {
+		issues = append(issues, SourceIssue{File: filepath.Base(path), Phase: "process_metadata", Error: err.Error()})
+	}
+	if err := ctx.Err(); err != nil {
+		return lookup, issues, err
+	}
 	file, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return lookup, nil
+			return lookup, issues, nil
 		}
-		return nil, err
+		warn(err)
+		return lookup, issues, nil
 	}
 	defer func(file *os.File) {
 		_ = file.Close()
 	}(file)
 
 	reader := bufio.NewReader(file)
+	lineNumber := 0
 	for {
+		if err = ctx.Err(); err != nil {
+			return lookup, issues, err
+		}
 		line, readErr := reader.ReadString('\n')
+		lineNumber++
 		line = strings.TrimSpace(line)
 		if line != "" {
 			var sidecar trafficConnectionSidecar
 			if err = json.Unmarshal([]byte(line), &sidecar); err != nil {
-				return nil, fmt.Errorf("read traffic sidecar %s: %w", path, err)
-			}
-			info := sidecar.toProcessInfo()
-			protocol := strings.ToUpper(strings.TrimSpace(sidecar.Protocol))
-			local := strings.TrimSpace(sidecar.LocalAddr)
-			remote := strings.TrimSpace(sidecar.RemoteAddr)
-			if protocol != "" && local != "" && remote != "" {
-				for _, key := range []trafficProcessKey{
-					{Protocol: protocol, Local: local, Remote: remote},
-					{Protocol: protocol, Local: remote, Remote: local},
-				} {
-					lookup[key] = append(lookup[key], info)
+				warn(fmt.Errorf("line %d: %w", lineNumber, err))
+			} else {
+				info := sidecar.toProcessInfo()
+				protocol := strings.ToUpper(strings.TrimSpace(sidecar.Protocol))
+				local := strings.TrimSpace(sidecar.LocalAddr)
+				remote := strings.TrimSpace(sidecar.RemoteAddr)
+				if protocol != "" && local != "" && remote != "" {
+					for _, key := range []trafficProcessKey{
+						{Protocol: protocol, Local: local, Remote: remote},
+						{Protocol: protocol, Local: remote, Remote: local},
+					} {
+						lookup[key] = append(lookup[key], info)
+					}
 				}
 			}
 		}
@@ -427,10 +444,11 @@ func loadTrafficProcessLookup(path string) (trafficProcessLookup, error) {
 			if readErr == io.EOF {
 				break
 			}
-			return nil, readErr
+			warn(readErr)
+			break
 		}
 	}
-	return lookup, nil
+	return lookup, issues, nil
 }
 
 func (sidecar trafficConnectionSidecar) toProcessInfo() TrafficProcessInfo {
@@ -590,7 +608,11 @@ func EnrichPcapDirWithContext(ctx context.Context, path string) []error {
 		pcapPath := filepath.Join(path, file.Name())
 		jsonl := filepath.Join(path, file.Name()+".connections.jsonl")
 		output := filepath.Join(path, file.Name()+".enrich.pcap")
-		if err = EnrichPcap(ctx, pcapPath, jsonl, output); err != nil {
+		issues, enrichErr := EnrichPcap(ctx, pcapPath, jsonl, output)
+		for _, issue := range issues {
+			errors = append(errors, fmt.Errorf("%s: %s", issue.File, issue.Error))
+		}
+		if err = enrichErr; err != nil {
 			errors = append(errors, err)
 		}
 	}
@@ -656,7 +678,8 @@ func ReadPcapDir(ctx context.Context, path string, proxyPorts map[uint16]bool) (
 			}
 		} else {
 			// 普通 pod 流量：完整分析，进入拓扑展示。
-			packetConnections, readErr := ReadPcapFile(ctx, fullPath)
+			packetConnections, metadataIssues, readErr := ReadPcapFile(ctx, fullPath)
+			issues = append(issues, metadataIssues...)
 			if ctx.Err() != nil {
 				return PcapDirResult{}, ctx.Err()
 			}
@@ -697,9 +720,16 @@ func ReadPcapDir(ctx context.Context, path string, proxyPorts map[uint16]bool) (
 // extractFrpcProxyAccesses reads trusted FRPC-to-nginx client evidence.
 func extractFrpcProxyAccesses(ctx context.Context, path string, proxyPorts map[uint16]bool) ([]TrafficAccess, error) {
 	accesses := make([]TrafficAccess, 0)
+	warnings := make(map[string]bool)
 	consume := func(data []byte, evidence Evidence) {
 		header, err := pp.Read(bufio.NewReader(bytes.NewReader(data)))
-		if err != nil || header.SourceAddr == nil {
+		if err != nil {
+			if bytes.HasPrefix(data, []byte("PROXY ")) || bytes.HasPrefix(data, []byte("\r\n\r\n")) {
+				warnings["proxy_header_incomplete"] = true
+			}
+			return
+		}
+		if header.SourceAddr == nil {
 			return
 		}
 		ip, _, err := net.SplitHostPort(header.SourceAddr.String())
@@ -707,8 +737,7 @@ func extractFrpcProxyAccesses(ctx context.Context, path string, proxyPorts map[u
 			accesses = append(accesses, TrafficAccess{IP: NormalizeTrafficIP(ip), Time: evidence.Time, Source: "proxy_protocol", Capture: evidence.Capture})
 		}
 	}
-	var incomplete bool
-	streams := newStreamCollector(consume, func(string) { incomplete = true })
+	streams := newStreamCollector(consume, func(code string) { warnings[code] = true })
 	streams.prefixOnly = true
 	err := walkTrafficPackets(ctx, path, func(packet gopacket.Packet, _ layers.LinkType) error {
 		// FRPC delivers PROXY v2 to nginx over loopback ports 10000+.
@@ -728,14 +757,19 @@ func extractFrpcProxyAccesses(ctx context.Context, path string, proxyPorts map[u
 		}
 		return nil
 	})
-	if err != nil {
-		return nil, err
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
 	}
 	streams.flush()
 	// Never silently publish a complete-looking anti-cheat evidence index after
 	// an analysis resource limit or a capture gap.
-	if incomplete {
-		return nil, fmt.Errorf("incomplete FRP TCP evidence in %s", path)
+	if len(warnings) > 0 {
+		codes := make([]string, 0, len(warnings))
+		for code := range warnings {
+			codes = append(codes, code)
+		}
+		slices.Sort(codes)
+		return accesses, fmt.Errorf("incomplete FRP TCP evidence in %s: %s (read error: %v)", path, strings.Join(codes, ","), err)
 	}
 	return accesses, err
 }
