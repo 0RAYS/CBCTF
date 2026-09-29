@@ -9,8 +9,15 @@ export const stopVictims = (victimIds) =>
     data: { victims: victimIds },
   });
 
-export const getVictimTraffic = (victimId, params = {}) =>
-  request({ url: `/admin/victims/${victimId}/traffic`, method: 'GET', params });
+export const getVictimTraffic = (victimId, params = {}, signal) =>
+  request({
+    url: `/admin/victims/${victimId}/traffic`,
+    method: 'GET',
+    params,
+    signal,
+    noLoading: true,
+    noToast: true,
+  });
 
 export const downloadVictimTraffic = (victimId) =>
   request({

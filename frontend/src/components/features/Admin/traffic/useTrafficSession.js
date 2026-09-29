@@ -4,7 +4,6 @@ import { downloadContainerTraffic, getContestTeamTraffic } from '../../../../api
 import { downloadVictimTraffic } from '../../../../api/admin/victims.js';
 import { downloadBlobResponse } from '../../../../utils/fileDownload';
 import { toast } from '../../../../utils/toast';
-import { createDemoTopology } from './trafficDemo.js';
 import { sanitizeSlice } from './trafficPresentation.js';
 
 export default function useTrafficSession({ isOpen, container, contestId, teamId, fetchTraffic: customFetchTraffic }) {
@@ -14,41 +13,51 @@ export default function useTrafficSession({ isOpen, container, contestId, teamId
   const requestSequenceRef = useRef(0);
   const [topology, setTopology] = useState(null);
   const [universeNodes, setUniverseNodes] = useState(null);
-  const [demoMode, setDemoMode] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [selectionVersion, setSelectionVersion] = useState(0);
+  const [fetchError, setFetchError] = useState(false);
 
   useLayoutEffect(() => {
-    const scope = { active: isOpen, universePending: false, universeFetched: false };
+    const scope = {
+      active: isOpen,
+      universePending: false,
+      universeFetched: false,
+    };
     scopeRef.current = scope;
     setTopology(null);
     setUniverseNodes(null);
-    setDemoMode(false);
     setIsFetching(false);
+    setFetchError(false);
     setSelectionVersion((current) => current + 1);
     return () => {
       // Invalidate both request lanes on close, scope change, and unmount.
       scope.active = false;
+      scope.frameController?.abort();
+      scope.universeController?.abort();
       requestSequenceRef.current += 1;
     };
   }, [isOpen, scopeKey]);
 
-  const fetchData = async ({ nextShift, nextSlice, forceLive = false }) => {
+  const fetchData = async ({ nextShift, nextSlice }) => {
     const scope = scopeRef.current;
     if (!container?.id || !scope?.active) return;
     const resolvedSlice = sanitizeSlice(nextSlice);
     const requestId = ++requestSequenceRef.current;
+    scope.frameController?.abort();
+    const frameController = new AbortController();
+    scope.frameController = frameController;
     const isCurrent = () => scope.active && requestSequenceRef.current === requestId;
-    const request = (params) =>
+    const request = (params, signal) =>
       customFetchTraffic
-        ? customFetchTraffic(container, params)
-        : getContestTeamTraffic(contestId, teamId, container.id, params);
+        ? customFetchTraffic(container, params, signal)
+        : getContestTeamTraffic(contestId, teamId, container.id, params, signal);
 
     const fetchUniverseNodes = async (totalDuration) => {
       if (totalDuration <= 0 || scope.universePending || scope.universeFetched) return;
       scope.universePending = true;
+      scope.universeController = new AbortController();
       try {
-        const response = await request({ time_shift: 0, duration: totalDuration });
+        const response = await request({ time_shift: 0, duration: totalDuration }, scope.universeController.signal);
         // A newer frame may finish first; the universe belongs to the scope, not a frame.
         if (!scope.active || response.code !== 200) return;
         scope.universeFetched = true;
@@ -61,28 +70,27 @@ export default function useTrafficSession({ isOpen, container, contestId, teamId
     };
 
     setIsFetching(true);
+    setFetchError(false);
     try {
-      const response = await request({ time_shift: nextShift, duration: resolvedSlice });
+      const response = await request({ time_shift: nextShift, duration: resolvedSlice }, frameController.signal);
       if (!isCurrent()) return;
       if (response.code !== 200) throw new Error(t('admin.contests.trafficGraph.toast.fetchFailed'));
       setTopology(response.data);
-      setDemoMode(false);
       void fetchUniverseNodes(response.data?.total_duration || 0);
     } catch {
       if (!isCurrent()) return;
-      if (!forceLive) toast.warning({ description: t('admin.contests.trafficGraph.toast.demoFallback') });
-      setTopology(createDemoTopology(nextShift, resolvedSlice, container.id));
-      setDemoMode(true);
+      setTopology(null);
+      setFetchError(true);
     } finally {
       if (isCurrent()) {
         setIsFetching(false);
-        setSelectionVersion((current) => current + 1);
       }
     }
   };
 
   const invalidateFrame = () => {
     requestSequenceRef.current += 1;
+    scopeRef.current?.frameController?.abort();
   };
 
   const downloadTraffic = async () => {
@@ -94,7 +102,9 @@ export default function useTrafficSession({ isOpen, container, contestId, teamId
           : await downloadVictimTraffic(container.id);
       if (response.headers?.['file'] === 'true') downloadBlobResponse(response, `traffic_${container.id}.zip`);
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.teamContainers.toast.downloadTrafficFailed') });
+      toast.danger({
+        description: error.message || t('admin.contests.teamContainers.toast.downloadTrafficFailed'),
+      });
     }
   };
 
@@ -102,9 +112,9 @@ export default function useTrafficSession({ isOpen, container, contestId, teamId
     scopeKey,
     topology,
     universeNodes,
-    demoMode,
     isFetching,
     selectionVersion,
+    fetchError,
     fetchData,
     invalidateFrame,
     downloadTraffic,

@@ -11,16 +11,37 @@ import TrafficTimeline from './TrafficTimeline.jsx';
 import { filterTraffic, resolveTrafficSelection } from './trafficPresentation.js';
 import useTrafficPlayback from './useTrafficPlayback.js';
 import useTrafficSession from './useTrafficSession.js';
+import useTrafficAnalysis from './useTrafficAnalysis.js';
+import TrafficAnalysisPanel from './TrafficAnalysisPanel.jsx';
 
 export default function TrafficGraphDialog({ isOpen, onClose, container, contestId, teamId, fetchTraffic }) {
   const { t } = useTranslation();
-  const session = useTrafficSession({ isOpen, container, contestId, teamId, fetchTraffic });
-  const { topology, universeNodes, demoMode, isFetching, scopeKey, selectionVersion } = session;
-  const playback = useTrafficPlayback({ isOpen, containerId: container?.id, scopeKey, topology, isFetching });
+  const session = useTrafficSession({
+    isOpen,
+    container,
+    contestId,
+    teamId,
+    fetchTraffic,
+  });
+  const analysis = useTrafficAnalysis({
+    isOpen,
+    victimId: container?.id,
+    contestId,
+    teamId,
+  });
+  const { topology, universeNodes, isFetching, scopeKey, selectionVersion } = session;
+  const playback = useTrafficPlayback({
+    isOpen,
+    containerId: container?.id,
+    scopeKey,
+    topology,
+    isFetching,
+  });
   const { shift, slice } = playback;
   const [protocolFilter, setProtocolFilter] = useState(new Set());
   const [selectedEdgeId, setSelectedEdgeId] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState('');
+  const [selectedFlow, setSelectedFlow] = useState(null);
 
   useEffect(() => {
     if (isOpen) setProtocolFilter(new Set());
@@ -29,11 +50,12 @@ export default function TrafficGraphDialog({ isOpen, onClose, container, contest
   useEffect(() => {
     setSelectedEdgeId('');
     setSelectedNodeId('');
+    setSelectedFlow(null);
   }, [selectionVersion]);
 
   // Custom fetchers may be inline callbacks; read the latest without making their identity a request trigger.
   const fetchFrame = useEffectEvent(() => {
-    void session.fetchData({ nextShift: shift, nextSlice: slice, forceLive: demoMode });
+    void session.fetchData({ nextShift: shift, nextSlice: slice });
   });
   const invalidateFrame = useEffectEvent(() => session.invalidateFrame());
   useEffect(() => {
@@ -66,15 +88,20 @@ export default function TrafficGraphDialog({ isOpen, onClose, container, contest
       >
         <div className="flex flex-col gap-3 text-neutral-100">
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <TrafficHeader topology={topology} container={container} demoMode={demoMode} />
+            <TrafficHeader topology={topology} container={container} />
             <TrafficControls
               playback={playback}
               isFetching={isFetching}
-              onRefresh={() => session.fetchData({ nextShift: shift, nextSlice: slice, forceLive: true })}
+              onRefresh={() => session.fetchData({ nextShift: shift, nextSlice: slice })}
               onDownload={session.downloadTraffic}
             />
           </div>
           <TrafficSummary summary={topology?.summary || {}} />
+          {session.fetchError ? (
+            <p role="alert" className="text-sm text-red-300">
+              {t('admin.contests.trafficGraph.toast.fetchFailed')}
+            </p>
+          ) : null}
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.55fr)_360px]">
             <TrafficCanvas
               scopeKey={scopeKey}
@@ -84,8 +111,16 @@ export default function TrafficGraphDialog({ isOpen, onClose, container, contest
               protocolFilter={protocolFilter}
               setProtocolFilter={setProtocolFilter}
               selectedEdgeId={selectedEdgeId}
-              onSelectEdge={setSelectedEdgeId}
-              onSelectNode={setSelectedNodeId}
+              onSelectEdge={(id) => {
+                setSelectedEdgeId(id);
+                setSelectedNodeId('');
+                setSelectedFlow(graph.edges.find((edge) => edge.id === id));
+              }}
+              onSelectNode={(id) => {
+                setSelectedNodeId(id);
+                setSelectedEdgeId('');
+                setSelectedFlow(null);
+              }}
             />
             <div className="grid gap-3">
               <TrafficSelectionPanel {...selection} />
@@ -97,6 +132,19 @@ export default function TrafficGraphDialog({ isOpen, onClose, container, contest
               <TrafficRankings topology={topology} playback={playback} />
             </div>
           </div>
+          <TrafficAnalysisPanel
+            key={scopeKey}
+            analysis={analysis}
+            topology={topology}
+            victimId={container?.id}
+            contestId={contestId}
+            selectedNodeId={selectedNodeId}
+            selectedEdge={selectedFlow}
+            onSeek={(offset) => {
+              playback.setIsPlaying(false);
+              playback.setShift(Math.min(Math.max(offset, 0), playback.maxShift));
+            }}
+          />
         </div>
       </Modal>
     </>

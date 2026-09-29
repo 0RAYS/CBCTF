@@ -213,6 +213,7 @@ test('extracted business models/parsers/serializers stay isolated from runtime l
     'components/features/Admin/traffic/trafficDemo.js',
     'components/features/Admin/traffic/trafficLayout.js',
     'components/features/Admin/traffic/trafficPresentation.js',
+    'components/features/Admin/traffic/trafficAnalysisModel.js',
     'components/features/Admin/victims/victimPayload.js',
     'components/features/Admin/webhook/payload.js',
   ].map((file) => `src/${file}`));
