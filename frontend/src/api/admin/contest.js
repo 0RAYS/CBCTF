@@ -290,6 +290,7 @@ export const pullContestImages = (contestId, data) => {
   return request({
     url: `/admin/contests/${contestId}/images`,
     method: 'POST',
+    noToast: true,
     data,
   });
 };

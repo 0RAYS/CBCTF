@@ -11,6 +11,7 @@ export const pullAdminImages = (data) => {
   return request({
     url: '/admin/images',
     method: 'POST',
+    noToast: true,
     data,
   });
 };

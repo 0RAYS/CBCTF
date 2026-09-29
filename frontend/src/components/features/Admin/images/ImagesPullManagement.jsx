@@ -2,6 +2,9 @@ import { useEffect, useEffectEvent, useMemo, useReducer, useRef, useState } from
 import { useTranslation } from 'react-i18next';
 import ImagesPullView from './ImagesPullView';
 import { toast } from '../../../../utils/toast';
+import useBatchAction from '../batch/useBatchAction.js';
+import BatchResultPanel from '../batch/BatchResultPanel.jsx';
+import { remainingBatchIds } from '../batch/batchModel.js';
 import {
   buildTargetKey,
   buildTargets,
@@ -10,12 +13,13 @@ import {
   normalizeTargetImages,
   parseManualImages,
   parseTargetKey,
+  completedImageTargetKeys,
 } from './imageModel';
 
 function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const action = useBatchAction(scope);
   const [nodes, setNodes] = useState([]);
   const [targetImages, setTargetImages] = useState([]);
   const [selectedTargetKeys, setSelectedTargetKeys] = useState([]);
@@ -24,7 +28,6 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
   const [pullPolicy, setPullPolicy] = useState('IfNotPresent');
   const [revision, refresh] = useReducer((value) => value + 1, 0);
   const refreshTimer = useRef(null);
-  const mounted = useRef(false);
 
   const allImages = useMemo(() => normalizeTargetImages(undefined, nodes), [nodes]);
   const availableTargetKeys = useMemo(
@@ -38,9 +41,7 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
   });
 
   useEffect(() => {
-    mounted.current = true;
     return () => {
-      mounted.current = false;
       clearTimeout(refreshTimer.current);
     };
   }, []);
@@ -117,31 +118,27 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const response = await pullImages({
-        targets,
-        pull_policy: pullPolicy,
-      });
-
-      if (mounted.current && response.code === 200) {
-        toast.success({
-          description: t(
-            pullPolicy === 'Never'
-              ? 'admin.contests.imagesPull.toast.skipped'
-              : 'admin.contests.imagesPull.toast.submitSuccess'
-          ),
-        });
+    await action.run(() => pullImages({ targets, pull_policy: pullPolicy }), {
+      successMessage: t(
+        pullPolicy === 'Never'
+          ? 'admin.contests.imagesPull.toast.skipped'
+          : 'admin.contests.imagesPull.toast.submitSuccess'
+      ),
+      failureMessage: t('admin.contests.imagesPull.toast.pullFailed'),
+      onResult: (batch) => {
+        if (batch) {
+          if (requireNodeSelection) {
+            setSelectedNodes((current) => remainingBatchIds(current, batch));
+          } else {
+            const completed = new Set(completedImageTargetKeys(targets, batch));
+            setSelectedTargetKeys((current) => current.filter((key) => !completed.has(key)));
+          }
+        }
+        refresh();
         clearTimeout(refreshTimer.current);
         refreshTimer.current = setTimeout(refresh, 2000);
-      }
-    } catch (error) {
-      if (mounted.current) {
-        toast.danger({ description: error.message || t('admin.contests.imagesPull.toast.pullFailed') });
-      }
-    } finally {
-      if (mounted.current) setSubmitting(false);
-    }
+      },
+    });
   };
 
   const handlePullFromSelection = async () => {
@@ -159,27 +156,30 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
   };
 
   return (
-    <ImagesPullView
-      scope={scope}
-      nodes={nodes}
-      targetImages={targetImages}
-      allImages={allImages}
-      selectedTargetKeys={selectedTargetKeys}
-      selectedNodes={selectedNodes}
-      manualImagesText={manualImagesText}
-      pullPolicy={pullPolicy}
-      loading={loading}
-      submitting={submitting}
-      onTargetToggle={handleTargetToggle}
-      onToggleAllTargets={handleToggleAllTargets}
-      onNodeToggle={handleNodeToggle}
-      onToggleAllNodes={handleToggleAllNodes}
-      onManualImagesChange={setManualImagesText}
-      onPullPolicyChange={setPullPolicy}
-      onPullFromSelection={handlePullFromSelection}
-      onPullFromManualInput={handlePullFromManualInput}
-      onRefresh={refresh}
-    />
+    <div className="space-y-4">
+      <BatchResultPanel result={action.result} error={action.error} queued />
+      <ImagesPullView
+        scope={scope}
+        nodes={nodes}
+        targetImages={targetImages}
+        allImages={allImages}
+        selectedTargetKeys={selectedTargetKeys}
+        selectedNodes={selectedNodes}
+        manualImagesText={manualImagesText}
+        pullPolicy={pullPolicy}
+        loading={loading}
+        submitting={action.pending}
+        onTargetToggle={handleTargetToggle}
+        onToggleAllTargets={handleToggleAllTargets}
+        onNodeToggle={handleNodeToggle}
+        onToggleAllNodes={handleToggleAllNodes}
+        onManualImagesChange={setManualImagesText}
+        onPullPolicyChange={setPullPolicy}
+        onPullFromSelection={handlePullFromSelection}
+        onPullFromManualInput={handlePullFromManualInput}
+        onRefresh={refresh}
+      />
+    </div>
   );
 }
 

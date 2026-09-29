@@ -16,6 +16,7 @@ import {
 import {
     buildTargetKey,
     buildTargets,
+    completedImageTargetKeys,
     hasImageTag,
     missingTargetKeys,
     normalizeNodes,
@@ -25,6 +26,16 @@ import {
     parseTargetKey,
     selectableTargetKeys,
 } from '../src/components/features/Admin/images/imageModel.js';
+
+test('partial warmup clears only submitted images on successfully queued nodes', () => {
+    const targets = buildTargets(['node-a', 'node-b', 'node-c'], ['app:v1', 'sidecar:v1']);
+    const completed = completedImageTargetKeys(targets, { items: [
+        { id: 'node-a', status: 'success' },
+        { id: 'node-b', status: 'failed' },
+    ] });
+    assert.deepEqual(completed, [buildTargetKey('node-a', 'app:v1'), buildTargetKey('node-a', 'sidecar:v1')]);
+    assert.equal(completed.includes(buildTargetKey('node-a', 'new:v2')), false);
+});
 
 test('task queries retain independent pages and filters', () => {
   let history = createTaskQuery();

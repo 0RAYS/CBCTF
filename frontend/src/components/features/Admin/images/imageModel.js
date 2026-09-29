@@ -69,3 +69,12 @@ export function selectableTargetKeys(nodes, images, pullPolicy) {
   }
   return missingTargetKeys(nodes, images);
 }
+
+export function completedImageTargetKeys(targets, batch) {
+  const completedNodes = new Set(
+    batch.items.filter((item) => ['success', 'skipped'].includes(item.status)).map((item) => item.id)
+  );
+  return targets
+    .filter((target) => completedNodes.has(target.node))
+    .map(({ node, image }) => buildTargetKey(node, image));
+}
