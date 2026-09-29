@@ -19,7 +19,7 @@ const trafficsKeyTmpl = "traffic:snapshot:%d"
 // One atomic value preserves nanosecond ordering and represents an empty
 // capture distinctly from a cache miss. No packet keys can expire independently.
 func UpdateTraffics(ctx context.Context, victim model.Victim) model.RetVal {
-	result, err := traffic.ReadPcapDirWithContext(ctx, victim.TrafficBasePath())
+	result, err := traffic.ReadPcapDir(ctx, victim.TrafficBasePath(), victim.TrafficProxyPorts())
 	if err != nil {
 		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}

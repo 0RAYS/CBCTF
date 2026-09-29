@@ -32,6 +32,11 @@ func IsPublicTrafficIP(value string) bool {
 	if err != nil || !ip.IsGlobalUnicast() || ip.IsPrivate() || ip.IsLoopback() {
 		return false
 	}
+	// Public IPv6 unicast allocations are inside 2000::/3. Exclude reserved
+	// address space even though netip classifies it as global unicast.
+	if ip.Is6() && !netip.MustParsePrefix("2000::/3").Contains(ip) {
+		return false
+	}
 	for _, prefix := range specialTrafficPrefixes {
 		if prefix.Contains(ip) {
 			return false

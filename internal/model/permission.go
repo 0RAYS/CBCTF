@@ -307,16 +307,17 @@ var RoutePermissions = map[string]string{
 	"POST /admin/images": PermAdminImagePull,
 
 	// /admin/contests
-	"GET /admin/contests":                            PermAdminContestList,
-	"POST /admin/contests":                           PermAdminContestCreate,
-	"GET /admin/contests/:contestID":                 PermAdminContestRead,
-	"PUT /admin/contests/:contestID":                 PermAdminContestUpdate,
-	"DELETE /admin/contests/:contestID":              PermAdminContestDelete,
-	"POST /admin/contests/:contestID/picture":        PermAdminContestUpdate,
-	"GET /admin/contests/:contestID/rank":            PermAdminContestRank,
-	"GET /admin/contests/:contestID/scoreboard":      PermAdminContestRank,
-	"GET /admin/contests/:contestID/timeline":        PermAdminContestRank,
-	"GET /admin/contests/:contestID/writeups/export": PermAdminContestWriteupExport,
+	"GET /admin/contests":                             PermAdminContestList,
+	"POST /admin/contests":                            PermAdminContestCreate,
+	"GET /admin/contests/:contestID":                  PermAdminContestRead,
+	"PUT /admin/contests/:contestID":                  PermAdminContestUpdate,
+	"DELETE /admin/contests/:contestID":               PermAdminContestDelete,
+	"POST /admin/contests/:contestID/picture":         PermAdminContestUpdate,
+	"GET /admin/contests/:contestID/rank":             PermAdminContestRank,
+	"GET /admin/contests/:contestID/scoreboard":       PermAdminContestRank,
+	"GET /admin/contests/:contestID/timeline":         PermAdminContestRank,
+	"GET /admin/contests/:contestID/traffic/overlaps": PermAdminContestTrafficRead,
+	"GET /admin/contests/:contestID/writeups/export":  PermAdminContestWriteupExport,
 
 	// /admin/contests/:contestID/teams
 	"GET /admin/contests/:contestID/teams":                                            PermAdminTeamList,

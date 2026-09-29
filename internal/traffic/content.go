@@ -24,6 +24,7 @@ var hexPattern = regexp.MustCompile(`\b[0-9a-fA-F]{16,1000}\b`)
 var jsonStringPattern = regexp.MustCompile(`"(?:[^"\\\r\n]|\\.){1,512}"`)
 
 func (a *analyzer) scanFlags(data []byte, e Evidence, encoding string) {
+	a.scanAttackContent(data, e)
 	values := flagPattern.FindAllString(string(data), maxFindings+1)
 	for _, known := range a.known {
 		if known != "" && bytes.Contains(data, []byte(known)) {

@@ -63,6 +63,10 @@ func writeTrafficTestCapture(t *testing.T, path string, payloads ...string) {
 	for i, payload := range payloads {
 		ip := &layers.IPv4{Version: 4, TTL: 64, Protocol: layers.IPProtocolTCP, SrcIP: net.ParseIP("8.8.8.8"), DstIP: net.ParseIP("10.0.0.2")}
 		tcp := &layers.TCP{SrcPort: 12345, DstPort: 80, Seq: seq, ACK: true}
+		if filepath.Base(path) == "frpc.pcap" {
+			ip.SrcIP, ip.DstIP = net.ParseIP("127.0.0.1"), net.ParseIP("127.0.0.1")
+			tcp.DstPort = 10000
+		}
 		if err = tcp.SetNetworkLayerForChecksum(ip); err != nil {
 			t.Fatal(err)
 		}
@@ -86,7 +90,7 @@ func TestTrafficReaderErrorsAndEnrichment(t *testing.T) {
 	if err := EnrichPcap(context.Background(), path, path+".connections.jsonl", path+".enrich.pcap"); err != nil {
 		t.Fatal(err)
 	}
-	result, err := ReadPcapDir(dir)
+	result, err := ReadPcapDir(context.Background(), dir, nil)
 	if err != nil || len(result.Connections) != 1 {
 		t.Fatalf("duplicate enriched capture: %d, %v", len(result.Connections), err)
 	}
@@ -98,7 +102,7 @@ func TestTrafficReaderErrorsAndEnrichment(t *testing.T) {
 	if err = os.WriteFile(filepath.Join(dir, "broken.pcap"), []byte("broken"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = ReadPcapDir(dir); err == nil {
+	if _, err = ReadPcapDir(context.Background(), dir, nil); err == nil {
 		t.Fatal("capture error silently ignored")
 	}
 }
@@ -106,7 +110,7 @@ func TestTrafficReaderErrorsAndEnrichment(t *testing.T) {
 func TestProxyAccessIPv6(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "frpc.pcap")
 	writeTrafficTestCapture(t, path, "PROXY TCP6 2606:4700::1111 fd00::2 12345 80\r\n")
-	got, err := extractFrpcProxyAccesses(context.Background(), path)
+	got, err := extractFrpcProxyAccesses(context.Background(), path, map[uint16]bool{10000: true})
 	if err != nil || len(got) != 1 || got[0].IP != "2606:4700::1111" {
 		t.Fatalf("IPv6 access: %+v %v", got, err)
 	}

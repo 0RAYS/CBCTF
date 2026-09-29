@@ -1,7 +1,6 @@
 package db
 
 import (
-	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -18,11 +17,12 @@ type TrafficRepo struct {
 }
 
 // ReplaceAnalysis replaces a complete capture snapshot, including empty results.
-func (t *TrafficRepo) ReplaceAnalysis(victimID uint, ips []string, accesses []traffic.TrafficAccess, report *traffic.AnalysisReport) model.RetVal {
+func (t *TrafficRepo) ReplaceAnalysis(victimID uint, ips []string, accesses []traffic.TrafficAccess, report *traffic.AnalysisReport, archived bool) model.RetVal {
 	res := t.DB.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "victim_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"ips", "accesses", "analysis", "updated_at"}),
-	}).Create(&model.Traffic{VictimID: victimID, IPs: ips, Accesses: accesses, Analysis: report})
+		DoUpdates: clause.AssignmentColumns([]string{"ips", "accesses", "analysis", "archived", "updated_at"}),
+		Where:     clause.Where{Exprs: []clause.Expression{clause.Expr{SQL: "NOT traffics.archived"}}},
+	}).Create(&model.Traffic{VictimID: victimID, IPs: ips, Accesses: accesses, Analysis: report, Archived: archived})
 	if res.Error != nil {
 		return model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
@@ -49,8 +49,10 @@ func (t *TrafficRepo) KnownFlags(victim model.Victim) ([]string, model.RetVal) {
 		err = t.DB.Model(&model.ChallengeFlag{}).Where("challenge_id = ?", victim.ChallengeID).Pluck("value", &values).Error
 		static := make([]string, 0, len(values))
 		for _, value := range values {
-			if strings.HasPrefix(value, "static{") && strings.HasSuffix(value, "}") {
-				static = append(static, strings.TrimSuffix(strings.TrimPrefix(value, "static{"), "}"))
+			if match := model.StaticFlagTmpl.FindStringSubmatch(value); len(match) > 1 {
+				static = append(static, match[1])
+			} else if !model.DynamicFlagTmpl.MatchString(value) && !model.UUIDFlagTmpl.MatchString(value) {
+				static = append(static, value)
 			}
 		}
 		values = static

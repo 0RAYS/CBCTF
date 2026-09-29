@@ -7,18 +7,20 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"net"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gopacket/gopacket/layers"
+	pp "github.com/pires/go-proxyproto"
 )
 
 func TestAnalysisSplitFlagAndKnownValue(t *testing.T) {
 	dir := t.TempDir()
 	writeTrafficTestCapture(t, filepath.Join(dir, "pod-web.pcap"), "HTTP/1.1 200 OK\r\nContent-Length: 24\r\n\r\nflag{cross_", "packet} secret42")
-	report, err := AnalyzeDir(context.Background(), dir, []string{"secret42"})
+	report, err := AnalyzeDir(context.Background(), dir, AnalysisOptions{KnownFlags: []string{"secret42"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,8 +113,45 @@ func TestContentDecompressionLimit(t *testing.T) {
 func TestSplitProxyHeader(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "frpc.pcap")
 	writeTrafficTestCapture(t, path, "PROXY TCP6 2606:4700::", "1111 fd00::2 12345 80\r\n")
-	accesses, err := extractFrpcProxyAccesses(context.Background(), path)
+	accesses, err := extractFrpcProxyAccesses(context.Background(), path, map[uint16]bool{10000: true})
 	if err != nil || len(accesses) != 1 || accesses[0].IP != "2606:4700::1111" {
 		t.Fatalf("split proxy evidence: %+v %v", accesses, err)
+	}
+}
+
+func TestProxyV2LoopbackAndUntrustedHeader(t *testing.T) {
+	var header bytes.Buffer
+	_, err := pp.HeaderProxyFromAddrs(2, &net.TCPAddr{IP: net.ParseIP("2606:4700::1111"), Port: 12345}, &net.TCPAddr{IP: net.ParseIP("2606:4700::2222"), Port: 80}).WriteTo(&header)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "frpc.pcap")
+	writeTrafficTestCapture(t, path, string(header.Bytes()[:8]), string(header.Bytes()[8:]))
+	got, err := extractFrpcProxyAccesses(context.Background(), path, map[uint16]bool{10000: true})
+	if err != nil || len(got) != 1 || got[0].IP != "2606:4700::1111" {
+		t.Fatalf("v2 over loopback: %+v %v", got, err)
+	}
+	path = filepath.Join(t.TempDir(), "pod-web.pcap")
+	writeTrafficTestCapture(t, path, string(header.Bytes()))
+	got, err = extractFrpcProxyAccesses(context.Background(), path, map[uint16]bool{10000: true})
+	if err != nil || len(got) != 0 {
+		t.Fatalf("untrusted proxy header accepted: %+v %v", got, err)
+	}
+}
+
+func TestTCPConflictingOverlapDoesNotCreateFlag(t *testing.T) {
+	a := newAnalyzer(context.Background(), nil)
+	s := newStreamCollector(a.analyzeContent, a.warn)
+	for _, segment := range []struct {
+		seq  uint32
+		data string
+	}{{100, "flag{secret"}, {105, "xxxxxx}"}} {
+		tcp := &layers.TCP{Seq: segment.seq}
+		tcp.Payload = []byte(segment.data)
+		s.add(tcp, Evidence{})
+	}
+	s.flush()
+	if len(a.report.Flags) != 0 || !a.warnings["tcp_overlap_conflict"] {
+		t.Fatalf("ambiguous reassembly: %+v", a.report)
 	}
 }

@@ -49,9 +49,10 @@ func HandleLoadTrafficTask(ctx context.Context, t *asynq.Task) error {
 
 // LoadTraffic enrich pcap、打包归档，并提取流量涉及的所有 IP 写入 traffics 表。
 func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.RetVal {
+	root = root.WithContext(ctx)
 	trafficRepo := db.InitTrafficRepo(root)
 
-	count, countRet := trafficRepo.Count(db.CountOptions{Conditions: map[string]any{"victim_id": victim.ID}})
+	count, countRet := trafficRepo.Count(db.CountOptions{Conditions: map[string]any{"victim_id": victim.ID, "archived": true}})
 	if !countRet.OK {
 		return countRet
 	}
@@ -70,6 +71,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 			for _, err := range errs {
 				log.Logger.Warningf("Enrich pcap error: %v", err)
 			}
+			return model.File{}, false
 		}
 		if err := ctx.Err(); err != nil {
 			log.Logger.Warningf("Traffic archive cancelled after enrichment: victim_id=%d error=%s", victim.ID, err)
@@ -110,7 +112,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	start := time.Now()
-	result, err := traffic.ReadPcapDirWithContext(ctx, victim.TrafficBasePath())
+	result, err := traffic.ReadPcapDir(ctx, victim.TrafficBasePath(), victim.TrafficProxyPorts())
 	if err != nil {
 		log.Logger.Warningf("Failed to read victim pcaps: victim_id=%d path=%s error=%s", victim.ID, victim.TrafficBasePath(), err)
 		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
@@ -143,7 +145,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 	if !flagsRet.OK {
 		return flagsRet
 	}
-	report, err := traffic.AnalyzeDir(ctx, victim.TrafficBasePath(), knownFlags)
+	report, err := traffic.AnalyzeDir(ctx, victim.TrafficBasePath(), traffic.AnalysisOptions{KnownFlags: knownFlags, InternalIPs: victim.TrafficInternalIPs()})
 	if err != nil {
 		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
@@ -164,7 +166,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 				}
 			}
 		}
-		return db.InitTrafficRepo(tx).ReplaceAnalysis(victim.ID, ips, accesses, &report)
+		return db.InitTrafficRepo(tx).ReplaceAnalysis(victim.ID, ips, accesses, &report, true)
 	})
 	if !ret.OK {
 		return ret

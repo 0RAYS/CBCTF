@@ -35,6 +35,7 @@ type Connection struct {
 	Capture     string
 	SYN         bool
 	ACK         bool
+	RST         bool
 	ClientIP    string
 	Fingerprint string
 }
@@ -123,12 +124,13 @@ func EnrichPcap(ctx context.Context, pcapPath, jsonlPath, outputPath string) err
 		return err
 	}
 
-	file, err := os.Create(outputPath)
+	file, err := os.CreateTemp(filepath.Dir(outputPath), ".traffic-enrich-*")
 	if err != nil {
 		return err
 	}
 	defer func(file *os.File) {
 		_ = file.Close()
+		_ = os.Remove(file.Name())
 	}(file)
 
 	var writer *pcapgo.NgWriter
@@ -167,7 +169,13 @@ func EnrichPcap(ctx context.Context, pcapPath, jsonlPath, outputPath string) err
 	if err != nil {
 		return err
 	}
-	return writer.Flush()
+	if err = writer.Flush(); err != nil {
+		return err
+	}
+	if err = file.Close(); err != nil {
+		return err
+	}
+	return os.Rename(file.Name(), outputPath)
 }
 
 func extractTrafficConnection(packet gopacket.Packet, processLookup trafficProcessLookup) (Connection, bool) {
@@ -190,6 +198,7 @@ func extractTrafficConnection(packet gopacket.Packet, processLookup trafficProce
 	connection.Process = findTrafficProcess(processLookup, connection)
 	if tcp, ok := packet.Layer(layers.LayerTypeTCP).(*layers.TCP); ok {
 		connection.SYN, connection.ACK = tcp.SYN, tcp.ACK
+		connection.RST = tcp.RST
 	}
 	if transport := packet.TransportLayer(); transport != nil {
 		if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil && header.SourceAddr != nil && header.DestinationAddr != nil {
@@ -600,11 +609,7 @@ type PcapDirResult struct {
 	Accesses    []TrafficAccess
 }
 
-func ReadPcapDir(path string) (PcapDirResult, error) {
-	return ReadPcapDirWithContext(context.Background(), path)
-}
-
-func ReadPcapDirWithContext(ctx context.Context, path string) (PcapDirResult, error) {
+func ReadPcapDir(ctx context.Context, path string, proxyPorts map[uint16]bool) (PcapDirResult, error) {
 	d, err := os.Stat(path)
 	if err != nil {
 		return PcapDirResult{}, err
@@ -631,7 +636,7 @@ func ReadPcapDirWithContext(ctx context.Context, path string) (PcapDirResult, er
 		fullPath := filepath.Join(path, file.Name())
 		if file.Name() == frpcPcapName {
 			// frpc 流量：只提取 Proxy Protocol 中的真实客户端 IP，其余包跳过。
-			observations, readErr := extractFrpcProxyAccesses(ctx, fullPath)
+			observations, readErr := extractFrpcProxyAccesses(ctx, fullPath, proxyPorts)
 			if readErr != nil {
 				return PcapDirResult{}, readErr
 			}
@@ -671,8 +676,8 @@ func ReadPcapDirWithContext(ctx context.Context, path string) (PcapDirResult, er
 	}, nil
 }
 
-// extractFrpcProxyIPs 从 frpc.pcap 中提取所有 Proxy Protocol header 里的真实客户端 srcIP。
-func extractFrpcProxyAccesses(ctx context.Context, path string) ([]TrafficAccess, error) {
+// extractFrpcProxyAccesses reads trusted FRPC-to-nginx client evidence.
+func extractFrpcProxyAccesses(ctx context.Context, path string, proxyPorts map[uint16]bool) ([]TrafficAccess, error) {
 	accesses := make([]TrafficAccess, 0)
 	consume := func(data []byte, evidence Evidence) {
 		header, err := pp.Read(bufio.NewReader(bytes.NewReader(data)))
@@ -688,11 +693,15 @@ func extractFrpcProxyAccesses(ctx context.Context, path string) ([]TrafficAccess
 	streams := newStreamCollector(consume, func(string) { incomplete = true })
 	streams.prefixOnly = true
 	err := walkTrafficPackets(ctx, path, func(packet gopacket.Packet, _ layers.LinkType) error {
-		c, ok := extractTrafficConnection(packet, nil)
-		if !ok {
+		// FRPC delivers PROXY v2 to nginx over loopback ports 10000+.
+		// Filter the claimed client IP later, not this local transport envelope.
+		src, dst, srcPort, dstPort, _, ok := extractTrafficEndpoints(packet)
+		port, _ := strconv.Atoi(dstPort)
+		ip := net.ParseIP(dst)
+		if !ok || ip == nil || !ip.IsLoopback() || port < 0 || port > 65535 || !proxyPorts[uint16(port)] {
 			return nil
 		}
-		c.Capture = filepath.Base(path)
+		c := Connection{SrcIP: NormalizeTrafficIP(src), DstIP: NormalizeTrafficIP(dst), SrcPort: srcPort, DstPort: dstPort, Type: "TCP", Time: packet.Metadata().Timestamp, Capture: filepath.Base(path)}
 		e := packetEvidence(c)
 		if tcp, ok := packet.Layer(layers.LayerTypeTCP).(*layers.TCP); ok {
 			streams.add(tcp, e)
