@@ -40,7 +40,7 @@ func WithTransactionDB(root *gorm.DB, fn func(tx *Tx) model.RetVal) model.RetVal
 		}
 		return nil
 	})
-	if err != nil && ret.OK {
+	if err != nil && (ret.OK || ret.Msg == "") {
 		log.Logger.Warningf("Failed to execute transaction: %s", err)
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
