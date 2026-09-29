@@ -74,13 +74,32 @@ export default function TrafficRankings({ topology, playback }) {
               end: formatDurationMs(windowInfo.end),
             })}
           </span>
-          <span>{t('admin.contests.trafficGraph.footer.timeSlice', { count: formatDurationMs(slice) })}</span>
-          <span>{t('admin.contests.trafficGraph.footer.connectionCount', { count: summary.visible_edges || 0 })}</span>
-          <span>{t('admin.contests.trafficGraph.footer.ipCount', { count: summary.visible_nodes || 0 })}</span>
-          <span>{t('admin.contests.trafficGraph.footer.maxDuration', { count: topology?.total_duration || 0 })}</span>
+          <span>
+            {t('admin.contests.trafficGraph.footer.timeSlice', {
+              count: formatDurationMs(slice),
+            })}
+          </span>
+          <span>
+            {t('admin.contests.trafficGraph.footer.connectionCount', {
+              count: summary.total_connections || 0,
+            })}
+          </span>
+          <span>
+            {t('admin.contests.trafficGraph.footer.ipCount', {
+              count: summary.visible_nodes || 0,
+            })}
+          </span>
+          <span>
+            {t('admin.contests.trafficGraph.footer.maxDuration', {
+              count: topology?.total_duration || 0,
+            })}
+          </span>
           {isPlaying ? (
             <span>
-              {t('admin.contests.trafficGraph.footer.playing', { current: playbackIndex, total: playbackFrames })}
+              {t('admin.contests.trafficGraph.footer.playing', {
+                current: playbackIndex,
+                total: playbackFrames,
+              })}
             </span>
           ) : null}
         </div>

@@ -265,11 +265,14 @@ export const exportContestWriteups = (contestId) => {
 };
 
 // 获取比赛团队流量列表
-export const getContestTeamTraffic = (contestId, teamId, victimID, params) => {
+export const getContestTeamTraffic = (contestId, teamId, victimID, params, signal) => {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}/victims/${victimID}/traffic`,
     method: 'GET',
     params,
+    signal,
+    noLoading: true,
+    noToast: true,
   });
 };
 

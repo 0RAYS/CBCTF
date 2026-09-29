@@ -16,7 +16,7 @@ const scope = {
   stopVictims,
   loadPods: getVictimPods,
   loadLogs: getVictimPodLogs,
-  fetchTraffic: (victim, params) => getVictimTraffic(victim.id, params),
+  fetchTraffic: (victim, params, signal) => getVictimTraffic(victim.id, params, signal),
   downloadTraffic: (victim) => downloadVictimTraffic(victim.id),
   search: {
     users: (name) => getUserList({ name, limit: 10, offset: 0 }),

@@ -8,15 +8,21 @@ export default function useTrafficPlayback({ isOpen, containerId, scopeKey, topo
   const [slice, setSlice] = useState(DEFAULT_SLICE_MS);
   const [sliceInput, setSliceInput] = useState(String(DEFAULT_SLICE_MS));
   const [isPlaying, setIsPlaying] = useState(false);
-  const windowInfo = topology?.window || { start: 0, end: 0, duration: slice, total: 0 };
+  const windowInfo = topology?.window || {
+    start: 0,
+    end: 0,
+    duration: slice,
+    total: 0,
+  };
   const totalDuration = Math.max(windowInfo.total || 0, topology?.total_duration || 0);
-  const maxShift = Math.max(0, totalDuration - slice);
+  const maxShift = Math.max(0, (Math.ceil(totalDuration / Math.max(slice, 1)) - 1) * slice);
   const playbackFrames = Math.max(1, Math.floor(maxShift / Math.max(slice, 1)) + 1);
   const playbackIndex = Math.min(playbackFrames, Math.floor(Math.max(shift, 0) / Math.max(slice, 1)) + 1);
 
   useEffect(() => {
     setIsPlaying(false);
     if (!isOpen) return;
+    setShift(0);
     setSlice(DEFAULT_SLICE_MS);
     setSliceInput(String(DEFAULT_SLICE_MS));
   }, [isOpen, scopeKey]);
