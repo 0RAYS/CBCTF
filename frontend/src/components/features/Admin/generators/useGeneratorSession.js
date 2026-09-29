@@ -1,5 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from '../../../../utils/toast';
+import { useTranslation } from 'react-i18next';
+import { batchTone, getBatchResult, remainingBatchIds, remainingGeneratorCounts } from '../batch/batchModel.js';
 import {
   expandStartCounts,
   GENERATOR_PAGE_SIZE,
@@ -9,6 +11,7 @@ import {
 } from './generatorUtils.js';
 
 export default function useGeneratorSession(api, text) {
+  const { t } = useTranslation();
   const [generators, setGenerators] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,6 +23,8 @@ export default function useGeneratorSession(api, text) {
   const [dynamicChallenges, setDynamicChallenges] = useState([]);
   const [startModalOpen, setStartModalOpen] = useState(false);
   const [pendingOperation, setPendingOperation] = useState(null);
+  const [batchResult, setBatchResult] = useState(null);
+  const [startCounts, setStartCounts] = useState({});
   const sessionRef = useRef(null);
 
   useEffect(() => {
@@ -128,9 +133,20 @@ export default function useGeneratorSession(api, text) {
     }
     session.operation = 'start';
     setPendingOperation('start');
+    setBatchResult(null);
     try {
       const response = await api.start(challenges);
       if (!session.active) return;
+      const batch = getBatchResult(response);
+      if (batch) {
+        setBatchResult(batch);
+        toast[batchTone(batch)]({ description: t('admin.batch.summary', batch) });
+        setStartCounts(remainingGeneratorCounts(challenges, batch));
+        if (batch.status === 'success') setStartModalOpen(false);
+        changePage(1);
+        refresh();
+        return;
+      }
       getGeneratorResponseData(response);
       setStartModalOpen(false);
       changePage(1);
@@ -151,9 +167,18 @@ export default function useGeneratorSession(api, text) {
     if (!session?.active || session.operation || ids.length === 0) return;
     session.operation = 'stop';
     setPendingOperation('stop');
+    setBatchResult(null);
     try {
       const response = await api.stop(ids);
       if (!session.active) return;
+      const batch = getBatchResult(response);
+      if (batch) {
+        setBatchResult(batch);
+        toast[batchTone(batch)]({ description: t('admin.batch.summary', batch) });
+        setSelectedIds((selected) => remainingBatchIds(selected, batch));
+        refresh();
+        return;
+      }
       getGeneratorResponseData(response);
       toast.success({ description: text('toast.stopSuccess') });
       setSelectedIds((selected) => selected.filter((id) => !ids.includes(id)));
@@ -179,9 +204,16 @@ export default function useGeneratorSession(api, text) {
     setRefreshInterval,
     dynamicChallenges,
     startModalOpen,
-    openStart: () => setStartModalOpen(true),
+    openStart: () => {
+      setStartCounts({});
+      setBatchResult(null);
+      setStartModalOpen(true);
+    },
     closeStart,
     pendingOperation,
+    batchResult,
+    startCounts,
+    setStartCounts,
     refresh,
     changePage,
     toggleShowDeleted,

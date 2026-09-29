@@ -1,14 +1,23 @@
-import { useState } from 'react';
 import { IconPlayerPlay } from '@tabler/icons-react';
 import { Button, Modal } from '../../../common';
 import { normalizeStartCount } from './generatorUtils.js';
+import BatchResultPanel from '../batch/BatchResultPanel.jsx';
 
-export default function GeneratorStartDialog({ challenges, pendingOperation, onStart, onClose, text, t }) {
-  const [counts, setCounts] = useState({});
-
+export default function GeneratorStartDialog({
+  challenges,
+  counts,
+  setCounts,
+  batchResult,
+  pendingOperation,
+  onStart,
+  onClose,
+  text,
+  t,
+}) {
   return (
     <Modal isOpen onClose={onClose} title={text('selectChallenges')}>
       <div className="flex flex-col gap-4">
+        <BatchResultPanel result={batchResult} queued />
         {challenges.length === 0 ? (
           <p className="text-neutral-400 text-sm py-4 text-center">{text('noDynamicChallenges')}</p>
         ) : (

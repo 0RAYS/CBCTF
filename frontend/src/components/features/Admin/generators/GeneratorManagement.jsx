@@ -8,6 +8,7 @@ import GeneratorStartDialog from './GeneratorStartDialog';
 import GeneratorLogDialog from './GeneratorLogDialog';
 import useGeneratorSession from './useGeneratorSession.js';
 import { GENERATOR_PAGE_SIZE, getGeneratorPageStats } from './generatorUtils.js';
+import BatchResultPanel from '../batch/BatchResultPanel.jsx';
 
 export default function GeneratorManagement({ api, textKey }) {
   const { t } = useTranslation();
@@ -55,6 +56,7 @@ export default function GeneratorManagement({ api, textKey }) {
       </div>
 
       <GeneratorList session={session} onViewLogs={setLogGenerator} text={text} t={t} />
+      <BatchResultPanel result={session.batchResult} queued />
       {session.totalCount > GENERATOR_PAGE_SIZE && (
         <Pagination
           current={session.currentPage}
@@ -68,6 +70,9 @@ export default function GeneratorManagement({ api, textKey }) {
       {session.startModalOpen && (
         <GeneratorStartDialog
           challenges={session.dynamicChallenges}
+          counts={session.startCounts}
+          setCounts={session.setStartCounts}
+          batchResult={session.batchResult}
           pendingOperation={session.pendingOperation}
           onStart={session.start}
           onClose={session.closeStart}

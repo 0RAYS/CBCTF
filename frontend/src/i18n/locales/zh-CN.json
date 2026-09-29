@@ -142,6 +142,18 @@
     "branding": "品牌"
   },
   "admin": {
+    "batch": {
+      "states": { "success": "批次已完成", "partial": "批次部分完成", "failed": "批次未完成", "cancelled": "批次已中断" },
+      "itemStates": { "success": "成功", "skipped": "跳过", "failed": "失败" },
+      "summary": "请求 {{requested}} · 成功 {{succeeded}} · 失败 {{failed}} · 跳过 {{skipped}} · 未执行 {{not_attempted}}",
+      "details": "查看逐项结果（{{count}}）",
+      "queueHint": "已入队或已提交不代表实例已就绪，请以列表中的运行状态为准。",
+      "unattemptedHint": "未执行项不会自动再次发送。能够明确识别的已完成项会从重试选择中移除。",
+      "unknownOutcome": "未收到可确认的结果。请先刷新列表确认状态，再决定是否重试，避免重复执行已完成的操作。",
+      "randomRetryHint": "再次启动会重新随机选择队伍，并非仅重试失败的队伍/题目组合。",
+      "phases": { "lookup": "查找目标", "queued": "已入队", "committed": "已提交", "enqueue": "任务入队", "create": "创建", "start": "启动", "stop": "停止", "contest_membership": "检查比赛归属", "read_flags": "读取 flag", "create_flags": "创建 flag", "read_solved": "读取解题状态", "already_active": "已有运行实例", "already_stopping": "已停止或正在停止", "already_solved": "已经解题", "already_added": "已经添加", "transaction": "数据库事务", "check_existing": "检查已有记录", "scan": "检测", "created": "已创建证据", "write_evidence": "保存证据", "existing_evidence": "证据已存在", "read_team_membership": "读取队伍归属", "single_user": "只有一名用户", "single_team": "只有一支队伍", "same_team": "属于同一队伍", "no_cross_team_match": "没有跨队伍匹配" },
+      "errors": { "model": { "notFound": "目标不存在或不属于当前操作范围", "getError": "数据库读取失败", "createError": "数据库创建失败", "updateError": "数据库更新失败", "victim": { "notStartable": "靶机当前无法启动", "notStoppable": "靶机当前状态不允许停止" }, "generator": { "notStoppable": "生成器当前状态不允许停止" } }, "task": { "enqueueError": "任务未能入队" }, "common": { "unknownError": "操作失败", "batchIncomplete": "部分下级操作未完成" } }
+    },
     "workloads": {
       "title": "Kubernetes 资源状态",
       "polling": "每 5 秒自动刷新",

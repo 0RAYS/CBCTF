@@ -436,6 +436,7 @@ export const startContestGenerators = (contestId, challenges) => {
   return request({
     url: `/admin/contests/${contestId}/generators`,
     method: 'POST',
+    noToast: true,
     data: { challenges },
   });
 };
@@ -445,6 +446,7 @@ export const stopContestGenerators = (contestId, generatorIds) => {
   return request({
     url: `/admin/contests/${contestId}/generators`,
     method: 'DELETE',
+    noToast: true,
     data: { generators: generatorIds },
   });
 };

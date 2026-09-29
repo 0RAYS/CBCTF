@@ -142,6 +142,18 @@
     "branding": "BRANDING"
   },
   "admin": {
+    "batch": {
+      "states": { "success": "Batch completed", "partial": "Partially completed", "failed": "Batch not completed", "cancelled": "Batch interrupted" },
+      "itemStates": { "success": "Succeeded", "skipped": "Skipped", "failed": "Failed" },
+      "summary": "Requested {{requested}} · Succeeded {{succeeded}} · Failed {{failed}} · Skipped {{skipped}} · Not attempted {{not_attempted}}",
+      "details": "View item results ({{count}})",
+      "queueHint": "Queued or committed does not mean the workload is ready. Check its status in the list.",
+      "unattemptedHint": "Unattempted targets were not sent again automatically. Completed targets are removed from retry selections where identifiable.",
+      "unknownOutcome": "No confirmed result was received. Refresh the list before retrying to avoid repeating completed operations.",
+      "randomRetryHint": "Starting again selects a new random team sample; it is not an exact retry of failed team/challenge pairs.",
+      "phases": { "lookup": "Locate target", "queued": "Queued", "committed": "Committed", "enqueue": "Enqueue task", "create": "Create", "start": "Start", "stop": "Stop", "contest_membership": "Check contest membership", "read_flags": "Read flags", "create_flags": "Create flags", "read_solved": "Read solved state", "already_active": "Already active", "already_stopping": "Already stopping/stopped", "already_solved": "Already solved", "already_added": "Already added", "transaction": "Database transaction", "check_existing": "Check existing record", "scan": "Scan", "created": "Evidence created", "write_evidence": "Save evidence", "existing_evidence": "Evidence already exists", "read_team_membership": "Read team membership", "single_user": "Single user", "single_team": "Single team", "same_team": "Same team", "no_cross_team_match": "No cross-team match" },
+      "errors": { "model": { "notFound": "Target was not found or is outside this scope", "getError": "Database read failed", "createError": "Database creation failed", "updateError": "Database update failed", "victim": { "notStartable": "Instance cannot be started", "notStoppable": "Instance cannot be stopped in its current state" }, "generator": { "notStoppable": "Generator cannot be stopped in its current state" } }, "task": { "enqueueError": "Task could not be queued" }, "common": { "unknownError": "Operation failed", "batchIncomplete": "Some nested operations did not complete" } }
+    },
     "workloads": {
       "title": "Kubernetes status",
       "polling": "Refreshes every 5 seconds",
