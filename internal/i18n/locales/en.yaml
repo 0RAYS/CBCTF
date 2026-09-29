@@ -1,6 +1,7 @@
 common:
   success: "Success"
   unknownError: "Unknown error: {{.Error}}"
+  batchIncomplete: "Batch incomplete: {{.Succeeded}} succeeded, {{.Failed}} failed, {{.Skipped}} skipped, {{.NotAttempted}} not attempted"
 response:
   badRequest: "Invalid request: {{.Error}}"
   unauthorized: "Sign in required"
