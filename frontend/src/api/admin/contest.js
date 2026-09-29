@@ -65,6 +65,7 @@ export function addContestChallenge(contestId, challenge_ids) {
   return request({
     url: `/admin/contests/${contestId}/challenges`,
     method: 'POST',
+    noToast: true,
     data: {
       challenge_ids: challenge_ids,
     },

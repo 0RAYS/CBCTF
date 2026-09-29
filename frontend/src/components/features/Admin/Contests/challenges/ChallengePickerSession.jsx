@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getNotInContestChallengeList } from '../../../../../api/admin/challenge';
 import { addContestChallenge } from '../../../../../api/admin/contest';
 import { toast } from '../../../../../utils/toast';
 import ChallengePickerDialog from './ChallengePickerDialog';
 import { challengeQuery, toggleChallengeSelection } from './challengeData.js';
+import useBatchAction from '../../batch/useBatchAction.js';
+import { remainingBatchIds } from '../../batch/batchModel.js';
 
 export default function ChallengePickerSession({ contestId, categories, onClose, onAdded }) {
   const { t } = useTranslation();
@@ -13,15 +15,8 @@ export default function ChallengePickerSession({ contestId, categories, onClose,
   const [count, setCount] = useState(0);
   const [selected, setSelected] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const busy = useRef(false);
-  const alive = useRef(true);
-  useEffect(() => {
-    alive.current = true;
-    return () => {
-      alive.current = false;
-    };
-  }, []);
+  const action = useBatchAction(contestId);
+  const [revision, setRevision] = useState(0);
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -45,31 +40,26 @@ export default function ChallengePickerSession({ contestId, categories, onClose,
     return () => {
       cancelled = true;
     };
-  }, [contestId, filters, t]);
+  }, [contestId, filters, revision, t]);
   const changeFilter = (key, value) => {
     setLoading(true);
     setFilters((previous) => ({ ...previous, page: 1, [key]: value }));
   };
   const add = async () => {
-    if (busy.current || !selected.length) return;
-    busy.current = true;
-    setSaving(true);
-    try {
-      const response = await addContestChallenge(
-        contestId,
-        selected.map((item) => item.id)
-      );
-      if (response.code !== 200) throw new Error(response.msg || t('admin.contests.challenges.toast.addFailed'));
-      if (!alive.current) return;
-      toast.success({ description: t('admin.contests.challenges.toast.addSuccess') });
-      onAdded();
-      onClose();
-    } catch (error) {
-      if (alive.current) toast.danger({ description: error.message });
-    } finally {
-      busy.current = false;
-      if (alive.current) setSaving(false);
-    }
+    if (!selected.length) return;
+    const ids = selected.map((item) => item.id);
+    await action.run(() => addContestChallenge(contestId, ids), {
+      nested: true,
+      successMessage: t('admin.contests.challenges.toast.addSuccess'),
+      failureMessage: t('admin.contests.challenges.toast.addFailed'),
+      onResult: (batch) => {
+        const remaining = batch ? remainingBatchIds(ids, batch) : [];
+        setSelected((current) => current.filter((item) => !ids.includes(item.id) || remaining.includes(item.id)));
+        setRevision((value) => value + 1);
+        onAdded();
+        if (!batch || batch.status === 'success') onClose();
+      },
+    });
   };
   return (
     <ChallengePickerDialog
@@ -81,13 +71,15 @@ export default function ChallengePickerSession({ contestId, categories, onClose,
       currentPage={filters.page}
       pageSize={10}
       loading={loading}
-      saving={saving}
+      saving={action.pending}
+      batchResult={action.result}
+      error={action.error}
       searchQuery={filters.name}
       descQuery={filters.description}
       type={filters.type}
       category={filters.category}
       onClose={() => {
-        if (!busy.current) onClose();
+        if (!action.pending) onClose();
       }}
       onConfirm={add}
       onSearch={(value) => changeFilter('name', value)}
