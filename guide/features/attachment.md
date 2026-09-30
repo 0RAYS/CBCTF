@@ -11,22 +11,22 @@
 
 ## 工作流程
 
-动态题加入比赛和发布时，平台按 `k8s.generator_pool_size` 预建常驻 worker 池；该配置默认是 `2`。管理员也可以在后台增加实例。
+动态题加入比赛和发布时，平台会提前启动生成器。每道题默认准备 2 个实例，管理员可通过 `k8s.generator_pool_size` 调整，也可在比赛的生成器页面手动增加。
 
 
-### 平台预热镜像并启动 generator worker 池
-### 队伍初始化或重置题目时，提交按团队 flag 和源文件版本去重的任务
-### 任务执行时领取空闲 worker，由 worker 在容器内执行 `/root/run.sh {team_id} {flags}`
-### worker 在本地目录生成 ZIP，再通过完成响应流式返回平台
-### 平台校验并原子发布版本化缓存，为队伍提供下载
+### 准备题目镜像并启动生成器
+### 队伍初始化或重置题目，开始生成专属附件
+### 生成器执行脚本，将该队 Flag 写入题目内容
+### 脚本完成并输出 ZIP 附件
+### 队伍在题目页面下载附件
 
-池繁忙时任务在 Redis/Asynq 中等待，不提前占用 generator。没有可用池时会自动补齐配置容量；缓存命中则无需重新运行脚本。详细参数见[工作负载调度](/deploy/workloads.md)。
+生成器繁忙时任务会排队，已有可用附件时可直接下载。等待较久时，管理员可检查任务队列和生成器状态。容量配置见[工作负载调度](/deploy/workloads.md)。
 
 ## 生成器要求
 
 ### 容器启动方式
 
-平台通过使用独立 worker 镜像的 init container 注入静态 `worker`，并以它覆盖题目镜像入口。worker 保持常驻并串行执行生成请求。题目镜像继续提供 `sleep` 和 `unzip`，无需安装 Redis 客户端或 Kubernetes 工具。worker 镜像通过 `k8s.worker_image` 配置，Helm 对应 `cbctf.k8s.workerImage`。
+题目镜像需包含 `sleep`、`unzip` 和生成脚本所需的工具。平台负责启动容器并调用脚本，镜像原有入口不会执行，因此请将题目初始化步骤放在 `/root/run.sh` 中。
 
 ### 可选上传 `generator.zip`
 
@@ -59,7 +59,7 @@ unzip -o /root/mnt/generator.zip -d /root
 /root/mnt/attachments/{team_id}.zip
 ```
 
-worker 只读取这个固定路径。该输出目录是 Pod 本地 EmptyDir，不是共享卷。脚本需同步完成 ZIP 写入，运行时间限制为 1 分钟；worker 完成传输后清理本地产物。平台缓存使用独立的版本化路径，下载文件名为 `attachment.zip`。
+脚本需在 1 分钟内完成 ZIP 写入后退出，不要将生成过程放到后台。输出目录为临时目录，附件交付后会清理；队伍下载的文件名为 `attachment.zip`。
 
 ## 示例脚本
 
@@ -69,7 +69,7 @@ set -euo pipefail
 TEAM_ID=$1
 FLAGS_B64=$2
 
-# 二次解码；这里只使用第一个 Flag。不要用无换行的 while read 丢掉最后一个值。
+# 解码参数并取出第一个 Flag
 ENCODED_FLAGS=$(printf '%s' "$FLAGS_B64" | base64 -d)
 FLAG1=$(printf '%s' "${ENCODED_FLAGS%%,*}" | base64 -d)
 WORKDIR=$(mktemp -d)
@@ -94,7 +94,7 @@ zip -j "$OUTPUT" "$WORKDIR/flag.txt"
 
 生成器支持两种管理方式：
 
-- **全局生成器**：`/admin/generators`，仅用于全局管理和测试附件生成，此处启动的生成器无法被赛事用于生成附件
-- **比赛专用生成器**：`/admin/contests/{contestID}/generators`，可被全局管理关闭和查看
+- **全局生成器**：「管理后台 → 生成器」，用于查看实例和启动题库测试生成器
+- **比赛专用生成器**：「比赛 → 生成器」，为该比赛的队伍生成附件
 
 比赛开始前可通过赛事专用生成器管理检查自动预建的实例是否 Ready，并按附件计算量增加实例。将 `k8s.generator_pool_size` 设为 `0` 时，实例完全由管理员手动管理。

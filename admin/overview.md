@@ -85,5 +85,5 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 | `user`      | 普通选手，拥有参赛、队伍、题目、提交、靶机控制和 Writeup 权限 |
 
 :::tip
-后台导航会根据当前用户可访问接口过滤。授权后如果页面仍不可见，重新登录或检查 `/me/permissions` 返回的权限列表。
+后台导航按用户权限显示。授权后如果页面仍不可见，请重新登录，并在 RBAC 页面核对用户所属分组及角色权限。
 :::

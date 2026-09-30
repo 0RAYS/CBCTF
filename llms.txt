@@ -4,7 +4,7 @@
 
 ## 开始
 
-- [介绍](/guide/start/introduction.md): 了解 CBCTF 的平台定位、核心能力、构建方式和动态容器工作模式。
+- [介绍](/guide/start/introduction.md): 了解 CBCTF 的题型、赛事管理能力、动态靶机和附件生成，选择适合的部署方式。
 - [快速上手](/guide/start/quick-start.md): 从集群准备、Helm 安装到首次登录，完成 CBCTF 的可用部署并验证第一道题。
 
 ## 部署
@@ -12,7 +12,7 @@
 - [K8s 集群搭建](/deploy/cluster.md): 搭建满足 CBCTF 动态附件、动态容器和 KubeVirt 靶机要求的 Kubernetes 集群。
 - [Helm 部署](/deploy/helm.md): 通过 Helm Chart 安装 CBCTF，并配置镜像、Ingress、存储、数据库和 Redis。
 - [配置说明](/deploy/settings.md): 说明 CBCTF 配置来源、Helm values、配置文件和数据库运行时设置。
-- [工作负载调度](/deploy/workloads.md): 说明全节点镜像预热、失败节点排除、共享 informer、靶机异步就绪、附件 worker 池与资源树回收。
+- [工作负载调度](/deploy/workloads.md): 配置镜像预热、靶机启动、附件生成器容量和资源清理，排查等待、超时与生成失败。
 - [前后端分离](/deploy/separation.md): 配置 CBCTF 前后端分离部署、反向代理、静态资源和 API 地址。
 - [常见问题](/deploy/troubleshooting.md): 排查 CBCTF 部署、集群组件、容器靶机、动态附件和网络访问问题。
 
@@ -26,17 +26,17 @@
 - [动态靶机](/guide/features/container.md): 说明 CBCTF 动态容器、Pod 模式、VPC 模式、端口转发和 KubeVirt VM 靶机。
 - [比赛配置](/guide/features/contest.md): 创建和配置 CBCTF 比赛时间、队伍、题目、公告、奖项和排行榜规则。
 - [认证与 OAuth](/guide/features/auth.md): 配置 CBCTF 本地认证、邮箱验证、OAuth/OIDC 登录和用户组自动分配。
-- [定时任务](/guide/features/cronjobs.md): 配置 CBCTF 定时任务的运行间隔、服务器启动时立即执行行为，并查看执行统计和管理 API。
+- [定时任务](/guide/features/cronjobs.md): 调整定时任务的运行间隔和启动执行设置，查看最近运行时间与成功、失败记录。
 - [Webhook](/guide/features/webhook.md): 按实际事件列表、秒级超时与主机白名单配置 Webhook，检查投递历史和重试。
 
 ## 管理员
 
 - [管理后台概览](/admin/overview.md): 了解 CBCTF 管理后台入口、初始管理员、常用管理流程和后台页面分工。
-- [权限与角色](/admin/rbac.md): 按 CBCTF 的用户组、角色和 API 权限模型配置后台访问与选手授权。
+- [权限与角色](/admin/rbac.md): 通过用户分组和角色配置后台访问、比赛管理与选手操作权限。
 - [用户与分组](/admin/users.md): 在 RBAC 页面创建和维护用户、配置分组授权、注册默认分组、邮箱验证和密码。
-- [题目管理](/admin/challenges.md): 按前端编辑器配置静态题、动态附件题和容器题，理解题库与比赛题目的关系并完成测试。
+- [题目管理](/admin/challenges.md): 创建和测试静态题、动态附件题与容器题，管理附件并将题目发布到比赛。
 - [比赛管理](/admin/contests.md): 按实际管理界面创建和发布比赛，维护比赛题目、计分、队伍、公告、预热和题解。
 - [作弊检测](/admin/cheat.md): 查看和处理 CBCTF IP、跨队 Flag 和异常提交记录。
 - [容器流量分析](/admin/traffic.md): 使用客户端访问证据、内网拓扑回放、CTF flag 提取和攻击线索分析靶机流量。
 - [邮件配置](/admin/smtp.md): 在管理后台配置 SMTP、测试发信，并排查邮箱验证、密码找回和发送历史。
-- [监控与日志](/admin/monitoring.md): 使用 CBCTF 的 Prometheus 指标、Grafana 仪表盘、日志和系统状态接口排查问题。
+- [监控与日志](/admin/monitoring.md): 使用仪表盘、任务队列、日志和 Prometheus 指标检查平台运行状态并排查问题。

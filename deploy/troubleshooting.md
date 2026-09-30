@@ -15,7 +15,7 @@
 
 ## 数据库连接失败
 
-关闭内置 PostgreSQL/Redis 后要填写相应的 `externalHost`。Chart `0.0.29` 修正了外部地址被追加命名空间后缀的问题；更早版本应升级或修正渲染地址。
+关闭内置 PostgreSQL/Redis 后，请填写相应的 `externalHost`，并检查应用配置中的地址能否从平台 Pod 访问。
 
 常见原因：
 
@@ -40,7 +40,7 @@ Redis 用于缓存和 Asynq 任务队列。连接失败会影响登录状态、�
 
 ## 前端页面无法访问
 
-平台页面默认在 `/platform/` 下，根路径 `/` 会重定向到 `/platform`。前端使用 HashRouter，登录页路径是 `/platform/#/login`。
+平台页面位于 `/platform/`，登录页地址为 `/platform/#/login`。请确认反向代理正确转发该路径及其静态资源。
 
 排查方向：
 
@@ -111,7 +111,7 @@ Redis 用于缓存和 Asynq 任务队列。连接失败会影响登录状态、�
 
 ## 启动时报缺少 Kubernetes 权限
 
-应用启动时会执行 Kubernetes RBAC 自检。如果日志出现 `Missing K8s permissions` 或 `Insufficient K8s permissions`，说明当前 ServiceAccount 与后端实际调用不匹配。
+如果启动日志出现 `Missing K8s permissions` 或 `Insufficient K8s permissions`，请检查平台 ServiceAccount 是否具有所选题型需要的集群权限。
 
 排查方向：
 
@@ -142,7 +142,7 @@ Redis 用于缓存和 Asynq 任务队列。连接失败会影响登录状态、�
 ## 动态附件一直未就绪
 
 - 在比赛的「生成器」页面确认实例 Ready；全局测试生成器不供比赛队伍使用
-- 平台与生成器必须挂载同一个 PVC；旧版本对 `persistence.existingClaim` 支持不完整，应升级匹配的 Chart 和后端
+- 平台与生成器必须挂载同一个 PVC；使用已有卷时，检查 `persistence.existingClaim`，并确认 Chart 与应用镜像版本匹配
 - 平台必须能够连接 generator Pod IP 的 TCP 8080
 - 查看生成器日志与任务日志，检查 `/root/run.sh` 可执行、依赖已安装，且在一分钟内同步写出有效 ZIP
 - `generator.zip` 必须以脚本/资源为根目录，而不是再套一层目录；重复测试可清理脚本自己的临时文件，避免复用上个团队产物

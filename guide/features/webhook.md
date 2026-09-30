@@ -2,7 +2,7 @@
 
 # Webhook
 
-入口：「管理后台 → Webhook」。平台将匹配事件放入 Asynq 队列，以 JSON 请求体投递到你的接收服务。
+入口：「管理后台 → Webhook」。选择需要订阅的事件后，平台会以 JSON 请求向接收服务发送通知。
 
 ## 先配置目标白名单
 
@@ -35,7 +35,7 @@ Helm 初次部署写入 `cbctf.webhook.whitelist`；已有数据库通过系统�
 
 ## 事件名称和负载
 
-编辑器从 `GET /admin/webhook/events` 加载实际事件；以该列表为准。常见值有：
+在编辑窗口选择订阅事件，常见事件有：
 
 - 用户：`register`、`login`、`oauth_login`、`update_user`
 - 队伍：`create_team`、`join_team`、`leave_team`
