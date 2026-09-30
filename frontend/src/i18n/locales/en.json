@@ -6,7 +6,6 @@
   "common": {
     "contextMenu": {
       "label": "Row actions",
-      "hint": "Right-click a row for actions, or focus it and press Shift+F10",
       "empty": "No actions available"
     },
     "loading": "Loading...",

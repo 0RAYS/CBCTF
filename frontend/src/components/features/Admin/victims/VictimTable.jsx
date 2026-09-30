@@ -99,7 +99,6 @@ export function VictimTable({
           {contestId && toolbar}
         </div>
 
-        {contextMenu.hint}
         {contextMenu.menu}
         <div className="overflow-x-auto">
           <table className="w-full table-fixed" style={{ minWidth: columnWidths.reduce((a, b) => a + b, 0) }}>
