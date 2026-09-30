@@ -2,6 +2,7 @@ import { useEffect, useEffectEvent, useReducer, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getLiveTasks } from '../../../../api/admin/task';
 import { toast } from '../../../../utils/toast';
+import { startVisiblePolling } from '../../../../utils/visiblePolling.js';
 import {
   createTaskQuery,
   livePollingDelay,
@@ -46,10 +47,9 @@ export default function useLiveTasks(active) {
   useEffect(() => {
     const delay = livePollingDelay(active, refreshInterval);
     if (delay === null) return;
-    const timer = setInterval(() => {
+    return startVisiblePolling(() => {
       if (!pending.current) refresh();
     }, delay);
-    return () => clearInterval(timer);
   }, [active, refreshInterval]);
 
   return { ...data, query, dispatch, refresh, refreshInterval, setRefreshInterval };

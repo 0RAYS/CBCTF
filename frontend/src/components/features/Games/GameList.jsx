@@ -32,7 +32,13 @@ function GameCard({ game, onGameAction, user }) {
       {/* 封面图（保持原比例） */}
       {game.image && (
         <div className="sm:w-48 shrink-0 bg-neutral-900/50">
-          <img src={game.image} alt={game.title} className="w-full h-full object-contain" />
+          <img
+            src={game.image}
+            alt={game.title}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-contain"
+          />
         </div>
       )}
 

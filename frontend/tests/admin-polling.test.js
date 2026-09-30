@@ -107,6 +107,38 @@ function fixture(t, kind) {
 }
 
 for (const kind of ['generator', 'victim']) {
+  test(`${kind}: hiding pauses requests and returning never supersedes a pending query`, async (t) => {
+    const document = new EventTarget();
+    document.visibilityState = 'visible';
+    const previous = Object.getOwnPropertyDescriptor(globalThis, 'document');
+    Object.defineProperty(globalThis, 'document', { configurable: true, value: document });
+    const f = fixture(t, kind);
+    t.after(() => {
+      if (previous) Object.defineProperty(globalThis, 'document', previous);
+      else delete globalThis.document;
+    });
+    const visible = (value) => {
+      document.visibilityState = value ? 'visible' : 'hidden';
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    visible(false);
+    await f.tick(60000);
+    assert.equal(f.calls.length, 1);
+    visible(true);
+    await f.flush();
+    assert.equal(f.calls.length, 1, 'resume must respect the in-flight query');
+    await f.resolve(0, 'slow');
+    await f.tick(10000);
+    assert.equal(f.calls.length, 2);
+    await f.resolve(1, 'fresh');
+    visible(false);
+    await f.tick(60000);
+    assert.equal(f.calls.length, 2);
+    visible(true);
+    await f.flush();
+    assert.equal(f.calls.length, 3, 'idle query catches up once on return');
+  });
+
   test(`${kind}: 12s requests survive 10s polling ticks and polling continues`, async (t) => {
     const f = fixture(t, kind);
     setTimeout(

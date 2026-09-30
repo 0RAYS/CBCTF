@@ -131,6 +131,10 @@ function AdminFiles({
                 <img
                   src={file.url}
                   alt={file.filename}
+                  loading="lazy"
+                  decoding="async"
+                  width={48}
+                  height={48}
                   className="w-full h-full object-cover rounded border border-neutral-300/20"
                   onError={(e) => {
                     e.target.style.display = 'none';

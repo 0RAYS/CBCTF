@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from '../../../../utils/toast';
+import { startVisiblePolling } from '../../../../utils/visiblePolling.js';
 import { buildVictimListParams, selectPageVictims, toggleVictimSelection } from './victimPayload';
 
 export default function useVictimList(scope) {
@@ -48,11 +49,10 @@ export default function useVictimList(scope) {
 
   useEffect(() => {
     if (refreshInterval <= 0) return;
-    const timer = setInterval(() => {
+    return startVisiblePolling(() => {
       // Only polling skips busy queries; manual refresh still supersedes them.
       if (inFlight.current === null) refreshLatest();
     }, refreshInterval * 1000);
-    return () => clearInterval(timer);
   }, [refreshInterval]);
 
   return {

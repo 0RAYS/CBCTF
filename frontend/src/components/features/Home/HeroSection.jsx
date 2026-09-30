@@ -68,6 +68,8 @@ function HeroSection() {
                 src={homeLogo || './logo.png'}
                 width="320"
                 height="320"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-contain p-8 opacity-85"
               />
             </div>

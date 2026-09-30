@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import ContextMenu from './ContextMenu';
 
 /** Shared row bindings for List and bespoke tables. Refreshing data invalidates the open target. */
 export default function useContextMenu(data, getActions, disabled = false) {
-  const { t } = useTranslation();
   const hintId = useId();
   const [target, setTarget] = useState(null);
   const trigger = useRef(null);

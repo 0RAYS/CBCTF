@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from '../../../../utils/toast';
 import { useTranslation } from 'react-i18next';
+import { startVisiblePolling } from '../../../../utils/visiblePolling.js';
 import { batchTone, getBatchResult, remainingBatchIds, remainingGeneratorCounts } from '../batch/batchModel.js';
 import {
   expandStartCounts,
@@ -73,14 +74,15 @@ export default function useGeneratorSession(api, text) {
       }
     };
     fetchPage();
-    const timer = refreshInterval > 0 ? setInterval(fetchPage, refreshInterval * 1000) : null;
+    const stopPolling = startVisiblePolling(fetchPage, refreshInterval * 1000);
     return () => {
       active = false;
-      clearInterval(timer);
+      stopPolling();
     };
   }, [currentPage, showDeleted, refreshInterval, revision]);
 
   useEffect(() => {
+    if (!startModalOpen) return;
     let active = true;
     const fetchChallenges = async () => {
       try {
@@ -95,7 +97,7 @@ export default function useGeneratorSession(api, text) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [startModalOpen]);
 
   const refresh = () => setRevision((value) => value + 1);
 
