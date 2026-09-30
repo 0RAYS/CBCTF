@@ -72,7 +72,7 @@ helm uninstall cbctf -n cbctf
 
 ## 应用配置
 
-上传大小限制已拆分为 `cbctf.gin.upload.picture`、`cbctf.gin.upload.challenge`、`cbctf.gin.upload.writeup`。旧的 `cbctf.gin.upload.max` 不再生效。
+图片、题目附件和题解的大小限制分别使用 `cbctf.gin.upload.picture`、`cbctf.gin.upload.challenge`、`cbctf.gin.upload.writeup`。
 
 | 配置项                                | 说明                                | 示例                        |
 | ---------------------------------- | --------------------------------- | ------------------------- |
@@ -140,7 +140,7 @@ cbctf:
       sslmode: true
 ```
 
-PostgreSQL 使用 `pg_trgm`；初始化会尝试创建扩展。平台有 HTTP、任务查询和 advisory-lock 连接池，外部 PostgreSQL 应提供足够连接数，并使用直连或 session pooling，不能使用 transaction pooling 承载会话级 advisory lock。Redis 配置目前只有 host、port、密码，不提供 Sentinel、Cluster 或 TLS 参数。
+PostgreSQL 需允许安装 `pg_trgm` 扩展，并提供足够的连接数。使用数据库连接代理时，请选择直连或 session pooling；transaction pooling 不适用于平台的任务协调。Redis 支持地址、端口和密码配置，需提供可直接连接的单实例地址。
 
 内置 PostgreSQL 的 `auth` 变量仅初始化空数据目录；对已有 PVC 修改 values 中的密码不会执行数据库 `ALTER ROLE`，应先协调修改数据库凭据。关闭任一数据库的 `persistence.enabled` 后使用 `emptyDir`，Pod 重建会丢失对应数据。
 
@@ -174,7 +174,7 @@ Chart 使用命名空间 Role 管理 Pod、Service、Job、NetworkPolicy、Confi
 | core                   | `pods/exec`                      | `create`                                                       | Pod 终端操作；附件 worker 不使用 Exec  |
 | core                   | `pods/log`                       | `get`                                                          | 读取 Pod 日志                    |
 | core                   | `services`                       | `create`, `list`, `delete`                                     | 创建 ClusterIP / NodePort 暴露   |
-| core                   | `configmaps`                     | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 文件配置、共享根对象缓存与 foreground GC  |
+| core                   | `configmaps`                     | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 题目文件配置与资源清理                  |
 | core                   | `persistentvolumeclaims`         | `get`                                                          | 启动时检查共享 PVC                  |
 | core                   | `namespaces`                     | `get`                                                          | 启动时检查靶机命名空间                  |
 | core                   | `nodes`                          | `list`                                                         | 枚举节点镜像和预拉取目标节点               |
@@ -183,7 +183,7 @@ Chart 使用命名空间 Role 管理 Pod、Service、Job、NetworkPolicy、Confi
 | `discovery.k8s.io`     | `endpointslices`                 | `deletecollection`                                             | 清理 Service 产生的 EndpointSlice |
 | `authorization.k8s.io` | `selfsubjectaccessreviews`       | `create`                                                       | 启动时执行权限自检                    |
 | `k8s.cni.cncf.io`      | `network-attachment-definitions` | `create`, `get`, `deletecollection`                            | VPC 模式下创建和清理 Multus NAD      |
-| `kubevirt.io`          | `virtualmachines`                | `create`, `get`, `list`, `watch`, `deletecollection`           | VM 创建、共享就绪缓存及清理              |
+| `kubevirt.io`          | `virtualmachines`                | `create`, `get`, `list`, `watch`, `deletecollection`           | VM 创建、状态检查及清理                |
 | `kubeovn.io`           | `subnets`                        | `create`, `get`, `deletecollection`                            | VPC 模式下创建和清理 Kube-OVN 子网     |
 | `kubeovn.io`           | `vpcs`                           | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | VPC 资源树及级联删除确认               |
 | `kubeovn.io`           | `ips`                            | `deletecollection`                                             | 清理 Kube-OVN IP 分配            |

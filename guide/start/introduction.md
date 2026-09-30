@@ -62,29 +62,15 @@ flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 
 <img src="/img/log.png" width="100%" alt="日志" />
 
-## 构建
+## 开始使用
 
-当前版本要求 Go 1.27.1，前端使用 `package.json` 指定的 pnpm 12.6.0，Docker 使用 Node 24。运行后端需要集群内身份，构建后部署方式见[快速上手](/guide/start/quick-start.md)。
-
-```bash
-# 1. 构建前端（静态文件会被嵌入二进制）
-cd frontend && pnpm install && pnpm run build && cd ..
-
-# 2. 构建后端（抓包由 sidecar 完成，离线流量分析不依赖 libpcap/CGO）
-go build -ldflags="-s -w" -trimpath -o CBCTF .
-```
-
-也可直接使用 Docker 完成两阶段构建：
-
-```bash
-docker build -t cbctf .
-```
+管理员可按[快速上手](/guide/start/quick-start.md)准备集群、安装平台并创建第一场比赛。已加入平台的选手可直接阅读[选手操作流程](/guide/features/playing.md)。
 
 ## 动态容器
 
 ### 网络模式
 
-后端通过 `docker-compose` 配置自动识别网络模式：
+创建容器题时，通过 Compose 配置选择网络模式：
 
 | 模式      | 判断条件              | 说明                              |
 | ------- | ----------------- | ------------------------------- |
@@ -145,27 +131,23 @@ networks:
 
 <img src="/img/victims-2.png" width="100%" alt="靶机详情" />
 
-<img src="/img/victims-3.png" width="100%" alt="历史靶机界面截图" />
-
-截图用于展示平台形态，界面可能随版本变化。当前管理 API 提供 Pod 状态和日志查询，不提供浏览器交互式 Exec 终端。
-
 ## 动态附件
 
 基于 Kubernetes 容器化生成，支持上传 Python 脚本，在隔离环境中为每个队伍生成唯一附件。
 
-**生成器合约：**
+**出题准备：**
 
 - 容器必须包含 `sleep` 和 `unzip`
 - 脚本路径固定为 `/root/run.sh <team_id> <base64_encoded_flags>`
 - 产物须写入 `/root/mnt/attachments/{id}.zip`
-- 平台注入常驻 worker，输出目录使用 Pod 本地存储；脚本完成后，worker 将 ZIP 返回平台写入版本化缓存
-- 建议使用固定版本或 digest，便于镜像预热与复现实验；当前代码并未禁止 `latest`
+- 脚本完成后，队伍可在题目页面下载生成的附件
+- 建议使用固定镜像版本或 digest，保持比赛期间的环境一致
 
 > 完整示例：[example/dynamic/README.md](https://github.com/0RAYS/CBCTF/blob/main/example/dynamic/README.md)
 
 ## Kubernetes 依赖
 
-平台启动要求 Kubernetes 集群内配置。额外组件按题型选择，不是所有动态题都需要安装全部组件：
+平台部署在 Kubernetes 集群内，额外组件按题型选择：
 
 | 组件                                                               | 用途              |
 | ---------------------------------------------------------------- | --------------- |

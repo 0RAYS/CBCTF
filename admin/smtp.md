@@ -13,43 +13,25 @@
 
 测试邮件使用指定 SMTP 直接发信，不经过随机账号池，也不要求该配置已启用。测试成功不等于其他启用账号都可用。
 
-## 字段
+## 账号设置
 
-| 字段        | 类型     | 说明                     |
-| --------- | ------ | ---------------------- |
-| `address` | string | 发件邮箱，同时用作 SMTP 登录账号    |
-| `host`    | string | SMTP 服务器主机名            |
-| `port`    | int    | 通常为 465 或 587，按服务商要求填写 |
-| `pwd`     | string | 密码或应用授权码               |
-| `on`      | bool   | 创建/编辑时控制是否启用           |
-
-当前表单没有独立的 SMTP 用户名、TLS 模式或证书设置；使用 gomail 的端口/TLS 行为。编辑界面密码留空时保留原密码。
-
-```json
-{
-  "address": "noreply@example.com",
-  "host": "smtp.example.com",
-  "port": 587,
-  "pwd": "your-smtp-password",
-  "on": true
-}
-```
+| 设置  | 说明                                           |
+| --- | -------------------------------------------- |
+| 邮箱  | 发件邮箱，同时用作 SMTP 登录账号，例如 `noreply@example.com` |
+| 服务器 | SMTP 服务器主机名，例如 `smtp.example.com`            |
+| 端口  | 通常为 465 或 587，按服务商要求填写                       |
+| 密码  | 邮箱密码或服务商提供的应用授权码；编辑时留空保留原密码                  |
+| 启用  | 允许此账号参与平台自动发信                                |
 
 ## 验证与密码找回
 
 - 本地注册自动提交验证邮件任务；个人设置可重新发送，需 `self:activate` 权限。
-- 验证邮件打开 `{host}/platform/#/verify?token=...`，页面调用 `POST /verify` 完成验证。
-- 登录页“忘记密码”发送重置链接，打开 `{host}/platform/#/reset-password?token=...`；成功重置同时标记邮箱已验证。
+- 用户打开验证邮件中的链接即可完成邮箱验证。
+- 登录页「忘记密码」会发送重置链接；成功重置密码后，邮箱也会标记为已验证。
 - `host` 必须是收件人可访问的地址。注册成功或任务入队不表示邮件已送达，需要检查任务和邮件历史。
 
 ## 权限与排查
 
-创建使用 `admin:smtp:create`，测试使用 `admin:smtp:test`，邮件列表使用 `admin:smtp:list`。相关接口：
-
-```text
-POST /admin/smtp/:smtpID/test          请求 {"to":"recipient@example.com"}
-GET  /admin/smtp/:smtpID/email         指定账号邮件历史
-GET  /admin/email                     全局邮件历史
-```
+创建配置需要 `admin:smtp:create`，发送测试邮件需要 `admin:smtp:test`，查看配置列表需要 `admin:smtp:list`。可从配置行的操作菜单查看该账号的邮件历史，或查看全局邮件历史。
 
 若测试成功但验证邮件失败，检查 Redis、Asynq 邮件任务、SMTP 启用状态，以及其他启用账号是否连接成功。若账号池为空，可修复配置后重新保存启用状态或重启服务以重新连接。
