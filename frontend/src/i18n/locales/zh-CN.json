@@ -6,7 +6,6 @@
   "common": {
     "contextMenu": {
       "label": "行操作",
-      "hint": "右键点击行查看操作，或选中行后按 Shift+F10",
       "empty": "暂无可用操作"
     },
     "loading": "加载中...",

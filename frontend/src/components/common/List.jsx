@@ -90,7 +90,6 @@ function List({
 
   return (
     <div className={`min-w-0 ${className}`}>
-      {contextMenu.hint}
       {contextMenu.menu}
       {/* 表格区域 */}
       <div className="overflow-x-auto">

@@ -49,7 +49,6 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
 
   return (
     <Card>
-      {contextMenu.hint}
       {contextMenu.menu}
       {loading ? (
         <div className="flex justify-center py-12 text-neutral-400 text-sm">{t('common.loading')}</div>

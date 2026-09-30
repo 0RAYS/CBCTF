@@ -81,11 +81,7 @@ export default function useContextMenu(data, getActions, disabled = false) {
 
   return {
     getRowProps,
-    hint: getActions && (
-      <p id={hintId} className="px-4 py-2 text-xs text-neutral-500">
-        {t('common.contextMenu.hint')}
-      </p>
-    ),
+    hint: getActions,
     menu: target && target.data === data && !disabled && getActions && (
       <ContextMenu position={target.position} actions={getActions(target.item)} onClose={close} />
     ),
