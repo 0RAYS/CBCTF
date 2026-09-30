@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -32,13 +33,7 @@ func (a *analyzer) scanFlags(data []byte, e Evidence, encoding string) {
 		}
 	}
 	for _, value := range values {
-		verified := false
-		for _, known := range a.known {
-			if known == value {
-				verified = true
-				break
-			}
-		}
+		verified := slices.Contains(a.known, value)
 		key := value + "|" + evidenceKey(e)
 		if a.seenFlags[key] {
 			continue
