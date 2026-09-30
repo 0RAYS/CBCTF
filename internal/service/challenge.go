@@ -219,49 +219,15 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 	if ret := validateChallengeCompose(config); !ret.OK {
 		return model.ChallengeTemplate{}, nil, ret
 	}
-	prefix = fmt.Sprintf("%s_", prefix)
-	networksMap := make(map[string]model.NetworkDefinition)
-	for _, network := range config.Networks {
-		network.Name = strings.TrimPrefix(network.Name, prefix)
-		if network.Name == "default" {
-			continue
-		}
-		if len(network.Ipam.Config) == 0 {
-			return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Empty IPAM"}}
-		}
-		subnet, err := netip.ParsePrefix(network.Ipam.Config[0].Subnet)
-		if err != nil {
-			return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err.Error()}}
-		}
-		gateway, err := netip.ParseAddr(network.Ipam.Config[0].Gateway)
-		if err != nil || !subnet.Contains(gateway) {
-			return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid gateway"}}
-		}
-		networksMap[network.Name] = model.NetworkDefinition{
-			Name:    network.Name,
-			CIDR:    network.Ipam.Config[0].Subnet,
-			Gateway: network.Ipam.Config[0].Gateway,
-		}
+	networkDefinitions, ret := parseChallengeNetworks(config.Networks, prefix+"_")
+	if !ret.OK {
+		return model.ChallengeTemplate{}, nil, ret
 	}
 
 	template := model.ChallengeTemplate{
 		Pods: make([]model.ChallengePodTemplate, 0, len(config.Services)),
 	}
 	flagOptions := make([]model.ChallengeFlag, 0)
-	extractFlagTemplates := func(content string) []string {
-		seen := make(map[string]struct{})
-		templates := make([]string, 0)
-		for _, re := range []*regexp.Regexp{model.StaticFlagTmpl, model.DynamicFlagTmpl, model.UUIDFlagTmpl} {
-			for _, value := range re.FindAllString(content, -1) {
-				if _, ok := seen[value]; ok {
-					continue
-				}
-				seen[value] = struct{}{}
-				templates = append(templates, value)
-			}
-		}
-		return templates
-	}
 	for _, app := range config.Services {
 		name := app.Name
 		if app.ContainerName != "" {
@@ -291,41 +257,9 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 				seenPorts = append(seenPorts, target)
 			}
 		}
-		networks := make(model.Networks, 0)
-		for key, value := range app.Networks {
-			if key == "default" {
-				continue
-			}
-			if value == nil {
-				return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Empty network name"}}
-			}
-			ip, err := netip.ParseAddr(value.Ipv4Address)
-			if err != nil {
-				return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid ip"}}
-			}
-			networkDefinition, ok := networksMap[key]
-			if !ok {
-				log.Logger.Warningf("Network %s not found in networks", key)
-				return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid network"}}
-			}
-			subnet, err := netip.ParsePrefix(networkDefinition.CIDR)
-			if err != nil {
-				return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err.Error()}}
-			}
-			if !subnet.Contains(ip) {
-				return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid subnet"}}
-			}
-			networks = append(networks, model.Network{
-				Definition: networkDefinition,
-				Attachment: model.NetworkAttachment{
-					Name: key,
-					IP:   value.Ipv4Address,
-					MAC:  value.MacAddress,
-				},
-			})
-		}
-		if len(networksMap) > 0 && len(networks) == 0 {
-			return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid networks"}}
+		networks, ret := buildChallengeNetworks(app.Networks, networkDefinitions)
+		if !ret.OK {
+			return model.ChallengeTemplate{}, nil, ret
 		}
 		containerTemplate := model.ChallengeContainerTemplate{
 			Key:         containerKey,
@@ -402,6 +336,89 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 		}
 	}
 	return template, flagOptions, model.SuccessRetVal()
+}
+
+func parseChallengeNetworks(networks types.Networks, prefix string) (map[string]model.NetworkDefinition, model.RetVal) {
+	definitions := make(map[string]model.NetworkDefinition, len(networks))
+	for _, network := range networks {
+		name := strings.TrimPrefix(network.Name, prefix)
+		if name == "default" {
+			continue
+		}
+		if len(network.Ipam.Config) == 0 {
+			return nil, invalidComposeYamlRetVal("Empty IPAM")
+		}
+		ipam := network.Ipam.Config[0]
+		subnet, err := netip.ParsePrefix(ipam.Subnet)
+		if err != nil {
+			return nil, invalidComposeYamlRetVal(err.Error())
+		}
+		gateway, err := netip.ParseAddr(ipam.Gateway)
+		if err != nil || !subnet.Contains(gateway) {
+			return nil, invalidComposeYamlRetVal("Invalid gateway")
+		}
+		definitions[name] = model.NetworkDefinition{
+			Name:    name,
+			CIDR:    ipam.Subnet,
+			Gateway: ipam.Gateway,
+		}
+	}
+	return definitions, model.SuccessRetVal()
+}
+
+func buildChallengeNetworks(attachments map[string]*types.ServiceNetworkConfig, definitions map[string]model.NetworkDefinition) (model.Networks, model.RetVal) {
+	networks := make(model.Networks, 0, len(attachments))
+	for name, attachment := range attachments {
+		if name == "default" {
+			continue
+		}
+		if attachment == nil {
+			return nil, invalidComposeYamlRetVal("Empty network name")
+		}
+		ip, err := netip.ParseAddr(attachment.Ipv4Address)
+		if err != nil {
+			return nil, invalidComposeYamlRetVal("Invalid ip")
+		}
+		definition, ok := definitions[name]
+		if !ok {
+			log.Logger.Warningf("Network %s not found in networks", name)
+			return nil, invalidComposeYamlRetVal("Invalid network")
+		}
+		subnet, err := netip.ParsePrefix(definition.CIDR)
+		if err != nil {
+			return nil, invalidComposeYamlRetVal(err.Error())
+		}
+		if !subnet.Contains(ip) {
+			return nil, invalidComposeYamlRetVal("Invalid subnet")
+		}
+		networks = append(networks, model.Network{
+			Definition: definition,
+			Attachment: model.NetworkAttachment{
+				Name: name,
+				IP:   attachment.Ipv4Address,
+				MAC:  attachment.MacAddress,
+			},
+		})
+	}
+	if len(definitions) > 0 && len(networks) == 0 {
+		return nil, invalidComposeYamlRetVal("Invalid networks")
+	}
+	return networks, model.SuccessRetVal()
+}
+
+func extractFlagTemplates(content string) []string {
+	seen := make(map[string]struct{})
+	templates := make([]string, 0)
+	for _, re := range []*regexp.Regexp{model.StaticFlagTmpl, model.DynamicFlagTmpl, model.UUIDFlagTmpl} {
+		for _, value := range re.FindAllString(content, -1) {
+			if _, ok := seen[value]; ok {
+				continue
+			}
+			seen[value] = struct{}{}
+			templates = append(templates, value)
+		}
+	}
+	return templates
 }
 
 func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge, model.RetVal) {

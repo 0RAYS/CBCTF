@@ -27,32 +27,26 @@ func isInWebhookWhitelist(target string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	hostname, err := netip.ParseAddr(u.Hostname())
+	address, err := netip.ParseAddr(u.Hostname())
 	if err != nil {
 		for _, allowed := range config.Env.Webhook.Whitelist {
 			if allowed == u.Hostname() || allowed == u.Host {
 				return true, nil
 			}
 		}
-	} else {
-		for _, allowed := range config.Env.Webhook.Whitelist {
-			if strings.Contains(allowed, "/") {
-				prefix, err := netip.ParsePrefix(allowed)
-				if err != nil {
-					continue
-				}
-				if prefix.Masked().Contains(hostname) {
-					return true, nil
-				}
-			} else {
-				ip, err := netip.ParseAddr(allowed)
-				if err != nil {
-					continue
-				}
-				if ip.Unmap() == hostname {
-					return true, nil
-				}
+		return false, nil
+	}
+	for _, allowed := range config.Env.Webhook.Whitelist {
+		if strings.Contains(allowed, "/") {
+			prefix, err := netip.ParsePrefix(allowed)
+			if err == nil && prefix.Masked().Contains(address) {
+				return true, nil
 			}
+			continue
+		}
+		ip, err := netip.ParseAddr(allowed)
+		if err == nil && ip.Unmap() == address {
+			return true, nil
 		}
 	}
 	return false, nil

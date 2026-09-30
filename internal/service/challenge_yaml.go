@@ -59,37 +59,29 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 					})
 				}
 			}
+			extensions := make(types.Extensions)
 			if len(xVolumes) > 0 {
-				if service.Extensions == nil {
-					service.Extensions = make(types.Extensions)
-				}
-				service.Extensions[model.XVolumesExtension] = xVolumes
+				extensions[model.XVolumesExtension] = xVolumes
 			}
 			if container.KubeVirt {
-				if service.Extensions == nil {
-					service.Extensions = make(types.Extensions)
-				}
-				service.Extensions[model.XKubeVirtExtension] = true
+				extensions[model.XKubeVirtExtension] = true
 			}
 			if container.Bootloader != "" {
-				if service.Extensions == nil {
-					service.Extensions = make(types.Extensions)
-				}
-				service.Extensions[model.XBootExtension] = model.XBoot{
+				extensions[model.XBootExtension] = model.XBoot{
 					Bootloader: container.Bootloader,
 					SecureBoot: container.SecureBoot,
 				}
 			}
 			if !container.UserData.Empty() {
-				if service.Extensions == nil {
-					service.Extensions = make(types.Extensions)
-				}
-				service.Extensions[model.XCloudInitExtension] = model.XCloudInit{
+				extensions[model.XCloudInitExtension] = model.XCloudInit{
 					Users:             container.UserData.Users,
 					Groups:            container.UserData.Groups,
 					WriteFiles:        container.UserData.WriteFiles,
 					SSHAuthorizedKeys: container.UserData.SSHAuthorizedKeys,
 				}
+			}
+			if len(extensions) > 0 {
+				service.Extensions = extensions
 			}
 			if len(pod.Networks) > 0 {
 				service.Networks = make(map[string]*types.ServiceNetworkConfig)

@@ -37,7 +37,6 @@ func VerifyEmail(tx *gorm.DB, form dto.VerifyEmail) model.RetVal {
 }
 
 // SendPasswordResetEmail 向用户邮箱发送密码重置链接
-// 即使邮箱不存在也返回成功，防止用户枚举
 func SendPasswordResetEmail(tx *gorm.DB, form dto.ForgotPasswordForm) model.RetVal {
 	user, ret := db.InitUserRepo(tx).GetByUniqueField("email", form.Email)
 	if !ret.OK {

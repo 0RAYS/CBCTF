@@ -74,86 +74,16 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			}
 		}
 	}
-	bindingKey := func(podKey, containerKey string) string {
-		return podKey + "\x00" + containerKey
+	type containerKey struct {
+		pod, container string
 	}
-	containerFlags := make(map[string][]model.ChallengeFlag, len(challenge.ChallengeFlags))
+	containerFlags := make(map[containerKey][]model.ChallengeFlag, len(challenge.ChallengeFlags))
 	for _, flag := range challenge.ChallengeFlags {
-		key := bindingKey(flag.Binding.PodKey, flag.Binding.ContainerKey)
+		key := containerKey{flag.Binding.PodKey, flag.Binding.ContainerKey}
 		containerFlags[key] = append(containerFlags[key], flag)
 	}
-
-	buildContainerSpec := func(
-		podTemplate model.ChallengePodTemplate,
-		containerTemplate model.ChallengeContainerTemplate,
-	) (model.VictimContainerSpec, model.RetVal) {
-		containerSpec := model.VictimContainerSpec{
-			Key:   containerTemplate.Key,
-			Name:  containerTemplate.Name,
-			Image: containerTemplate.Image,
-			Resources: model.ResourceSpec{
-				CPUMillis:   int64(containerTemplate.CPU * 1000),
-				MemoryBytes: containerTemplate.Memory,
-			},
-			WorkingDir:   containerTemplate.WorkingDir,
-			Command:      append([]string(nil), containerTemplate.Command...),
-			Environment:  make(map[string]string),
-			KubeVirt:     containerTemplate.KubeVirt,
-			Bootloader:   containerTemplate.Bootloader,
-			SecureBoot:   containerTemplate.SecureBoot,
-			UserData:     containerTemplate.UserData,
-			VolumeMounts: append([]model.XVolume(nil), containerTemplate.VolumeMounts...),
-			Exposes:      append(model.Exposes(nil), containerTemplate.Exposes...),
-		}
-		maps.Copy(containerSpec.Environment, containerTemplate.Environment)
-		for _, flag := range containerFlags[bindingKey(podTemplate.Key, containerTemplate.Key)] {
-			value := flag.Value
-			if injected, ok := flagValues[flag.ID]; ok {
-				value = injected
-			} else if !victim.TeamID.Valid {
-				value = fmt.Sprintf("flag{%s}", renderChallengeFlagValue(flag.Value))
-			}
-			switch flag.Binding.Type {
-			case model.EnvFlagBindingType:
-				containerSpec.Environment[flag.Binding.Target] = value
-			case model.FileFlagBindingType:
-				for i := range containerSpec.VolumeMounts {
-					if containerSpec.VolumeMounts[i].Path != flag.Binding.Target {
-						continue
-					}
-					containerSpec.VolumeMounts[i].Content = strings.ReplaceAll(
-						containerSpec.VolumeMounts[i].Content,
-						flag.Value,
-						value,
-					)
-				}
-			case model.CloudInitFileFlagBindingType:
-				for i := range containerSpec.UserData.WriteFiles {
-					if containerSpec.UserData.WriteFiles[i].Path != flag.Binding.Target {
-						continue
-					}
-					containerSpec.UserData.WriteFiles[i].Content = strings.ReplaceAll(
-						containerSpec.UserData.WriteFiles[i].Content,
-						flag.Value,
-						value,
-					)
-				}
-			default:
-				return model.VictimContainerSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
-			}
-		}
-		return containerSpec, model.SuccessRetVal()
-	}
-
-	networkPlans := make(map[string]*model.Subnet)
-	hasVPC := needVPC(challenge.Template.Pods)
-	if hasVPC {
-		spec.NetworkPlan = model.VPC{
-			Name:    fmt.Sprintf("vpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
-			Subnets: make([]*model.Subnet, 0),
-		}
-	}
-	if !hasVPC {
+	testMode := !victim.TeamID.Valid
+	if !needVPC(challenge.Template.Pods) {
 		containerCount := 0
 		for _, podTemplate := range challenge.Template.Pods {
 			containerCount += len(podTemplate.Containers)
@@ -173,7 +103,8 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 				}
 			}
 			for _, containerTemplate := range podTemplate.Containers {
-				containerSpec, ret := buildContainerSpec(podTemplate, containerTemplate)
+				flags := containerFlags[containerKey{podTemplate.Key, containerTemplate.Key}]
+				containerSpec, ret := buildVictimContainerSpec(containerTemplate, flags, flagValues, testMode)
 				if !ret.OK {
 					return model.VictimSpec{}, ret
 				}
@@ -184,6 +115,11 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 		return spec, model.SuccessRetVal()
 	}
 
+	spec.NetworkPlan = model.VPC{
+		Name:    fmt.Sprintf("vpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
+		Subnets: make([]*model.Subnet, 0),
+	}
+	networkPlans := make(map[string]*model.Subnet)
 	for _, podTemplate := range challenge.Template.Pods {
 		podSpec := model.PodSpec{
 			Key:          podTemplate.Key,
@@ -192,7 +128,8 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			Containers:   make([]model.VictimContainerSpec, 0, len(podTemplate.Containers)),
 		}
 		for _, containerTemplate := range podTemplate.Containers {
-			containerSpec, ret := buildContainerSpec(podTemplate, containerTemplate)
+			flags := containerFlags[containerKey{podTemplate.Key, containerTemplate.Key}]
+			containerSpec, ret := buildVictimContainerSpec(containerTemplate, flags, flagValues, testMode)
 			if !ret.OK {
 				return model.VictimSpec{}, ret
 			}
@@ -201,9 +138,6 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 		spec.Pods = append(spec.Pods, podSpec)
 
 		for _, network := range podTemplate.Networks {
-			if spec.NetworkPlan.Name == "" {
-				continue
-			}
 			subnet, ok := networkPlans[network.Definition.Name]
 			if !ok {
 				subnet = &model.Subnet{
@@ -222,22 +156,69 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 	return spec, model.SuccessRetVal()
 }
 
-func buildPodRecords(victim model.Victim) []model.Pod {
-	options := make([]model.Pod, 0, len(victim.Spec.Pods))
-	for _, podSpec := range victim.Spec.Pods {
-		options = append(options, model.Pod{
-			VictimID: victim.ID,
-			Name: fmt.Sprintf("pod-%d-%d-%s-%s", victim.ContestChallengeID.V, victim.UserID, func() string {
-				name := strings.ToLower(podSpec.Key)
-				if len(name) < 15 {
-					return name
+func buildVictimContainerSpec(template model.ChallengeContainerTemplate, flags []model.ChallengeFlag, flagValues map[uint]string, testMode bool) (model.VictimContainerSpec, model.RetVal) {
+	spec := model.VictimContainerSpec{
+		Key:   template.Key,
+		Name:  template.Name,
+		Image: template.Image,
+		Resources: model.ResourceSpec{
+			CPUMillis:   int64(template.CPU * 1000),
+			MemoryBytes: template.Memory,
+		},
+		WorkingDir:   template.WorkingDir,
+		Command:      append([]string(nil), template.Command...),
+		Environment:  make(map[string]string),
+		KubeVirt:     template.KubeVirt,
+		Bootloader:   template.Bootloader,
+		SecureBoot:   template.SecureBoot,
+		UserData:     template.UserData,
+		VolumeMounts: append([]model.XVolume(nil), template.VolumeMounts...),
+		Exposes:      append(model.Exposes(nil), template.Exposes...),
+	}
+	maps.Copy(spec.Environment, template.Environment)
+	for _, flag := range flags {
+		value := flag.Value
+		if injected, ok := flagValues[flag.ID]; ok {
+			value = injected
+		} else if testMode {
+			value = fmt.Sprintf("flag{%s}", renderChallengeFlagValue(flag.Value))
+		}
+		switch flag.Binding.Type {
+		case model.EnvFlagBindingType:
+			spec.Environment[flag.Binding.Target] = value
+		case model.FileFlagBindingType:
+			for i := range spec.VolumeMounts {
+				volume := &spec.VolumeMounts[i]
+				if volume.Path == flag.Binding.Target {
+					volume.Content = strings.ReplaceAll(volume.Content, flag.Value, value)
 				}
-				return name[:15]
-			}(), utils.RandHexStr(6)),
-			Spec: podSpec,
+			}
+		case model.CloudInitFileFlagBindingType:
+			for i := range spec.UserData.WriteFiles {
+				file := &spec.UserData.WriteFiles[i]
+				if file.Path == flag.Binding.Target {
+					file.Content = strings.ReplaceAll(file.Content, flag.Value, value)
+				}
+			}
+		default:
+			return model.VictimContainerSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
+		}
+	}
+	return spec, model.SuccessRetVal()
+}
+
+func buildPodRecords(victim model.Victim) []model.Pod {
+	pods := make([]model.Pod, 0, len(victim.Spec.Pods))
+	for _, podSpec := range victim.Spec.Pods {
+		name := strings.ToLower(podSpec.Key)
+		name = name[:min(len(name), 15)]
+		pods = append(pods, model.Pod{
+			VictimID: victim.ID,
+			Name:     fmt.Sprintf("pod-%d-%d-%s-%s", victim.ContestChallengeID.V, victim.UserID, name, utils.RandHexStr(6)),
+			Spec:     podSpec,
 		})
 	}
-	return options
+	return pods
 }
 
 func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID, challengeID uint, durationL ...time.Duration) model.RetVal {

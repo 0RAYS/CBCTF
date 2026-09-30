@@ -17,7 +17,13 @@ func GetVictimStatusResp(status view.VictimStatusView) gin.H {
 }
 
 func getContestChallengeBaseResp(contestChallenge model.ContestChallenge) gin.H {
-	data := gin.H{
+	var score float64
+	var solvers int64
+	for _, flag := range contestChallenge.ContestFlags {
+		score += flag.CurrentScore
+		solvers += flag.Solvers
+	}
+	return gin.H{
 		"id":          contestChallenge.Challenge.RandID,
 		"name":        contestChallenge.Name,
 		"description": contestChallenge.Description,
@@ -25,24 +31,11 @@ func getContestChallengeBaseResp(contestChallenge model.ContestChallenge) gin.H 
 		"type":        contestChallenge.Type,
 		"category":    contestChallenge.Category,
 		"hidden":      contestChallenge.Hidden,
-		"score": func() float64 {
-			var score float64
-			for _, flag := range contestChallenge.ContestFlags {
-				score += flag.CurrentScore
-			}
-			return score
-		}(),
-		"solvers": func() int64 {
-			var solvers int64
-			for _, flag := range contestChallenge.ContestFlags {
-				solvers += flag.Solvers
-			}
-			return solvers
-		}(),
-		"hints": contestChallenge.Hints,
-		"tags":  contestChallenge.Tags,
+		"score":       score,
+		"solvers":     solvers,
+		"hints":       contestChallenge.Hints,
+		"tags":        contestChallenge.Tags,
 	}
-	return data
 }
 
 func GetContestChallengeResp(contestChallengeView view.ContestChallengeView) gin.H {
