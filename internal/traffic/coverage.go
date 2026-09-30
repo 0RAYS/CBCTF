@@ -1,5 +1,7 @@
 package traffic
 
+import "slices"
+
 type SourceIssue struct {
 	File  string `json:"file"`
 	Phase string `json:"phase"`
@@ -19,10 +21,8 @@ func (r *AnalysisReport) AddSourceIssues(issues ...SourceIssue) {
 	r.SourceIssues = append(r.SourceIssues, issues...)
 	r.Partial = true
 	r.Truncated = true
-	for _, code := range r.Warnings {
-		if code == "capture_source_incomplete" {
-			return
-		}
+	if slices.Contains(r.Warnings, "capture_source_incomplete") {
+		return
 	}
 	r.Warnings = append(r.Warnings, "capture_source_incomplete")
 }
