@@ -69,7 +69,7 @@ function SystemConfig({ config, onConfigUpdated }) {
         onClose={() => setIsUpdateConfirmOpen(false)}
         title={t('admin.system.update.title')}
         confirmText={t('admin.system.update.confirm')}
-        cancelText={t('admin.system.update.cancel')}
+        cancelText={t('common.cancel')}
         onConfirm={handleConfirmUpdate}
         type="danger"
         loading={isUpdating}

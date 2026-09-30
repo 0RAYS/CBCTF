@@ -18,5 +18,5 @@ const api = {
 };
 
 export default function AdminGenerators() {
-  return <GeneratorManagement api={api} textKey="admin.generators" />;
+  return <GeneratorManagement api={api} />;
 }

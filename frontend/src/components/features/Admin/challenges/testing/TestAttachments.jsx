@@ -66,7 +66,7 @@ export default function TestAttachments({ challenge, file }) {
             ? t('admin.challenge.testModal.attachments.generating')
             : challenge?.type === 'dynamic'
               ? t('admin.challenge.testModal.attachments.generateAndDownload')
-              : t('admin.challenge.testModal.attachments.download')}
+              : t('common.download')}
         </span>
       </motion.button>
     </section>

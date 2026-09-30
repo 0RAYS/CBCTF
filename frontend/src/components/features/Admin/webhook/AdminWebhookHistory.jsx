@@ -168,7 +168,7 @@ function AdminWebhookHistory({
           getRowActions={(history) => [
             {
               key: 'detail',
-              label: t('admin.webhook.historyList.actions.viewDetail'),
+              label: t('common.viewDetails'),
               icon: <IconEye size={18} />,
               onClick: () => onViewDetail?.(history),
             },

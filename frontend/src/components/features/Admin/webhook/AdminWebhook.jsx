@@ -115,9 +115,9 @@ function AdminWebhook({
         return (
           <div className="flex flex-wrap gap-2">
             {webhook.on ? (
-              <StatusTag type="success" text={t('admin.webhook.list.status.enabled')} />
+              <StatusTag type="success" text={t('common.toggle.enabled')} />
             ) : (
-              <StatusTag type="warning" text={t('admin.webhook.list.status.disabled')} />
+              <StatusTag type="warning" text={t('common.toggle.disabled')} />
             )}
           </div>
         );
@@ -193,7 +193,7 @@ function AdminWebhook({
           getRowActions={(webhook) => [
             {
               key: 'edit',
-              label: t('admin.webhook.list.actions.edit'),
+              label: t('common.edit'),
               icon: <IconEdit size={18} />,
               onClick: () => onEditWebhook?.(webhook),
             },
@@ -206,7 +206,7 @@ function AdminWebhook({
             },
             {
               key: 'delete',
-              label: t('admin.webhook.list.actions.delete'),
+              label: t('common.delete'),
               icon: <IconTrash size={18} />,
               danger: true,
               onClick: () => onDeleteWebhook?.(webhook),

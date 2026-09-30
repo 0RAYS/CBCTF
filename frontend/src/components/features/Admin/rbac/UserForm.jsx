@@ -12,7 +12,7 @@ export default function UserForm({ mode, selectedUser, editForm, setEditForm }) 
         <p>
           {t('admin.users.modal.deletePrompt')} <span className="text-white font-semibold">{selectedUser?.name}</span>?
         </p>
-        <p className="text-red-400 text-sm">{t('admin.users.modal.deleteWarning')}</p>
+        <p className="text-red-400 text-sm">{t('common.modal.deleteWarning')}</p>
       </div>
     );
   }

@@ -195,7 +195,7 @@ function ContestsManagement() {
       return (
         <DeleteConfirmation
           message={`${t('admin.contests.modal.deletePrompt')} ${selectedContest?.name}?`}
-          warning={t('admin.contests.modal.deleteWarning')}
+          warning={t('common.modal.deleteWarning')}
         />
       );
     }

@@ -55,7 +55,7 @@ export default function TrafficPanel({
   };
   return (
     <section>
-      <h2 className="text-xl font-mono text-neutral-50 mb-4">{t('admin.contests.teamDetail.sections.traffic')}</h2>
+      <h2 className="text-xl font-mono text-neutral-50 mb-4">{t('admin.contests.teamDetail.tabs.traffic')}</h2>
       {loading ? (
         <Card className="flex justify-center p-8">
           <Spinner />

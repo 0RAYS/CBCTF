@@ -13,12 +13,14 @@ pnpm install --frozen-lockfile
 pnpm dev
 pnpm test
 pnpm lint:check
+pnpm i18n:check
 pnpm build
 pnpm build:report
 ```
 
 - `pnpm test` 使用 Node 内置测试运行器，无额外测试运行时依赖。
 - `pnpm lint:check` 不修改文件，包含 Hooks 调用合法性检查。
+- `pnpm i18n:check` 检查双语键和插值参数一致性、缺失引用、未引用候选以及冗余翻译别名；`pnpm i18n:audit` 输出详细引用、动态范围和双语重复文案报告。
 - `pnpm lint` 会自动修改文件；局部修改优先只格式化涉及的文件。
 - `pnpm build` 生成 `dist/`，Go 构建前必须执行；不要提交构建产物。
 - `pnpm build:report` 基于构建清单统计入口静态 JS/CSS 的原始、gzip 和实际预压缩体积，检查管理布局、登录页、图表与编辑器未泄漏到公共入口。字体、路由懒加载和 API 流量不包含在此口径内。
@@ -105,6 +107,9 @@ tests/                         领域逻辑、异步会话与结构约束测试
 
 - 管理端与比赛布局按路由懒加载，先通过权限守卫再加载管理端资源。
 - 翻译仍在 `src/i18n/locales/{en,zh-CN}.json` 维护。`build/localeChunks.js` 在构建和开发时分离 `admin` 文案，由管理端布局加载；公共页面使用公共翻译键。两种语言的管理端资源在布局渲染前一起注册，语言切换无需额外请求。
+- 通用操作、启用状态、题型、公告类型和排行榜表头直接复用 `common`，不再用只含 `$t(...)` 的键转发。全局/比赛生成器共用 `admin.generators`；靶机筛选、列表、状态和日志共用 `admin.victims`，比赛批量启动文案留在 `admin.contests.containers`。
+- 翻译审计使用 ESLint AST，忽略注释并识别配置中的键、条件表达式、模板字符串和 `Trans.i18nKey`。动态状态、后端错误码和传入的翻译前缀按匹配范围保守保留，报告中的“未引用候选为零”不代表所有动态分支都已执行。相同文案仍需按业务语义决定是否合并，审计不会自动删除或合并。
+- 完整句子使用插值；带样式的句子使用 `Trans` 命名组件，不按中英文语序拆成多个片段键。
 - `pnpm build` 为可压缩静态文件生成 `.gz`，Go 静态处理器按 `Accept-Encoding` 提供预压缩内容，无需逐请求压缩。保留未压缩文件以支持客户端协商和 Range 请求；入口重新验证、带哈希资源长期缓存的策略不变。
 - `go test ./frontend`（仓库根目录）验证 gzip 协商、HEAD、Range、缺失文件和入口重定向。构建产物须先生成。
 - Markdown 内容按 props 缓存渲染，图片和列表缩略图使用浏览器懒加载与异步解码。

@@ -15,7 +15,6 @@
       "empty": "暂无可用操作"
     },
     "loading": "加载中...",
-    "language": "语言",
     "switchTo": "切换至",
     "currentLanguage": "当前语言",
     "processing": "处理中...",
@@ -105,6 +104,7 @@
     },
     "selectAll": "全选",
     "scoreboard": {
+      "total": "总计",
       "headers": {
         "rank": "排名",
         "team": "队伍",
@@ -116,8 +116,7 @@
   },
   "footer": {
     "copyright": "© 2026 CBCTF",
-    "icp": "陕ICP备2025076339号-1",
-    "github": "GitHub"
+    "icp": "陕ICP备2025076339号-1"
   },
   "nav": {
     "games": "比赛",
@@ -274,8 +273,7 @@
         "name": "比赛",
         "status": "状态",
         "schedule": "时间",
-        "metrics": "统计",
-        "actions": "操作"
+        "metrics": "统计"
       },
       "actions": {
         "add": "添加比赛",
@@ -296,9 +294,6 @@
         "registrations": "报名总数: {{count}}人",
         "teams": "队伍总数: {{count}}队"
       },
-      "units": {
-        "hours": "{{count}}小时"
-      },
       "form": {
         "name": "赛事名称",
         "description": "赛事描述",
@@ -310,8 +305,7 @@
       "modal": {
         "createTitle": "创建赛事",
         "deleteTitle": "删除赛事",
-        "deletePrompt": "确定要删除赛事",
-        "deleteWarning": "$t(common.modal.deleteWarning)"
+        "deletePrompt": "确定要删除赛事"
       },
       "toast": {
         "fetchFailed": "获取比赛列表失败",
@@ -322,51 +316,12 @@
         "createFailed": "创建赛事失败",
         "deleteFailed": "删除赛事失败"
       },
-      "teamContainers": {
-        "toast": {
-          "fetchSubmissionsFailed": "获取提交记录失败",
-          "fetchWriteupsFailed": "获取题解列表失败",
-          "fetchContainersFailed": "获取靶机列表失败",
-          "fetchTrafficFailed": "获取流量数据失败",
-          "downloadTrafficFailed": "下载流量文件失败",
-          "downloadWriteupFailed": "下载题解失败"
-        },
-        "modal": {
-          "title": "靶机流量记录",
-          "empty": "暂无流量数据"
-        },
-        "labels": {
-          "type": "类型:",
-          "sourceIp": "源IP:",
-          "sourcePort": "源端口:",
-          "timestamp": "时间戳:",
-          "destinationIp": "目标IP:",
-          "destinationPort": "目标端口:",
-          "payload": "负载:"
-        },
-        "types": {
-          "request": "请求",
-          "response": "响应",
-          "tcp": "TCP"
-        },
-        "payload": {
-          "expand": "展开",
-          "collapse": "收起",
-          "parseError": "解析错误: {{message}}"
-        }
-      },
       "teamDetail": {
         "tabs": {
           "submissions": "最近提交",
           "writeups": "题解列表",
           "traffic": "靶机流量",
           "flags": "Flag"
-        },
-        "sections": {
-          "submissions": "$t(admin.contests.teamDetail.tabs.submissions)",
-          "writeups": "$t(admin.contests.teamDetail.tabs.writeups)",
-          "traffic": "$t(admin.contests.teamDetail.tabs.traffic)",
-          "flags": "$t(admin.contests.teamDetail.tabs.flags)"
         },
         "empty": {
           "submissions": "暂无提交记录",
@@ -425,7 +380,6 @@
         }
       },
       "challengeModal": {
-        "titleAdd": "添加赛题",
         "titleEdit": "编辑赛题",
         "sections": {
           "basic": "基本信息",
@@ -467,14 +421,11 @@
         "solversModal": {
           "title": "Flag #{{index}} 解题队伍",
           "columns": {
-            "rank": "排名",
             "user": "用户",
             "team": "队伍",
-            "score": "分数",
             "solvedAt": "解题时间"
           },
-          "empty": "暂无解题记录",
-          "loading": "加载中..."
+          "empty": "暂无解题记录"
         }
       },
       "challengeSelector": {
@@ -486,11 +437,6 @@
         "filters": {
           "categoryAll": "全部分类",
           "typeAll": "全部类型"
-        },
-        "types": {
-          "static": "$t(common.challengeTypes.static)",
-          "dynamic": "$t(common.challengeTypes.dynamic)",
-          "pods": "$t(common.challengeTypes.pods)"
         },
         "empty": {
           "noMatch": "暂无匹配赛题"
@@ -646,7 +592,8 @@
           "updatedAt": "更新时间: {{time}}"
         },
         "toast": {
-          "fetchFailed": "获取流量数据失败"
+          "fetchFailed": "获取流量数据失败",
+          "downloadFailed": "下载流量文件失败"
         }
       },
       "notices": {
@@ -656,8 +603,7 @@
         "table": {
           "title": "标题",
           "type": "类型",
-          "content": "内容",
-          "actions": "操作"
+          "content": "内容"
         },
         "form": {
           "title": "公告标题",
@@ -666,11 +612,6 @@
           "typePlaceholder": "请输入自定义公告类型, 如 normal / event / maintenance",
           "content": "公告内容",
           "contentPlaceholder": "请输入公告内容"
-        },
-        "types": {
-          "normal": "普通",
-          "important": "重要",
-          "update": "更新"
         },
         "modal": {
           "title": {
@@ -681,7 +622,6 @@
           "deletePrompt": "确定删除公告 \"{{title}}\" 吗？此操作不可恢复"
         },
         "toast": {
-          "fetchFailed": "获取公告列表失败",
           "createSuccess": "创建公告成功",
           "createFailed": "创建公告失败",
           "updateSuccess": "更新公告成功",
@@ -749,8 +689,7 @@
         "empty": "暂无节点镜像数据",
         "status": {
           "present": "已存在",
-          "missing": "缺失",
-          "selectedMissing": "已排队"
+          "missing": "缺失"
         },
         "statusTitle": "节点镜像清单",
         "statusSubtitle": "查看每个节点已存在的镜像和缺失的比赛镜像",
@@ -781,8 +720,7 @@
           "score": "得分",
           "members": "成员数",
           "lastSubmit": "最后提交",
-          "status": "状态",
-          "actions": "操作"
+          "status": "状态"
         },
         "form": {
           "name": "团队名称",
@@ -811,8 +749,7 @@
         "modal": {
           "title": {
             "edit": "编辑团队信息",
-            "delete": "删除团队",
-            "kick": "移除团队成员"
+            "delete": "删除团队"
           },
           "deletePrompt": "确定删除团队 {{name}} 吗？此操作不可恢复",
           "kickPrompt": "从团队 {{name}} 中移出成员: ",
@@ -955,27 +892,13 @@
       },
       "containers": {
         "toast": {
-          "fetchContainersFailed": "获取靶机列表失败",
           "fetchTeamsFailed": "获取团队列表失败",
           "fetchChallengesFailed": "获取题目列表失败",
-          "searchFailed": "搜索失败",
           "invalidDuration": "请输入有效的靶机生存时长",
-          "selectStopRequired": "请选择要停止的靶机",
-          "selectStartRequired": "请至少选择一道题目和一支队伍",
-          "taskDispatched": "任务已入队",
-          "taskDispatchFailed": "任务入队失败"
-        },
-        "status": {
-          "stopped": "已停止"
+          "selectStartRequired": "请至少选择一道题目和一支队伍"
         },
         "page": {
           "subtitle": "管理比赛靶机实例"
-        },
-        "showDeleted": "显示已删除",
-        "stats": {
-          "total": "总靶机数",
-          "running": "运行中",
-          "stopped": "已停止"
         },
         "quickActions": {
           "title": "快速操作",
@@ -983,7 +906,6 @@
           "expand": "展开",
           "searchPlaceholder": "按题目名称搜索...",
           "randomTeams": "随机选择队伍",
-          "selectAll": "全选",
           "clear": "清空",
           "pageHint": "左右翻页",
           "estimatedTeams": "预计抽取 {{count}} 个队伍",
@@ -994,46 +916,6 @@
           "invalidDuration": "请输入大于 0 的秒数",
           "noChallenges": "当前条件下没有题目",
           "startButton": "开启 ({{challenges}}×{{teams}})"
-        },
-        "filters": {
-          "title": "过滤条件",
-          "reset": "重置",
-          "userName": "用户名称",
-          "teamName": "团队名称",
-          "challengeName": "题目名称",
-          "searchUserPlaceholder": "搜索用户...",
-          "searchTeamPlaceholder": "搜索团队...",
-          "searchChallengePlaceholder": "搜索题目...",
-          "userFallback": "用户{{id}}",
-          "teamFallback": "团队{{id}}",
-          "challengeFallback": "题目{{id}}",
-          "userIdLabel": "用户 ID",
-          "teamIdLabel": "团队 ID",
-          "challengeIdLabel": "题目 ID"
-        },
-        "table": {
-          "title": "靶机列表",
-          "total": "(共 {{count}} 个靶机)",
-          "stopButton": "停止靶机",
-          "selectContainer": "选择靶机 {{id}}",
-          "columns": {
-            "id": "ID",
-            "challenge": "题目",
-            "team": "团队",
-            "user": "用户",
-            "remote": "远程地址",
-            "startTime": "开始时间",
-            "status": "状态",
-            "remaining": "剩余时间"
-          },
-          "empty": "暂无靶机数据"
-        },
-        "statusBadge": {
-          "waiting": "等待中",
-          "pending": "准备中",
-          "terminating": "终止中",
-          "running": "运行中",
-          "stopped": "已停止"
         },
         "modals": {
           "startTitle": "确认开启靶机",
@@ -1054,26 +936,8 @@
           "durationTitle": "靶机生存时长",
           "durationValue": "{{seconds}} 秒",
           "durationHint": "时长预览: {{value}}",
-          "summaryPrefix": "将为 ",
-          "summaryMiddle": " 个题目 × ",
-          "summaryEquals": " 个团队 =",
-          "summarySuffix": " 个靶机",
-          "startWarning": "批量启动可能影响集群稳定性, 请确认规模后继续",
-          "stopTitle": "停止靶机",
-          "stopConfirm": "停止",
-          "stopPrompt": "确定要停止选中的 {{count}} 个靶机吗？"
-        },
-        "logs": {
-          "viewLogs": "查看日志",
-          "title": "靶机日志 — #{{id}}",
-          "podName": "Pod 名称",
-          "containerName": "容器名称",
-          "lines": "行数",
-          "fetch": "获取日志",
-          "empty": "暂无日志内容，请点击获取",
-          "noPods": "该靶机暂无运行中的 Pod",
-          "fetchPodsFailed": "获取 Pod 列表失败",
-          "fetchLogsFailed": "获取日志失败"
+          "summary": "将启动 <amount>{{challenges}}</amount> 个题目 × <amount>{{teams}}</amount> 个队伍 = <total>{{total}}</total> 个靶机",
+          "startWarning": "批量启动可能影响集群稳定性, 请确认规模后继续"
         }
       },
       "challenges": {
@@ -1087,17 +951,14 @@
           "type": "类型",
           "metrics": "统计",
           "tags": "标签",
-          "hints": "提示",
-          "actions": "操作"
+          "hints": "提示"
         },
         "hidden": "隐藏",
         "attemptsLabel": "尝试次数:",
         "solves": "{{count}} 解",
         "toast": {
-          "fetchCategoriesFailed": "获取题目分类失败",
           "fetchListFailed": "获取题目列表失败",
           "fetchPoolFailed": "获取题库列表失败",
-          "selectRequired": "请选择要添加的题目",
           "addSuccess": "添加题目成功",
           "addFailed": "添加题目失败",
           "updateSuccess": "更新题目成功",
@@ -1108,14 +969,6 @@
         }
       },
       "scoreboard": {
-        "headers": {
-          "rank": "$t(common.scoreboard.headers.rank)",
-          "team": "$t(common.scoreboard.headers.team)",
-          "score": "$t(common.scoreboard.headers.score)",
-          "challenges": "$t(common.scoreboard.headers.challenges)",
-          "lastSubmit": "$t(common.scoreboard.headers.lastSubmit)"
-        },
-        "total": "总计",
         "export": "导出 Writeup",
         "toast": {
           "fetchTimelineFailed": "获取时间线数据失败",
@@ -1164,7 +1017,6 @@
           "detailTitle": "作弊事件详情"
         },
         "actions": {
-          "close": "关闭",
           "delete": "删除",
           "deleteAll": "清空",
           "check": "检测",
@@ -1217,56 +1069,6 @@
           "coordinates": "坐标",
           "fetchFailed": "查询 IP 地理位置失败"
         }
-      },
-      "generators": {
-        "startButton": "启动生成器",
-        "stopButton": "停止所选",
-        "noGenerators": "当前没有运行中的生成器",
-        "noGeneratorsDesc": "为动态题目启动附件生成器",
-        "noDynamicChallenges": "此比赛中没有动态类型题目",
-        "selectChallenges": "选择要启动生成器的题目",
-        "startSelected": "启动所选",
-        "showDeleted": "显示已删除",
-        "columns": {
-          "id": "ID",
-          "name": "Pod 名称",
-          "image": "镜像",
-          "contestId": "赛事 ID",
-          "challengeId": "题目",
-          "success": "成功次数",
-          "successLast": "最近成功",
-          "failure": "失败次数",
-          "failureLast": "最近失败",
-          "status": "状态",
-          "actions": "操作"
-        },
-        "status": {
-          "waiting": "等待中",
-          "pending": "挂起中",
-          "terminating": "终止中",
-          "running": "运行中",
-          "stopped": "已停止"
-        },
-        "stats": {
-          "total": "生成器总数",
-          "successes": "总成功次数",
-          "failures": "总失败次数"
-        },
-        "logs": {
-          "viewLogs": "查看日志",
-          "title": "生成器日志 — {{name}}",
-          "lines": "行数",
-          "empty": "暂无日志内容",
-          "fetchFailed": "获取日志失败"
-        },
-        "toast": {
-          "fetchFailed": "加载生成器列表失败",
-          "startFailed": "启动生成器失败",
-          "stopSuccess": "生成器已停止",
-          "stopFailed": "停止生成器失败",
-          "selectRequired": "请至少选择一个题目",
-          "logFailed": "获取生成器日志失败"
-        }
       }
     },
     "victims": {
@@ -1291,8 +1093,11 @@
       },
       "filters": {
         "title": "过滤条件",
-        "reset": "重置",
         "userName": "用户名称",
+        "teamName": "团队名称",
+        "searchTeamPlaceholder": "搜索团队...",
+        "teamFallback": "团队{{id}}",
+        "teamIdLabel": "团队 ID",
         "challengeName": "题目名称",
         "searchUserPlaceholder": "搜索用户...",
         "searchChallengePlaceholder": "搜索题目...",
@@ -1303,7 +1108,8 @@
       },
       "table": {
         "title": "靶机列表",
-        "total": "(共 {{count}} 个运行中)",
+        "total": "(共 {{count}} 个靶机)",
+        "selectContainer": "选择靶机 {{id}}",
         "stopButton": "停止靶机",
         "columns": {
           "id": "ID",
@@ -1336,7 +1142,6 @@
         "podName": "Pod 名称",
         "containerName": "容器名称",
         "lines": "行数",
-        "fetch": "获取日志",
         "empty": "暂无日志内容，请点击获取",
         "noPods": "该靶机暂无运行中的 Pod",
         "fetchPodsFailed": "获取 Pod 列表失败",
@@ -1348,13 +1153,13 @@
       "stopButton": "停止所选",
       "noGenerators": "当前没有运行中的生成器",
       "noGeneratorsDesc": "为动态题目启动附件生成器",
-      "noDynamicChallenges": "系统中暂无动态类型题目",
+      "noDynamicChallenges": "暂无可用的动态类型题目",
       "selectChallenges": "选择要启动生成器的题目",
       "startSelected": "启动所选",
       "showDeleted": "显示已删除",
       "columns": {
         "id": "ID",
-        "name": "Pod名称",
+        "name": "Pod 名称",
         "image": "镜像",
         "contestId": "比赛 ID",
         "challengeId": "题目",
@@ -1365,6 +1170,13 @@
         "status": "状态",
         "actions": "操作"
       },
+      "status": {
+        "waiting": "等待中",
+        "pending": "准备中",
+        "terminating": "终止中",
+        "running": "运行中",
+        "stopped": "已停止"
+      },
       "stats": {
         "total": "生成器总数",
         "successes": "总成功次数",
@@ -1374,8 +1186,7 @@
         "viewLogs": "查看日志",
         "title": "生成器日志 — {{name}}",
         "lines": "行数",
-        "empty": "暂无日志内容",
-        "fetchFailed": "获取日志失败"
+        "empty": "暂无日志内容"
       },
       "toast": {
         "fetchFailed": "获取生成器列表失败",
@@ -1397,6 +1208,7 @@
       },
       "actions": {
         "add": "添加题目",
+        "upload": "上传附件",
         "test": "测试题目"
       },
       "search": {
@@ -1416,11 +1228,6 @@
       },
       "empty": {
         "search": "未找到匹配的题目"
-      },
-      "types": {
-        "static": "$t(common.challengeTypes.static)",
-        "dynamic": "$t(common.challengeTypes.dynamic)",
-        "pods": "$t(common.challengeTypes.pods)"
       },
       "toast": {
         "searchFailed": "搜索失败",
@@ -1469,8 +1276,7 @@
         },
         "attachments": {
           "generating": "生成中...",
-          "generateAndDownload": "生成并下载",
-          "download": "下载"
+          "generateAndDownload": "生成并下载"
         }
       }
     },
@@ -1504,11 +1310,6 @@
         "allowInbound": "允许入站",
         "allowOutbound": "允许出站",
         "excludeList": "排除列表"
-      },
-      "types": {
-        "static": "$t(common.challengeTypes.static)",
-        "dynamic": "$t(common.challengeTypes.dynamic)",
-        "pods": "$t(common.challengeTypes.pods)"
       },
       "placeholders": {
         "name": "输入题目名称",
@@ -1731,8 +1532,7 @@
         "email": "邮箱",
         "status": "状态",
         "contests": "参赛次数",
-        "teams": "组队次数",
-        "actions": "操作"
+        "teams": "组队次数"
       },
       "picture": {
         "replace": "更换"
@@ -1767,8 +1567,7 @@
         "createTitle": "创建用户",
         "editTitle": "编辑用户",
         "deleteTitle": "删除用户",
-        "deletePrompt": "确定要删除用户",
-        "deleteWarning": "$t(common.modal.deleteWarning)"
+        "deletePrompt": "确定要删除用户"
       },
       "form": {
         "username": "用户名",
@@ -1787,7 +1586,6 @@
         "info": {
           "id": "用户 ID",
           "email": "邮箱",
-          "score": "分数",
           "solved": "已解题数",
           "provider": "登录方式",
           "contests": "参赛次数",
@@ -1833,7 +1631,6 @@
           "editTitle": "编辑角色",
           "deleteTitle": "删除角色",
           "deletePrompt": "确定要删除角色",
-          "deleteWarning": "$t(common.modal.deleteWarning)",
           "permissionsTitle": "权限管理"
         },
         "form": {
@@ -1920,7 +1717,6 @@
           "editTitle": "编辑分组",
           "deleteTitle": "删除分组",
           "deletePrompt": "确定要删除分组",
-          "deleteWarning": "$t(common.modal.deleteWarning)",
           "usersTitle": "用户管理",
           "currentUsersTitle": "当前组内用户"
         },
@@ -2005,17 +1801,12 @@
         "failure": "失败次数",
         "actions": "操作"
       },
-      "status": {
-        "enabled": "$t(common.toggle.enabled)",
-        "disabled": "$t(common.toggle.disabled)"
-      },
       "empty": "暂无 SMTP 配置",
       "modal": {
         "createTitle": "创建 SMTP 配置",
         "editTitle": "编辑 SMTP 配置",
         "deleteTitle": "删除 SMTP 配置",
-        "deletePrompt": "确定要删除 SMTP 配置",
-        "deleteWarning": "$t(common.modal.deleteWarning)"
+        "deletePrompt": "确定要删除 SMTP 配置"
       },
       "form": {
         "addressLabel": "邮箱地址 *",
@@ -2065,15 +1856,10 @@
           "to": "收件人",
           "subject": "主题",
           "status": "状态",
-          "time": "发送时间",
-          "actions": "操作"
-        },
-        "actions": {
-          "viewDetail": "查看详情"
+          "time": "发送时间"
         }
       },
       "actions": {
-        "close": "关闭",
         "add": "添加 SMTP 配置",
         "viewHistory": "查看历史",
         "sendTest": "发送测试邮件",
@@ -2094,8 +1880,7 @@
         "failureCount": "失败次数",
         "successLast": "上次成功",
         "failureLast": "上次失败",
-        "next": "下次运行",
-        "actions": "操作"
+        "next": "下次运行"
       },
       "empty": "暂无 Cron 任务",
       "modal": {
@@ -2150,26 +1935,19 @@
           "failure": "失败次数",
           "actions": "操作"
         },
-        "status": {
-          "enabled": "$t(common.toggle.enabled)",
-          "disabled": "$t(common.toggle.disabled)"
-        },
         "events": {
           "all": "全部事件"
         },
         "actions": {
           "add": "添加 Webhook 配置",
-          "edit": "编辑",
-          "viewHistory": "查看历史",
-          "delete": "删除"
+          "viewHistory": "查看历史"
         }
       },
       "modal": {
         "createTitle": "创建 Webhook 配置",
         "editTitle": "编辑 Webhook 配置",
         "deleteTitle": "删除 Webhook 配置",
-        "deletePrompt": "确定要删除 Webhook 配置",
-        "deleteWarning": "$t(common.modal.deleteWarning)"
+        "deletePrompt": "确定要删除 Webhook 配置"
       },
       "form": {
         "headerKeyPlaceholder": "Header名称",
@@ -2210,15 +1988,8 @@
           "status": "状态",
           "responseCode": "响应码",
           "duration": "耗时",
-          "time": "调用时间",
-          "actions": "操作"
-        },
-        "actions": {
-          "viewDetail": "查看详情"
+          "time": "调用时间"
         }
-      },
-      "actions": {
-        "close": "关闭"
       },
       "toast": {
         "fetchEventsFailed": "获取事件列表失败",
@@ -2238,10 +2009,6 @@
         "uploadLogo": "点击上传 Logo"
       },
       "empty": "暂无 OAuth",
-      "status": {
-        "enabled": "$t(common.toggle.enabled)",
-        "disabled": "$t(common.toggle.disabled)"
-      },
       "columns": {
         "logo": "Logo",
         "provider": "服务商",
@@ -2249,7 +2016,6 @@
         "protocol": "协议",
         "status": "启用",
         "callback": "回调URL",
-        "actions": "操作",
         "id": "ID: {{id}}"
       },
       "toast": {
@@ -2267,8 +2033,7 @@
         "createTitle": "创建 OAuth Provider",
         "editTitle": "编辑 OAuth Provider",
         "deleteTitle": "删除 OAuth Provider",
-        "deletePrompt": "确定要删除 OAuth Provider",
-        "deleteWarning": "$t(common.modal.deleteWarning)"
+        "deletePrompt": "确定要删除 OAuth Provider"
       },
       "form": {
         "protocolLabel": "协议",
@@ -2303,7 +2068,6 @@
         "groupsClaimLabel": "分组字段",
         "adminGroupLabel": "管理员组",
         "defaultGroupLabel": "默认组",
-        "defaultGroupNone": "无",
         "enable": "启用"
       }
     },
@@ -2314,7 +2078,6 @@
         "traffic": "流量",
         "writeup": "题解"
       },
-      "selectAll": "$t(common.selectAll)",
       "empty": "暂无文件",
       "columns": {
         "name": "文件名",
@@ -2336,11 +2099,9 @@
       },
       "modal": {
         "confirmTitle": "确认删除",
-        "confirmPrompt": "确定要删除选中的 {{count}} 个文件吗？",
-        "confirmWarning": "$t(common.modal.deleteWarning)"
+        "confirmPrompt": "确定要删除选中的 {{count}} 个文件吗？"
       },
       "actions": {
-        "confirm": "确认",
         "batchDelete": "批量删除 ({{count}})"
       }
     },
@@ -2363,8 +2124,7 @@
         "title": "更新配置确认",
         "prompt": "即将更新系统配置, 是否继续？",
         "warning": "配置将保存到数据库。工作负载配置对新建实例生效；任务并发及启动时配置需要重启。其他平台副本也需重新加载配置。",
-        "confirm": "继续更新",
-        "cancel": "取消"
+        "confirm": "继续更新"
       },
       "restart": {
         "manualTitle": "重启系统确认",
@@ -2438,8 +2198,7 @@
         "pprofWhitelist": "PProf 访问 IP 白名单 (IP / CIDR)",
         "webhookWhitelist": "Webhook 白名单 (IP / CIDR / Hostname)",
         "registrationEnabled": "允许注册",
-        "registrationDefaultGroup": "注册默认组",
-        "registrationDefaultGroupNone": "无"
+        "registrationDefaultGroup": "注册默认组"
       },
       "hints": {
         "k8sCaptureEnabled": "对新建靶机和 FRPC Pod 生效。关闭后不创建抓包容器及其存储挂载。",
@@ -2619,7 +2378,6 @@
       "emailLabel": "邮箱地址",
       "submit": "发送重置链接",
       "sending": "发送中...",
-      "successTitle": "邮件已发送",
       "successMessage": "如果该邮箱已注册，密码重置链接已发送至您的邮箱，请查收。",
       "backToLogin": "返回登录"
     },
@@ -2628,7 +2386,6 @@
       "description": "请输入您的新密码。",
       "submit": "重置密码",
       "submitting": "重置中...",
-      "successTitle": "密码已重置",
       "successMessage": "您的密码已成功重置，邮箱验证状态已更新为已验证，现在可以登录了。",
       "goToLogin": "前往登录",
       "invalidToken": "此密码重置链接无效或已过期，请重新申请。",
@@ -2680,6 +2437,7 @@
       "registerFailed": "注册失败, 请检查填写内容后重试"
     },
     "user": {
+      "passwordUpdated": "密码已更新",
       "passwordUpdateFailed": "密码更新失败",
       "avatarUpdated": "头像已更新",
       "fetchFailed": "获取用户信息失败"
@@ -2841,11 +2599,6 @@
       "highestScore": "最高分"
     },
     "scoreboardTable": {
-      "headers": {
-        "rank": "$t(common.scoreboard.headers.rank)",
-        "team": "$t(common.scoreboard.headers.team)",
-        "score": "$t(common.scoreboard.headers.score)"
-      },
       "members": "{{count}}人",
       "status": {
         "solved": "已解出",
@@ -2861,51 +2614,6 @@
         "prizes": "奖励",
         "timeline": "时间线"
       },
-      "defaultRules": [
-        "参赛者必须遵守比赛规则与伦理",
-        "禁止攻击比赛平台或其他参赛者",
-        "请勿分享题目答案或解题报告",
-        "每支队伍最多 4 名成员",
-        "比赛采用动态计分系统",
-        "设有首杀奖励",
-        "违规将被取消资格"
-      ],
-      "defaultPrizes": [
-        {
-          "amount": "¥10,000",
-          "description": "一等奖: 奖金与 CBCTF 纪念品"
-        },
-        {
-          "amount": "¥5,000",
-          "description": "二等奖: 奖金与礼品"
-        },
-        {
-          "amount": "¥3,000",
-          "description": "三等奖: 奖金"
-        }
-      ],
-      "defaultTimeline": [
-        {
-          "date": "2024-02-15",
-          "title": "报名开启",
-          "description": "报名开启, 队伍可开始报名"
-        },
-        {
-          "date": "2024-02-16",
-          "title": "比赛开始",
-          "description": "题目发布, 比赛开始"
-        },
-        {
-          "date": "2024-02-17",
-          "title": "比赛结束",
-          "description": "停止计分并公布最终排名"
-        },
-        {
-          "date": "2024-02-18",
-          "title": "题解发布",
-          "description": "发布官方题解供交流"
-        }
-      ],
       "toast": {
         "fetchFailed": "获取比赛详情失败"
       }
@@ -2987,7 +2695,6 @@
       }
     },
     "challenges": {
-      "title": "题目",
       "backToSummary": "← 返回比赛总结",
       "toast": {
         "fetchFailed": "获取数据失败",
@@ -3016,14 +2723,6 @@
       }
     },
     "scoreboard": {
-      "headers": {
-        "rank": "$t(common.scoreboard.headers.rank)",
-        "team": "$t(common.scoreboard.headers.team)",
-        "score": "$t(common.scoreboard.headers.score)",
-        "challenges": "$t(common.scoreboard.headers.challenges)",
-        "lastSubmit": "$t(common.scoreboard.headers.lastSubmit)"
-      },
-      "total": "总计",
       "toast": {
         "fetchFailed": "获取排行榜失败"
       },
@@ -3058,9 +2757,6 @@
         "minute": "{{count}}分钟",
         "second": "{{count}}秒"
       }
-    },
-    "hex": {
-      "invalid": "无效的 hex 数据"
     }
   }
 }

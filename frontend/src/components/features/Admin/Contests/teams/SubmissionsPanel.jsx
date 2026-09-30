@@ -49,7 +49,7 @@ export default function SubmissionsPanel({
   };
   return (
     <section>
-      <h2 className="text-xl font-mono text-neutral-50 mb-4">{t('admin.contests.teamDetail.sections.submissions')}</h2>
+      <h2 className="text-xl font-mono text-neutral-50 mb-4">{t('admin.contests.teamDetail.tabs.submissions')}</h2>
       {loading ? (
         <Card className="flex justify-center p-8">
           <Spinner />

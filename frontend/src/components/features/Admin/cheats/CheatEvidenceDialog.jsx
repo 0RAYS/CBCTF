@@ -21,7 +21,7 @@ export default function CheatEvidenceDialog({ cheat, onClose, openUserDetail, op
       size="lg"
       footer={
         <Button size="sm" variant="ghost" onClick={onClose}>
-          {t('admin.contests.cheats.actions.close')}
+          {t('common.close')}
         </Button>
       }
     >

@@ -63,7 +63,7 @@ function AdminContests({
   // 格式化时长
   const formatDuration = (seconds) => {
     const hours = Math.floor(seconds / 3600);
-    return t('admin.contests.units.hours', { count: hours });
+    return t('utils.time.units.hour', { count: hours });
   };
 
   const columns = [

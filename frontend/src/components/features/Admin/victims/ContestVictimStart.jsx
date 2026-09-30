@@ -53,8 +53,8 @@ export default function ContestVictimStart({ contestId, onStarted }) {
     await startAction.run(
       () => startContestVictims(contestId, payload.challenges, payload.team_ratio, payload.duration),
       {
-        successMessage: t('admin.contests.containers.toast.taskDispatched'),
-        failureMessage: t('admin.contests.containers.toast.taskDispatchFailed'),
+        successMessage: t('admin.victims.toast.taskDispatched'),
+        failureMessage: t('admin.victims.toast.taskDispatchFailed'),
         onResult: (batch) => {
           const remaining = batch ? remainingVictimChallenges(payload.challenges, batch) : [];
           candidates.setSelectedChallenges((selected) =>

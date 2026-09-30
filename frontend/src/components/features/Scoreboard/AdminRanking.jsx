@@ -27,12 +27,12 @@ function AdminRanking({ teams = [], currentPage = 1, pageSize = 6, totalCount = 
       teams={teams}
       locale={i18n.language || 'en-US'}
       labels={{
-        rank: t('admin.contests.scoreboard.headers.rank'),
-        team: t('admin.contests.scoreboard.headers.team'),
-        score: t('admin.contests.scoreboard.headers.score'),
-        challenges: t('admin.contests.scoreboard.headers.challenges'),
-        lastSubmit: t('admin.contests.scoreboard.headers.lastSubmit'),
-        total: t('admin.contests.scoreboard.total'),
+        rank: t('common.scoreboard.headers.rank'),
+        team: t('common.scoreboard.headers.team'),
+        score: t('common.scoreboard.headers.score'),
+        challenges: t('common.scoreboard.headers.challenges'),
+        lastSubmit: t('common.scoreboard.headers.lastSubmit'),
+        total: t('common.scoreboard.total'),
       }}
       emptyMessage={t('common.noData')}
       onRowClick={onRowClick}

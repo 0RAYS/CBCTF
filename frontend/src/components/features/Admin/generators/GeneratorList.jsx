@@ -134,9 +134,9 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
                   <td className="py-3 px-4">
                     <span
                       className={`inline-block max-w-full truncate px-2 py-0.5 rounded border text-xs font-mono ${STATUS_STYLES[generator.status] ?? STATUS_STYLES.stopped}`}
-                      title={t(`admin.contests.generators.status.${generator.status}`, generator.status)}
+                      title={t(`admin.generators.status.${generator.status}`, generator.status)}
                     >
-                      {t(`admin.contests.generators.status.${generator.status}`, generator.status)}
+                      {t(`admin.generators.status.${generator.status}`, generator.status)}
                     </span>
                   </td>
                   <td className="py-3 px-4">

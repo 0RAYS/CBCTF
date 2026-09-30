@@ -29,7 +29,7 @@ export default function FlagsPanel({ flags = [], loading }) {
     );
   return (
     <section>
-      <h2 className="text-xl font-mono text-neutral-50 mb-4">{t('admin.contests.teamDetail.sections.flags')}</h2>
+      <h2 className="text-xl font-mono text-neutral-50 mb-4">{t('admin.contests.teamDetail.tabs.flags')}</h2>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
         {['name', 'type', 'category', 'solved'].map((key) => {
           const suffix = key[0].toUpperCase() + key.slice(1);

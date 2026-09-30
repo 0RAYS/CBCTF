@@ -14,7 +14,7 @@ function Footer({ copyright, icp, links, fixed = true }) {
   };
   const resolvedLinks = links ?? [
     { label: 'support@0rays.club', href: 'mailto:support@0rays.club', isExternal: true },
-    { label: t('footer.github'), href: REPO_URL, isExternal: true },
+    { label: t('common.github'), href: REPO_URL, isExternal: true },
   ];
   // 渲染链接的辅助函数
   const renderLink = (link, index) => {

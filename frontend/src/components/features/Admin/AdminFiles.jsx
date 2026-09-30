@@ -90,7 +90,7 @@ function AdminFiles({
         onChange={handleSelectAll}
         className="w-4 h-4 rounded border-neutral-300/30 bg-black/30 text-geek-400 focus:ring-0 focus:ring-offset-0"
       />
-      <span className="text-xs font-mono text-neutral-400">{t('admin.files.selectAll')}</span>
+      <span className="text-xs font-mono text-neutral-400">{t('common.selectAll')}</span>
     </div>
   );
 

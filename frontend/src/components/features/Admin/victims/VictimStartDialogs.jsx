@@ -1,6 +1,7 @@
 import { IconPlayerPlay, IconSearch } from '@tabler/icons-react';
 import { Button, Chip, Modal, Pagination } from '../../../common';
 import BatchResultPanel from '../batch/BatchResultPanel.jsx';
+import { Trans } from 'react-i18next';
 
 export function VictimStartDialog({
   t,
@@ -90,13 +91,16 @@ export function VictimStartDialog({
 
         <div className="bg-neutral-800/50 border border-neutral-600/30 rounded-md p-3">
           <p className="text-xs font-mono text-neutral-400">
-            {t('admin.contests.containers.modals.summaryPrefix')}
-            <span className="text-geek-400">{selectedChallenges.length}</span>
-            {t('admin.contests.containers.modals.summaryMiddle')}
-            <span className="text-geek-400">{selectedTeamCount}</span>
-            {t('admin.contests.containers.modals.summaryEquals')}
-            <span className="text-green-400"> {selectedChallenges.length * selectedTeamCount}</span>
-            {t('admin.contests.containers.modals.summarySuffix')}
+            <Trans
+              t={t}
+              i18nKey="admin.contests.containers.modals.summary"
+              values={{
+                challenges: selectedChallenges.length,
+                teams: selectedTeamCount,
+                total: selectedChallenges.length * selectedTeamCount,
+              }}
+              components={{ amount: <span className="text-geek-400" />, total: <span className="text-green-400" /> }}
+            />
           </p>
         </div>
 

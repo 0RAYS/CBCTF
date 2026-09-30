@@ -48,7 +48,7 @@ export default function VictimInventory({ scope, renderQuickActions }) {
       const response = await scope.downloadTraffic(victim);
       if (response.headers?.['file'] === 'true') downloadBlobResponse(response, `traffic_${victim.id}.zip`);
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.teamContainers.toast.downloadTrafficFailed') });
+      toast.danger({ description: error.message || t('admin.contests.trafficGraph.toast.downloadFailed') });
     }
   };
 
@@ -74,7 +74,7 @@ export default function VictimInventory({ scope, renderQuickActions }) {
 
   return (
     <div className="w-full mx-auto space-y-6">
-      <VictimStats stats={list.stats} t={t} translationKey={translationKey} />
+      <VictimStats stats={list.stats} t={t} translationKey={translationKey} contestId={contestId} />
       <BatchResultPanel result={stopAction.result} error={stopAction.error} queued />
       {renderQuickActions?.(list.refresh)}
       <VictimFilters

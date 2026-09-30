@@ -1,11 +1,13 @@
 import { IconBan, IconPlayerPlay, IconServer } from '@tabler/icons-react';
 import { StatCard } from '../../../common';
 
-export function VictimStats({ stats, t, translationKey }) {
+export function VictimStats({ stats, t, translationKey, contestId }) {
   return (
     <div className="mb-8">
       <div className="mb-4">
-        <p className="text-neutral-400 font-mono">{t(`${translationKey}.page.subtitle`)}</p>
+        <p className="text-neutral-400 font-mono">
+          {t(contestId ? 'admin.contests.containers.page.subtitle' : 'admin.victims.page.subtitle')}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

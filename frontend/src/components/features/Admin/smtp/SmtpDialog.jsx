@@ -40,7 +40,7 @@ export default function SmtpDialog({ mode, smtp, onClose, onSaved }) {
             {t('common.cancel')}
           </Button>
           <Button size="sm" variant={mode === 'delete' ? 'danger' : 'primary'} onClick={submit}>
-            {t(`common.${mode === 'edit' ? 'save' : mode}`)}
+            {t(mode === 'edit' ? 'common.save' : mode === 'create' ? 'common.create' : 'common.delete')}
           </Button>
         </>
       }
@@ -50,7 +50,7 @@ export default function SmtpDialog({ mode, smtp, onClose, onSaved }) {
           <p className="text-neutral-300 mb-4">
             {t('admin.smtp.modal.deletePrompt')} <span className="font-semibold text-red-400">{smtp.address}</span>?
           </p>
-          <p className="text-neutral-400 text-sm">{t('admin.smtp.modal.deleteWarning')}</p>
+          <p className="text-neutral-400 text-sm">{t('common.modal.deleteWarning')}</p>
         </div>
       ) : (
         <SmtpFields form={form} setForm={setForm} mode={mode} />

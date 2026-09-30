@@ -44,7 +44,7 @@ function AdminUserDetailDialog({ isOpen, onClose, user }) {
             </div>
           </Card>
           <Card variant="default" padding="md">
-            <div className="text-xs font-mono text-neutral-400 mb-1">{t('admin.users.detail.info.score')}</div>
+            <div className="text-xs font-mono text-neutral-400 mb-1">{t('common.score')}</div>
             <div className="text-lg font-mono text-neutral-50">{user.score ?? 0}</div>
           </Card>
           <Card variant="default" padding="md">

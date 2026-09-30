@@ -115,14 +115,14 @@ function FilesManagement() {
             onCancel={() => setIsModalOpen(false)}
             onSubmit={handleConfirmDelete}
             cancelLabel={t('common.cancel')}
-            submitLabel={t('admin.files.actions.confirm')}
+            submitLabel={t('common.confirm')}
             submitVariant="danger"
           />
         }
       >
         <DeleteConfirmation
           message={t('admin.files.modal.confirmPrompt', { count: selectedFiles.length })}
-          warning={t('admin.files.modal.confirmWarning')}
+          warning={t('common.modal.deleteWarning')}
         />
       </Modal>
     </>

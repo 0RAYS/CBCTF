@@ -79,9 +79,9 @@ function AdminSmtp({
         return (
           <div className="flex flex-wrap gap-2">
             {smtp.on ? (
-              <StatusTag type="success" text={t('admin.smtp.status.enabled')} />
+              <StatusTag type="success" text={t('common.toggle.enabled')} />
             ) : (
-              <StatusTag type="warning" text={t('admin.smtp.status.disabled')} />
+              <StatusTag type="warning" text={t('common.toggle.disabled')} />
             )}
           </div>
         );

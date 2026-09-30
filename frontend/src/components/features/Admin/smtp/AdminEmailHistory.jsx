@@ -128,7 +128,7 @@ function AdminEmailHistory({
           getRowActions={(email) => [
             {
               key: 'detail',
-              label: t('admin.smtp.history.actions.viewDetail'),
+              label: t('common.viewDetails'),
               icon: <IconEye size={18} />,
               onClick: () => onViewEmail?.(email),
             },

@@ -12,7 +12,7 @@ export default function EmailHistoryDialog({ email, onClose }) {
       size="lg"
       footer={
         <Button size="sm" variant="ghost" onClick={onClose}>
-          {t('admin.smtp.actions.close')}
+          {t('common.close')}
         </Button>
       }
     >
