@@ -21,7 +21,7 @@ func imageFailureKey(image string) string {
 	return fmt.Sprintf("prepull:%s:%x", globalNamespace, sha256.Sum256([]byte(NormalizeImage(image))))
 }
 
-// Some Jobs were already submitted. Retrying the original batch (especially
+// PartialPrepullError Some Jobs were already submitted. Retrying the original batch (especially
 // Always) would repeat successful side effects; callers should target failures.
 type PartialPrepullError struct{ Err error }
 

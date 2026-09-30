@@ -106,7 +106,7 @@ func (s *streamCollector) emit(stream *tcpStream) {
 			}
 			next = segment.seq
 		} else if delta < 0 {
-			skip := int(-int64(delta))
+			skip := int(-delta)
 			if skip <= len(data) {
 				overlap := min(skip, len(segment.data))
 				if !bytes.Equal(data[len(data)-skip:len(data)-skip+overlap], segment.data[:overlap]) {

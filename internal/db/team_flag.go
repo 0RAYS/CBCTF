@@ -15,7 +15,7 @@ type TeamFlagRepo struct {
 	BaseRepo[model.TeamFlag]
 }
 
-// ON CONFLICT avoids aborting an enclosing PostgreSQL transaction when two
+// CreateIfAbsent ON CONFLICT avoids aborting an enclosing PostgreSQL transaction when two
 // requests initialize the same flag concurrently. The stored value wins.
 func (t *TeamFlagRepo) CreateIfAbsent(flag model.TeamFlag) (model.TeamFlag, model.RetVal) {
 	res := t.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(&flag)

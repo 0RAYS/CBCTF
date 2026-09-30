@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"database/sql"
 	"errors"
 	"sync"
 	"testing"
@@ -24,7 +25,9 @@ func TestMutexCleanupKeepsLocksOnDatabaseFailure(t *testing.T) {
 		t.Fatal(err)
 	}
 	pool, _ := database.DB()
-	defer pool.Close()
+	defer func(pool *sql.DB) {
+		_ = pool.Close()
+	}(pool)
 	db.CronDB = database
 	_ = database.Callback().Query().Before("gorm:query").Register("test:offline", func(tx *gorm.DB) { _ = tx.AddError(errors.New("database offline")) })
 	for _, tc := range []struct {

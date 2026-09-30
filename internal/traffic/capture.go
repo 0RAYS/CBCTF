@@ -31,7 +31,7 @@ type Connection struct {
 	Type        string
 	Subtype     string
 	Size        int
-	Process     *TrafficProcessInfo
+	Process     *ProcessInfo
 	Capture     string
 	SYN         bool
 	ACK         bool
@@ -40,7 +40,7 @@ type Connection struct {
 	Fingerprint string
 }
 
-type TrafficProcessInfo struct {
+type ProcessInfo struct {
 	PID              *int64 `json:"pid,omitempty"`
 	ProcessName      string `json:"process_name,omitempty"`
 	BytesSent        int64  `json:"bytes_sent,omitempty"`
@@ -80,7 +80,7 @@ type trafficSystemTime struct {
 	Nanos int64 `json:"nanos_since_epoch"`
 }
 
-type trafficProcessLookup map[trafficProcessKey][]TrafficProcessInfo
+type trafficProcessLookup map[trafficProcessKey][]ProcessInfo
 
 type trafficProcessKey struct {
 	Protocol string
@@ -235,7 +235,7 @@ func isIgnoredTrafficIP(value string) bool {
 	return !ip.IsPrivate() && !IsPublicTrafficIP(value)
 }
 
-func buildTrafficProcessComment(process *TrafficProcessInfo) string {
+func buildTrafficProcessComment(process *ProcessInfo) string {
 	if process == nil {
 		return ""
 	}
@@ -451,10 +451,10 @@ func loadTrafficProcessLookup(ctx context.Context, path string) (trafficProcessL
 	return lookup, issues, nil
 }
 
-func (sidecar trafficConnectionSidecar) toProcessInfo() TrafficProcessInfo {
+func (sidecar trafficConnectionSidecar) toProcessInfo() ProcessInfo {
 	firstSeen := sidecar.FirstSeen.toTime()
 	lastSeen := sidecar.LastSeen.toTime()
-	return TrafficProcessInfo{
+	return ProcessInfo{
 		PID:              parseTrafficInt(sidecar.PID),
 		ProcessName:      sidecar.ProcessName,
 		BytesSent:        sidecar.BytesSent,
@@ -510,7 +510,7 @@ func parseTrafficInt(value any) *int64 {
 	}
 }
 
-func findTrafficProcess(lookup trafficProcessLookup, connection Connection) *TrafficProcessInfo {
+func findTrafficProcess(lookup trafficProcessLookup, connection Connection) *ProcessInfo {
 	if len(lookup) == 0 {
 		return nil
 	}
@@ -539,14 +539,14 @@ func findTrafficProcess(lookup trafficProcessLookup, connection Connection) *Tra
 	return nil
 }
 
-func findTrafficProcessByKey(lookup trafficProcessLookup, key trafficProcessKey, packetTime time.Time) *TrafficProcessInfo {
+func findTrafficProcessByKey(lookup trafficProcessLookup, key trafficProcessKey, packetTime time.Time) *ProcessInfo {
 	matches := lookup[key]
 	if len(matches) == 0 {
 		return nil
 	}
 	const slack = 2 * time.Second
-	var fallback *TrafficProcessInfo
-	var best *TrafficProcessInfo
+	var fallback *ProcessInfo
+	var best *ProcessInfo
 	bestScore := time.Duration(1<<63 - 1)
 	for i := range matches {
 		match := &matches[i]
@@ -629,7 +629,7 @@ const frpcPcapName = "frpc.pcap"
 type PcapDirResult struct {
 	Connections  []Connection
 	FrpcIPs      []string
-	Accesses     []TrafficAccess
+	Accesses     []Access
 	SourceIssues []SourceIssue
 	Files        []CaptureFileResult
 }
@@ -652,7 +652,7 @@ func ReadPcapDir(ctx context.Context, path string, proxyPorts map[uint16]bool) (
 
 	connections := make([]Connection, 0)
 	frpcIPSet := make(map[string]struct{})
-	accesses := make([]TrafficAccess, 0)
+	accesses := make([]Access, 0)
 	issues := make([]SourceIssue, 0)
 	files := make([]CaptureFileResult, 0)
 
@@ -719,8 +719,8 @@ func ReadPcapDir(ctx context.Context, path string, proxyPorts map[uint16]bool) (
 }
 
 // extractFrpcProxyAccesses reads trusted FRPC-to-nginx client evidence.
-func extractFrpcProxyAccesses(ctx context.Context, path string, proxyPorts map[uint16]bool) ([]TrafficAccess, error) {
-	accesses := make([]TrafficAccess, 0)
+func extractFrpcProxyAccesses(ctx context.Context, path string, proxyPorts map[uint16]bool) ([]Access, error) {
+	accesses := make([]Access, 0)
 	warnings := make(map[string]bool)
 	consume := func(data []byte, evidence Evidence) {
 		header, err := pp.Read(bufio.NewReader(bytes.NewReader(data)))
@@ -735,7 +735,7 @@ func extractFrpcProxyAccesses(ctx context.Context, path string, proxyPorts map[u
 		}
 		ip, _, err := net.SplitHostPort(header.SourceAddr.String())
 		if err == nil {
-			accesses = append(accesses, TrafficAccess{IP: NormalizeTrafficIP(ip), Time: evidence.Time, Source: "proxy_protocol", Capture: evidence.Capture})
+			accesses = append(accesses, Access{IP: NormalizeTrafficIP(ip), Time: evidence.Time, Source: "proxy_protocol", Capture: evidence.Capture})
 		}
 	}
 	streams := newStreamCollector(consume, func(code string) { warnings[code] = true })

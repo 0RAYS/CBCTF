@@ -135,30 +135,6 @@ func LockAvailableGenerator(ctx context.Context, contestID, challengeID uint) (m
 	return generator, token, nil
 }
 
-func LockGeneratorAttachment(ctx context.Context, generatorID uint) (string, error) {
-	key := fmt.Sprintf(GeneratorAttachmentLockKeyTmpl, generatorID)
-	token := fmt.Sprintf("%d:%d", generatorID, time.Now().UnixNano())
-	ticker := time.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
-
-	for {
-		ok, err := RDB.SetNX(ctx, key, token, generatorLockTTL).Result()
-		if err != nil {
-			log.Logger.Warningf("Failed to lock generator attachment: key=%s err=%v", key, err)
-			return "", err
-		}
-		if ok {
-			return token, nil
-		}
-
-		select {
-		case <-ctx.Done():
-			return "", fmt.Errorf("lock generator attachment timed out: %w", ctx.Err())
-		case <-ticker.C:
-		}
-	}
-}
-
 func RefreshGeneratorAttachmentLock(ctx context.Context, generatorID uint, token string) (bool, error) {
 	key := fmt.Sprintf(GeneratorAttachmentLockKeyTmpl, generatorID)
 	result, err := RDB.Eval(ctx, refreshGeneratorAttachmentScript, []string{key}, token, int64(generatorLockTTL/time.Millisecond)).Int()

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"os"
 	"testing"
 	"time"
@@ -26,7 +27,9 @@ func TestTrafficEvidencePostgres(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pool.Close()
+	defer func(pool *sql.DB) {
+		_ = pool.Close()
+	}(pool)
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	tx := database.WithContext(ctx).Begin()
@@ -48,7 +51,7 @@ func TestTrafficEvidencePostgres(t *testing.T) {
 	at := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
 	repo := InitTrafficRepo(tx)
 	for _, id := range []uint{1, 2, 3} {
-		accesses := []traffic.TrafficAccess{{IP: "8.8.8.8", Time: at, Source: "tcp_syn"}, {IP: "1.1.1.1", Time: at.Add(-time.Hour), Source: "tcp_syn"}}
+		accesses := []traffic.Access{{IP: "8.8.8.8", Time: at, Source: "tcp_syn"}, {IP: "1.1.1.1", Time: at.Add(-time.Hour), Source: "tcp_syn"}}
 		if ret := repo.ReplaceAnalysis(id, []string{"10.0.0.2"}, accesses, &traffic.AnalysisReport{}, false); !ret.OK {
 			t.Fatalf("save: %+v", ret)
 		}
@@ -62,10 +65,10 @@ func TestTrafficEvidencePostgres(t *testing.T) {
 			t.Fatalf("incorrect evidence: %+v", row)
 		}
 	}
-	if ret = repo.ReplaceAnalysis(1, []string{}, []traffic.TrafficAccess{}, &traffic.AnalysisReport{}, true); !ret.OK {
+	if ret = repo.ReplaceAnalysis(1, []string{}, []traffic.Access{}, &traffic.AnalysisReport{}, true); !ret.OK {
 		t.Fatalf("archive: %+v", ret)
 	}
-	if ret = repo.ReplaceAnalysis(1, []string{"8.8.8.8"}, []traffic.TrafficAccess{}, nil, false); !ret.OK {
+	if ret = repo.ReplaceAnalysis(1, []string{"8.8.8.8"}, []traffic.Access{}, nil, false); !ret.OK {
 		t.Fatalf("live write: %+v", ret)
 	}
 	record, ret := repo.GetAnalysis(1)

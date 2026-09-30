@@ -27,7 +27,9 @@ func TestArchiveKeepsRawEvidenceWhenEnrichmentFails(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer archive.Close()
+	defer func(archive *zip.ReadCloser) {
+		_ = archive.Close()
+	}(archive)
 	names := make(map[string]bool)
 	for _, entry := range archive.File {
 		name := filepath.Base(entry.Name)

@@ -16,7 +16,7 @@ import (
 
 const trafficsKeyTmpl = "traffic:snapshot:%d"
 
-// One atomic value preserves nanosecond ordering and represents an empty
+// StoreTraffic One atomic value preserves nanosecond ordering and represents an empty
 // capture distinctly from a cache miss. No packet keys can expire independently.
 func StoreTraffic(ctx context.Context, victim model.Victim, result *traffic.PcapDirResult) model.RetVal {
 	data, err := msgpack.Marshal(result)

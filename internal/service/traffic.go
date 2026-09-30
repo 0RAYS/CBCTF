@@ -56,7 +56,7 @@ type trafficEdgeAggregate struct {
 }
 
 type trafficProcessAggregate struct {
-	Info    traffic.TrafficProcessInfo
+	Info    traffic.ProcessInfo
 	Bytes   int64
 	Packets int64
 }
@@ -566,7 +566,7 @@ func trafficDirection(srcInternal, dstInternal bool) string {
 		return "ingress"
 	case srcInternal && !dstInternal:
 		return "egress"
-	case srcInternal && dstInternal:
+	case srcInternal:
 		return "internal"
 	default:
 		return "external"
@@ -699,7 +699,7 @@ func sortTrafficProtocolKeys(items map[string]int64) []string {
 	return keys
 }
 
-func addTrafficProcess(items map[string]*trafficProcessAggregate, process *traffic.TrafficProcessInfo, bytes int64) {
+func addTrafficProcess(items map[string]*trafficProcessAggregate, process *traffic.ProcessInfo, bytes int64) {
 	if items == nil || process == nil {
 		return
 	}
@@ -717,7 +717,7 @@ func addTrafficProcess(items map[string]*trafficProcessAggregate, process *traff
 	item.Packets++
 }
 
-func trafficProcessKey(process traffic.TrafficProcessInfo) string {
+func trafficProcessKey(process traffic.ProcessInfo) string {
 	pid := ""
 	if process.PID != nil {
 		pid = strconv.FormatInt(*process.PID, 10)

@@ -88,7 +88,7 @@ func (v Victim) TrafficInternalIPs() map[string]bool {
 	return ips
 }
 
-// Match the nginx listener ports allocated by k8s.AddFrpc exactly. Ephemeral
+// TrafficProxyPorts Match the nginx listener ports allocated by k8s.AddFrpc exactly. Ephemeral
 // reverse-flow ports must not be mistaken for trusted PROXY destinations.
 func (v Victim) TrafficProxyPorts() map[uint16]bool {
 	ports := make(map[uint16]bool)

@@ -214,7 +214,9 @@ func (a *analyzer) analyzeContent(data []byte, e Evidence) {
 
 func (a *analyzer) scanArchive(data []byte, e Evidence) {
 	read := func(r io.ReadCloser, encoding string, budget *int) {
-		defer r.Close()
+		defer func(r io.ReadCloser) {
+			_ = r.Close()
+		}(r)
 		decoded, err := io.ReadAll(io.LimitReader(r, int64(*budget)+1))
 		if len(decoded) > *budget {
 			a.report.Truncated = true

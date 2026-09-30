@@ -75,8 +75,9 @@ func absentSettingValue(value any) bool {
 	switch rv.Kind() {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
 		return rv.IsNil()
+	default:
+		return false
 	}
-	return false
 }
 
 func (s *SettingRepo) InitSettings() model.RetVal {
@@ -139,7 +140,7 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	return ret
 }
 
-// Build a complete candidate without modifying the running configuration.
+// ReadSnapshot Build a complete candidate without modifying the running configuration.
 // Callers updating settings use their transaction here and publish after commit.
 func (s *SettingRepo) ReadSnapshot() (*config.Config, model.RetVal) {
 	next := *config.Env

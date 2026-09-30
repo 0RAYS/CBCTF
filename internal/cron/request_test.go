@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"database/sql"
 	"errors"
 	"strings"
 	"testing"
@@ -29,7 +30,9 @@ func TestFailedRequestBatchIsRetainedWithStableIdentity(t *testing.T) {
 		t.Fatal(err)
 	}
 	pool, _ := database.DB()
-	defer pool.Close()
+	defer func(pool *sql.DB) {
+		_ = pool.Close()
+	}(pool)
 	db.CronDB = database
 	failed := true
 	var conflictSQL string
