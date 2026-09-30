@@ -57,17 +57,17 @@ func TestCreateContestPreservesBooleanChoices(t *testing.T) {
 			transactions := &transactionRecorder{ConnPool: pool}
 			tx.Statement.ConnPool = transactions
 			var stored *model.Contest
-			if err := tx.Callback().Create().After("gorm:create").Register("test:store", func(query *gorm.DB) {
+			if err = tx.Callback().Create().After("gorm:create").Register("test:store", func(query *gorm.DB) {
 				if contest, ok := query.Statement.Dest.(*model.Contest); ok {
 					contest.ID = 1
-					copy := *contest
-					stored = &copy
+					tmp := *contest
+					stored = &tmp
 					query.RowsAffected = 1
 				}
 			}); err != nil {
 				t.Fatal(err)
 			}
-			if err := tx.Callback().Query().After("gorm:query").Register("test:load", func(query *gorm.DB) {
+			if err = tx.Callback().Query().After("gorm:query").Register("test:load", func(query *gorm.DB) {
 				if contest, ok := query.Statement.Dest.(*model.Contest); ok && stored != nil {
 					*contest = *stored
 					query.RowsAffected = 1
@@ -75,7 +75,7 @@ func TestCreateContestPreservesBooleanChoices(t *testing.T) {
 			}); err != nil {
 				t.Fatal(err)
 			}
-			if err := tx.Callback().Update().After("gorm:update").Register("test:update", func(query *gorm.DB) {
+			if err = tx.Callback().Update().After("gorm:update").Register("test:update", func(query *gorm.DB) {
 				changes := query.Statement.Dest.(map[string]any)
 				stored.Hidden = changes["hidden"].(bool)
 				stored.Blood = changes["blood"].(bool)
@@ -140,8 +140,8 @@ func TestMergedServiceTransactionsRollbackOnFailure(t *testing.T) {
 			t.Cleanup(func() { _ = pool.Close() })
 			transactions := &transactionRecorder{ConnPool: pool}
 			tx.Statement.ConnPool = transactions
-			if err := tx.Callback().Create().Before("gorm:create").Register("test:reject", func(query *gorm.DB) {
-				query.AddError(errors.New("injected create failure"))
+			if err = tx.Callback().Create().Before("gorm:create").Register("test:reject", func(query *gorm.DB) {
+				_ = query.AddError(errors.New("injected create failure"))
 			}); err != nil {
 				t.Fatal(err)
 			}

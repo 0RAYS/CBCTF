@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"io"
 	"net/http/httptest"
@@ -47,7 +48,9 @@ func TestRequestCancellationReachesRedisAndDatabaseWithoutGinFallback(t *testing
 	ctx.Request = httptest.NewRequest("GET", "/admin/logs?limit=100&offset=0&level=INFO", nil).WithContext(requestCtx)
 	hook := &cancelledRequestHook{}
 	redis.RDB = goredis.NewClient(&goredis.Options{})
-	defer redis.RDB.Close()
+	defer func(RDB *goredis.Client) {
+		_ = RDB.Close()
+	}(redis.RDB)
 	redis.RDB.AddHook(hook)
 	GetLogs(ctx)
 	if !hook.observed {
@@ -59,7 +62,9 @@ func TestRequestCancellationReachesRedisAndDatabaseWithoutGinFallback(t *testing
 		t.Fatal(err)
 	}
 	pool, _ := db.DB.DB()
-	defer pool.Close()
+	defer func(pool *sql.DB) {
+		_ = pool.Close()
+	}(pool)
 	observed := false
 	err = db.DB.Callback().Query().Before("gorm:query").Register("test:context", func(query *gorm.DB) {
 		observed = errors.Is(query.Statement.Context.Err(), context.Canceled)

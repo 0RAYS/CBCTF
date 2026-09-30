@@ -118,7 +118,7 @@ func UnlockFrpsPort(host string, port int32, protocol string) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-// ReconcileFrpsPorts 使用数据库中仍活跃靶机的暴露端口重建 Redis FRPS 端口锁集合。
+// FrpsRevision 使用数据库中仍活跃靶机的暴露端口重建 Redis FRPS 端口锁集合。
 // expected 的结构为 host -> protocol -> ports；未出现在 expected 中的 frps:*:* 键会被删除。
 func FrpsRevision(ctx context.Context) (string, model.RetVal) {
 	value, err := RDB.Get(ctx, frpsRevisionKey).Result()

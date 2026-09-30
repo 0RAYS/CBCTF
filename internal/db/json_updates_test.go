@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
 	"os"
@@ -180,7 +181,9 @@ func TestJSONSerializerPostgresRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	pool, _ := database.DB()
-	defer pool.Close()
+	defer func(pool *sql.DB) {
+		_ = pool.Close()
+	}(pool)
 	if err = database.Use(JSONUpdates{}); err != nil {
 		t.Fatal(err)
 	}

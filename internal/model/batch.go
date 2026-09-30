@@ -66,7 +66,7 @@ func (b *BatchResult) Result(ctx context.Context) RetVal {
 	return RetVal{Data: b, Msg: i18n.Common.BatchIncomplete, Attr: map[string]any{"Succeeded": b.Succeeded, "Failed": b.Failed, "Skipped": b.Skipped, "NotAttempted": b.NotAttempted}}
 }
 
-// Database/queue read-write failures invalidate later decisions. Domain errors
+// BatchDependencyFailed Database/queue read-write failures invalidate later decisions. Domain errors
 // (not found, already running, quota, validation) remain per-object outcomes.
 func BatchDependencyFailed(ret RetVal) bool {
 	if batch, ok := ret.Data.(*BatchResult); ok {

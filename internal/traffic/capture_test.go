@@ -41,7 +41,7 @@ func TestCollectTrafficAccesses(t *testing.T) {
 		{SrcIP: "8.8.8.8", DstIP: "10.0.0.2", Type: "TCP", SYN: true, Time: at},
 		{SrcIP: "1.1.1.1", DstIP: "10.0.0.2", Type: "TCP", SYN: true, ACK: true, Time: at},
 		{SrcIP: "10.0.0.3", DstIP: "10.0.0.2", Type: "TCP", SYN: true, Time: at},
-	}, Accesses: []TrafficAccess{{IP: "::ffff:8.8.8.8", Time: at, Source: "tcp_syn"}, {IP: "2606:4700::1111", Time: at, Source: "proxy_protocol"}}}
+	}, Accesses: []Access{{IP: "::ffff:8.8.8.8", Time: at, Source: "tcp_syn"}, {IP: "2606:4700::1111", Time: at, Source: "proxy_protocol"}}}
 	got := CollectTrafficAccesses(result, map[string]bool{"10.0.0.2": true})
 	if len(got) != 2 || got[0].IP != "8.8.8.8" {
 		t.Fatalf("unexpected accesses: %+v", got)
@@ -54,7 +54,9 @@ func writeTrafficTestCapture(t *testing.T, path string, payloads ...string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 	w := pcapgo.NewWriter(f)
 	if err = w.WriteFileHeader(65535, layers.LinkTypeEthernet); err != nil {
 		t.Fatal(err)

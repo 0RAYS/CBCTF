@@ -15,7 +15,7 @@ import (
 )
 
 // Read synchronously: PacketSource.Packets hides read errors and can leak its
-// producer goroutine when a cancelled consumer stops reading.
+// producer goroutine when a canceled consumer stops reading.
 func walkTrafficPackets(ctx context.Context, path string, visit func(gopacket.Packet, layers.LinkType) error) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -24,7 +24,9 @@ func walkTrafficPackets(ctx context.Context, path string, visit func(gopacket.Pa
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 	r := bufio.NewReader(f)
 	magic, err := r.Peek(4)
 	if err != nil {

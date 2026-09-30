@@ -25,7 +25,9 @@ func writeEmptyTrafficCaptures(t *testing.T, dir string) []string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 	w, err := pcapgo.NewNgWriter(f, layers.LinkTypeEthernet)
 	if err != nil {
 		t.Fatal(err)

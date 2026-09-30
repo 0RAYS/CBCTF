@@ -17,7 +17,7 @@ type TrafficRepo struct {
 }
 
 // ReplaceAnalysis replaces a complete capture snapshot, including empty results.
-func (t *TrafficRepo) ReplaceAnalysis(victimID uint, ips []string, accesses []traffic.TrafficAccess, report *traffic.AnalysisReport, archived bool) model.RetVal {
+func (t *TrafficRepo) ReplaceAnalysis(victimID uint, ips []string, accesses []traffic.Access, report *traffic.AnalysisReport, archived bool) model.RetVal {
 	updates := clause.AssignmentColumns([]string{"ips", "accesses", "analysis", "archived", "updated_at"})
 	if report != nil && report.Partial {
 		// A failed source cannot retract observations already persisted in the

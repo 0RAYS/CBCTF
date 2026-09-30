@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"database/sql"
 	"errors"
 	"testing"
 	"time"
@@ -23,7 +24,9 @@ func TestFlagScoreReadFailureMarksCronFailed(t *testing.T) {
 		t.Fatal(err)
 	}
 	pool, _ := database.DB()
-	defer pool.Close()
+	defer func(pool *sql.DB) {
+		_ = pool.Close()
+	}(pool)
 	db.CronDB = database
 	_ = database.Callback().Query().After("gorm:query").Register("test:score_reads", func(tx *gorm.DB) {
 		switch dst := tx.Statement.Dest.(type) {

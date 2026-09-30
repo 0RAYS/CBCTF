@@ -63,7 +63,9 @@ func TestStaticRepresentations(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer reader.Close()
+					defer func(reader *gzip.Reader) {
+						_ = reader.Close()
+					}(reader)
 					body, err = io.ReadAll(reader)
 					if err != nil {
 						t.Fatal(err)

@@ -6,7 +6,7 @@ import "CBCTF/internal/traffic"
 type Traffic struct {
 	VictimID uint                    `gorm:"uniqueIndex;index" json:"victim_id"`
 	IPs      []string                `gorm:"serializer:json;type:jsonb;default:'[]'" json:"ips"`
-	Accesses []traffic.TrafficAccess `gorm:"serializer:json;type:jsonb;default:'[]'" json:"accesses"`
+	Accesses []traffic.Access        `gorm:"serializer:json;type:jsonb;default:'[]'" json:"accesses"`
 	Analysis *traffic.AnalysisReport `gorm:"serializer:json;type:jsonb" json:"analysis"`
 	Archived bool                    `gorm:"default:false" json:"archived"`
 	BaseModel

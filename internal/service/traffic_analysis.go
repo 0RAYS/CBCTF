@@ -13,7 +13,7 @@ import (
 
 type TrafficAnalysisResult struct {
 	Report   *traffic.AnalysisReport `json:"report"`
-	Accesses []traffic.TrafficAccess `json:"accesses"`
+	Accesses []traffic.Access        `json:"accesses"`
 	Archived bool                    `json:"archived"`
 }
 
