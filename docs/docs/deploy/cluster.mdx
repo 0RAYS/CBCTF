@@ -17,7 +17,7 @@ import { Tabs, Tab } from '@rspress/core/theme';
 
 ### KubeVirt 节点要求
 
-VM 靶机依赖 KubeVirt。集群节点需要支持硬件虚拟化或可用的嵌套虚拟化能力，或是由 `KubeVirt` 实现**软件嵌套虚拟化**，但会影响其性能。
+VM 靶机依赖 KubeVirt。建议选择支持硬件虚拟化或嵌套虚拟化的节点；使用软件模拟时，启动和运行性能会降低。
 
 检查节点虚拟化能力：
 

@@ -5,8 +5,7 @@ description: 配置 CBCTF 前后端分离部署、反向代理、静态资源和
 
 # 前后端分离
 
-CBCTF 默认将前端静态资源嵌入 Go 二进制，通过同一个服务地址提供 `/platform`。如果需要把前端单独托管到
-CDN、静态站点或其他域名，可以采用前后端分离方式。
+CBCTF 默认通过同一个服务地址提供页面和 API。如果需要将页面托管到 CDN、静态站点或其他域名，可以采用前后端分离部署。
 
 ## 适用场景
 
@@ -24,7 +23,7 @@ pnpm install
 
 修改 `frontend/src/api/config.js`：
 
-仓库默认 `BASE_URL: ''`，表示使用页面同源的 API。这里填写后端 Origin，不附加 `/platform` 或不存在的 `/api` 前缀。
+`BASE_URL: ''` 表示页面与 API 使用同一域名。独立部署时填写 API 服务的完整域名，例如 `https://api.ctf.example.com`，不附加路径。
 
 ```javascript
 export const API_CONFIG = {
@@ -38,7 +37,7 @@ export const API_CONFIG = {
 pnpm build
 ```
 
-构建完成后，将 `frontend/dist/` 内容部署到静态站点的 `/platform/` 路径。Vite 的 `base` 固定为 `/platform/`，前端路由由 HashRouter 处理，例如 `/platform/#/games`；若改部署子路径，需要同步修改 Vite base。开发服务器没有内置 API proxy。
+构建完成后，将 `frontend/dist/` 内容部署到静态站点的 `/platform/` 路径。比赛列表地址为 `/platform/#/games`；请保留这一部署路径，以便页面资源和链接正常加载。
 
 ## 后端配置
 
@@ -55,7 +54,7 @@ gin:
 - `host` 必须填写后端真实对外地址，OAuth 回调与邮件链接都会使用它
 - `gin.origins` 需要包含前端独立域名对应的浏览器 `Origin`，否则跨域请求和认证 cookie 可能无法正常工作
 - 现有数据库上的这些值应在「系统管理」修改；CORS 需要重启生效，仅修改 Helm values 不会覆盖数据库。
-- API 客户端使用 `withCredentials`，认证存储在 HttpOnly Cookie 中。允许的跨域 Origin 会使用 `SameSite=None; Secure`，需要 HTTPS；浏览器的第三方 Cookie 策略仍可能阻止真正跨站点的登录。
+- 页面和 API 均需使用 HTTPS，并允许浏览器携带登录 Cookie。浏览器限制第三方 Cookie 时，跨站点登录可能失败，建议使用同一公开域名提供页面和 API。
 
 ## OAuth 注意事项
 
@@ -65,10 +64,10 @@ gin:
 2. 后端完成登录后重定向到 `https://api.ctf.example.com/platform/#/oauth/callback?...`
 
 :::warning
-当前代码默认仍依赖后端提供 `/platform` 下的前端回调页。若完全拆离前端托管位置，需要同步调整 OAuth 回调后的前端跳转逻辑。
+`host` 域名下的 `/platform/` 页面仍需可访问，第三方登录完成后会返回这里。可通过反向代理将此路径转发到静态站点。
 :::
 
-邮箱验证和密码重置链接也使用 `{host}/platform/#/verify` 与 `{host}/platform/#/reset-password`。一种无需改登录逻辑的部署方式是在同一公开域名上，将 `/platform/` 转发到静态托管，将其他路径转发到后端；此时前端继续使用同源 API。
+邮箱验证和密码重置也使用 `host` 域名下的页面。推荐在同一公开域名上，将 `/platform/` 转发到静态站点，其他路径转发到 API 服务；此时 `BASE_URL` 保持为空即可。
 
 ## Helm 场景
 

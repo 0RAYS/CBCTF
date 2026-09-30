@@ -7,7 +7,7 @@ description: 配置 CBCTF 本地认证、邮箱验证、OAuth/OIDC 登录和用�
 
 ## 本地认证
 
-CBCTF 使用用户名、密码和图形验证码登录，登录态保存在 HttpOnly Cookie 中。当前登录表单不使用邮箱代替用户名。
+在登录页填写用户名、密码和图形验证码。本地账号使用用户名登录，邮箱用于验证和密码找回。
 
 ### JWT 配置
 
@@ -17,25 +17,18 @@ CBCTF 使用用户名、密码和图形验证码登录，登录态保存在 Http
 
 ### 邮箱验证
 
-需要先配置 SMTP，并为用户分配 `self:activate` 权限。注册会发送验证邮件，也可从个人设置重新发送；邮件打开 `/platform/#/verify?token=...`，前端调用 `POST /verify` 完成验证。密码找回通过登录页操作，成功重置密码也会标记邮箱已验证。
+管理员需先配置 SMTP，并为用户分配 `self:activate` 权限。注册后，用户打开验证邮件中的链接即可完成验证，也可从个人设置重新发送。忘记密码时使用登录页的找回入口；成功重置密码也会完成邮箱验证。
 
 ## OAuth / OIDC
 
-平台提供 `oauth2` 和 `cas` 两类协议。OAuth2 可以对接提供授权、Token 和 UserInfo 端点的 OIDC 服务，但界面不是自动 Discovery 配置，需要手动填写端点与 claim 提取表达式。公开入口为：
-
-- `GET /oauth`
-- `GET /oauth/{uri}`
-- `GET /oauth/{uri}/callback`
-- `GET /oauth/token`
-
-后端完成第三方回调后，会跳转到前端 `#/oauth/callback` 页面继续登录流程。
+在「管理后台 → OAuth」添加 OAuth2 或 CAS 提供商。对接 OIDC 服务时，选择 OAuth2，并填写授权、Token、用户信息端点和用户字段映射。启用后，登录页会显示对应入口，用户授权后自动返回平台。
 
 ### OAuth 配置字段
 
 | 字段                  | 说明                       |
 |---------------------|--------------------------|
 | `provider`          | 提供商名称                    |
-| `protocol`          | 创建/更新 API 的查询参数，`oauth2` 或 `cas`，不是正文中的开关 |
+| `protocol`          | 登录协议，选择 `oauth2` 或 `cas` |
 | `scopes`            | OAuth2 scope 字符串列表 |
 | `auth_url`          | 授权端点                     |
 | `token_url`         | Token 端点                 |
@@ -77,7 +70,7 @@ GitHub OAuth App 回调地址示例：`https://your.domain.com/oauth/github/call
 }
 ```
 
-在后台「OAuth」编辑内置 GitHub 配置即可；填写 Client ID/Secret，核对 callback URL、`user:email` scope 与上述 claim，再启用。GitHub 邮箱处理会读取已验证的主邮箱。旧数据库中已保存的 `{picture_url}` 不会因代码修正自动迁移，需要改为 `{avatar_url}`。
+在后台「OAuth」编辑内置 GitHub 配置，填写 Client ID/Secret，核对回调地址、`user:email` scope 与上述字段映射，再启用。头像映射填写 `{avatar_url}`，邮箱使用 GitHub 已验证的主邮箱。
 
 新建 OAuth/CAS 提供商默认未启用，创建后再编辑启用。CAS 使用登录端点与验证端点，不使用 OAuth2 Token 交换字段。更改 `host` 不会自动更新已经保存的提供商 callback URL。
 
