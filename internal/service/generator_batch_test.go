@@ -3,8 +3,9 @@ package service
 import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
-	"gorm.io/gorm"
 	"testing"
+
+	"gorm.io/gorm"
 )
 
 func TestGeneratorBatchesDoNotReportMissingTargetsAsSuccess(t *testing.T) {

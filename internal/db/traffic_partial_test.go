@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"CBCTF/internal/traffic"
+
 	"gorm.io/gorm"
 )
 

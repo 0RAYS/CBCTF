@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
+
 	metricdto "github.com/prometheus/client_model/go"
 )
 
