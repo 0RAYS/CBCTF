@@ -56,7 +56,7 @@ The flag prefix can be customized in event settings (default: `CBCTF`):
 - **Writeup Management** — Collection and bulk download support
 - **OAuth / OIDC** — Third-party authentication with automatic user group assignment
 - **Platform Branding** — Global configuration for logo, name, theme color, etc.
-- **Hot-reload Config** — All system configuration changes take effect immediately without restart
+- **Online Settings** — Manage runtime settings in the admin panel; changes apply on save or after a restart, depending on the setting
 - **Webhook** — GET / POST
 - **Internationalization (i18n)** — Multi-language interface support
 - **Prometheus Metrics** — Full runtime metric exposure
@@ -71,27 +71,19 @@ The flag prefix can be customized in event settings (default: `CBCTF`):
 <img src="static/img/branding.png" width="100%" alt="Branding" />
 <img src="static/img/log.png" width="100%" alt="Logs" />
 
-## Build
+## Getting Started
 
-```bash
-# 1. Build the frontend (static files are embedded into the binary)
-cd frontend && pnpm install && pnpm run build && cd ..
+- **Deploy the platform**: follow the [Quick Start](docs/docs/guide/start/quick-start.mdx) to prepare Kubernetes and install with Helm.
+- **Organize a contest**: use the [Contest Management guide](docs/docs/admin/contests.md) to create a contest, add challenges, and check participant access.
+- **Participate**: follow the [Player Guide](docs/docs/guide/features/playing.md) for email verification, teams, and challenges.
 
-# 2. Build the backend (traffic capture requires libpcap; CGO must be enabled)
-CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
-```
-
-You can also use Docker for a two-stage build:
-
-```bash
-docker build -t cbctf .
-```
+These guides are currently available in Chinese.
 
 ## Dynamic Containers
 
 ### Network Modes
 
-The backend automatically detects the network mode from the `docker-compose` configuration:
+Choose the network mode in the challenge's Compose configuration:
 
 | Mode    | Condition                      | Description                                                            |
 |---------|--------------------------------|------------------------------------------------------------------------|
@@ -120,7 +112,9 @@ services:
 version: '3'
 services:
   web:
-    image: nginx:alpine
+    # Use a bootable containerDisk image
+    image: registry.example.com/challenges/vm-web:v1
+    mem_limit: 512m
     x-kubevirt: true
     x-boot:
       bootloader: efi
@@ -146,19 +140,18 @@ networks:
 <img src="static/img/vm.png" width="100%" alt="Virtual Machine" />
 <img src="static/img/victims-1.png" width="100%" alt="Victim List" />
 <img src="static/img/victims-2.png" width="100%" alt="Victim Detail" />
-<img src="static/img/victims-3.png" width="100%" alt="Victim Terminal" />
 
 ## Dynamic Attachment
 
 Containerized generation on Kubernetes. Upload a Python script and the platform runs it in an isolated environment to
 produce a unique attachment for each team.
 
-**Generator contract:**
+**Preparing a generator:**
 
 - Container must include `sleep` and `unzip`
 - Script must be located at `/root/run.sh <team_id> <base64_encoded_flags>`
 - Output must be written to `/root/mnt/attachments/{id}.zip`
-- Never use `latest` image tags
+- Pin an image version or digest to keep the environment consistent throughout the contest
 
 > Full example (RSA crypto challenge): [example/dynamic/README.md](example/dynamic/README.md)
 

@@ -7,9 +7,9 @@ description: 说明 CBCTF 配置来源、Helm values、配置文件和数据库�
 
 CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲染成 `/app/config.yaml`，优先级高于内置默认值。
 
-启动参数 `-c <文件>` 用于选择配置文件，默认是 `config.yaml`。当前实现没有绑定 `CBCTF_*` 环境变量，也不自动生成缺失的配置文件。不要把 Kubernetes 注入的环境变量当作应用配置来源。
+启动前请准备可读的配置文件，默认路径为 `config.yaml`，也可通过 `-c <文件>` 指定。使用 Helm 时通过 values 配置；应用设置不支持用环境变量覆盖。
 
-以下配置只来自部署配置，不进入 `settings` 表：
+以下项目需通过部署配置修改：
 
 - PostgreSQL/GORM 配置：`gorm.*`
 - Redis 连接信息：`redis.*`
@@ -17,24 +17,24 @@ CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲�
 - Gin 监听地址和端口：`gin.host`、`gin.port`
 - 运行时共享 PVC：`k8s.shared_volume_claim`（空值回退到 `{namespace}-shared-volume`）
 
-`internal/db/setting.go` 中列出的运行时设置首次启动时写入 `settings`；之后以数据库值为准。系统配置不会写回 `config.yaml`。所以升级 Helm values 不会覆盖数据库中的同名设置。
+可在线修改的运行设置在首次启动时采用配置文件中的初始值，之后通过「系统管理」维护。升级 Helm values 不会覆盖已经保存的在线设置，在线修改也不会写回配置文件。
 
-旧的 `log.level` / `log.save` 已不在应用配置结构中；当前日志输出由 Logrus 和 Redis 日志 Hook 处理，不能用这两个键控制级别或文件轮转。`gorm.log.level` 与 `asynq.log.level` 仍有效。
+数据库和任务日志级别分别使用 `gorm.log.level`、`asynq.log.level`。平台日志的查看与长期留存见[监控与日志](../admin/monitoring)。
 
 ## 保存与生效
 
-「系统管理」保存后会读取数据库设置到**当前进程**，但并非所有已初始化组件都会随之重建：
+在「系统管理」保存后，不同设置的生效时机如下：
 
 | 设置 | 生效时机 |
 | --- | --- |
-| 注册开关、默认分组、后续请求读取的公开地址、Webhook/作弊白名单 | 当前进程后续操作使用新值 |
+| 注册开关、默认分组、公开地址、Webhook/作弊白名单 | 当前平台实例的后续操作使用新值 |
 | 抓包开关、worker 镜像、生成器池容量、FRP 镜像等 | 后续新建工作负载使用；已有实例不自动重建 |
-| Gin 模式、可信代理、CORS、上传限制、全局限流；Asynq 并发；Kubernetes 命名空间 | 需要后台「重启」重建路由、客户端或 worker |
+| Gin 模式、可信代理、CORS、上传限制、全局限流；任务并发；Kubernetes 命名空间 | 需要在后台执行「重启」 |
 | 固定部署配置 | 修改文件/values 后重新创建 Pod；后台重启不会重新读取配置文件 |
 
-存在多个平台进程时，保存不会广播到其他进程。不要只修改 `k8s.namespace` 就把它当作迁移：目标命名空间、RoleBinding、PVC 和历史工作负载也需要处理，Helm 部署通常保持 Release namespace。
+多副本部署需要让各副本重新加载配置。迁移命名空间时，请同时准备目标命名空间的授权、PVC，并安排已有靶机与生成器的清理；Helm 部署通常使用 Release 所在命名空间。
 
-上传大小限制已拆分为 `gin.upload.picture`、`gin.upload.challenge`、`gin.upload.writeup`。旧的 `gin.upload.max` 不再生效。
+图片、题目附件和题解分别通过 `gin.upload.picture`、`gin.upload.challenge`、`gin.upload.writeup` 设置大小上限。
 
 ## 常用配置项
 
@@ -114,14 +114,13 @@ Helm 会把以下值渲染进 ConfigMap：
 | `postgres.auth.password`     | 数据库密码    |
 | `redis.auth.password`        | Redis 密码 |
 
-应用不从环境变量读取配置，也不为这些值生成 Secret。Chart 的镜像仓库凭据 Secret 与这些应用配置是不同对象。
+上述值保存在应用配置 ConfigMap 中，请妥善限制其访问权限。镜像仓库拉取凭据另由 Secret 管理。
 
 ## 首次启动行为
 
-- 连接 PostgreSQL，创建 `pg_trgm` 扩展（失败只记录警告）
-- 自动迁移数据表
-- 初始化运行时策略设置、品牌配置、权限、默认角色、默认分组、Cron 任务和 OAuth 默认项
-- 如果管理员组中没有用户，创建 `admin` 用户并将初始密码打印到日志
+- 自动准备平台所需的数据表和初始设置
+- 提供默认品牌、角色、分组、定时任务和第三方登录配置
+- 管理员组中没有用户时，创建 `admin` 账号并在日志中输出初始密码；首次登录后请修改密码
 
 ## 在线配置
 

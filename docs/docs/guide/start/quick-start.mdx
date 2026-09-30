@@ -5,7 +5,7 @@ description: 从集群准备、Helm 安装到首次登录，完成 CBCTF 的可�
 
 # 快速上手
 
-CBCTF 的后端目前只使用 Kubernetes **InClusterConfig**，应运行在集群内的 Pod 中。即使只使用静态题，启动过程也会初始化 Kubernetes 客户端并执行权限检查；仅准备 PostgreSQL 和 Redis 后在宿主机执行 `go run .` 不能完成启动。
+CBCTF 需要部署在 Kubernetes 集群内，包括只使用静态题的场景。推荐通过 Helm 安装平台及其数据库、缓存和共享存储配置。
 
 ## 1. 准备集群和存储
 
@@ -31,7 +31,7 @@ kubectl get pods,pvc,svc,ingress -n cbctf
 kubectl logs -n cbctf deployment/cbctf
 ```
 
-若使用本仓库尚未发布的修改，从仓库根目录执行相同命令，将 `cbctf/cbctf` 换成 `./chart`，并使用与代码匹配的自建应用镜像。
+如使用自行打包的 Chart 和镜像，请确认二者版本匹配，并在 values 中指定镜像地址与版本。
 
 ## 3. 首次登录
 
@@ -61,25 +61,3 @@ kubectl port-forward -n cbctf svc/cbctf 8000:8000
 6. 用普通选手账号验证邮箱、创建队伍，待比赛开始后初始化题目并提交对应前缀的 Flag。
 
 后续参见[选手操作流程](../features/playing)、[比赛管理](../../admin/contests)和[题目管理](../../admin/challenges)。
-
-## 源码构建与前端开发
-
-当前 `go.mod` 要求 Go **1.27.1**，前端 `packageManager` 为 **pnpm 12.6.0**；Docker 构建使用 Node 24、Go 1.27、CGO 和 libpcap。版本升级时以这些文件为准。
-
-```bash
-# 从仓库根目录构建前端；Go embed 依赖此产物
-cd frontend
-pnpm install --frozen-lockfile
-pnpm build
-cd ..
-
-# 在已安装 C 编译器与 libpcap 开发库的 Linux 构建环境中执行
-CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
-
-# 或使用 Docker 完成上述两个构建阶段
-docker build -t your-registry/cbctf:your-tag .
-```
-
-二进制通过 `-c` 指定配置文件，默认读取 `config.yaml`；请显式提供可读文件。当前代码没有自动生成配置文件或读取 `CBCTF_*` 环境覆盖的逻辑。
-
-只调试前端时可运行 `pnpm dev`。默认 `API_CONFIG.BASE_URL` 是空字符串（同源请求），Vite 没有 API 代理；连接已有后端时修改 `frontend/src/api/config.js`，并在后台系统配置的 `gin.origins` 中加入开发页面的 Origin。跨域认证需要 HTTPS 和浏览器允许相应 Cookie，详见[前后端分离](../../deploy/separation)。

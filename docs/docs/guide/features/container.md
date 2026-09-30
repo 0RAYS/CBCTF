@@ -35,7 +35,7 @@ services:
         content: static{hello}
 ```
 
-这里的 `80:80` 不代表占用节点 80 端口。后端把 target 80 转为 Service 端口，NodePort 或 FRPS 端口由平台分配，访问地址以界面返回为准。Compose 是平台支持字段的配置输入，不支持任意 Docker Compose 的 `build`、本地卷和编排行为。
+这里的 `80:80` 指定容器服务端口，对外端口由平台分配，启动后请使用页面显示的访问地址。题目需使用已构建的镜像；平台支持的 Compose 配置不包含 `build` 和宿主机本地卷。
 
 Pod 模式适合单 Pod 内多容器共享网络命名空间的题目。所有容器在同一个 Kubernetes Pod 中运行，容器之间通过 `localhost:port`
 通信。
@@ -68,7 +68,7 @@ VPC 模式适合需要多子网、静态 IP、网络隔离或模拟内网拓扑�
 KubeVirt VM 模式用于把某个 `docker-compose.yaml` service 按 KubeVirt `VirtualMachine` 创建，而不是创建普通 Kubernetes
 Pod。
 
-在 compose 中为 service 设置 `x-kubevirt: true` 即可启用 VM 模式。代码会额外校验以下字段：
+在 Compose 中为 service 设置 `x-kubevirt: true` 启用 VM 模式，并按下表填写：
 
 | 字段                        | 要求                                   |
 |---------------------------|--------------------------------------|
