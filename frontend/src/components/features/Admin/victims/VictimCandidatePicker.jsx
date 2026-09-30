@@ -29,7 +29,7 @@ export default function VictimCandidatePicker({ candidates }) {
               onClick={() => candidates.setSelectedChallenges(challenges.map((challenge) => challenge.id))}
               className="!text-xs !h-5 !px-1"
             >
-              {t('admin.contests.containers.quickActions.selectAll')}
+              {t('common.selectAll')}
             </Button>
             <Button
               variant="ghost"
@@ -126,9 +126,9 @@ export default function VictimCandidatePicker({ candidates }) {
         challengeSearch={challengeSearch}
         selectedChallenges={selectedChallenges}
         typeLabels={{
-          static: t('admin.challenge.types.static'),
-          dynamic: t('admin.challenge.types.dynamic'),
-          pods: t('admin.challenge.types.pods'),
+          static: t('common.challengeTypes.static'),
+          dynamic: t('common.challengeTypes.dynamic'),
+          pods: t('common.challengeTypes.pods'),
         }}
         onChallengeSearchChange={candidates.changeSearch}
         onChallengeSelectionChange={candidates.selectChallenge}

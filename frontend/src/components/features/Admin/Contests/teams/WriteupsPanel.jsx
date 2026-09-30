@@ -42,7 +42,7 @@ export default function WriteupsPanel({
   };
   return (
     <section>
-      <h2 className="text-xl font-mono text-neutral-50 mb-4">{t('admin.contests.teamDetail.sections.writeups')}</h2>
+      <h2 className="text-xl font-mono text-neutral-50 mb-4">{t('admin.contests.teamDetail.tabs.writeups')}</h2>
       {loading ? (
         <Card className="flex justify-center p-8">
           <Spinner />

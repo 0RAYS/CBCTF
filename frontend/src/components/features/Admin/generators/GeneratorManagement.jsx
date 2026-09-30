@@ -10,9 +10,9 @@ import useGeneratorSession from './useGeneratorSession.js';
 import { GENERATOR_PAGE_SIZE, getGeneratorPageStats } from './generatorUtils.js';
 import BatchResultPanel from '../batch/BatchResultPanel.jsx';
 
-export default function GeneratorManagement({ api, textKey }) {
+export default function GeneratorManagement({ api }) {
   const { t } = useTranslation();
-  const text = (key, options) => t(`${textKey}.${key}`, options);
+  const text = (key, options) => t(`admin.generators.${key}`, options);
   const session = useGeneratorSession(api, text);
   const [logGenerator, setLogGenerator] = useState(null);
   const stats = getGeneratorPageStats(session.generators);

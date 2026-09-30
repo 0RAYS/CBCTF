@@ -10,7 +10,7 @@ export default function RbacForm({ domain, mode, item, form, setForm, roles }) {
     return (
       <p className="text-neutral-300">
         {t(`${prefix}.modal.deletePrompt`)} <span className="text-white font-semibold">{item?.name}</span>?{' '}
-        {t(`${prefix}.modal.deleteWarning`)}
+        {t('common.modal.deleteWarning')}
       </p>
     );
   }

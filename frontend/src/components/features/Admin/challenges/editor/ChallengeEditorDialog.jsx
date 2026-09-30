@@ -127,9 +127,9 @@ export default function ChallengeEditorDialog({
                     className={selectClass}
                     required
                   >
-                    <option value="static">{t('admin.challengeModal.types.static')}</option>
-                    <option value="dynamic">{t('admin.challengeModal.types.dynamic')}</option>
-                    <option value="pods">{t('admin.challengeModal.types.pods')}</option>
+                    <option value="static">{t('common.challengeTypes.static')}</option>
+                    <option value="dynamic">{t('common.challengeTypes.dynamic')}</option>
+                    <option value="pods">{t('common.challengeTypes.pods')}</option>
                   </select>
                 </div>
               </div>

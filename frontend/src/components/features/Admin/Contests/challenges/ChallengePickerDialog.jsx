@@ -129,9 +129,9 @@ function AdminContestChallengeSelector({
               className="select-custom select-custom-lg"
             >
               <option value="all">{t('admin.contests.challengeSelector.filters.typeAll')}</option>
-              <option value="static">{t('admin.contests.challengeSelector.types.static')}</option>
-              <option value="dynamic">{t('admin.contests.challengeSelector.types.dynamic')}</option>
-              <option value="pods">{t('admin.contests.challengeSelector.types.pods')}</option>
+              <option value="static">{t('common.challengeTypes.static')}</option>
+              <option value="dynamic">{t('common.challengeTypes.dynamic')}</option>
+              <option value="pods">{t('common.challengeTypes.pods')}</option>
             </select>
           </div>
         </div>
@@ -182,7 +182,7 @@ function AdminContestChallengeSelector({
                             colorClass={getChallengeCategoryChipClass(challenge.category)}
                           />
                           <Chip
-                            label={t(`admin.contests.challengeSelector.types.${challenge.type}`, {
+                            label={t(`common.challengeTypes.${challenge.type}`, {
                               defaultValue: challenge.type,
                             })}
                             colorClass={getChallengeTypeChipClass(challenge.type)}

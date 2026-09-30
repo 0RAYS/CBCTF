@@ -35,7 +35,7 @@ export function VictimFilters({ scope, filters, onResetFilters, onFilterChange }
             }}
             className="!text-neutral-400 hover:!text-neutral-300 !text-xs !h-6 !px-2"
           >
-            {t(`${translationKey}.filters.reset`)}
+            {t('common.reset')}
           </Button>
         </div>
 

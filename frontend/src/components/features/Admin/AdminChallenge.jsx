@@ -101,9 +101,9 @@ function AdminChallenge({
         );
       case 'type': {
         const typeLabels = {
-          static: t('admin.challenge.types.static'),
-          dynamic: t('admin.challenge.types.dynamic'),
-          pods: t('admin.challenge.types.pods'),
+          static: t('common.challengeTypes.static'),
+          dynamic: t('common.challengeTypes.dynamic'),
+          pods: t('common.challengeTypes.pods'),
         };
         return (
           <Chip

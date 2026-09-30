@@ -17,7 +17,7 @@ export function RegistrationConfigSection({ config, updateConfig }) {
   }, []);
 
   const groupOptions = [
-    { value: '0', label: t('admin.system.labels.registrationDefaultGroupNone') },
+    { value: '0', label: t('common.none') },
     ...groups.map((g) => ({ value: String(g.id), label: g.name })),
   ];
 

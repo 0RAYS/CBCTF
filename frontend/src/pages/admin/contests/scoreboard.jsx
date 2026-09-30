@@ -240,8 +240,8 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
               size="sm"
               align="icon-left"
               icon={<IconTable size={16} />}
-              aria-label={t('game.scoreboard.headers.challenges')}
-              title={t('game.scoreboard.headers.challenges')}
+              aria-label={t('common.scoreboard.headers.challenges')}
+              title={t('common.scoreboard.headers.challenges')}
               aria-pressed={viewMode === 'table'}
               onClick={() => handleViewModeChange('table')}
             />

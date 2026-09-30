@@ -25,7 +25,7 @@ export default function WebhookHistoryDialog({ history, onClose }) {
       size="lg"
       footer={
         <Button size="sm" variant="ghost" onClick={onClose}>
-          {t('admin.webhook.actions.close')}
+          {t('common.close')}
         </Button>
       }
     >

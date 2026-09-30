@@ -103,7 +103,7 @@ export default function useTrafficSession({ isOpen, container, contestId, teamId
       if (response.headers?.['file'] === 'true') downloadBlobResponse(response, `traffic_${container.id}.zip`);
     } catch (error) {
       toast.danger({
-        description: error.message || t('admin.contests.teamContainers.toast.downloadTrafficFailed'),
+        description: error.message || t('admin.contests.trafficGraph.toast.downloadFailed'),
       });
     }
   };

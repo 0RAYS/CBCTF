@@ -56,9 +56,9 @@ function AdminNotice({
   ];
 
   const typeLabels = {
-    normal: t('admin.contests.notices.types.normal'),
-    important: t('admin.contests.notices.types.important'),
-    update: t('admin.contests.notices.types.update'),
+    normal: t('common.notices.normal'),
+    important: t('common.notices.important'),
+    update: t('common.notices.update'),
   };
 
   const renderCell = (notice, column) => {

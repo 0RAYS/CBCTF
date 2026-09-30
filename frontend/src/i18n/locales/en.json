@@ -15,7 +15,6 @@
       "empty": "No actions available"
     },
     "loading": "Loading...",
-    "language": "Language",
     "switchTo": "Switch to",
     "currentLanguage": "Current language",
     "processing": "Processing...",
@@ -105,6 +104,7 @@
     },
     "selectAll": "Select all",
     "scoreboard": {
+      "total": "TOTAL",
       "headers": {
         "rank": "RANK",
         "team": "TEAM",
@@ -116,8 +116,7 @@
   },
   "footer": {
     "copyright": "© 2026 CBCTF",
-    "icp": "陕ICP备2025076339号-1",
-    "github": "GitHub"
+    "icp": "陕ICP备2025076339号-1"
   },
   "nav": {
     "games": "GAMES",
@@ -274,9 +273,7 @@
         "name": "Contest",
         "status": "Status",
         "schedule": "Schedule",
-        "runOnStart": "Run on startup",
-        "metrics": "Metrics",
-        "actions": "Actions"
+        "metrics": "Metrics"
       },
       "actions": {
         "add": "Add Contest",
@@ -297,9 +294,6 @@
         "registrations": "Registrations: {{count}}",
         "teams": "Teams: {{count}}"
       },
-      "units": {
-        "hours": "{{count}}h"
-      },
       "form": {
         "name": "Contest Name",
         "description": "Description",
@@ -311,8 +305,7 @@
       "modal": {
         "createTitle": "Create Contest",
         "deleteTitle": "Delete Contest",
-        "deletePrompt": "Delete this contest?",
-        "deleteWarning": "$t(common.modal.deleteWarning)"
+        "deletePrompt": "Delete this contest?"
       },
       "toast": {
         "fetchFailed": "Failed to load contests",
@@ -323,51 +316,12 @@
         "createFailed": "Failed to create contest",
         "deleteFailed": "Failed to delete contest"
       },
-      "teamContainers": {
-        "toast": {
-          "fetchSubmissionsFailed": "Failed to load submissions",
-          "fetchWriteupsFailed": "Failed to load writeups",
-          "fetchContainersFailed": "Failed to load containers",
-          "fetchTrafficFailed": "Failed to load traffic data",
-          "downloadTrafficFailed": "Failed to download traffic file",
-          "downloadWriteupFailed": "Failed to download writeup"
-        },
-        "modal": {
-          "title": "Container Traffic",
-          "empty": "No traffic data"
-        },
-        "labels": {
-          "type": "Type:",
-          "sourceIp": "Source IP:",
-          "sourcePort": "Source Port:",
-          "timestamp": "Timestamp:",
-          "destinationIp": "Destination IP:",
-          "destinationPort": "Destination Port:",
-          "payload": "Payload:"
-        },
-        "types": {
-          "request": "Request",
-          "response": "Response",
-          "tcp": "TCP"
-        },
-        "payload": {
-          "expand": "Expand",
-          "collapse": "Collapse",
-          "parseError": "Parse error: {{message}}"
-        }
-      },
       "teamDetail": {
         "tabs": {
           "submissions": "Submissions",
           "writeups": "Writeups",
           "traffic": "Instance Traffic",
           "flags": "Flags"
-        },
-        "sections": {
-          "submissions": "$t(admin.contests.teamDetail.tabs.submissions)",
-          "writeups": "$t(admin.contests.teamDetail.tabs.writeups)",
-          "traffic": "$t(admin.contests.teamDetail.tabs.traffic)",
-          "flags": "$t(admin.contests.teamDetail.tabs.flags)"
         },
         "empty": {
           "submissions": "No submission records",
@@ -426,7 +380,6 @@
         }
       },
       "challengeModal": {
-        "titleAdd": "Add Challenge",
         "titleEdit": "Edit Challenge",
         "sections": {
           "basic": "Basic Info",
@@ -468,14 +421,11 @@
         "solversModal": {
           "title": "Flag #{{index}} Solvers",
           "columns": {
-            "rank": "Rank",
             "user": "User",
             "team": "Team",
-            "score": "Score",
             "solvedAt": "Solved At"
           },
-          "empty": "No solvers yet — be the first",
-          "loading": "Loading..."
+          "empty": "No solvers yet — be the first"
         }
       },
       "challengeSelector": {
@@ -487,11 +437,6 @@
         "filters": {
           "categoryAll": "All categories",
           "typeAll": "All types"
-        },
-        "types": {
-          "static": "$t(common.challengeTypes.static)",
-          "dynamic": "$t(common.challengeTypes.dynamic)",
-          "pods": "$t(common.challengeTypes.pods)"
         },
         "empty": {
           "noMatch": "No matching challenges"
@@ -647,7 +592,8 @@
           "updatedAt": "Updated at: {{time}}"
         },
         "toast": {
-          "fetchFailed": "Failed to load traffic data"
+          "fetchFailed": "Failed to load traffic data",
+          "downloadFailed": "Failed to download traffic file"
         }
       },
       "notices": {
@@ -657,8 +603,7 @@
         "table": {
           "title": "Title",
           "type": "Type",
-          "content": "Content",
-          "actions": "Actions"
+          "content": "Content"
         },
         "form": {
           "title": "Notice Title",
@@ -667,11 +612,6 @@
           "typePlaceholder": "Enter a custom notice type, e.g. normal / event / maintenance",
           "content": "Notice Content",
           "contentPlaceholder": "Enter notice content"
-        },
-        "types": {
-          "normal": "Normal",
-          "important": "Important",
-          "update": "Update"
         },
         "modal": {
           "title": {
@@ -682,7 +622,6 @@
           "deletePrompt": "Delete notice \"{{title}}\"? This action cannot be undone."
         },
         "toast": {
-          "fetchFailed": "Failed to load notices",
           "createSuccess": "Notice created",
           "createFailed": "Failed to create notice",
           "updateSuccess": "Notice updated",
@@ -750,8 +689,7 @@
         "empty": "No node image data",
         "status": {
           "present": "Present",
-          "missing": "Missing",
-          "selectedMissing": "Queued"
+          "missing": "Missing"
         },
         "statusTitle": "Node Image Inventory",
         "statusSubtitle": "Review currently available images and missing contest images per node.",
@@ -782,8 +720,7 @@
           "score": "Score",
           "members": "Members",
           "lastSubmit": "Last Submit",
-          "status": "Status",
-          "actions": "Actions"
+          "status": "Status"
         },
         "form": {
           "name": "Team Name",
@@ -812,8 +749,7 @@
         "modal": {
           "title": {
             "edit": "Edit Team Info",
-            "delete": "Delete Team",
-            "kick": "Remove Team Member"
+            "delete": "Delete Team"
           },
           "deletePrompt": "Delete team {{name}}? This action cannot be undone.",
           "kickPrompt": "Remove a member from team {{name}}:",
@@ -956,27 +892,13 @@
       },
       "containers": {
         "toast": {
-          "fetchContainersFailed": "Failed to load containers",
           "fetchTeamsFailed": "Failed to load teams",
           "fetchChallengesFailed": "Failed to load challenges",
-          "searchFailed": "Search failed",
           "invalidDuration": "Enter a valid victim lifetime",
-          "selectStopRequired": "Select containers to stop",
-          "selectStartRequired": "Select at least one challenge and one team",
-          "taskDispatched": "Task queued",
-          "taskDispatchFailed": "Failed to queue task"
-        },
-        "status": {
-          "stopped": "Stopped"
+          "selectStartRequired": "Select at least one challenge and one team"
         },
         "page": {
           "subtitle": "Manage contest containers with batch start/stop actions"
-        },
-        "showDeleted": "Show Deleted",
-        "stats": {
-          "total": "Total containers",
-          "running": "Running",
-          "stopped": "Stopped"
         },
         "quickActions": {
           "title": "Quick Actions",
@@ -984,7 +906,6 @@
           "expand": "Expand",
           "searchPlaceholder": "Search challenges by name...",
           "randomTeams": "Random team selection",
-          "selectAll": "Select all",
           "clear": "Clear",
           "pageHint": "Browse pages",
           "estimatedTeams": "Estimated {{count}} teams",
@@ -995,46 +916,6 @@
           "invalidDuration": "Enter a value greater than 0 seconds",
           "noChallenges": "No challenges match the current filter",
           "startButton": "Start ({{challenges}}×{{teams}})"
-        },
-        "filters": {
-          "title": "Filters",
-          "reset": "Reset",
-          "userName": "User name",
-          "teamName": "Team name",
-          "challengeName": "Challenge name",
-          "searchUserPlaceholder": "Search users...",
-          "searchTeamPlaceholder": "Search teams...",
-          "searchChallengePlaceholder": "Search challenges...",
-          "userFallback": "User {{id}}",
-          "teamFallback": "Team {{id}}",
-          "challengeFallback": "Challenge {{id}}",
-          "userIdLabel": "User ID",
-          "teamIdLabel": "Team ID",
-          "challengeIdLabel": "Challenge ID"
-        },
-        "table": {
-          "title": "Containers",
-          "total": "(Total {{count}} containers)",
-          "stopButton": "Stop containers",
-          "selectContainer": "Select container {{id}}",
-          "columns": {
-            "id": "ID",
-            "challenge": "Challenge",
-            "team": "Team",
-            "user": "User",
-            "remote": "Remote",
-            "startTime": "Start time",
-            "status": "Status",
-            "remaining": "Remaining"
-          },
-          "empty": "No container data"
-        },
-        "statusBadge": {
-          "waiting": "Waiting",
-          "pending": "Pending",
-          "terminating": "Terminating",
-          "running": "Running",
-          "stopped": "Stopped"
         },
         "modals": {
           "startTitle": "Confirm start",
@@ -1055,26 +936,8 @@
           "durationTitle": "Victim lifetime",
           "durationValue": "{{seconds}} seconds",
           "durationHint": "Preview: {{value}}",
-          "summaryPrefix": "Will start ",
-          "summaryMiddle": " challenges × ",
-          "summaryEquals": " teams =",
-          "summarySuffix": " containers",
-          "startWarning": "Large batches may impact cluster stability. Confirm the scale before starting.",
-          "stopTitle": "Stop containers",
-          "stopConfirm": "Stop",
-          "stopPrompt": "Stop {{count}} selected containers?"
-        },
-        "logs": {
-          "viewLogs": "View Logs",
-          "title": "Container Logs — #{{id}}",
-          "podName": "Pod Name",
-          "containerName": "Container Name",
-          "lines": "Lines",
-          "fetch": "Fetch Logs",
-          "empty": "No log content. Click Fetch Logs.",
-          "noPods": "No running Pods found for this container",
-          "fetchPodsFailed": "Failed to fetch Pod list",
-          "fetchLogsFailed": "Failed to fetch logs"
+          "summary": "Will start <amount>{{challenges}}</amount> challenges × <amount>{{teams}}</amount> teams = <total>{{total}}</total> containers",
+          "startWarning": "Large batches may impact cluster stability. Confirm the scale before starting."
         }
       },
       "challenges": {
@@ -1088,17 +951,14 @@
           "type": "Type",
           "metrics": "Metrics",
           "tags": "Tags",
-          "hints": "Hints",
-          "actions": "Actions"
+          "hints": "Hints"
         },
         "hidden": "Hidden",
         "attemptsLabel": "Attempts:",
         "solves": "{{count}} solves",
         "toast": {
-          "fetchCategoriesFailed": "Failed to load categories",
           "fetchListFailed": "Failed to load contest challenges",
           "fetchPoolFailed": "Failed to load challenge pool",
-          "selectRequired": "Select challenges to add",
           "addSuccess": "Challenges added",
           "addFailed": "Failed to add challenges",
           "updateSuccess": "Challenge updated",
@@ -1109,14 +969,6 @@
         }
       },
       "scoreboard": {
-        "headers": {
-          "rank": "$t(common.scoreboard.headers.rank)",
-          "team": "$t(common.scoreboard.headers.team)",
-          "score": "$t(common.scoreboard.headers.score)",
-          "challenges": "$t(common.scoreboard.headers.challenges)",
-          "lastSubmit": "$t(common.scoreboard.headers.lastSubmit)"
-        },
-        "total": "TOTAL",
         "export": "Export Writeups",
         "toast": {
           "fetchTimelineFailed": "Failed to load timeline",
@@ -1165,7 +1017,6 @@
           "detailTitle": "Cheat Event Details"
         },
         "actions": {
-          "close": "Close",
           "delete": "Delete",
           "deleteAll": "Clear",
           "check": "Check",
@@ -1218,56 +1069,6 @@
           "coordinates": "Coordinates",
           "fetchFailed": "Failed to look up IP geolocation"
         }
-      },
-      "generators": {
-        "startButton": "Start Generator",
-        "stopButton": "Stop Selected",
-        "noGenerators": "No generators running",
-        "noGeneratorsDesc": "Start file generators for dynamic challenges.",
-        "noDynamicChallenges": "No dynamic challenges in this contest",
-        "selectChallenges": "Select challenges to start generators for",
-        "startSelected": "Start Selected",
-        "showDeleted": "Show Deleted",
-        "columns": {
-          "id": "ID",
-          "name": "Pod Name",
-          "image": "Image",
-          "contestId": "Contest ID",
-          "challengeId": "Challenge",
-          "success": "Successes",
-          "successLast": "Last Success",
-          "failure": "Failures",
-          "failureLast": "Last Failure",
-          "status": "Status",
-          "actions": "Actions"
-        },
-        "status": {
-          "waiting": "Waiting",
-          "pending": "Pending",
-          "terminating": "Terminating",
-          "running": "Running",
-          "stopped": "Stopped"
-        },
-        "stats": {
-          "total": "Total Generators",
-          "successes": "Total Successes",
-          "failures": "Total Failures"
-        },
-        "logs": {
-          "viewLogs": "View Logs",
-          "title": "Generator Logs — {{name}}",
-          "lines": "Lines",
-          "empty": "No log content",
-          "fetchFailed": "Failed to fetch logs"
-        },
-        "toast": {
-          "fetchFailed": "Failed to load generators",
-          "startFailed": "Failed to start generators",
-          "stopSuccess": "Generators stopped",
-          "stopFailed": "Failed to stop generators",
-          "selectRequired": "Please select at least one challenge",
-          "logFailed": "Failed to fetch generator logs"
-        }
       }
     },
     "victims": {
@@ -1292,8 +1093,11 @@
       },
       "filters": {
         "title": "Filters",
-        "reset": "Reset",
         "userName": "User name",
+        "teamName": "Team name",
+        "searchTeamPlaceholder": "Search teams...",
+        "teamFallback": "Team {{id}}",
+        "teamIdLabel": "Team ID",
         "challengeName": "Challenge name",
         "searchUserPlaceholder": "Search users...",
         "searchChallengePlaceholder": "Search challenges...",
@@ -1304,7 +1108,8 @@
       },
       "table": {
         "title": "Containers",
-        "total": "(Total {{count}} running)",
+        "total": "(Total {{count}} containers)",
+        "selectContainer": "Select container {{id}}",
         "stopButton": "Stop containers",
         "columns": {
           "id": "ID",
@@ -1337,7 +1142,6 @@
         "podName": "Pod Name",
         "containerName": "Container Name",
         "lines": "Lines",
-        "fetch": "Fetch Logs",
         "empty": "No log content. Click Fetch Logs.",
         "noPods": "No running Pods found for this container",
         "fetchPodsFailed": "Failed to fetch Pod list",
@@ -1349,7 +1153,7 @@
       "stopButton": "Stop Selected",
       "noGenerators": "No generators running",
       "noGeneratorsDesc": "Start file generators for dynamic challenges.",
-      "noDynamicChallenges": "No dynamic challenges in the system",
+      "noDynamicChallenges": "No dynamic challenges available",
       "selectChallenges": "Select challenges to start generators for",
       "startSelected": "Start Selected",
       "showDeleted": "Show Deleted",
@@ -1366,6 +1170,13 @@
         "status": "Status",
         "actions": "Actions"
       },
+      "status": {
+        "waiting": "Waiting",
+        "pending": "Pending",
+        "terminating": "Terminating",
+        "running": "Running",
+        "stopped": "Stopped"
+      },
       "stats": {
         "total": "Total Generators",
         "successes": "Total Successes",
@@ -1375,8 +1186,7 @@
         "viewLogs": "View Logs",
         "title": "Generator Logs — {{name}}",
         "lines": "Lines",
-        "empty": "No log content",
-        "fetchFailed": "Failed to fetch logs"
+        "empty": "No log content"
       },
       "toast": {
         "fetchFailed": "Failed to load generators",
@@ -1398,6 +1208,7 @@
       },
       "actions": {
         "add": "Add Challenge",
+        "upload": "Upload attachment",
         "test": "Test Challenge"
       },
       "search": {
@@ -1417,11 +1228,6 @@
       },
       "empty": {
         "search": "No matching challenges found"
-      },
-      "types": {
-        "static": "$t(common.challengeTypes.static)",
-        "dynamic": "$t(common.challengeTypes.dynamic)",
-        "pods": "$t(common.challengeTypes.pods)"
       },
       "toast": {
         "searchFailed": "Search failed",
@@ -1470,8 +1276,7 @@
         },
         "attachments": {
           "generating": "Generating...",
-          "generateAndDownload": "Generate & Download",
-          "download": "Download"
+          "generateAndDownload": "Generate & Download"
         }
       }
     },
@@ -1505,11 +1310,6 @@
         "allowInbound": "Allow Inbound",
         "allowOutbound": "Allow Outbound",
         "excludeList": "Exclude List"
-      },
-      "types": {
-        "static": "$t(common.challengeTypes.static)",
-        "dynamic": "$t(common.challengeTypes.dynamic)",
-        "pods": "$t(common.challengeTypes.pods)"
       },
       "placeholders": {
         "name": "Enter challenge name",
@@ -1732,8 +1532,7 @@
         "email": "Email",
         "status": "Status",
         "contests": "Contests",
-        "teams": "Teams",
-        "actions": "Actions"
+        "teams": "Teams"
       },
       "picture": {
         "replace": "Replace"
@@ -1768,8 +1567,7 @@
         "createTitle": "Create User",
         "editTitle": "Edit User",
         "deleteTitle": "Delete User",
-        "deletePrompt": "Are you sure you want to delete user",
-        "deleteWarning": "$t(common.modal.deleteWarning)"
+        "deletePrompt": "Are you sure you want to delete user"
       },
       "form": {
         "username": "Username",
@@ -1788,7 +1586,6 @@
         "info": {
           "id": "User ID",
           "email": "Email",
-          "score": "Score",
           "solved": "Solved",
           "provider": "Provider",
           "contests": "Contests",
@@ -1834,7 +1631,6 @@
           "editTitle": "Edit Role",
           "deleteTitle": "Delete Role",
           "deletePrompt": "Are you sure you want to delete role",
-          "deleteWarning": "$t(common.modal.deleteWarning)",
           "permissionsTitle": "Manage Permissions"
         },
         "form": {
@@ -1921,7 +1717,6 @@
           "editTitle": "Edit Group",
           "deleteTitle": "Delete Group",
           "deletePrompt": "Are you sure you want to delete group",
-          "deleteWarning": "$t(common.modal.deleteWarning)",
           "usersTitle": "Manage Users",
           "currentUsersTitle": "Current group members"
         },
@@ -2006,17 +1801,12 @@
         "failure": "Failure count",
         "actions": "Actions"
       },
-      "status": {
-        "enabled": "$t(common.toggle.enabled)",
-        "disabled": "$t(common.toggle.disabled)"
-      },
       "empty": "No SMTP configs",
       "modal": {
         "createTitle": "Create SMTP Config",
         "editTitle": "Edit SMTP Config",
         "deleteTitle": "Delete SMTP Config",
-        "deletePrompt": "Are you sure you want to delete SMTP config",
-        "deleteWarning": "$t(common.modal.deleteWarning)"
+        "deletePrompt": "Are you sure you want to delete SMTP config"
       },
       "form": {
         "addressLabel": "Email address *",
@@ -2066,15 +1856,10 @@
           "to": "To",
           "subject": "Subject",
           "status": "Status",
-          "time": "Sent at",
-          "actions": "Actions"
-        },
-        "actions": {
-          "viewDetail": "View details"
+          "time": "Sent at"
         }
       },
       "actions": {
-        "close": "Close",
         "add": "Add SMTP Config",
         "viewHistory": "View history",
         "sendTest": "Send Test Email",
@@ -2086,6 +1871,7 @@
     },
     "cronjobs": {
       "columns": {
+        "runOnStart": "Run on startup",
         "id": "ID",
         "name": "Name",
         "description": "Description",
@@ -2094,8 +1880,7 @@
         "failureCount": "Failures",
         "successLast": "Last Success",
         "failureLast": "Last Failure",
-        "next": "Next Run",
-        "actions": "Actions"
+        "next": "Next Run"
       },
       "empty": "No cron jobs",
       "modal": {
@@ -2150,26 +1935,19 @@
           "failure": "Failure count",
           "actions": "Actions"
         },
-        "status": {
-          "enabled": "$t(common.toggle.enabled)",
-          "disabled": "$t(common.toggle.disabled)"
-        },
         "events": {
           "all": "All events"
         },
         "actions": {
           "add": "Add Webhook",
-          "edit": "Edit",
-          "viewHistory": "View history",
-          "delete": "Delete"
+          "viewHistory": "View history"
         }
       },
       "modal": {
         "createTitle": "Create Webhook",
         "editTitle": "Edit Webhook",
         "deleteTitle": "Delete Webhook",
-        "deletePrompt": "Are you sure you want to delete webhook",
-        "deleteWarning": "$t(common.modal.deleteWarning)"
+        "deletePrompt": "Are you sure you want to delete webhook"
       },
       "form": {
         "headerKeyPlaceholder": "Header key",
@@ -2210,15 +1988,8 @@
           "status": "Status",
           "responseCode": "Response Code",
           "duration": "Duration",
-          "time": "Called at",
-          "actions": "Actions"
-        },
-        "actions": {
-          "viewDetail": "View details"
+          "time": "Called at"
         }
-      },
-      "actions": {
-        "close": "Close"
       },
       "toast": {
         "fetchEventsFailed": "Failed to load events",
@@ -2238,10 +2009,6 @@
         "uploadLogo": "Click to upload logo"
       },
       "empty": "No OAuth providers",
-      "status": {
-        "enabled": "$t(common.toggle.enabled)",
-        "disabled": "$t(common.toggle.disabled)"
-      },
       "columns": {
         "logo": "Logo",
         "provider": "Provider",
@@ -2249,7 +2016,6 @@
         "protocol": "Protocol",
         "status": "Enabled",
         "callback": "Callback URL",
-        "actions": "Actions",
         "id": "ID: {{id}}"
       },
       "toast": {
@@ -2267,8 +2033,7 @@
         "createTitle": "Create OAuth Provider",
         "editTitle": "Edit OAuth Provider",
         "deleteTitle": "Delete OAuth Provider",
-        "deletePrompt": "Are you sure you want to delete OAuth provider",
-        "deleteWarning": "$t(common.modal.deleteWarning)"
+        "deletePrompt": "Are you sure you want to delete OAuth provider"
       },
       "form": {
         "protocolLabel": "Protocol",
@@ -2303,7 +2068,6 @@
         "groupsClaimLabel": "Groups field",
         "adminGroupLabel": "Admin group",
         "defaultGroupLabel": "Default group",
-        "defaultGroupNone": "None",
         "enable": "Enable"
       }
     },
@@ -2314,7 +2078,6 @@
         "traffic": "Traffic",
         "writeup": "Writeups"
       },
-      "selectAll": "$t(common.selectAll)",
       "empty": "No files",
       "columns": {
         "name": "Filename",
@@ -2336,16 +2099,13 @@
       },
       "modal": {
         "confirmTitle": "Confirm Delete",
-        "confirmPrompt": "Delete {{count}} selected files?",
-        "confirmWarning": "$t(common.modal.deleteWarning)"
+        "confirmPrompt": "Delete {{count}} selected files?"
       },
       "actions": {
-        "confirm": "Confirm",
         "batchDelete": "Delete Selected ({{count}})"
       }
     },
     "system": {
-      "noData": "No configuration data available",
       "actions": {
         "update": "Update Config",
         "uploadGeoCityDB": "Upload GeoCityDB",
@@ -2364,8 +2124,7 @@
         "title": "Confirm Update",
         "prompt": "You are about to update system configuration. Continue?",
         "warning": "Settings are saved to the database. Workload settings apply to newly created instances; task concurrency and startup settings require a restart. Other platform replicas must reload the settings.",
-        "confirm": "Update",
-        "cancel": "Cancel"
+        "confirm": "Update"
       },
       "restart": {
         "manualTitle": "Confirm Restart",
@@ -2439,8 +2198,7 @@
         "pprofWhitelist": "PProf Access IP Whitelist (IP / CIDR)",
         "webhookWhitelist": "Webhook Target Whitelist (IP / CIDR / Hostname)",
         "registrationEnabled": "Allow Registration",
-        "registrationDefaultGroup": "Default Group for New Users",
-        "registrationDefaultGroupNone": "None"
+        "registrationDefaultGroup": "Default Group for New Users"
       },
       "hints": {
         "k8sCaptureEnabled": "Applies to new victim and FRPC Pods. Disabling capture removes their capture container and related storage mounts.",
@@ -2620,7 +2378,6 @@
       "emailLabel": "Email Address",
       "submit": "SEND RESET LINK",
       "sending": "SENDING...",
-      "successTitle": "Email Sent",
       "successMessage": "If an account with that email exists, a password reset link has been sent. Please check your inbox.",
       "backToLogin": "Back to login"
     },
@@ -2629,7 +2386,6 @@
       "description": "Enter your new password below.",
       "submit": "RESET PASSWORD",
       "submitting": "RESETTING...",
-      "successTitle": "Password Reset",
       "successMessage": "Your password has been reset and your email has been verified. You can now log in.",
       "goToLogin": "Go to login",
       "invalidToken": "This password reset link is invalid or has expired. Please request a new one.",
@@ -2681,6 +2437,7 @@
       "registerFailed": "Registration failed. Check your details."
     },
     "user": {
+      "passwordUpdated": "Password updated",
       "passwordUpdateFailed": "Password update failed",
       "avatarUpdated": "Avatar updated",
       "fetchFailed": "Failed to fetch user info"
@@ -2842,11 +2599,6 @@
       "highestScore": "Highest Score"
     },
     "scoreboardTable": {
-      "headers": {
-        "rank": "$t(common.scoreboard.headers.rank)",
-        "team": "$t(common.scoreboard.headers.team)",
-        "score": "$t(common.scoreboard.headers.score)"
-      },
       "members": "{{count}} members",
       "status": {
         "solved": "Solved",
@@ -2862,51 +2614,6 @@
         "prizes": "Prizes",
         "timeline": "Timeline"
       },
-      "defaultRules": [
-        "Participants must follow contest rules and ethics",
-        "Attacking the contest platform or other participants is prohibited",
-        "Do not share challenge answers or solution writeups",
-        "Each team may have up to 4 members",
-        "The contest uses a dynamic scoring system",
-        "First Blood awards are available",
-        "Violations will result in disqualification"
-      ],
-      "defaultPrizes": [
-        {
-          "amount": "¥10,000",
-          "description": "First Prize: cash award and CBCTF souvenir"
-        },
-        {
-          "amount": "¥5,000",
-          "description": "Second Prize: cash award and gifts"
-        },
-        {
-          "amount": "¥3,000",
-          "description": "Third Prize: cash award"
-        }
-      ],
-      "defaultTimeline": [
-        {
-          "date": "2024-02-15",
-          "title": "Registration Opens",
-          "description": "Registration opens and teams can sign up"
-        },
-        {
-          "date": "2024-02-16",
-          "title": "Contest Starts",
-          "description": "Challenges are released and the contest begins"
-        },
-        {
-          "date": "2024-02-17",
-          "title": "Contest Ends",
-          "description": "Scoring stops and final rankings are published"
-        },
-        {
-          "date": "2024-02-18",
-          "title": "Writeups Released",
-          "description": "Official writeups are published for sharing"
-        }
-      ],
       "toast": {
         "fetchFailed": "Failed to load contest details"
       }
@@ -2988,7 +2695,6 @@
       }
     },
     "challenges": {
-      "title": "Challenges",
       "backToSummary": "← Back to contest summary",
       "toast": {
         "fetchFailed": "Failed to load contest data",
@@ -3017,14 +2723,6 @@
       }
     },
     "scoreboard": {
-      "headers": {
-        "rank": "$t(common.scoreboard.headers.rank)",
-        "team": "$t(common.scoreboard.headers.team)",
-        "score": "$t(common.scoreboard.headers.score)",
-        "challenges": "$t(common.scoreboard.headers.challenges)",
-        "lastSubmit": "$t(common.scoreboard.headers.lastSubmit)"
-      },
-      "total": "TOTAL",
       "toast": {
         "fetchFailed": "Failed to load scoreboard"
       },
@@ -3059,9 +2757,6 @@
         "minute": "{{count}}m",
         "second": "{{count}}s"
       }
-    },
-    "hex": {
-      "invalid": "Invalid hex data"
     }
   }
 }

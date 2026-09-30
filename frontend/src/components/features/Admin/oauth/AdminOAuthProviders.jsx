@@ -108,9 +108,9 @@ function AdminOAuthProviders({
         return (
           <div className="flex flex-wrap gap-2">
             {provider.on ? (
-              <StatusTag type="success" text={t('admin.oauthProviders.status.enabled')} />
+              <StatusTag type="success" text={t('common.toggle.enabled')} />
             ) : (
-              <StatusTag type="warning" text={t('admin.oauthProviders.status.disabled')} />
+              <StatusTag type="warning" text={t('common.toggle.disabled')} />
             )}
           </div>
         );

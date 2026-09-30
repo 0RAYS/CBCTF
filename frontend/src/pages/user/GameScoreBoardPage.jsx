@@ -133,7 +133,7 @@ function ContestScoreboard({ contestId }) {
         >
           {[
             { mode: 'ranking', label: t('common.rank'), icon: <IconList size={16} /> },
-            { mode: 'table', label: t('game.scoreboard.headers.challenges'), icon: <IconTable size={16} /> },
+            { mode: 'table', label: t('common.scoreboard.headers.challenges'), icon: <IconTable size={16} /> },
           ].map(({ mode, label, icon }) => (
             <Button
               key={mode}
@@ -170,12 +170,12 @@ function ContestScoreboard({ contestId }) {
           teams={scoreboardData.teams}
           locale={i18n.language || 'en-US'}
           labels={{
-            rank: t('game.scoreboard.headers.rank'),
-            team: t('game.scoreboard.headers.team'),
-            score: t('game.scoreboard.headers.score'),
-            challenges: t('game.scoreboard.headers.challenges'),
-            lastSubmit: t('game.scoreboard.headers.lastSubmit'),
-            total: t('game.scoreboard.total'),
+            rank: t('common.scoreboard.headers.rank'),
+            team: t('common.scoreboard.headers.team'),
+            score: t('common.scoreboard.headers.score'),
+            challenges: t('common.scoreboard.headers.challenges'),
+            lastSubmit: t('common.scoreboard.headers.lastSubmit'),
+            total: t('common.scoreboard.total'),
           }}
           emptyMessage={t('common.noData')}
           footer={

@@ -56,7 +56,7 @@ export default function WebhookDialog({ mode, webhook, onClose, onSaved }) {
             {t('common.cancel')}
           </Button>
           <Button size="sm" variant={mode === 'delete' ? 'danger' : 'primary'} onClick={submit}>
-            {t(`common.${mode === 'edit' ? 'save' : mode}`)}
+            {t(mode === 'edit' ? 'common.save' : mode === 'create' ? 'common.create' : 'common.delete')}
           </Button>
         </>
       }
@@ -66,7 +66,7 @@ export default function WebhookDialog({ mode, webhook, onClose, onSaved }) {
           <p className="text-neutral-300 mb-4">
             {t('admin.webhook.modal.deletePrompt')} <span className="font-semibold text-red-400">{webhook.name}</span>?
           </p>
-          <p className="text-neutral-400 text-sm">{t('admin.webhook.modal.deleteWarning')}</p>
+          <p className="text-neutral-400 text-sm">{t('common.modal.deleteWarning')}</p>
         </div>
       ) : (
         <WebhookFields form={form} setForm={setForm} mode={mode} events={events} />

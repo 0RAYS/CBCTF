@@ -80,7 +80,7 @@ function ContestChallenges({ contestId }) {
 
   return (
     <div className="contest-container mx-auto space-y-6">
-      <h1 className="sr-only">{contestStatus.name || t('game.challenges.title')}</h1>
+      <h1 className="sr-only">{contestStatus.name || t('common.challenges')}</h1>
       <StatusPanel
         contestStatus={contestStatus}
         onStatusExpired={(status) => overview.setContestStatus((previous) => ({ ...previous, status }))}

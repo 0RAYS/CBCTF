@@ -12,7 +12,7 @@ export function getFooterConfig(t, footerBranding = {}) {
     icp: icpNumber ? { number: icpNumber, link: icpLink } : null,
     links: [
       contactEmail ? { label: contactEmail, href: `mailto:${contactEmail}`, isExternal: true } : null,
-      githubURL ? { label: t('footer.github'), href: githubURL, isExternal: true } : null,
+      githubURL ? { label: t('common.github'), href: githubURL, isExternal: true } : null,
     ].filter(Boolean),
   };
 }

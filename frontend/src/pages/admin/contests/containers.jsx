@@ -17,7 +17,7 @@ export default function ContestContainers() {
   const contestId = Number.parseInt(id, 10);
   const scope = {
     contestId,
-    translationKey: 'admin.contests.containers',
+    translationKey: 'admin.victims',
     loadVictims: (params) => getContestVictims(contestId, params),
     stopVictims: (ids) => stopContestVictims(contestId, ids),
     loadPods: (victimId, signal) => getContestVictimPods(contestId, victimId, signal),

@@ -136,9 +136,9 @@ function AdminContestChallenges({
         );
       case 'type': {
         const typeLabels = {
-          static: t('admin.challenge.types.static'),
-          dynamic: t('admin.challenge.types.dynamic'),
-          pods: t('admin.challenge.types.pods'),
+          static: t('common.challengeTypes.static'),
+          dynamic: t('common.challengeTypes.dynamic'),
+          pods: t('common.challengeTypes.pods'),
         };
         return (
           <Chip
@@ -214,7 +214,7 @@ function AdminContestChallenges({
                 className={`pb-3 px-2 relative font-mono text-sm ${filterType === 'static' ? 'text-geek-400' : 'text-neutral-400'}`}
                 onClick={() => onFilterTypeChange('static')}
               >
-                {t('admin.challenge.types.static')}
+                {t('common.challengeTypes.static')}
                 {filterType === 'static' && (
                   <motion.div
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-geek-400"
@@ -227,7 +227,7 @@ function AdminContestChallenges({
                 className={`pb-3 px-2 relative font-mono text-sm ${filterType === 'dynamic' ? 'text-geek-400' : 'text-neutral-400'}`}
                 onClick={() => onFilterTypeChange('dynamic')}
               >
-                {t('admin.challenge.types.dynamic')}
+                {t('common.challengeTypes.dynamic')}
                 {filterType === 'dynamic' && (
                   <motion.div
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-geek-400"
@@ -240,7 +240,7 @@ function AdminContestChallenges({
                 className={`pb-3 px-2 relative font-mono text-sm ${filterType === 'pods' ? 'text-geek-400' : 'text-neutral-400'}`}
                 onClick={() => onFilterTypeChange('pods')}
               >
-                {t('admin.challenge.types.pods')}
+                {t('common.challengeTypes.pods')}
                 {filterType === 'pods' && (
                   <motion.div
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-geek-400"

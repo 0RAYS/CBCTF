@@ -29,7 +29,7 @@ function AdminContestNotices() {
         setTotalCount(response.data.count);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.notices.toast.fetchFailed') });
+      toast.danger({ description: error.message || t('common.notices.fetchFailed') });
     }
   };
 

@@ -21,5 +21,5 @@ export default function ContestGenerators() {
   };
 
   // A contest change owns a new query, operation, and dialog session.
-  return <GeneratorManagement key={contestId} api={api} textKey="admin.contests.generators" />;
+  return <GeneratorManagement key={contestId} api={api} />;
 }

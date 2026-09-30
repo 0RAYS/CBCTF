@@ -35,7 +35,7 @@ function ScoreboardTable({
   const scoreValues = useMemo(() => teams.map((team) => team.score), [teams]);
   const { width: scoreWidth, measurement } = useScoreColumnWidth({
     scores: scoreValues,
-    label: t('game.scoreboardTable.headers.score'),
+    label: t('common.scoreboard.headers.score'),
     scoreClassName: 'text-base',
     padding: 25,
     minWidth: 80,
@@ -120,7 +120,7 @@ function ScoreboardTable({
                   className="sticky left-0 z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
                   style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
                 >
-                  <TruncatedText>{t('game.scoreboardTable.headers.rank')}</TruncatedText>
+                  <TruncatedText>{t('common.scoreboard.headers.rank')}</TruncatedText>
                 </th>
                 <th
                   scope="col"
@@ -132,7 +132,7 @@ function ScoreboardTable({
                     left: 'var(--sb-rank-width)',
                   }}
                 >
-                  <TruncatedText>{t('game.scoreboardTable.headers.team')}</TruncatedText>
+                  <TruncatedText>{t('common.scoreboard.headers.team')}</TruncatedText>
                 </th>
                 <th
                   scope="col"
@@ -144,7 +144,7 @@ function ScoreboardTable({
                     left: 'calc(var(--sb-rank-width) + var(--sb-team-width))',
                   }}
                 >
-                  <TruncatedText>{t('game.scoreboardTable.headers.score')}</TruncatedText>
+                  <TruncatedText>{t('common.scoreboard.headers.score')}</TruncatedText>
                 </th>
 
                 {/* 题目分类列 */}

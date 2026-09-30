@@ -59,7 +59,7 @@ export default function OAuthProviderDialog({ mode, provider, onClose, onSaved }
             {t('common.cancel')}
           </Button>
           <Button size="sm" variant={mode === 'delete' ? 'danger' : 'primary'} onClick={submit}>
-            {t(`common.${mode === 'edit' ? 'save' : mode}`)}
+            {t(mode === 'edit' ? 'common.save' : mode === 'create' ? 'common.create' : 'common.delete')}
           </Button>
         </>
       }
@@ -70,7 +70,7 @@ export default function OAuthProviderDialog({ mode, provider, onClose, onSaved }
             {t('admin.oauthProviders.modal.deletePrompt')}{' '}
             <span className="font-semibold text-red-400">{provider.provider}</span>?
           </p>
-          <p className="text-neutral-400 text-sm">{t('admin.oauthProviders.modal.deleteWarning')}</p>
+          <p className="text-neutral-400 text-sm">{t('common.modal.deleteWarning')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -81,7 +81,7 @@ export default function OAuthProviderDialog({ mode, provider, onClose, onSaved }
             value={form.default_group}
             onChange={(e) => change('default_group', Number(e.target.value))}
             options={[
-              { value: 0, label: t('admin.oauthProviders.form.defaultGroupNone') },
+              { value: 0, label: t('common.none') },
               ...groups.map((group) => ({ value: group.id, label: group.name })),
             ]}
           />
