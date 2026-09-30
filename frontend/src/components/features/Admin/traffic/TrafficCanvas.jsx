@@ -171,7 +171,7 @@ export default function TrafficCanvas({
           </div>
           <svg
             viewBox={viewBox}
-            className="absolute inset-0 h-full w-full select-none"
+            className="absolute inset-0 h-full w-full select-none touch-none"
             shapeRendering="geometricPrecision"
             textRendering="geometricPrecision"
             onPointerDown={startDrag}

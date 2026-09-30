@@ -8,13 +8,22 @@ export default function useContextMenu(data, getActions, disabled = false) {
   const hintId = useId();
   const [target, setTarget] = useState(null);
   const trigger = useRef(null);
+  const press = useRef(null);
+  const suppressClick = useRef(false);
   const close = useCallback((restoreFocus = true) => {
     if (restoreFocus && trigger.current?.isConnected) trigger.current.focus({ preventScroll: true });
     setTarget(null);
   }, []);
+  const cancelPress = useCallback(() => {
+    clearTimeout(press.current?.timer);
+    press.current = null;
+  }, []);
+
   useEffect(() => {
     setTarget(null);
-  }, [data, disabled]);
+    cancelPress();
+  }, [data, disabled, cancelPress]);
+  useEffect(() => cancelPress, [cancelPress]);
 
   const open = (element, item, x, y) => {
     trigger.current = element;
@@ -30,6 +39,7 @@ export default function useContextMenu(data, getActions, disabled = false) {
           onContextMenu: (event) => {
             event.preventDefault();
             event.stopPropagation();
+            cancelPress();
             const rect = event.currentTarget.getBoundingClientRect();
             open(event.currentTarget, item, event.clientX || rect.left + 24, event.clientY || rect.top + 24);
           },
@@ -39,6 +49,33 @@ export default function useContextMenu(data, getActions, disabled = false) {
             event.stopPropagation();
             const rect = event.currentTarget.getBoundingClientRect();
             open(event.currentTarget, item, Math.max(8, rect.left + 24), Math.max(8, rect.top + 24));
+          },
+          onPointerDown: (event) => {
+            suppressClick.current = false;
+            cancelPress();
+            if (event.pointerType !== 'touch' || event.target.closest('button, a, input, select, textarea')) return;
+            const element = event.currentTarget;
+            const { clientX: x, clientY: y } = event;
+            press.current = {
+              x,
+              y,
+              timer: setTimeout(() => {
+                suppressClick.current = true;
+                open(element, item, x, y);
+              }, 550),
+            };
+          },
+          onPointerMove: (event) => {
+            if (press.current && Math.hypot(event.clientX - press.current.x, event.clientY - press.current.y) > 10)
+              cancelPress();
+          },
+          onPointerUp: cancelPress,
+          onPointerCancel: cancelPress,
+          onClickCapture: (event) => {
+            if (!suppressClick.current) return;
+            suppressClick.current = false;
+            event.preventDefault();
+            event.stopPropagation();
           },
         };
 
