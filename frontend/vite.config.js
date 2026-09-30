@@ -2,6 +2,8 @@ import {defineConfig} from 'vite'
 import transformImports from '@rolldown/plugin-transform-imports'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import localeChunks from './build/localeChunks.js';
+import precompress from './build/precompress.js';
 
 const getPackageName = (id) => {
   const normalized = id.replace(/\\/g, '/');
@@ -24,6 +26,8 @@ const isPnpmPackage = (id, packageName) => {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    localeChunks(),
+    precompress(),
     transformImports({
       '@tabler/icons-react': {
         transform: '@tabler/icons-react/dist/esm/icons/{{member}}.mjs',
@@ -34,6 +38,7 @@ export default defineConfig({
   ],
   base: '/platform/',
   build: {
+    manifest: true,
     rolldownOptions: {
       output: {
         strictExecutionOrder: true,
@@ -42,6 +47,7 @@ export default defineConfig({
           includeDependenciesRecursively: false,
           groups: [
             {
+              debugName: 'heavy-vendors',
               name: (id) => {
                 const packageName = getPackageName(id);
 
@@ -57,6 +63,9 @@ export default defineConfig({
                 }
                 if (packageName === 'monaco-editor') {
                   return 'vendor-monaco';
+                }
+                if (['motion', 'motion-dom', 'motion-utils', 'framer-motion'].includes(packageName)) {
+                  return 'vendor-motion';
                 }
                 if (packageName === 'echarts' || packageName === 'zrender') {
                   return 'vendor-echarts';

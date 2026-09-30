@@ -50,7 +50,9 @@ func Init() *gin.Engine {
 			}
 			ctx.Next()
 		})
-		router.StaticFS("/platform", http.FS(frontend.SubFS))
+		static := gin.WrapH(http.StripPrefix("/platform", frontend.FileServer()))
+		router.GET("/platform/*filepath", static)
+		router.HEAD("/platform/*filepath", static)
 	}
 
 	router.Use(middleware.Logger, middleware.Prometheus, middleware.Events, middleware.Recovery)

@@ -4,6 +4,12 @@
     "admin": "DEEP DIVE Admin"
   },
   "common": {
+    "notices": {
+      "normal": "Normal",
+      "important": "Important",
+      "update": "Update",
+      "fetchFailed": "Failed to load notices"
+    },
     "contextMenu": {
       "label": "Row actions",
       "empty": "No actions available"

@@ -2,7 +2,7 @@ import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import { AdminRoute } from './AuthRoute';
 import { withGuard, withSuspense } from './routeUtils';
-import AdminContestsLayout from '../components/features/layouts/AdminContestsLayout';
+const AdminContestsLayout = lazy(() => import('../components/features/layouts/AdminContestsLayout'));
 
 const AdminContestDetail = lazy(() => import('../pages/admin/contests/index.jsx'));
 const AdminContestChallenges = lazy(() => import('../pages/admin/contests/challenges'));
@@ -30,7 +30,7 @@ export function AdminContestRoutes() {
   return (
     <Route
       path="/admin/contests/:id"
-      element={withGuard(<AdminContestsLayout />, AdminRoute, { apiRoute: 'GET /admin/contests/:contestID' })}
+      element={withGuard(withSuspense(AdminContestsLayout), AdminRoute, { apiRoute: 'GET /admin/contests/:contestID' })}
     >
       <Route index element={withSuspense(AdminContestDetail)} />
       <Route path="settings" element={withSuspense(AdminContestSettings)} />

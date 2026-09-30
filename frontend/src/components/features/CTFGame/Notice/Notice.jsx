@@ -33,9 +33,9 @@ function Notice({ notices }) {
   const id = useId();
   const { t } = useTranslation();
   const typeLabels = {
-    important: t('admin.contests.notices.types.important'),
-    update: t('admin.contests.notices.types.update'),
-    normal: t('admin.contests.notices.types.normal'),
+    important: t('common.notices.important'),
+    update: t('common.notices.update'),
+    normal: t('common.notices.normal'),
   };
 
   return (
