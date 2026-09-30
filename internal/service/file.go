@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"mime/multipart"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -22,12 +21,10 @@ import (
 )
 
 func SavePicture(tx *gorm.DB, modelName string, modelID uint, file *multipart.FileHeader) (model.File, model.RetVal) {
-	var (
-		fileRepo = db.InitFileRepo(tx)
-		allowed  = []string{".png", ".jpg", ".jpeg", ".gif"}
-		suffix   = strings.ToLower(filepath.Ext(file.Filename))
-	)
-	if !slices.Contains(allowed, suffix) {
+	suffix := strings.ToLower(filepath.Ext(file.Filename))
+	switch suffix {
+	case ".png", ".jpg", ".jpeg", ".gif":
+	default:
 		return model.File{}, model.RetVal{Msg: i18n.Model.File.NotAllowed}
 	}
 	size, hash, err := utils.GetFileInfoByHeader(file)
@@ -35,7 +32,7 @@ func SavePicture(tx *gorm.DB, modelName string, modelID uint, file *multipart.Fi
 		log.Logger.Warningf("Failed to get file info: %s", err)
 		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	record, ret := fileRepo.Create(model.File{
+	record, ret := db.InitFileRepo(tx).Create(model.File{
 		RandID:   utils.UUID(),
 		Filename: file.Filename,
 		Size:     size,
@@ -52,13 +49,11 @@ func SavePicture(tx *gorm.DB, modelName string, modelID uint, file *multipart.Fi
 	return record, ret
 }
 
-func UpdatePicture(tx *gorm.DB, v string, id uint, record model.File) (string, model.RetVal) {
+func UpdatePicture(tx *gorm.DB, modelName string, id uint, record model.File) (string, model.RetVal) {
 	var ret model.RetVal
 	path := model.FileURL(fmt.Sprintf("/pictures/%s", record.RandID))
-	switch v {
-	case "self":
-		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Picture: &path})
-	case "user":
+	switch modelName {
+	case "self", "user":
 		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Picture: &path})
 	case "contest":
 		ret = db.InitContestRepo(tx).Update(id, db.UpdateContestOptions{Picture: &path})
@@ -113,11 +108,10 @@ func SaveChallenge(tx *gorm.DB, challenge model.Challenge, file *multipart.FileH
 }
 
 func SaveWriteup(tx *gorm.DB, contest model.Contest, team model.Team, file *multipart.FileHeader) (model.File, model.RetVal) {
-	var (
-		allowed = []string{".pdf", ".docx", ".doc"}
-		suffix  = strings.ToLower(filepath.Ext(file.Filename))
-	)
-	if !slices.Contains(allowed, suffix) {
+	suffix := strings.ToLower(filepath.Ext(file.Filename))
+	switch suffix {
+	case ".pdf", ".docx", ".doc":
+	default:
 		return model.File{}, model.RetVal{Msg: i18n.Model.File.NotAllowed}
 	}
 	size, hash, err := utils.GetFileInfoByHeader(file)

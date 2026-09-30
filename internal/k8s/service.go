@@ -2,12 +2,12 @@ package k8s
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"CBCTF/internal/i18n"
@@ -25,29 +25,23 @@ type CreateServiceOptions struct {
 }
 
 func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.Service, model.RetVal) {
-	var (
-		service *corev1.Service
-		err     error
-	)
-	service = &corev1.Service{
+	ports := make([]corev1.ServicePort, 0, len(options.Ports))
+	for _, port := range options.Ports {
+		ports = append(ports, corev1.ServicePort{
+			Name:       utils.UUID(),
+			Protocol:   corev1.Protocol(strings.ToUpper(port.Protocol)),
+			Port:       port.Port,
+			TargetPort: intstr.FromInt32(port.Port),
+		})
+	}
+	service := &corev1.Service{
 		OwnerReferences: resourceOwners(ctx),
 		Name:            options.Name,
 		Namespace:       globalNamespace,
 		Labels:          options.Labels,
 		Spec: corev1.ServiceSpec{
-			Selector: options.Selector,
-			Ports: func() []corev1.ServicePort {
-				tmp := make([]corev1.ServicePort, 0)
-				for _, p := range options.Ports {
-					tmp = append(tmp, corev1.ServicePort{
-						Name:       utils.UUID(),
-						Protocol:   corev1.Protocol(strings.ToUpper(p.Protocol)),
-						Port:       p.Port,
-						TargetPort: intstr.FromInt32(p.Port),
-					})
-				}
-				return tmp
-			}(),
+			Selector:              options.Selector,
+			Ports:                 ports,
 			Type:                  corev1.ServiceTypeNodePort,
 			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
 		},
@@ -56,7 +50,7 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 		service.Spec.Type = corev1.ServiceTypeClusterIP
 		service.Spec.ExternalTrafficPolicy = ""
 	}
-	service, err = kubeClient.CoreV1().Services(globalNamespace).Create(ctx, service, metav1.CreateOptions{})
+	service, err := kubeClient.CoreV1().Services(globalNamespace).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Service: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Service", "Error": err.Error()}}
@@ -64,16 +58,10 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 	return service, model.SuccessRetVal()
 }
 
-func ListServices(ctx context.Context, labels ...map[string]string) (*corev1.ServiceList, model.RetVal) {
+func ListServices(ctx context.Context, selectors ...map[string]string) (*corev1.ServiceList, model.RetVal) {
 	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector strings.Builder
-		for k, v := range labels[0] {
-			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector.String(), ","),
-		}
+	if len(selectors) > 0 {
+		options.LabelSelector = labels.SelectorFromSet(selectors[0]).String()
 	}
 	serviceList, err := kubeClient.CoreV1().Services(globalNamespace).List(ctx, options)
 	if err != nil {

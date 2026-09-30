@@ -19,14 +19,12 @@ import (
 )
 
 func GetHomePageData(tx *gorm.DB) gin.H {
-	data := gin.H{
-		"upcoming":   []gin.H{},
-		"stats":      []gin.H{},
-		"scoreboard": []gin.H{},
-	}
+	data := gin.H{}
 	if branding, ret := GetDefaultBranding(tx); ret.OK {
 		data["branding"] = resp.GetBrandingResp(branding)
 	}
+	upcoming := make([]gin.H, 0, 3)
+	stats := make([]gin.H, 0, 4)
 	repo := db.InitContestRepo(tx)
 	contests, count, ret := repo.List(-1, -1, db.GetOptions{Sort: []string{"start ASC"}})
 	if ret.OK {
@@ -46,7 +44,7 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 			if teamRet.OK {
 				teams = teamCountMap[contest.ID]
 			}
-			data["upcoming"] = append(data["upcoming"].([]gin.H), gin.H{
+			upcoming = append(upcoming, gin.H{
 				"name":     contest.Name,
 				"start":    contest.Start,
 				"duration": int64(contest.Duration.Seconds()),
@@ -55,14 +53,14 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 				"picture":  contest.Picture,
 			})
 		}
-		data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "CTF Events", "value": count})
+		stats = append(stats, gin.H{"label": "CTF Events", "value": count})
 	}
 	appendCount := func(label string, count int64, ret model.RetVal) {
 		var value any
 		if ret.OK {
 			value = count
 		}
-		data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": label, "value": value})
+		stats = append(stats, gin.H{"label": label, "value": value})
 	}
 	count, ret = db.InitUserRepo(tx).Count()
 	appendCount("Activate CTFers", count, ret)
@@ -71,13 +69,17 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 	count, ret = db.InitSubmissionRepo(tx).Count()
 	appendCount("Submissions", count, ret)
 	users, _, _ := GetUserRanking(tx, 5, 0)
+	scoreboard := make([]gin.H, 0, len(users))
 	for _, user := range users {
-		data["scoreboard"] = append(data["scoreboard"].([]gin.H), gin.H{
+		scoreboard = append(scoreboard, gin.H{
 			"name":   user.Name,
 			"score":  user.Score,
 			"solved": user.Solved,
 		})
 	}
+	data["upcoming"] = upcoming
+	data["stats"] = stats
+	data["scoreboard"] = scoreboard
 	return data
 }
 
@@ -89,26 +91,29 @@ func GetSystemStatus(tx *gorm.DB) map[string]any {
 	if !metricRet.OK {
 		unavailable = append(unavailable, "metrics")
 	}
-	for _, counter := range []struct {
-		name string
-		read func() (int64, model.RetVal)
-	}{
-		{"users", func() (int64, model.RetVal) { return db.InitUserRepo(tx).Count() }},
-		{"contests", func() (int64, model.RetVal) { return db.InitContestRepo(tx).Count() }},
-		{"ip", db.InitRequestRepo(tx).CountIP},
-		{"challenges", func() (int64, model.RetVal) { return db.InitChallengeRepo(tx).Count() }},
-		{"submissions", func() (int64, model.RetVal) { return db.InitSubmissionRepo(tx).Count(db.CountOptions{Deleted: true}) }},
-		{"victims", func() (int64, model.RetVal) { return db.InitVictimRepo(tx).Count(db.CountOptions{Deleted: true}) }},
-		{"requests", func() (int64, model.RetVal) { return db.InitRequestRepo(tx).Count(db.CountOptions{Deleted: true}) }},
-	} {
-		value, result := counter.read()
+	setCount := func(name string, value int64, result model.RetVal) {
 		if result.OK {
-			ret[counter.name] = value
+			ret[name] = value
 		} else {
-			ret[counter.name] = nil
-			unavailable = append(unavailable, counter.name)
+			ret[name] = nil
+			unavailable = append(unavailable, name)
 		}
 	}
+	count, result := db.InitUserRepo(tx).Count()
+	setCount("users", count, result)
+	count, result = db.InitContestRepo(tx).Count()
+	setCount("contests", count, result)
+	count, result = db.InitRequestRepo(tx).CountIP()
+	setCount("ip", count, result)
+	count, result = db.InitChallengeRepo(tx).Count()
+	setCount("challenges", count, result)
+	count, result = db.InitSubmissionRepo(tx).Count(db.CountOptions{Deleted: true})
+	setCount("submissions", count, result)
+	count, result = db.InitVictimRepo(tx).Count(db.CountOptions{Deleted: true})
+	setCount("victims", count, result)
+	count, result = db.InitRequestRepo(tx).Count(db.CountOptions{Deleted: true})
+	setCount("requests", count, result)
+
 	cache, err := redis.Count(tx.Statement.Context)
 	if err == nil {
 		ret["cache"] = cache

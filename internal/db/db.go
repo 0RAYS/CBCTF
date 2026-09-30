@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -15,13 +16,11 @@ import (
 )
 
 var (
-	// DB is kept as the default application pool for existing call sites. It is
-	// intentionally assigned to HTTPDB so request paths keep the configured pool.
+	// DB and HTTPDB share the request pool.
 	DB     *gorm.DB
 	HTTPDB *gorm.DB
 	TaskDB *gorm.DB
-	// WorkloadLockDB Separate from query pools: long-lived advisory locks must not exhaust the
-	// connections that their callbacks need to update workload records.
+	// Advisory locks use a separate pool so callbacks can still acquire query connections.
 	WorkloadLockDB *gorm.DB
 	CronDB         *gorm.DB
 )
@@ -36,7 +35,7 @@ func WithTransactionDB(root *gorm.DB, fn func(tx *Tx) model.RetVal) model.RetVal
 	err := root.Transaction(func(tx *gorm.DB) error {
 		ret = fn(tx)
 		if !ret.OK {
-			return fmt.Errorf("%s", ret.Msg)
+			return errors.New(ret.Msg)
 		}
 		return nil
 	})
@@ -142,6 +141,10 @@ func Init() {
 }
 
 func openPostgresPool(name string, maxOpenConns, maxIdleConns int, level log.Level) *gorm.DB {
+	sslMode := "disable"
+	if config.Env.Gorm.Postgres.SSLMode {
+		sslMode = "require"
+	}
 	dsn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s connect_timeout=30 TimeZone=Asia/Shanghai",
 		config.Env.Gorm.Postgres.Host,
@@ -149,12 +152,7 @@ func openPostgresPool(name string, maxOpenConns, maxIdleConns int, level log.Lev
 		config.Env.Gorm.Postgres.User,
 		config.Env.Gorm.Postgres.Pwd,
 		config.Env.Gorm.Postgres.DB,
-		func() string {
-			if config.Env.Gorm.Postgres.SSLMode {
-				return "require"
-			}
-			return "disable"
-		}(),
+		sslMode,
 	)
 	log.Logger.Infof(
 		"Connecting to PostgreSQL database pool %q: %s:%d max_open=%d max_idle=%d",
@@ -169,14 +167,14 @@ func openPostgresPool(name string, maxOpenConns, maxIdleConns int, level log.Lev
 	if err = pool.Use(JSONUpdates{}); err != nil {
 		log.Logger.Fatalf("Failed to configure JSON serializers for pool %q: %s", name, err)
 	}
-	if sql, err := pool.DB(); err != nil {
+	sqlDB, err := pool.DB()
+	if err != nil {
 		log.Logger.Fatalf("Failed to get database pool %q: %s", name, err)
-	} else {
-		sql.SetMaxIdleConns(maxIdleConns)
-		sql.SetMaxOpenConns(maxOpenConns)
-		sql.SetConnMaxIdleTime(time.Hour)
-		sql.SetConnMaxLifetime(24 * time.Hour)
 	}
+	sqlDB.SetMaxIdleConns(maxIdleConns)
+	sqlDB.SetMaxOpenConns(maxOpenConns)
+	sqlDB.SetConnMaxIdleTime(time.Hour)
+	sqlDB.SetConnMaxLifetime(24 * time.Hour)
 	return pool
 }
 
@@ -184,11 +182,7 @@ func backgroundPoolLimit(limit, divisor int) int {
 	if limit <= 0 {
 		return limit
 	}
-	derived := limit / divisor
-	if derived < 1 {
-		return 1
-	}
-	return derived
+	return max(1, limit/divisor)
 }
 
 func Stop() {

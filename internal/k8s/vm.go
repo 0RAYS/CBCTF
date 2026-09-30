@@ -70,10 +70,6 @@ func buildNetworkData(networks []Network) (string, error) {
 }
 
 func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine, model.RetVal) {
-	var (
-		vm  *v1.VirtualMachine
-		err error
-	)
 	userData, err := options.UserData.String()
 	if err != nil {
 		log.Logger.Warningf("Failed to render cloud-init user data: %s", err)
@@ -89,7 +85,38 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 	if err != nil {
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
 	}
-	vm = &v1.VirtualMachine{
+	annotations := make(map[string]string)
+	interfaces := make([]v1.Interface, 0, len(options.Networks))
+	networks := make([]v1.Network, 0, len(options.Networks))
+	for _, network := range options.Networks {
+		attachment := fmt.Sprintf("%s/%s", globalNamespace, network.NetAttachDef)
+		annotations["k8s.v1.cni.cncf.io/networks"] += "," + attachment
+		annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
+		prefix := fmt.Sprintf("%s.%s.ovn.kubernetes.io/", network.NetAttachDef, globalNamespace)
+		annotations[prefix+"logical_switch"] = network.Subnet
+		annotations[prefix+"ip_address"] = network.IPv4
+		annotations[prefix+"mac_address"] = network.MAC
+		interfaces = append(interfaces, v1.Interface{
+			Name:   network.Interface,
+			Bridge: new(v1.InterfaceBridge),
+		})
+		networks = append(networks, v1.Network{
+			Name:   network.Interface,
+			Multus: &v1.MultusNetwork{NetworkName: attachment},
+		})
+	}
+	bootloader := &v1.Bootloader{BIOS: &v1.BIOS{}}
+	if strings.ToLower(options.Bootloader) == "efi" {
+		bootloader = &v1.Bootloader{EFI: &v1.EFI{SecureBoot: &options.SecureBoot}}
+	}
+	limits := make(corev1.ResourceList)
+	if options.CPUMillis > 0 {
+		limits[corev1.ResourceCPU] = resource.MustParse(strconv.FormatInt(options.CPUMillis, 10) + "m")
+	}
+	if options.MemoryBytes > 0 {
+		limits[corev1.ResourceMemory] = resource.MustParse(strconv.FormatInt(options.MemoryBytes, 10))
+	}
+	vm := &v1.VirtualMachine{
 		OwnerReferences: resourceOwners(ctx),
 		Name:            options.Name,
 		Namespace:       globalNamespace,
@@ -98,33 +125,14 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 			RunStrategy: new(v1.RunStrategyAlways),
 			Template: &v1.VirtualMachineInstanceTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: options.Labels,
-					Annotations: func() map[string]string {
-						annotations := make(map[string]string)
-						for _, network := range options.Networks {
-							annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
-							annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-							annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", network.NetAttachDef, globalNamespace)] = network.Subnet
-							annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", network.NetAttachDef, globalNamespace)] = network.IPv4
-							annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/mac_address", network.NetAttachDef, globalNamespace)] = network.MAC
-						}
-						return annotations
-					}(),
+					Labels:      options.Labels,
+					Annotations: annotations,
 				},
 				Spec: v1.VirtualMachineInstanceSpec{
 					Affinity: affinity,
 					Domain: v1.DomainSpec{
 						Firmware: &v1.Firmware{
-							Bootloader: func() *v1.Bootloader {
-								if strings.ToLower(options.Bootloader) == "efi" {
-									return &v1.Bootloader{
-										EFI: &v1.EFI{SecureBoot: &options.SecureBoot},
-									}
-								}
-								return &v1.Bootloader{
-									BIOS: &v1.BIOS{},
-								}
-							}(),
+							Bootloader: bootloader,
 						},
 						Devices: v1.Devices{
 							Disks: []v1.Disk{
@@ -143,42 +151,14 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 									},
 								},
 							},
-							Interfaces: func() []v1.Interface {
-								interfaces := make([]v1.Interface, 0)
-								for _, network := range options.Networks {
-									interfaces = append(interfaces, v1.Interface{
-										Name:   network.Interface,
-										Bridge: new(v1.InterfaceBridge),
-									})
-								}
-								return interfaces
-							}(),
+							Interfaces: interfaces,
 						},
 						Resources: v1.ResourceRequirements{
-							Limits: func() corev1.ResourceList {
-								limit := make(corev1.ResourceList)
-								if options.CPUMillis > 0 {
-									limit[corev1.ResourceCPU] = resource.MustParse(strconv.FormatInt(options.CPUMillis, 10) + "m")
-								}
-								if options.MemoryBytes > 0 {
-									limit[corev1.ResourceMemory] = resource.MustParse(strconv.FormatInt(options.MemoryBytes, 10))
-								}
-								return limit
-							}(),
+							Limits:   limits,
+							Requests: workloadRequests(limits),
 						},
 					},
-					Networks: func() []v1.Network {
-						networks := make([]v1.Network, 0)
-						for _, network := range options.Networks {
-							networks = append(networks, v1.Network{
-								Name: network.Interface,
-								Multus: &v1.MultusNetwork{
-									NetworkName: fmt.Sprintf("%s/%s", globalNamespace, network.NetAttachDef),
-								},
-							})
-						}
-						return networks
-					}(),
+					Networks: networks,
 					Volumes: []v1.Volume{
 						{
 							Name: "root",
@@ -198,7 +178,6 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 			},
 		},
 	}
-	vm.Spec.Template.Spec.Domain.Resources.Requests = workloadRequests(vm.Spec.Template.Spec.Domain.Resources.Limits)
 	vm, err = virtClient.KubevirtV1().VirtualMachines(globalNamespace).Create(ctx, vm, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create virtual machine: %s", err)

@@ -41,36 +41,31 @@ type CreatePodOptions struct {
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, model.RetVal) {
-	var (
-		pod *corev1.Pod
-		err error
-	)
 	affinity, err := imageFailureAffinity(ctx, append(containerImages(options.Containers), containerImages(options.InitContainers)...))
 	if err != nil {
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
-	pod = &corev1.Pod{
+	annotations := make(map[string]string)
+	maps.Copy(annotations, options.Annotations)
+	for _, network := range options.Networks {
+		annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
+		annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
+		prefix := fmt.Sprintf("%s.%s.ovn.kubernetes.io/", network.NetAttachDef, globalNamespace)
+		annotations[prefix+"logical_switch"] = network.Subnet
+		annotations[prefix+"ip_address"] = network.IPv4
+		if network.MAC != "" {
+			annotations[prefix+"mac_address"] = network.MAC
+		}
+	}
+	if len(annotations) == 0 {
+		annotations = nil
+	}
+	pod := &corev1.Pod{
 		OwnerReferences: resourceOwners(ctx),
 		Name:            options.Name,
 		Namespace:       globalNamespace,
 		Labels:          options.Labels,
-		Annotations: func() map[string]string {
-			annotations := make(map[string]string)
-			maps.Copy(annotations, options.Annotations)
-			for _, network := range options.Networks {
-				annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
-				annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", network.NetAttachDef, globalNamespace)] = network.Subnet
-				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", network.NetAttachDef, globalNamespace)] = network.IPv4
-				if network.MAC != "" {
-					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/mac_address", network.NetAttachDef, globalNamespace)] = network.MAC
-				}
-			}
-			if len(annotations) == 0 {
-				return nil
-			}
-			return annotations
-		}(),
+		Annotations:     annotations,
 		Spec: corev1.PodSpec{
 			PriorityClassName:             options.PriorityClassName,
 			Affinity:                      affinity,
@@ -135,13 +130,7 @@ func ListPods(ctx context.Context, labels ...map[string]string) (*corev1.PodList
 func listPodsDirect(ctx context.Context, labels ...map[string]string) (*corev1.PodList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
-		var selector strings.Builder
-		for k, v := range labels[0] {
-			selector.WriteString(fmt.Sprintf("%s=%s,", k, v))
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector.String(), ","),
-		}
+		options.LabelSelector = labelselector.SelectorFromSet(labels[0]).String()
 	}
 	podList, err := kubeClient.CoreV1().Pods(globalNamespace).List(ctx, options)
 	if err != nil {
@@ -180,8 +169,7 @@ func GetPodLogs(ctx context.Context, podName, containerName string, lines int64)
 	return string(buf), model.SuccessRetVal()
 }
 
-// DeletePod requires the UID observed by the caller.
-// 依据 name 删除 Pod
+// DeletePod checks the observed UID to avoid deleting a replacement Pod.
 func DeletePod(ctx context.Context, name string, uid types.UID) model.RetVal {
 	if name == "" || uid == "" {
 		return model.RetVal{

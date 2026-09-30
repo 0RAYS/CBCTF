@@ -161,17 +161,8 @@ func DeleteUser(tx *gorm.DB, user model.User) model.RetVal {
 
 func ListUsers(tx *gorm.DB, form dto.ListUsersForm) ([]view.UserView, int64, model.RetVal) {
 	options := db.GetOptions{
-		Search: make(map[string]string),
+		Search: userSearchConditions(form),
 		Sort:   []string{"id DESC"},
-	}
-	if form.Name != "" {
-		options.Search["name"] = form.Name
-	}
-	if form.Email != "" {
-		options.Search["email"] = form.Email
-	}
-	if form.Description != "" {
-		options.Search["description"] = form.Description
 	}
 	users, count, ret := db.InitUserRepo(tx).List(form.Limit, form.Offset, options)
 	if !ret.OK {
@@ -181,21 +172,26 @@ func ListUsers(tx *gorm.DB, form dto.ListUsersForm) ([]view.UserView, int64, mod
 }
 
 func ListUsersNotInGroup(tx *gorm.DB, group model.Group, form dto.ListUsersForm) ([]view.UserView, int64, model.RetVal) {
-	options := db.GetOptions{Search: make(map[string]string)}
-	if form.Name != "" {
-		options.Search["name"] = form.Name
-	}
-	if form.Email != "" {
-		options.Search["email"] = form.Email
-	}
-	if form.Description != "" {
-		options.Search["description"] = form.Description
-	}
+	options := db.GetOptions{Search: userSearchConditions(form)}
 	users, count, ret := db.InitUserRepo(tx).GetNotInGroupID(group.ID, form.Limit, form.Offset, options)
 	if !ret.OK {
 		return nil, 0, ret
 	}
 	return BuildUserViews(tx, users, true), count, model.SuccessRetVal()
+}
+
+func userSearchConditions(form dto.ListUsersForm) map[string]string {
+	conditions := make(map[string]string)
+	if form.Name != "" {
+		conditions["name"] = form.Name
+	}
+	if form.Email != "" {
+		conditions["email"] = form.Email
+	}
+	if form.Description != "" {
+		conditions["description"] = form.Description
+	}
+	return conditions
 }
 
 func GetAccessibleRoutes(tx *gorm.DB, userID uint) ([]string, model.RetVal) {

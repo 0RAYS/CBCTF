@@ -45,10 +45,11 @@ func SystemStatus(ctx *gin.Context) {
 	}
 
 	maps.Copy(ret, service.GetSystemStatus(db.DB.WithContext(ctx.Request.Context())))
-	if middleware.TotalRequests.Load() == 0 {
+	requests := middleware.TotalRequests.Load()
+	if requests == 0 {
 		ret["duration"] = 0
 	} else {
-		ret["duration"] = middleware.TotalDuration.Load() / middleware.TotalRequests.Load()
+		ret["duration"] = middleware.TotalDuration.Load() / requests
 	}
 	resp.JSON(ctx, model.SuccessRetVal(ret))
 }
@@ -163,19 +164,20 @@ func UploadGeoCityDB(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadGeoCityDBEventType)
-	if err = ctx.SaveUploadedFile(file, filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")); err != nil {
+	path := filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")
+	if err = ctx.SaveUploadedFile(file, path); err != nil {
 		log.Logger.Warningf("Failed to save GeoCityDB: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
-	tmp, err := geoip2.Open(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb"))
+	reader, err := geoip2.Open(path)
 	if err != nil {
-		_ = os.Remove(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb"))
+		_ = os.Remove(path)
 		log.Logger.Warningf("Failed to load GeoCityDB: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
-	_ = tmp.Close()
+	_ = reader.Close()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
