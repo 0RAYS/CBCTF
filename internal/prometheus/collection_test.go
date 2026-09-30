@@ -5,6 +5,7 @@ import (
 
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+
 	prom "github.com/prometheus/client_golang/prometheus"
 )
 

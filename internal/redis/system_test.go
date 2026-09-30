@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"CBCTF/internal/log"
+
 	goredis "github.com/redis/go-redis/v9"
 )
 
