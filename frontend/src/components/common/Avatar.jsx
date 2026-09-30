@@ -32,6 +32,9 @@ function Avatar({ src, name = '', size = 'md', shape = 'rounded', className = ''
           src={src}
           alt={name}
           loading="lazy"
+          decoding="async"
+          width={px}
+          height={px}
           className="w-full h-full object-cover"
           onError={() => setImgError(true)}
         />

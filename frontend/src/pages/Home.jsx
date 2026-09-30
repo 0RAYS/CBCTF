@@ -68,14 +68,17 @@ function Home() {
   return (
     <div className="-mt-10">
       <HeroSection />
-      {showDeferredSections && (
-        <Suspense fallback={null}>
-          <StatsSection stats={stats} isLoading={loading} />
-          <ChallengeTypes />
-          <UpcomingContests contests={upcomingContests} isLoading={loading} />
-          <LeaderboardPreview topUsers={leaderboard} isLoading={loading} />
-        </Suspense>
-      )}
+      {/* Reserve below-the-fold space so idle-loaded sections do not push a visible footer away. */}
+      <div className="min-h-screen">
+        {showDeferredSections && (
+          <Suspense fallback={null}>
+            <StatsSection stats={stats} isLoading={loading} />
+            <ChallengeTypes />
+            <UpcomingContests contests={upcomingContests} isLoading={loading} />
+            <LeaderboardPreview topUsers={leaderboard} isLoading={loading} />
+          </Suspense>
+        )}
+      </div>
     </div>
   );
 }

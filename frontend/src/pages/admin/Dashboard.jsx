@@ -1,8 +1,9 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useEffectEvent, useState } from 'react';
 import { getSystemStatus } from '../../api/admin/system';
 import AdminDashboard from '../../components/features/Admin/AdminDashboard';
 import { toast } from '../../utils/toast.js';
 import { useTranslation } from 'react-i18next';
+import { startVisiblePolling } from '../../utils/visiblePolling.js';
 
 const ReactECharts = lazy(() => import('../../components/common/EChart'));
 
@@ -10,24 +11,30 @@ function Dashboard() {
   const [status, setStatus] = useState(null);
   const { t } = useTranslation();
 
-  const fetchSystemStatus = async () => {
-    try {
-      const response = await getSystemStatus(true);
-      if (response.code === 200) {
-        setStatus(response.data);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.dashboard.toast.fetchFailed') });
-    }
-  };
+  const reportError = useEffectEvent((error) => {
+    toast.danger({ description: error.message || t('admin.dashboard.toast.fetchFailed') });
+  });
 
   useEffect(() => {
-    fetchSystemStatus().then();
-    const interval = setInterval(() => {
-      fetchSystemStatus().then();
-    }, 10000);
+    let active = true;
+    let pending = false;
+    const fetchSystemStatus = async () => {
+      if (pending) return;
+      pending = true;
+      try {
+        const response = await getSystemStatus(true);
+        if (active && response.code === 200) setStatus(response.data);
+      } catch (error) {
+        if (active) reportError(error);
+      } finally {
+        pending = false;
+      }
+    };
+    fetchSystemStatus();
+    const stopPolling = startVisiblePolling(fetchSystemStatus, 10000);
     return () => {
-      clearInterval(interval);
+      active = false;
+      stopPolling();
     };
   }, []);
 
