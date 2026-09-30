@@ -6,7 +6,7 @@
   "common": {
     "contextMenu": {
       "label": "行操作",
-      "hint": "右键点击行以显示操作 · 触屏长按 · 键盘 Shift+F10",
+      "hint": "右键点击行查看操作，或选中行后按 Shift+F10",
       "empty": "暂无可用操作"
     },
     "loading": "加载中...",
@@ -147,12 +147,12 @@
       "itemStates": { "success": "成功", "skipped": "跳过", "failed": "失败" },
       "summary": "请求 {{requested}} · 成功 {{succeeded}} · 失败 {{failed}} · 跳过 {{skipped}} · 未执行 {{not_attempted}}",
       "details": "查看逐项结果（{{count}}）",
-      "queueHint": "已入队或已提交不代表实例已就绪，请以列表中的运行状态为准。",
-      "unattemptedHint": "未执行项不会自动再次发送。能够明确识别的已完成项会从重试选择中移除。",
-      "unknownOutcome": "未收到可确认的结果。请先刷新列表确认状态，再决定是否重试，避免重复执行已完成的操作。",
-      "randomRetryHint": "再次启动会重新随机选择队伍，并非仅重试失败的队伍/题目组合。",
-      "phases": { "lookup": "查找目标", "queued": "已入队", "committed": "已提交", "enqueue": "任务入队", "create": "创建", "start": "启动", "stop": "停止", "contest_membership": "检查比赛归属", "read_flags": "读取 flag", "create_flags": "创建 flag", "read_solved": "读取解题状态", "already_active": "已有运行实例", "already_stopping": "已停止或正在停止", "already_solved": "已经解题", "already_added": "已经添加", "transaction": "数据库事务", "check_existing": "检查已有记录", "scan": "检测", "created": "已创建证据", "write_evidence": "保存证据", "existing_evidence": "证据已存在", "read_team_membership": "读取队伍归属", "single_user": "只有一名用户", "single_team": "只有一支队伍", "same_team": "属于同一队伍", "no_cross_team_match": "没有跨队伍匹配" },
-      "errors": { "model": { "notFound": "目标不存在或不属于当前操作范围", "getError": "数据库读取失败", "createError": "数据库创建失败", "updateError": "数据库更新失败", "victim": { "notStartable": "靶机当前无法启动", "notStoppable": "靶机当前状态不允许停止" }, "generator": { "notStoppable": "生成器当前状态不允许停止" } }, "task": { "enqueueError": "任务未能入队" }, "common": { "unknownError": "操作失败", "batchIncomplete": "部分下级操作未完成" } }
+      "queueHint": "提交成功的任务仍需处理，请在列表中查看进度。",
+      "unattemptedHint": "还有未执行的项目，请核对下方结果和勾选项后重试。",
+      "unknownOutcome": "暂时无法确认操作结果，请刷新列表后再重试。",
+      "randomRetryHint": "再次启动时会重新随机选择队伍，请先确认题目和队伍比例。",
+      "phases": { "lookup": "查找目标", "queued": "已提交任务", "committed": "已保存", "enqueue": "提交任务", "create": "创建", "start": "启动", "stop": "停止", "contest_membership": "检查比赛归属", "read_flags": "读取 Flag", "create_flags": "生成 Flag", "read_solved": "读取解题状态", "already_active": "已有运行实例", "already_stopping": "已停止或正在停止", "already_solved": "已经解题", "already_added": "已经添加", "transaction": "保存题目", "check_existing": "检查已有记录", "scan": "检测", "created": "已创建证据", "write_evidence": "保存证据", "existing_evidence": "证据已存在", "read_team_membership": "读取队伍归属", "single_user": "只有一名用户", "single_team": "只有一支队伍", "same_team": "属于同一队伍", "no_cross_team_match": "没有跨队伍匹配" },
+      "errors": { "model": { "notFound": "目标不存在或不属于当前操作范围", "getError": "无法读取相关信息", "createError": "创建失败，请稍后重试", "updateError": "保存修改失败，请稍后重试", "victim": { "notStartable": "靶机当前无法启动", "notStoppable": "靶机当前状态不允许停止" }, "generator": { "notStoppable": "生成器当前状态不允许停止" } }, "task": { "enqueueError": "任务提交失败，请稍后重试" }, "common": { "unknownError": "操作失败", "batchIncomplete": "部分项目未完成，请展开查看详情" } }
     },
     "workloads": {
       "title": "Kubernetes 资源状态",
@@ -198,10 +198,10 @@
       },
       "history": {
         "title": "已完成 / 失败任务",
-        "empty": "暂无终态任务记录"
+        "empty": "暂无已完成或失败的任务"
       },
       "live": {
-        "title": "Redis 队列快照",
+        "title": "当前队列状态",
         "empty": "当前状态下暂无任务"
       },
       "filters": {
@@ -237,7 +237,7 @@
       }
     },
     "dashboard": {
-      "partialStats": "部分统计暂不可用，已保留可用的采样数据。",
+      "partialStats": "部分统计暂不可用，请稍后刷新。",
       "realtime": "实时监控",
       "cards": {
         "requestIp": "IP",
@@ -500,17 +500,17 @@
         "title": "网络流量关系图",
         "analysis": {
           "title": "流量分析与证据",
-          "scope": "完整抓包报告 · 包数包含各采集点的独立观测",
-          "hints": "证据时间覆盖流的时间区间。发现 flag 或攻击特征不代表攻击成功，也不直接证明作弊。",
+          "scope": "统计范围：全部抓包文件；同一报文可能在多个采集点被记录。",
+          "hints": "点击证据可跳转到对应时段。Flag 和攻击线索需结合提交记录与上下文判断。",
           "refresh": "刷新分析",
           "loading": "正在分析抓包内容…",
           "error": "无法加载分析报告，请刷新重试。",
           "overlapError": "无法加载跨队伍证据，请刷新重试。",
           "archived": "最终归档报告",
-          "live": "实时快照 · 最多复用 15 秒",
+          "live": "运行中报告 · 数据可能延迟 15 秒",
           "truncated": "分析不完整，请查看下方限制说明",
           "warnings": "分析限制（{{count}}）",
-          "sourceIssues": "未完整处理的数据源（{{count}}）— 已保留有效证据",
+          "sourceIssues": "部分文件未完成分析（{{count}}）",
           "packets": "报文数：{{count}}",
           "verified": "与已知 flag 精确匹配",
           "candidate": "未经确认的候选 flag",
@@ -518,11 +518,11 @@
           "response": "响应",
           "team": "队伍 #{{id}}",
           "victims": "靶机：{{ids}}",
-          "currentWindow": "与当前回放窗口相交",
+          "currentWindow": "当前回放时段",
           "selectedOnly": "仅选中节点 / 连线",
-          "overlapHint": "展示涉及本靶机的比赛级重叠证据。共用 NAT/VPN 出口只构成疑似线索；此列表不应用回放筛选。",
+          "overlapHint": "查看比赛期间哪些队伍曾使用相同 IP 访问靶机。共用网络或 VPN 可能产生重叠；此列表不受回放筛选影响。",
           "seek": "跳转到此时刻回放",
-          "empty": "当前报告或筛选条件下没有匹配记录，不代表没有相关行为。",
+          "empty": "暂无匹配记录，可调整筛选条件或刷新分析。",
           "previous": "上一页",
           "next": "下一页",
           "tabs": {
@@ -554,8 +554,8 @@
             "capture_snaplen_truncated": "抓包时发生报文截断",
             "ip_fragments_not_reassembled": "IP 分片未重组",
             "stream_count_limit": "达到 TCP 流数量上限",
-            "stream_buffer_limit": "达到 TCP 缓冲上限",
-            "tcp_capture_gap": "TCP 序列存在缺失字节",
+            "stream_buffer_limit": "部分 TCP 内容过大，未能完整分析",
+            "tcp_capture_gap": "TCP 数据不完整，部分内容无法还原",
             "tcp_overlap_conflict": "已排除内容冲突的 TCP 重叠数据",
             "flag_limit": "达到 flag 发现数量上限",
             "http_limit": "达到 HTTP 记录上限",
@@ -563,7 +563,7 @@
             "session_limit": "达到会话数量上限",
             "indicator_limit": "达到攻击线索数量上限",
             "scan_window_limit": "达到扫描检测窗口上限",
-            "decode_budget": "达到内容解码预算",
+            "decode_budget": "内容较多，部分内容尚未解码",
             "tls_payload_encrypted": "无法解密 TLS 负载",
             "http_body_limit": "达到 HTTP 正文大小上限",
             "http_body_incomplete": "HTTP 正文不完整",
@@ -578,8 +578,7 @@
         "hero": {
           "kicker": "流量拓扑",
           "subtitle": "展示 {{challenge}} 的实时流量拓扑",
-          "windowAt": "窗口 {{start}} - {{end}}",
-          "demoMode": "样例数据"
+          "windowAt": "窗口 {{start}} - {{end}}"
         },
         "controls": {
           "timeShift": "时间偏移:",
@@ -642,8 +641,7 @@
           "updatedAt": "更新时间: {{time}}"
         },
         "toast": {
-          "fetchFailed": "获取流量数据失败",
-          "demoFallback": "获取流量失败, 已切换为示例数据"
+          "fetchFailed": "获取流量数据失败"
         }
       },
       "notices": {

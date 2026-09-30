@@ -77,7 +77,7 @@ tests/                         领域逻辑、异步会话与结构约束测试
 - `List` 是数据表格；空态使用 `emptyContent`，默认从数据推导。`minWidth` 限定内部表格宽度，窄屏在表格区域滚动，不能靠裁切隐藏操作。
 - 列宽必须有边界：排行榜得分列按文字测量但最多 240px（含内边距），溢出以省略号显示。`TruncatedText` 用于表头和单行文本，保留完整 DOM 文本与 `title`，不截断原始数据；多行摘要使用行数限制并提供完整提示。自定义数据表使用固定列布局及明确列宽，避免长名称、ID、地址或数值参与无限扩列；交互控件不能用文本截断替代。
 - 管理列表通过 `List.getRowActions(item)` 返回 `{ key, label, icon, onClick, disabled, danger, hidden, inline }`，所有操作均可在右键菜单执行。编辑、删除、查看详情不放入操作列；其他操作标记 `inline: true`，并通过 `actionsColumn: { label, width }` 展示操作列，共用同一份回调和状态。没有行内操作时不设置 `actionsColumn`，避免空操作列。有详情功能的列表，`onRowClick` 优先查看详情，编辑只通过右键菜单进入；没有详情功能的可编辑列表，行点击直接进入编辑。查看详情通过左键点击行或右键菜单进入。行内按钮、链接、表单控件及 `data-row-interactive` 区域不触发行点击。
-- 自定义表格使用 `common/useContextMenu` 的 `getRowProps`、`hint` 和 `menu`，共用 `ContextMenu`，操作列使用 `common/RowActions`；支持右键、触屏长按和 Shift+F10，数据刷新后关闭旧菜单。操作标签必须使用中英文翻译，权限和状态限制由业务组件提供。
+- 自定义表格使用 `common/useContextMenu` 的 `getRowProps`、`hint` 和 `menu`，共用 `ContextMenu`，操作列使用 `common/RowActions`；支持右键和 Shift+F10，数据刷新后关闭旧菜单。操作标签必须使用中英文翻译，权限和状态限制由业务组件提供。
 - `Pagination.current/total/onChange` 中 `total` 表示总页数，页码和数据请求由业务所有者维护。
 - `AutoRefreshControl` 仅展示间隔选择，值和回调单位均为秒。它不拥有计时器，不决定页面是否轮询。
 - `Spinner` 是装饰图元，`Loading` 是有状态文本的等待区，`Skeleton` 保留布局，`EmptyState` 表示没有数据；不要合成参数繁多的万能状态组件。

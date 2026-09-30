@@ -47,13 +47,13 @@ test('partial feedback displays counts, item failure and queued hint in both lan
   assert.match(english, /Partially completed/);
   assert.match(english, /Succeeded 1.*Failed 1.*Not attempted 1/);
   assert.match(english, /node-b/);
-  assert.match(english, /Task could not be queued/);
-  assert.match(english, /does not mean the workload is ready/);
+  assert.match(english, /Task submission failed/);
+  assert.match(english, /Check the list for progress/);
   const chinese = await render('zh-CN', { result, queued: true });
   assert.match(chinese, /部分/);
   assert.match(chinese, /成功 1/);
   assert.match(chinese, /失败 1/);
-  assert.match(chinese, /任务未能入队/);
+  assert.match(chinese, /任务提交失败/);
   assert.doesNotMatch(chinese, /admin\.batch\./);
 });
 
@@ -62,7 +62,7 @@ test('nested scan details retain evidence paths and escape untrusted target text
     { id: '<script>alert(1)</script>', phase: 'scan', status: 'failed', details: result },
   ] } });
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt; \/ node-b/);
-  assert.match(html, /Task could not be queued/);
+  assert.match(html, /Task submission failed/);
   assert.doesNotMatch(html, /<script>/);
 });
 

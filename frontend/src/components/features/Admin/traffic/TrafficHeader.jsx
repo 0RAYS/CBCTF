@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Chip } from '../../../common';
 import { ellipsis, resolveVisibleInlineItems } from './trafficPresentation.js';
 
-export default function TrafficHeader({ topology, container, demoMode }) {
+export default function TrafficHeader({ topology, container }) {
   const { t } = useTranslation();
   const accessIPRowRef = useRef(null);
   const [accessIPRowWidth, setAccessIPRowWidth] = useState(0);
@@ -81,14 +81,6 @@ export default function TrafficHeader({ topology, container, demoMode }) {
               colorClass="border-neutral-500/30 bg-black/20 text-neutral-300"
             />
           ))}
-          {demoMode ? (
-            <Chip
-              label={t('admin.contests.trafficGraph.hero.demoMode')}
-              variant="tag"
-              size="sm"
-              colorClass="border-neutral-400/30 bg-neutral-400/10 text-neutral-300"
-            />
-          ) : null}
         </div>
       </div>
     </div>

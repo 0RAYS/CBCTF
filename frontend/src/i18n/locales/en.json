@@ -6,7 +6,7 @@
   "common": {
     "contextMenu": {
       "label": "Row actions",
-      "hint": "Right-click a row for actions · Touch: long press · Keyboard: Shift+F10",
+      "hint": "Right-click a row for actions, or focus it and press Shift+F10",
       "empty": "No actions available"
     },
     "loading": "Loading...",
@@ -147,12 +147,12 @@
       "itemStates": { "success": "Succeeded", "skipped": "Skipped", "failed": "Failed" },
       "summary": "Requested {{requested}} · Succeeded {{succeeded}} · Failed {{failed}} · Skipped {{skipped}} · Not attempted {{not_attempted}}",
       "details": "View item results ({{count}})",
-      "queueHint": "Queued or committed does not mean the workload is ready. Check its status in the list.",
-      "unattemptedHint": "Unattempted targets were not sent again automatically. Completed targets are removed from retry selections where identifiable.",
-      "unknownOutcome": "No confirmed result was received. Refresh the list before retrying to avoid repeating completed operations.",
-      "randomRetryHint": "Starting again selects a new random team sample; it is not an exact retry of failed team/challenge pairs.",
-      "phases": { "lookup": "Locate target", "queued": "Queued", "committed": "Committed", "enqueue": "Enqueue task", "create": "Create", "start": "Start", "stop": "Stop", "contest_membership": "Check contest membership", "read_flags": "Read flags", "create_flags": "Create flags", "read_solved": "Read solved state", "already_active": "Already active", "already_stopping": "Already stopping/stopped", "already_solved": "Already solved", "already_added": "Already added", "transaction": "Database transaction", "check_existing": "Check existing record", "scan": "Scan", "created": "Evidence created", "write_evidence": "Save evidence", "existing_evidence": "Evidence already exists", "read_team_membership": "Read team membership", "single_user": "Single user", "single_team": "Single team", "same_team": "Same team", "no_cross_team_match": "No cross-team match" },
-      "errors": { "model": { "notFound": "Target was not found or is outside this scope", "getError": "Database read failed", "createError": "Database creation failed", "updateError": "Database update failed", "victim": { "notStartable": "Instance cannot be started", "notStoppable": "Instance cannot be stopped in its current state" }, "generator": { "notStoppable": "Generator cannot be stopped in its current state" } }, "task": { "enqueueError": "Task could not be queued" }, "common": { "unknownError": "Operation failed", "batchIncomplete": "Some nested operations did not complete" } }
+      "queueHint": "Successfully submitted tasks may still be processing. Check the list for progress.",
+      "unattemptedHint": "Some items were not processed. Review the results and selected items before retrying.",
+      "unknownOutcome": "Unable to confirm the outcome. Refresh the list before retrying.",
+      "randomRetryHint": "Starting again selects a new random set of teams. Check the challenges and team percentage first.",
+      "phases": { "lookup": "Locate target", "queued": "Task submitted", "committed": "Saved", "enqueue": "Submit task", "create": "Create", "start": "Start", "stop": "Stop", "contest_membership": "Check contest membership", "read_flags": "Read flags", "create_flags": "Generate flags", "read_solved": "Read solved state", "already_active": "Already active", "already_stopping": "Already stopping/stopped", "already_solved": "Already solved", "already_added": "Already added", "transaction": "Save challenge", "check_existing": "Check existing record", "scan": "Scan", "created": "Evidence created", "write_evidence": "Save evidence", "existing_evidence": "Evidence already exists", "read_team_membership": "Read team membership", "single_user": "Single user", "single_team": "Single team", "same_team": "Same team", "no_cross_team_match": "No cross-team match" },
+      "errors": { "model": { "notFound": "Target was not found or is outside this scope", "getError": "Unable to read the required information", "createError": "Creation failed. Please try again later", "updateError": "Unable to save changes. Please try again later", "victim": { "notStartable": "Instance cannot be started", "notStoppable": "Instance cannot be stopped in its current state" }, "generator": { "notStoppable": "Generator cannot be stopped in its current state" } }, "task": { "enqueueError": "Task submission failed. Please try again later" }, "common": { "unknownError": "Operation failed", "batchIncomplete": "Some items did not complete. Expand to view details" } }
     },
     "workloads": {
       "title": "Kubernetes status",
@@ -198,10 +198,10 @@
       },
       "history": {
         "title": "Completed / Failed Tasks",
-        "empty": "No terminal task records"
+        "empty": "No completed or failed tasks"
       },
       "live": {
-        "title": "Redis Queue Snapshot",
+        "title": "Current Queue Status",
         "empty": "No queued tasks for this state"
       },
       "filters": {
@@ -237,7 +237,7 @@
       }
     },
     "dashboard": {
-      "partialStats": "Some statistics are unavailable. Available samples have been retained.",
+      "partialStats": "Some statistics are unavailable. Please refresh later.",
       "realtime": "Live Monitoring",
       "cards": {
         "requestIp": "IP",
@@ -501,17 +501,17 @@
         "title": "Network Traffic Graph",
         "analysis": {
           "title": "Traffic analysis & evidence",
-          "scope": "Full-capture report · packet counts include observations from each capture point.",
-          "hints": "Evidence timestamps cover a stream interval. A matched flag or attack pattern does not prove a successful attack or cheating.",
+          "scope": "Covers all capture files; the same packet may be recorded at multiple capture points.",
+          "hints": "Select evidence to replay its time range. Review flags and attack clues alongside submissions and surrounding activity.",
           "refresh": "Refresh analysis",
           "loading": "Analyzing captured traffic…",
           "error": "Unable to load the analysis. Refresh to retry.",
           "overlapError": "Unable to load cross-team evidence. Refresh to retry.",
           "archived": "Final archived report",
-          "live": "Live snapshot · reused for up to 15 seconds",
+          "live": "Running instance report · data may lag by 15 seconds",
           "truncated": "Incomplete analysis — see limitations below",
           "warnings": "Analysis limitations ({{count}})",
-          "sourceIssues": "Incomplete capture sources ({{count}}) — valid evidence is retained",
+          "sourceIssues": "Files with incomplete analysis ({{count}})",
           "packets": "Packets: {{count}}",
           "verified": "Exact known-flag match",
           "candidate": "Unverified flag candidate",
@@ -519,11 +519,11 @@
           "response": "Response",
           "team": "Team #{{id}}",
           "victims": "Instances: {{ids}}",
-          "currentWindow": "Intersect current replay window",
+          "currentWindow": "Current replay time range",
           "selectedOnly": "Only selected node / flow",
-          "overlapHint": "Contest-wide overlap involving this instance. Shared NAT/VPN exits are suspicious evidence, not a verdict; replay filters do not apply.",
+          "overlapHint": "See which teams accessed instances from the same IP during the contest. Shared networks or VPNs can cause overlap. Replay filters do not apply to this list.",
           "seek": "Replay at this time",
-          "empty": "No matching records in this report or filter. This does not establish absence of activity.",
+          "empty": "No matching records. Try adjusting the filters or refreshing the analysis.",
           "previous": "Previous",
           "next": "Next",
           "tabs": {
@@ -555,8 +555,8 @@
             "capture_snaplen_truncated": "Packets were truncated during capture",
             "ip_fragments_not_reassembled": "IP fragments were not reassembled",
             "stream_count_limit": "TCP stream-count limit reached",
-            "stream_buffer_limit": "TCP buffer limit reached",
-            "tcp_capture_gap": "Missing TCP sequence bytes",
+            "stream_buffer_limit": "Some TCP content is too large to analyze completely",
+            "tcp_capture_gap": "Incomplete TCP data; some content could not be reconstructed",
             "tcp_overlap_conflict": "Conflicting overlapping TCP data was excluded",
             "flag_limit": "Flag finding limit reached",
             "http_limit": "HTTP record limit reached",
@@ -564,7 +564,7 @@
             "session_limit": "Session limit reached",
             "indicator_limit": "Attack clue limit reached",
             "scan_window_limit": "Scan-window limit reached",
-            "decode_budget": "Content decoding budget reached",
+            "decode_budget": "Some content remains undecoded due to its volume",
             "tls_payload_encrypted": "TLS payload cannot be decrypted",
             "http_body_limit": "HTTP body limit reached",
             "http_body_incomplete": "Incomplete HTTP body",
@@ -579,8 +579,7 @@
         "hero": {
           "kicker": "Traffic Topology",
           "subtitle": "Live traffic topology for {{challenge}}.",
-          "windowAt": "Window {{start}} - {{end}}",
-          "demoMode": "Sample Data"
+          "windowAt": "Window {{start}} - {{end}}"
         },
         "controls": {
           "timeShift": "Time Offset:",
@@ -643,8 +642,7 @@
           "updatedAt": "Updated at: {{time}}"
         },
         "toast": {
-          "fetchFailed": "Failed to load traffic data",
-          "demoFallback": "Failed to load traffic; showing sample data"
+          "fetchFailed": "Failed to load traffic data"
         }
       },
       "notices": {
