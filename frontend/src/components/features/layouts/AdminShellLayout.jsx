@@ -6,6 +6,7 @@ import AdminTopbar from '../Admin/AdminTopbar';
 import Footer from './Footer';
 import { getFooterConfig } from '../../../config/footer';
 import { useBranding } from '../../../hooks/useBranding';
+import '../../../i18n/admin-translations';
 
 function AdminShellLayout({
   children,

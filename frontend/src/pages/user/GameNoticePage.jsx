@@ -41,7 +41,7 @@ function GameNoticePage() {
           {status === 'error' ? (
             <>
               <p role="alert" className="text-neutral-300">
-                {t('admin.contests.notices.toast.fetchFailed')}
+                {t('common.notices.fetchFailed')}
               </p>
               <Button
                 variant="primary"

@@ -1,7 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import en from './locales/en.json';
-import zhCN from './locales/zh-CN.json';
+import en from './locales/en.json?scope=public';
+import zhCN from './locales/zh-CN.json?scope=public';
 
 const supportedLanguages = ['en', 'zh-CN'];
 

@@ -4,6 +4,12 @@
     "admin": "DEEP DIVE Admin"
   },
   "common": {
+    "notices": {
+      "normal": "普通",
+      "important": "重要",
+      "update": "更新",
+      "fetchFailed": "获取公告列表失败"
+    },
     "contextMenu": {
       "label": "行操作",
       "empty": "暂无可用操作"

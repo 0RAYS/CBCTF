@@ -2,7 +2,7 @@ import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import { AdminRoute } from './AuthRoute';
 import { withGuard, withSuspense } from './routeUtils';
-import AdminLayout from '../components/features/layouts/AdminLayout';
+const AdminLayout = lazy(() => import('../components/features/layouts/AdminLayout'));
 
 const Dashboard = lazy(() => import('../pages/admin/Dashboard'));
 const ContestsManagement = lazy(() => import('../pages/admin/Contests'));
@@ -43,7 +43,7 @@ const ADMIN_ROUTES = [
 
 export function AdminRoutes() {
   return (
-    <Route path="/admin" element={withGuard(<AdminLayout />, AdminRoute)}>
+    <Route path="/admin" element={withGuard(withSuspense(AdminLayout), AdminRoute)}>
       <Route path="settings" element={withSuspense(Settings)} />
       {ADMIN_ROUTES.map(({ path, Component, apiRoute }) => (
         <Route key={path} path={path} element={withGuard(withSuspense(Component), AdminRoute, { apiRoute })} />
