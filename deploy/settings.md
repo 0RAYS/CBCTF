@@ -9,10 +9,15 @@ CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲�
 以下项目需通过部署配置修改：
 
 - PostgreSQL/GORM 配置：`gorm.*`
-- Redis 连接信息：`redis.*`
+- 缓存与任务队列连接信息：`redis.*`
 - 数据存储目录：`path`
 - Gin 监听地址和端口：`gin.host`、`gin.port`
 - 运行时共享 PVC：`k8s.shared_volume_claim`（空值回退到 `{namespace}-shared-volume`）
+
+:::info
+Chart `0.0.30` 起内置服务由官方 [Valkey Chart](https://valkey.io/valkey-helm/) 部署，Helm values 中的键由 `redis.*` 更名为
+`valkey.*`。`config.yaml` 中的 `redis.*` 段保持不变，因为后端读取的仍是该键名；Chart 只负责把 `valkey.*` 的地址、端口和密码写入其中。
+:::
 
 可在线修改的运行设置在首次启动时采用配置文件中的初始值，之后通过「系统管理」维护。升级 Helm values 不会覆盖已经保存的在线设置，在线修改也不会写回配置文件。
 
@@ -58,15 +63,15 @@ CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲�
 | `gorm.postgres.pwd`          | PostgreSQL 密码                              | `example-postgres-password` |
 | `gorm.postgres.db`           | PostgreSQL 数据库名                            | `cbctf`                     |
 | `gorm.postgres.sslmode`      | 布尔值，`false` 为 `disable`，`true` 为 `require` | `false`                     |
-| `redis.host`                 | Redis 地址                                   | `redis.cbctf.svc`           |
-| `redis.port`                 | Redis 端口                                   | `6379`                      |
-| `redis.pwd`                  | Redis 密码                                   | `example-redis-password`    |
+| `redis.host`                 | 缓存与任务队列地址，由 Chart 从 `valkey.*` 渲染          | `cbctf-valkey.cbctf.svc`    |
+| `redis.port`                 | 缓存与任务队列端口                                  | `6379`                      |
+| `redis.pwd`                  | 缓存与任务队列密码                                  | `example-valkey-password`   |
 | `registration.enabled`       | 是否允许公开注册                                   | `true`                      |
 | `registration.default_group` | 新用户默认分组 ID，`0` 表示不指定                       | `0`                         |
 
 ## 异步任务配置
 
-Redis 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务并发：
+Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务并发：
 
 | 配置项                       | 说明               | 示例        |
 | ------------------------- | ---------------- | --------- |
@@ -79,7 +84,7 @@ Redis 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务�
 | `asynq.queues.webhook`    | Webhook 任务并发     | `15`      |
 | `asynq.queues.image`      | 图片处理任务并发         | `10`      |
 
-当靶机启动、附件生成或邮件发送堆积时，先检查 Redis 状态和任务日志，再根据资源情况调整对应队列并发。
+当靶机启动、附件生成或邮件发送堆积时，先检查 Valkey 状态和任务日志，再根据资源情况调整对应队列并发。
 
 ## Kubernetes 配置
 
@@ -105,11 +110,12 @@ Redis 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务�
 
 Helm 会把以下值渲染进 ConfigMap：
 
-| Values                   | 说明       |
-| ------------------------ | -------- |
-| `cbctf.gin.jwt.secret`   | JWT 签名密钥 |
-| `postgres.auth.password` | 数据库密码    |
-| `redis.auth.password`    | Redis 密码 |
+| Values                                  | 说明                                       |
+| --------------------------------------- | ---------------------------------------- |
+| `cbctf.gin.jwt.secret`                  | JWT 签名密钥                                 |
+| `postgres.auth.password`                | 数据库密码                                    |
+| `valkey.auth.aclUsers.default.password` | 内置 Valkey 密码                             |
+| `valkey.password`                       | 外部 Valkey 或使用 `usersExistingSecret` 时的密码 |
 
 上述值保存在应用配置 ConfigMap 中，请妥善限制其访问权限。镜像仓库拉取凭据另由 Secret 管理。
 
@@ -121,7 +127,7 @@ Helm 会把以下值渲染进 ConfigMap：
 
 ## 在线配置
 
-管理后台会展示固定部署参数；PostgreSQL/GORM、Redis、数据目录、Gin 监听地址和监听端口只能通过部署配置修改。
+管理后台会展示固定部署参数；PostgreSQL/GORM、Valkey、数据目录、Gin 监听地址和监听端口只能通过部署配置修改。
 
 GeoLite2-City 数据库可通过管理后台上传，保存到 `{path}/GeoLite2-City.mmdb`。
 
@@ -132,7 +138,7 @@ GeoLite2-City 数据库可通过管理后台上传，保存到 `{path}/GeoLite2-
 :::warning
 
 - 生产环境不要使用默认 `gin.jwt.secret`
-- 数据库、Redis、SMTP、OAuth、FRP token 使用强密码或随机密钥
+- 数据库、Valkey、SMTP、OAuth、FRP token 使用强密码或随机密钥
 - `host`、Ingress 域名应与用户访问地址一致，`gin.origins` 应包含前端页面的实际 `Origin`
 - 部署在反向代理后时正确设置 `gin.proxies`
 - `/metrics` 只允许 Prometheus 或可信来源访问

@@ -44,7 +44,7 @@ flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 - **Webhook** — GET / POST
 - **国际化（i18n）** — 多语言界面支持
 - **Prometheus 监控** — 完整的运行时指标暴露
-- **Redis 缓存 / 任务队列** + **PostgreSQL 数据存储** + **NFS 网络存储**
+- **Valkey 缓存 / 任务队列** + **PostgreSQL 数据存储** + **NFS 网络存储**
 
 <img src="/img/dashboard.png" width="100%" alt="管理后台" />
 
