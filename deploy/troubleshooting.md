@@ -7,15 +7,15 @@
 排查顺序：
 
 1. 查看应用日志：`kubectl logs -n cbctf deployment/cbctf`
-2. 检查 PostgreSQL 和 Redis Pod 是否 Ready
-3. 检查 ConfigMap 中的数据库、Redis、JWT 配置是否正确
+2. 检查 PostgreSQL 和 Valkey Pod 是否 Ready
+3. 检查 ConfigMap 中的数据库、Valkey、JWT 配置是否正确
 4. 检查应用 ServiceAccount 是否同时绑定 Chart 的 Role 和 ClusterRole
 5. 如果使用 VPC 网络，检查 Kube-OVN 和 Multus
 6. 如果使用 VM 靶机，检查 KubeVirt 组件、CRD 和节点虚拟化能力
 
 ## 数据库连接失败
 
-关闭内置 PostgreSQL/Redis 后，请填写相应的 `externalHost`，并检查应用配置中的地址能否从平台 Pod 访问。
+关闭内置 PostgreSQL/Valkey 后，请填写相应的 `externalHost`，并检查应用配置中的地址能否从平台 Pod 访问。
 
 常见原因：
 
@@ -27,16 +27,17 @@
 
 应用启动时会自动迁移数据库。如果迁移失败，服务会退出，需要先修复数据库连接或权限问题。
 
-## Redis 连接失败
+## Valkey 连接失败
 
-Redis 用于缓存和 Asynq 任务队列。连接失败会影响登录状态、限流、后台任务、邮件、Webhook、动态附件和靶机操作。
+Valkey 用于缓存和 Asynq 任务队列，兼容 Redis 协议。连接失败会影响登录状态、限流、后台任务、邮件、Webhook、动态附件和靶机操作。
 
 排查方向：
 
-- Redis Pod、Service 是否正常
-- `redis.auth.password` 是否与运行中 Redis 一致
+- Valkey Pod、Service 是否正常，内置实例名为 `{release}-valkey`
+- `valkey.auth.aclUsers.default.password` 是否与 ConfigMap 中的密码一致；使用外部服务或 `valkey.auth.usersExistingSecret` 时改为检查 `valkey.password`
 - 网络策略或命名空间 DNS 是否阻断访问
-- Redis PVC 是否容量不足
+- Valkey PVC 是否容量不足
+- 使用仓库源码安装时是否已执行 `helm dependency build chart/`
 
 ## 前端页面无法访问
 
@@ -135,7 +136,7 @@ Redis 用于缓存和 Asynq 任务队列。连接失败会影响登录状态、�
 排查方向：
 
 - 后台 SMTP 配置是否正确
-- Redis 和 Asynq 邮件队列是否正常
+- Valkey 和 Asynq 邮件队列是否正常
 - SMTP 服务是否允许集群出口访问
 - 发件账号、密码、TLS/端口设置是否符合服务商要求
 
@@ -162,7 +163,7 @@ Redis 用于缓存和 Asynq 任务队列。连接失败会影响登录状态、�
 
 - 首次登录后立即修改 `admin` 密码
 - 生产环境设置固定、足够长的 `gin.jwt.secret`
-- 数据库、Redis、SMTP、OAuth、FRP 使用强密码或随机密钥
+- 数据库、Valkey、SMTP、OAuth、FRP 使用强密码或随机密钥
 - 使用 HTTPS，并正确配置 Ingress TLS
 - 限制管理后台访问来源，按角色授予最小权限
 - Kubernetes RBAC 不要授予超过平台运行所需的权限

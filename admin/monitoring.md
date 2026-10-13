@@ -101,7 +101,7 @@ gin:
 
 在「系统管理」修改并保存运行配置。查看、修改和后台重启分别需要 `admin:system:read`、`admin:system:update`、`admin:system:restart` 权限。
 
-PostgreSQL/GORM、Redis、数据目录、Gin 监听地址和监听端口在页面中只读，只能通过部署配置修改。
+PostgreSQL/GORM、Valkey、数据目录、Gin 监听地址和监听端口在页面中只读，只能通过部署配置修改。
 
 共享 PVC `k8s.shared_volume_claim` 同样是部署参数，修改后需要重新创建平台 Pod。后台「重启」用于重新加载在线设置，不会重新读取磁盘配置文件。各项设置的生效方式见[配置说明](/deploy/settings.md)。
 
