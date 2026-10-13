@@ -85,27 +85,56 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Redis fullname
+Valkey resource name.
+
+The workload itself comes from the upstream valkey chart
+(https://valkey.io/valkey-helm/) declared as a dependency in Chart.yaml. This
+mirrors its naming rule — `<release>-valkey`, or the release name on its own
+when it already contains "valkey" — because the platform configuration has to
+address the Service the subchart renders. TestBundledValkeyAddressMatchesRenderedService
+in render_test.go compares this against the Service that actually shows up, so a
+change upstream fails the suite instead of silently pointing at nothing.
 */}}
-{{- define "cbctf.redis.fullname" -}}
-{{- printf "%s-redis" (include "cbctf.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- define "cbctf.valkey.fullname" -}}
+{{- if .Values.valkey.fullnameOverride }}
+{{- .Values.valkey.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default "valkey" .Values.valkey.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
 {{- end }}
 
 {{/*
-Redis labels
+Valkey hostname
 */}}
-{{- define "cbctf.redis.labels" -}}
-helm.sh/chart: {{ include "cbctf.chart" . }}
-{{ include "cbctf.redis.selectorLabels" . }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- define "cbctf.valkey.host" -}}
+{{- if .Values.valkey.enabled }}
+{{- printf "%s.%s" (include "cbctf.valkey.fullname" .) .Release.Namespace }}
+{{- else }}
+{{- required "valkey.externalHost is required when valkey.enabled is false" .Values.valkey.externalHost }}
+{{- end }}
 {{- end }}
 
 {{/*
-Redis selector labels
+Valkey password the platform authenticates with.
+
+An external server, and a bundled instance whose password lives in
+auth.usersExistingSecret, can only be described by valkey.password. Otherwise
+the inline ACL entry is the single source of truth and is read from here, so
+the two can never drift apart.
 */}}
-{{- define "cbctf.redis.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "cbctf.name" . }}-redis
-app.kubernetes.io/instance: {{ .Release.Name }}
+{{- define "cbctf.valkey.password" -}}
+{{- if not .Values.valkey.enabled }}
+{{- required "valkey.password is required when valkey.enabled is false" .Values.valkey.password }}
+{{- else if .Values.valkey.auth.usersExistingSecret }}
+{{- required "valkey.password is required when valkey.auth.usersExistingSecret is set" .Values.valkey.password }}
+{{- else }}
+{{- required "valkey.auth.aclUsers.default.password is required for the bundled Valkey" (dig "auth" "aclUsers" "default" "password" "" .Values.valkey) }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -116,17 +145,6 @@ PostgreSQL service hostname
 {{- printf "%s.%s" (include "cbctf.postgres.fullname" .) .Release.Namespace }}
 {{- else }}
 {{- required "postgres.externalHost is required when postgres.enabled is false" .Values.postgres.externalHost }}
-{{- end }}
-{{- end }}
-
-{{/*
-Redis service hostname
-*/}}
-{{- define "cbctf.redis.host" -}}
-{{- if .Values.redis.enabled }}
-{{- printf "%s.%s" (include "cbctf.redis.fullname" .) .Release.Namespace }}
-{{- else }}
-{{- required "redis.externalHost is required when redis.enabled is false" .Values.redis.externalHost }}
 {{- end }}
 {{- end }}
 

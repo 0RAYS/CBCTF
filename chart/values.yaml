@@ -225,22 +225,61 @@ postgres:
     wal_level = replica
     listen_addresses = '*'
 
-# ── Redis ─────────────────────────────────────────────────────────────────────
+# ── Valkey ────────────────────────────────────────────────────────────────────
+# The cache and Asynq task queue are deployed with the upstream Valkey chart
+# (https://valkey.io/valkey-helm/), not by templates in this chart. Run
+# `helm dependency build chart/` once before `helm template` / `helm install`.
+# Every key below except `externalHost` and `password` is that chart's own
+# value; see its README for the rest (replication, Sentinel, TLS, metrics,
+# network policies, pod disruption budgets).
 
-redis:
+valkey:
   enabled: true
   externalHost: ""     # Required when disabled; hostname/IP used verbatim
-  image:
-    repository: redis
-    tag: "7-alpine"
-    pullPolicy: IfNotPresent
+  # Password written into the platform configuration. Required when using an
+  # external server, and when the bundled instance reads its password from
+  # `auth.usersExistingSecret` instead of an inline `auth.aclUsers` entry.
+  # Empty by default so it can never silently shadow the inline password below.
+  password: ""
   auth:
-    password: "change-me-redis-password"
-  persistence:
     enabled: true
-    storageClass: ""
-    accessMode: ReadWriteOnce
-    size: 1Gi
-  resources: {}
+    aclUsers:
+      default:
+        permissions: "~* &* +@all"
+        password: "change-me-valkey-password"
+  image:
+    registry: docker.io
+    repository: valkey/valkey
+    tag: ""             # Empty uses the chart's appVersion
+    pullPolicy: IfNotPresent
+  imagePullSecrets: []  # Valkey only; `imagePullSecrets` above covers app + PostgreSQL
   service:
     port: 6379
+  dataStorage:
+    enabled: true
+    requestedSize: 1Gi
+    className: ""       # Empty uses the cluster default StorageClass
+    accessModes:
+      - ReadWriteOnce
+    # Keeps the volume on `helm uninstall`; remove it by hand afterwards.
+    keepPvc: true
+  # Asynq task state must survive a Pod replacement, so append-only files are
+  # enabled explicitly. This is appended last to the generated configuration
+  # and therefore wins over any default.
+  valkeyConfig: |
+    appendonly yes
+    appendfsync everysec
+    save 900 1
+    save 300 10
+    save 60 10000
+  resources: {}
+    # limits:
+    #   cpu: 2000m
+    #   memory: 2Gi
+    # requests:
+    #   cpu: 500m
+    #   memory: 512Mi
+  # Readiness is opt-in upstream, but the platform fails its own startup when
+  # the queue is unreachable, so fail the Pod early instead.
+  readinessProbe:
+    enabled: true

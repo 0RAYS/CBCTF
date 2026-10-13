@@ -2138,7 +2138,7 @@
         "basic": "基础配置",
         "gin": "Gin配置",
         "database": "数据库配置",
-        "redis": "Redis配置",
+        "redis": "Valkey配置",
         "k8s": "Kubernetes配置",
         "cheat": "风控配置",
         "webhook": "Webhook配置",

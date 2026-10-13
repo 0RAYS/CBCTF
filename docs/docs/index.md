@@ -35,7 +35,7 @@ features:
     icon: 📊
     link: /guide/features/scoring
   - title: Helm 部署
-    details: Chart 内置 PostgreSQL 和 Redis，支持 PVC 持久化、Ingress TLS 和镜像拉取凭据。
+    details: Chart 内置 PostgreSQL 和 Valkey，支持 PVC 持久化、Ingress TLS 和镜像拉取凭据。
     icon: ⚡
     link: /deploy/helm
   - title: OAuth / OIDC 认证
