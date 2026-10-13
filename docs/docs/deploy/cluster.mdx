@@ -196,7 +196,7 @@ CBCTF 只会创建和删除 `VirtualMachine` 资源，不会自动安装 KubeVir
 
 1. 准备可被全部工作节点访问的 NFS 服务与导出目录（provisioner 不会部署 NFS 服务本身）
 2. 安装支持 RWX 的 StorageClass
-3. 在 Helm `persistence.storageClass` 中显式指定共享存储类；PostgreSQL/Redis 可分别选择适合数据库的存储类，无需改变集群默认值
+3. 在 Helm `persistence.storageClass` 中显式指定共享存储类；PostgreSQL 与 Valkey 可分别选择适合数据库的存储类，无需改变集群默认值
 
 以安装 `nfs-subdir-external-provisioner` 为例
 

@@ -8,7 +8,7 @@
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.20+-326CE5?style=flat-square&logo=kubernetes&logoColor=white)](https://kubernetes.io)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org)
-[![Redis](https://img.shields.io/badge/Redis-6.0+-DC382D?style=flat-square&logo=redis&logoColor=white)](https://redis.io)
+[![Valkey](https://img.shields.io/badge/Valkey-7.2+-DC382D?style=flat-square&logo=valkey&logoColor=white)](https://valkey.io)
 [![License](https://img.shields.io/badge/License-AGPL%20v3-597ef7?style=flat-square)](LICENSE)
 
 [English](README-EN.md) · 简体中文
@@ -59,7 +59,7 @@ flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 - **Webhook** - GET / POST
 - **国际化（i18n）** — 多语言界面支持
 - **Prometheus 监控** — 完整的运行时指标暴露
-- **Redis 缓存 / 任务队列** + **PostgreSQL 数据存储** + **NFS 网络存储**
+- **Valkey 缓存 / 任务队列** + **PostgreSQL 数据存储** + **NFS 网络存储**
 
 <img src="static/img/dashboard.png" width="100%" alt="管理后台" />
 <img src="static/img/contest.png" width="100%" alt="比赛详情" />

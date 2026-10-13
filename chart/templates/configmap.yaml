@@ -57,10 +57,12 @@ data:
       log:
         level: {{ .Values.cbctf.gorm.log.level | quote }}
 
+    # The backend still names this section `redis`; the chart only supplies the
+    # connection details, from the bundled Valkey or from valkey.externalHost.
     redis:
-      host: {{ include "cbctf.redis.host" . | quote }}
-      port: {{ .Values.redis.service.port }}
-      pwd: {{ .Values.redis.auth.password | quote }}
+      host: {{ include "cbctf.valkey.host" . | quote }}
+      port: {{ .Values.valkey.service.port }}
+      pwd: {{ include "cbctf.valkey.password" . | quote }}
 
     k8s:
       namespace: {{ .Release.Namespace | quote }}

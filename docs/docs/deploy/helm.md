@@ -1,18 +1,19 @@
 ---
 title: Helm 部署
-description: 通过 Helm Chart 安装 CBCTF，并配置镜像、Ingress、存储、数据库和 Redis。
+description: 通过 Helm Chart 安装 CBCTF，并配置镜像、Ingress、存储、数据库和 Valkey。
 ---
 
 # Helm 部署
 
-CBCTF Chart 位于仓库根目录的 `chart/`。默认会创建应用 Deployment、Service、Ingress、ServiceAccount、ClusterRole、共享 PVC，以及内置
-PostgreSQL 和 Redis。
+CBCTF Chart 位于仓库根目录的 `chart/`。默认会创建应用 Deployment、Service、Ingress、ServiceAccount、ClusterRole、共享 PVC，
+以及内置 PostgreSQL 和 Valkey。Valkey 由官方 Chart [valkey-helm](https://valkey.io/valkey-helm/) 作为子图表部署，
+本仓库不再自带 Redis 模板。
 
 ## 前置要求
 
 - Kubernetes 集群可用
 - Helm 可用
-- 集群可以拉取 `ghcr.io/0rays/cbctf`、PostgreSQL、Redis 以及题目镜像
+- 集群可以拉取 `ghcr.io/0rays/cbctf`、PostgreSQL、`valkey/valkey` 以及题目镜像
 - 如启用持久化，集群需要可用 StorageClass
 - 动态附件输入与抓包文件需要平台和运行时 Pod 共享同一 PVC；多节点场景使用 `ReadWriteMany`
 - VPC 靶机需要提前安装 Kube-OVN 和 Multus CNI
@@ -37,10 +38,23 @@ helm upgrade --install cbctf cbctf/cbctf -n cbctf --create-namespace -f values.y
 ```
 
 :::info
-本文与仓库 Chart `0.0.29` 对应。使用仓库代码时可将命令中的 `cbctf/cbctf` 换成 `./chart`；新配置能力需要匹配版本的后端镜像。
+本文与仓库 Chart `0.0.30` 对应。使用仓库代码时可将命令中的 `cbctf/cbctf` 换成 `./chart`；新配置能力需要匹配版本的后端镜像。
 
 运行时设置首次写入数据库后，以数据库为准。修改 values 中的 `host`、JWT、注册、上传限制或 Kubernetes 运行参数再升级，并不会覆盖已经保存的设置；请到「系统管理」修改并按需重启。参见[配置来源与生效时机](./settings)。
 :::
+
+### 从仓库源码安装
+
+Chart 将 Valkey 声明为依赖，且只提交 `chart/Chart.lock`，不提交打包后的子图表。直接使用仓库代码前需先解析依赖：
+
+```bash
+helm repo add valkey https://valkey.io/valkey-helm/
+helm dependency build chart/
+helm upgrade --install cbctf ./chart -n cbctf --create-namespace -f values.yaml --wait --timeout 10m
+```
+
+未解析依赖时 `helm template` 和 `helm install` 都会报缺少依赖，`chart` 的渲染测试会跳过并提示该命令。
+Chart 发布流水线会自动执行 `helm dependency update`，从 Helm 仓库安装时无需处理。
 
 ## 升级和卸载
 
@@ -49,7 +63,7 @@ helm upgrade cbctf cbctf/cbctf -n cbctf -f values.yaml
 helm uninstall cbctf -n cbctf
 ```
 
-共享 PVC 默认带有保留策略，卸载不会删除 `/app/data` 中的数据。PostgreSQL 和 Redis 的 PVC 也应在确认备份后再手动清理。
+共享 PVC、PostgreSQL PVC 和 Valkey PVC 默认带有保留策略，卸载不会删除其中数据，确认备份后再手动清理。
 
 ## 常用 Values
 
@@ -98,11 +112,11 @@ helm uninstall cbctf -n cbctf
 | `cbctf.cheat.ip.whitelist`         | 作弊检测 IP 白名单                 | `10.0.0.0/8`              |
 | `cbctf.webhook.whitelist`          | Webhook 目标白名单               | `example.com`             |
 
-JWT、PostgreSQL 和 Redis 密钥会写入 `/app/config.yaml`。
+JWT、PostgreSQL 和 Valkey 密钥会写入 `/app/config.yaml`。
 
-管理后台不能修改 PostgreSQL/GORM、Redis、数据目录、Gin 监听地址和监听端口。
+管理后台不能修改 PostgreSQL/GORM、缓存与任务队列、数据目录、Gin 监听地址和监听端口。
 
-## PostgreSQL 和 Redis
+## PostgreSQL 和 Valkey
 
 | 配置项                            | 说明                        | 示例                          |
 |--------------------------------|---------------------------|-----------------------------|
@@ -113,12 +127,29 @@ JWT、PostgreSQL 和 Redis 密钥会写入 `/app/config.yaml`。
 | `postgres.persistence.enabled` | PostgreSQL 数据持久化          | `true`                      |
 | `postgres.persistence.size`    | PostgreSQL PVC 容量         | `5Gi`                       |
 | `postgres.extraConfig`         | 追加到 `postgresql.conf` 的配置 | `max_connections = 500`     |
-| `redis.enabled`                | 是否部署内置 Redis              | `true`                      |
-| `redis.auth.password`          | Redis 密码                   | `example-redis-password`    |
-| `redis.persistence.enabled`    | Redis 数据持久化               | `true`                      |
-| `redis.persistence.size`       | Redis PVC 容量              | `1Gi`                       |
+| `valkey.enabled`               | 是否部署内置 Valkey            | `true`                      |
+| `valkey.externalHost`          | 外部 Valkey 地址，关闭内置时必填    | `valkey.example.com`        |
+| `valkey.password`              | 写入平台配置的 Valkey 密码        | `example-valkey-password`   |
+| `valkey.auth.aclUsers.default.password` | 内置 Valkey 的内联密码      | `example-valkey-password`   |
+| `valkey.service.port`          | Valkey 端口                   | `6379`                      |
+| `valkey.dataStorage.enabled`   | Valkey 数据持久化             | `true`                      |
+| `valkey.dataStorage.requestedSize` | Valkey PVC 容量           | `1Gi`                       |
+| `valkey.dataStorage.className` | Valkey PVC 的 StorageClass   | `nfs-client`                |
+| `valkey.dataStorage.accessModes` | Valkey PVC 访问模式         | `ReadWriteOnce`             |
+| `valkey.dataStorage.keepPvc`   | 卸载时保留 Valkey PVC           | `true`                      |
+| `valkey.image.*`               | Valkey 镜像仓库、标签和拉取策略      | `valkey/valkey:9.1.2`       |
+| `valkey.resources`             | Valkey 资源限制                 | `requests.cpu: 500m`        |
+| `valkey.imagePullSecrets`      | Valkey 镜像拉取 Secret          | `[regcred]`                 |
+| `valkey.valkeyConfig`          | 追加到 `valkey.conf` 的配置      | `maxmemory 512mb`           |
 
-关闭内置组件时必须设置 `externalHost`，地址按原值使用，不追加命名空间。认证和端口仍使用对应的 `auth` 与 `service.port`：
+`valkey` 下的键即官方 Valkey Chart 自身的 values，未列出的配置（`replica.*` 与 Sentinel、`tls.*`、`metrics.*`、
+`networkPolicy`、`podDisruptionBudget`、`podSecurityContext` 等）同样可用，说明见 <https://valkey.io/valkey-helm/>。
+
+内置 Valkey 的地址由 Chart 渲染为 `{release}-valkey.{namespace}`，平台配置中的密码直接取自
+`valkey.auth.aclUsers.default.password`，不存在第二个需要同步的密码字段。
+若改用 `valkey.auth.usersExistingSecret` 提供密码，则必须同时填写 `valkey.password`，Chart 会渲染报错而不是静默使用错误的密码。
+
+关闭内置组件时必须设置 `externalHost`，地址按原值使用，不追加命名空间。认证和端口仍使用对应的密码字段与 `service.port`：
 
 ```yaml
 postgres:
@@ -130,28 +161,36 @@ postgres:
     database: cbctf
     username: cbctf
     password: replace-with-database-password
-redis:
+valkey:
   enabled: false
-  externalHost: redis.example.com
+  externalHost: valkey.example.com
   service:
     port: 6379
-  auth:
-    password: replace-with-redis-password
+  password: replace-with-valkey-password
 cbctf:
   gorm:
     postgres:
       sslmode: true
 ```
 
-PostgreSQL 需允许安装 `pg_trgm` 扩展，并提供足够的连接数。使用数据库连接代理时，请选择直连或 session pooling；transaction pooling 不适用于平台的任务协调。Redis 支持地址、端口和密码配置，需提供可直接连接的单实例地址。
+PostgreSQL 需允许安装 `pg_trgm` 扩展，并提供足够的连接数。使用数据库连接代理时，请选择直连或 session pooling；transaction pooling 不适用于平台的任务协调。
+Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户端，与 Redis 协议兼容，但外部服务若启用了 Sentinel 或集群模式，
+仍需按单实例地址接入或先确认客户端配置能否解析。
 
-内置 PostgreSQL 的 `auth` 变量仅初始化空数据目录；对已有 PVC 修改 values 中的密码不会执行数据库 `ALTER ROLE`，应先协调修改数据库凭据。关闭任一数据库的 `persistence.enabled` 后使用 `emptyDir`，Pod 重建会丢失对应数据。
+内置 PostgreSQL 的 `auth` 变量仅初始化空数据目录；对已有 PVC 修改 values 中的密码不会执行数据库 `ALTER ROLE`，应先协调修改数据库凭据。
+关闭 PostgreSQL 的 `persistence.enabled` 或设置 `valkey.dataStorage.enabled: false` 后使用 `emptyDir`，Pod 重建会丢失对应数据。
+
+:::warning 升级内置 Valkey
+从使用内置 Redis StatefulSet 的旧版本升级时，工作负载由 `<release>-redis` 变为 `<release>-valkey` 的 Deployment，
+数据卷由 `data-<release>-redis-0` 变为 `{release}-valkey`，**已有数据不会自动迁移**，队列中的任务会丢失。
+请先排空任务队列，或手动复制数据目录后再升级。`redis.*` 全部相关 values 已更名为 `valkey.*`，升级时需要同步修改 values 文件。
+:::
 
 ## 共享数据卷与镜像凭据
 
 - 平台挂载 `/app/data`，默认 PVC 为 `{namespace}-shared-volume`。`persistence.existingClaim` 可以指定同命名空间已有 PVC，Chart 同时写入后端 `k8s.shared_volume_claim`，使生成器和抓包容器使用同一卷。
 - `persistence.enabled: false` 仅使平台数据使用临时卷，不会为运行时 Pod 创建共享 PVC；这不适用于需要动态附件或抓包的部署。
-- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台、PostgreSQL 和 Redis Pod。后端创建的题目、生成器、FRPC 和预热 Job 不会继承应用 Pod 的凭据；这些 Pod 使用运行命名空间的 `default` ServiceAccount，可将所需 Secret 配置到该 ServiceAccount。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
+- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台和 PostgreSQL Pod。Valkey 由官方 Chart 渲染，从 Docker Hub 拉取 `valkey/valkey`，私有镜像仓库请使用 `valkey.image.registry` 与 `valkey.imagePullSecrets`。后端创建的题目、生成器、FRPC 和预热 Job 不会继承应用 Pod 的凭据；这些 Pod 使用运行命名空间的 `default` ServiceAccount，可将所需 Secret 配置到该 ServiceAccount。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
 - Chart 的 `nodeSelector`、`tolerations`、`affinity`、`resources` 作用于平台 Pod，不等于题目调度和资源配置；题目资源来自 Compose。
 
 ## Kubernetes 靶机配置
@@ -224,9 +263,11 @@ cbctf:
 postgres:
   auth:
     password: "replace-with-database-password"
-redis:
+valkey:
   auth:
-    password: "replace-with-redis-password"
+    aclUsers:
+      default:
+        password: "replace-with-valkey-password"
 persistence:
   storageClass: nfs-client
 
@@ -261,7 +302,7 @@ kubectl get ingress -n cbctf
 kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 ```
 
-如果 Pod 反复重启，优先检查日志中的数据库、Redis、RBAC、PVC、KubeVirt、Kube-OVN/Multus 相关错误。
+如果 Pod 反复重启，优先检查日志中的数据库、Valkey、RBAC、PVC、KubeVirt、Kube-OVN/Multus 相关错误。
 
 ## 启动时资源检查
 

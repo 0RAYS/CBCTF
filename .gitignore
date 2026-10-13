@@ -46,3 +46,7 @@ go.work.sum
 
 # env file
 .env
+
+# Helm subchart dependencies, resolved by `helm dependency build chart/`.
+# Chart.lock is committed; the packaged dependencies are not.
+/chart/charts/

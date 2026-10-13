@@ -2,7 +2,7 @@ apiVersion: v2
 name: cbctf
 description: A Kubernetes-native CTF competition platform
 type: application
-version: 0.0.29
+version: 0.0.30
 appVersion: "latest"
 keywords:
   - ctf
@@ -14,3 +14,12 @@ sources:
   - https://github.com/0RAYS/CBCTF
 maintainers:
   - name: JBNRZ
+dependencies:
+  # Cache and Asynq task queue. Every `valkey.*` value in values.yaml is this
+  # chart's own; see https://valkey.io/valkey-helm/ for the full set.
+  # `helm dependency build chart/` resolves it locally, and the chart release
+  # workflow runs `helm dependency update` before packaging.
+  - name: valkey
+    version: 0.12.0
+    repository: https://valkey.io/valkey-helm/
+    condition: valkey.enabled
