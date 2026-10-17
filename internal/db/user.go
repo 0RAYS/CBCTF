@@ -36,6 +36,7 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 	}
 	if u.Password != nil {
 		options["password"] = *u.Password
+		options["token_generation"] = gorm.Expr("token_generation + 1")
 	}
 	if u.Email != nil {
 		options["email"] = *u.Email
