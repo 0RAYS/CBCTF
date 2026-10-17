@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 )
 
 type SettingRepo struct {
@@ -102,7 +103,7 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.GinRateLimitWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.RateLimit.Whitelist}},
 		{Key: model.GinOriginsSettingKey, Value: model.SettingValue{V: config.Env.Gin.Origins}},
 		{Key: model.GinLogWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Log.Whitelist}},
-		{Key: model.GinJWTSecretSettingKey, Value: model.SettingValue{V: config.Env.Gin.JWT.Secret}},
+		{Key: model.GinJWTSecretSettingKey, Value: model.SettingValue{V: utils.UUID()}},
 		{Key: model.GinMetricsWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Metrics.Whitelist}},
 		{Key: model.GinPProfWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.PProf.Whitelist}},
 

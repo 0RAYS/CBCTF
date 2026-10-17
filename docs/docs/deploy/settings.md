@@ -57,7 +57,7 @@ Chart `0.0.30` 起内置服务由官方 [Valkey Chart](https://valkey.io/valkey-
 | `gin.ratelimit.global`       | 全局每分钟限流                                    | `100`                       |
 | `gin.ratelimit.whitelist`    | 跳过限流的 IP 或 CIDR                            | `127.0.0.1`                 |
 | `gin.origins`                | 允许的浏览器请求 Origin，用于跨域请求与认证 cookie 判断         | `https://ctf.example.com`   |
-| `gin.jwt.secret`             | JWT 签名密钥，生产环境必须替换默认值                       | `change-me-long-random`     |
+| `gin.jwt.secret`             | JWT 签名密钥。首次启动自动生成随机值写入数据库，此后一律以数据库为准；轮换请使用「系统管理」页面 | （自动生成） |
 | `gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR                | `10.0.0.0/8`                |
 | `gin.pprof.whitelist`        | 允许访问 `/debug/pprof/*` 的 IP 或 CIDR           | `127.0.0.1`                 |
 | `gorm.postgres.host`         | PostgreSQL 地址                              | `postgres.cbctf.svc`        |
@@ -115,7 +115,6 @@ Helm 会把以下值渲染进 ConfigMap：
 
 | Values                       | 说明       |
 |------------------------------|----------|
-| `cbctf.gin.jwt.secret`       | JWT 签名密钥 |
 | `postgres.auth.password`     | 数据库密码    |
 | `valkey.auth.aclUsers.default.password` | 内置 Valkey 密码 |
 | `valkey.password`           | 外部 Valkey 或使用 `usersExistingSecret` 时的密码 |
@@ -140,7 +139,7 @@ GeoLite2-City 数据库可通过管理后台上传，保存到 `{path}/GeoLite2-
 
 :::warning
 
-- 生产环境不要使用默认 `gin.jwt.secret`
+- `gin.jwt.secret` 首次启动自动生成并写入数据库，无需手动设置；轮换请通过「系统管理」页面进行（修改配置文件无效）
 - 数据库、Valkey、SMTP、OAuth、FRP token 使用强密码或随机密钥
 - `host`、Ingress 域名应与用户访问地址一致，`gin.origins` 应包含前端页面的实际 `Origin`
 - 部署在反向代理后时正确设置 `gin.proxies`

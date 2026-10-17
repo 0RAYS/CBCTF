@@ -119,8 +119,10 @@ cbctf:
         - "/platform/*filepath"
         - "/admin/system/status"
     jwt:
-      # Change before production use.
-      secret: "change-me-long-random-secret"
+      # JWT secret is no longer sourced from the chart: on first boot the server
+      # generates a random secret and persists it in the database (settings row
+      # `gin.jwt.secret`). Leave empty; rotate later via the admin System page.
+      secret: ""
     metrics:
       # IPs allowed to hit /metrics — include Prometheus pod CIDR or exact IPs
       whitelist:

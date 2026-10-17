@@ -103,7 +103,6 @@ helm uninstall cbctf -n cbctf
 | `cbctf.gin.proxies`                | 可信代理 IP 或 CIDR              | `10.244.0.0/16`           |
 | `cbctf.gin.origins`                | 允许的浏览器请求 Origin            | `https://ctf.example.com` |
 | `cbctf.gin.ratelimit.global`       | 全局限流                        | `100`                     |
-| `cbctf.gin.jwt.secret`             | JWT 签名密钥                    | `change-me-long-random`   |
 | `cbctf.gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR | `10.0.0.0/8`              |
 | `cbctf.gin.pprof.whitelist`        | 允许访问 `/debug/pprof/*` 的 IP 或 CIDR | `127.0.0.1`              |
 | `cbctf.asynq.queues.traffic`       | 靶机流量解析任务并发                  | `2`                       |
@@ -112,7 +111,7 @@ helm uninstall cbctf -n cbctf
 | `cbctf.cheat.ip.whitelist`         | 作弊检测 IP 白名单                 | `10.0.0.0/8`              |
 | `cbctf.webhook.whitelist`          | Webhook 目标白名单               | `example.com`             |
 
-JWT、PostgreSQL 和 Valkey 密钥会写入 `/app/config.yaml`。
+PostgreSQL 和 Valkey 密钥会写入 `/app/config.yaml`。JWT 签名密钥不再来自部署配置：首次启动自动生成随机值写入数据库并始终以数据库为准，轮换请到「系统管理」页面。
 
 管理后台不能修改 PostgreSQL/GORM、缓存与任务队列、数据目录、Gin 监听地址和监听端口。
 

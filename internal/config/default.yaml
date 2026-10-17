@@ -40,7 +40,7 @@ gin:
       - /metrics
       - /platform/*filepath
   jwt:
-    secret: 0rays-jbnrz
+    secret: ""
   metrics:
     whitelist:
       - 127.0.0.1
