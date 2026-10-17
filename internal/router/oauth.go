@@ -106,7 +106,7 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret)
+	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
@@ -141,7 +141,12 @@ func ExchangeOauthCode(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
 	}
-	token, err := utils.GenerateToken(claims.UserID, claims.Name, config.Env.Gin.JWT.Secret)
+	user, ret := db.InitUserRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(claims.UserID)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})

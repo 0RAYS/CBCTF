@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -40,6 +41,10 @@ func CheckAuth(ctx *gin.Context) {
 	user, ret := db.InitUserRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(claims.UserID)
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
+		return
+	}
+	if claims.Gen != strconv.FormatUint(user.TokenGeneration, 10) {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
 	}
 	if user.Banned {

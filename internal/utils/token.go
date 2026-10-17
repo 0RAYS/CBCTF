@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -11,13 +12,15 @@ type Claims struct {
 	jwt.RegisteredClaims
 	Name   string `json:"name"`
 	UserID uint   `json:"id"`
+	Gen string `json:"gen,omitempty"`
 }
 
 // GenerateToken 生成token
-func GenerateToken(id uint, name, secret string) (tokenString string, err error) {
+func GenerateToken(id uint, name, secret string, generation uint64) (tokenString string, err error) {
 	claim := Claims{
 		UserID:    id,
 		Name:      name,
+		Gen:       strconv.FormatUint(generation, 10),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(6 * time.Hour)),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		NotBefore: jwt.NewNumericDate(time.Now())}
