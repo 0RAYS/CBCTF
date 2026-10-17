@@ -108,7 +108,7 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 func UpdateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) ([]model.TeamFlag, model.RetVal) {
 	submissionRepo := db.InitSubmissionRepo(tx)
 	submissions, _, ret := submissionRepo.List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID},
+		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID, "solved": true},
 	})
 	if !ret.OK {
 		return nil, ret
