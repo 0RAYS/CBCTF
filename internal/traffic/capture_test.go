@@ -93,8 +93,11 @@ func TestTrafficReaderErrorsAndEnrichment(t *testing.T) {
 		t.Fatal(err)
 	}
 	result, err := ReadPcapDir(context.Background(), dir, nil)
-	if err != nil || len(result.Connections) != 1 {
-		t.Fatalf("duplicate enriched capture: %d, %v", len(result.Connections), err)
+	if err != nil {
+		t.Fatalf("failed to read pcap directory: %s", err)
+	}
+	if len(result.Connections) != 1 {
+		t.Fatalf("duplicate enriched capture: %d", len(result.Connections))
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
