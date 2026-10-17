@@ -165,7 +165,7 @@ Valkey 用于缓存和 Asynq 任务队列，兼容 Redis 协议。连接失败�
 :::warning
 
 - 首次登录后立即修改 `admin` 密码
-- 生产环境设置固定、足够长的 `gin.jwt.secret`
+- `gin.jwt.secret` 首次启动自动生成并写入数据库；轮换使用「系统管理」页面，修改部署配置无效
 - 数据库、Valkey、SMTP、OAuth、FRP 使用强密码或随机密钥
 - 使用 HTTPS，并正确配置 Ingress TLS
 - 限制管理后台访问来源，按角色授予最小权限

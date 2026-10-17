@@ -22,7 +22,7 @@ helm repo update
 helm show values cbctf/cbctf > values.yaml
 ```
 
-修改 `values.yaml`：至少设置公开地址 `cbctf.host`、`cbctf.gin.origins`、Ingress 域名、StorageClass、JWT 密钥和数据库密码。完整示例、外部数据库及持久化说明见 [Helm 部署](../../deploy/helm)。
+修改 `values.yaml`：至少设置公开地址 `cbctf.host`、`cbctf.gin.origins`、Ingress 域名、StorageClass 和数据库密码。JWT 签名密钥无需设置——首次启动自动生成并写入数据库。完整示例、外部数据库及持久化说明见 [Helm 部署](../../deploy/helm)。
 
 ```bash
 helm upgrade --install cbctf cbctf/cbctf \
