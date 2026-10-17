@@ -40,34 +40,34 @@ Chart `0.0.30` 起内置服务由官方 [Valkey Chart](https://valkey.io/valkey-
 
 ## 常用配置项
 
-| 配置项                          | 说明                                         | 示例                          |
-| ---------------------------- | ------------------------------------------ | --------------------------- |
-| `host`                       | 平台对外访问地址，用于根路径跳转、邮件链接、OAuth 回调等，不要带尾部 `/`  | `https://ctf.example.com`   |
-| `path`                       | 数据根目录，存放附件、动态附件、流量文件、GeoIP 数据库等            | `./data`                    |
-| `gin.mode`                   | Gin 模式                                     | `release`                   |
-| `gin.host`                   | HTTP 监听地址                                  | `0.0.0.0`                   |
-| `gin.port`                   | HTTP 监听端口                                  | `8000`                      |
-| `gin.proxies`                | 可信代理 IP 或 CIDR                             | `10.244.0.0/16`             |
-| `gin.upload.picture`         | 图片上传大小限制，单位 MiB                            | `8`                         |
-| `gin.upload.challenge`       | 题目附件上传大小限制，单位 MiB                          | `8`                         |
-| `gin.upload.writeup`         | 题解上传大小限制，单位 MiB                            | `8`                         |
-| `gin.ratelimit.global`       | 全局每分钟限流                                    | `100`                       |
-| `gin.ratelimit.whitelist`    | 跳过限流的 IP 或 CIDR                            | `127.0.0.1`                 |
-| `gin.origins`                | 允许的浏览器请求 Origin，用于跨域请求与认证 cookie 判断        | `https://ctf.example.com`   |
-| `gin.jwt.secret`             | JWT 签名密钥，生产环境必须替换默认值                       | `change-me-long-random`     |
-| `gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR                | `10.0.0.0/8`                |
-| `gin.pprof.whitelist`        | 允许访问 `/debug/pprof/*` 的 IP 或 CIDR          | `127.0.0.1`                 |
-| `gorm.postgres.host`         | PostgreSQL 地址                              | `postgres.cbctf.svc`        |
-| `gorm.postgres.port`         | PostgreSQL 端口                              | `5432`                      |
-| `gorm.postgres.user`         | PostgreSQL 用户名                             | `cbctf`                     |
-| `gorm.postgres.pwd`          | PostgreSQL 密码                              | `example-postgres-password` |
-| `gorm.postgres.db`           | PostgreSQL 数据库名                            | `cbctf`                     |
-| `gorm.postgres.sslmode`      | 布尔值，`false` 为 `disable`，`true` 为 `require` | `false`                     |
-| `redis.host`                 | 缓存与任务队列地址，由 Chart 从 `valkey.*` 渲染          | `cbctf-valkey.cbctf.svc`    |
-| `redis.port`                 | 缓存与任务队列端口                                  | `6379`                      |
-| `redis.pwd`                  | 缓存与任务队列密码                                  | `example-valkey-password`   |
-| `registration.enabled`       | 是否允许公开注册                                   | `true`                      |
-| `registration.default_group` | 新用户默认分组 ID，`0` 表示不指定                       | `0`                         |
+| 配置项                          | 说明                                                 | 示例                          |
+| ---------------------------- | -------------------------------------------------- | --------------------------- |
+| `host`                       | 平台对外访问地址，用于根路径跳转、邮件链接、OAuth 回调等，不要带尾部 `/`          | `https://ctf.example.com`   |
+| `path`                       | 数据根目录，存放附件、动态附件、流量文件、GeoIP 数据库等                    | `./data`                    |
+| `gin.mode`                   | Gin 模式                                             | `release`                   |
+| `gin.host`                   | HTTP 监听地址                                          | `0.0.0.0`                   |
+| `gin.port`                   | HTTP 监听端口                                          | `8000`                      |
+| `gin.proxies`                | 可信代理 IP 或 CIDR                                     | `10.244.0.0/16`             |
+| `gin.upload.picture`         | 图片上传大小限制，单位 MiB                                    | `8`                         |
+| `gin.upload.challenge`       | 题目附件上传大小限制，单位 MiB                                  | `8`                         |
+| `gin.upload.writeup`         | 题解上传大小限制，单位 MiB                                    | `8`                         |
+| `gin.ratelimit.global`       | 全局每分钟限流                                            | `100`                       |
+| `gin.ratelimit.whitelist`    | 跳过限流的 IP 或 CIDR                                    | `127.0.0.1`                 |
+| `gin.origins`                | 允许的浏览器请求 Origin，用于跨域请求与认证 cookie 判断                | `https://ctf.example.com`   |
+| `gin.jwt.secret`             | JWT 签名密钥。首次启动自动生成随机值写入数据库，此后一律以数据库为准；轮换请使用「系统管理」页面 | （自动生成）                      |
+| `gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR                        | `10.0.0.0/8`                |
+| `gin.pprof.whitelist`        | 允许访问 `/debug/pprof/*` 的 IP 或 CIDR                  | `127.0.0.1`                 |
+| `gorm.postgres.host`         | PostgreSQL 地址                                      | `postgres.cbctf.svc`        |
+| `gorm.postgres.port`         | PostgreSQL 端口                                      | `5432`                      |
+| `gorm.postgres.user`         | PostgreSQL 用户名                                     | `cbctf`                     |
+| `gorm.postgres.pwd`          | PostgreSQL 密码                                      | `example-postgres-password` |
+| `gorm.postgres.db`           | PostgreSQL 数据库名                                    | `cbctf`                     |
+| `gorm.postgres.sslmode`      | 布尔值，`false` 为 `disable`，`true` 为 `require`         | `false`                     |
+| `redis.host`                 | 缓存与任务队列地址，由 Chart 从 `valkey.*` 渲染                  | `cbctf-valkey.cbctf.svc`    |
+| `redis.port`                 | 缓存与任务队列端口                                          | `6379`                      |
+| `redis.pwd`                  | 缓存与任务队列密码                                          | `example-valkey-password`   |
+| `registration.enabled`       | 是否允许公开注册                                           | `true`                      |
+| `registration.default_group` | 新用户默认分组 ID，`0` 表示不指定                               | `0`                         |
 
 ## 异步任务配置
 
@@ -112,7 +112,6 @@ Helm 会把以下值渲染进 ConfigMap：
 
 | Values                                  | 说明                                       |
 | --------------------------------------- | ---------------------------------------- |
-| `cbctf.gin.jwt.secret`                  | JWT 签名密钥                                 |
 | `postgres.auth.password`                | 数据库密码                                    |
 | `valkey.auth.aclUsers.default.password` | 内置 Valkey 密码                             |
 | `valkey.password`                       | 外部 Valkey 或使用 `usersExistingSecret` 时的密码 |
@@ -137,7 +136,7 @@ GeoLite2-City 数据库可通过管理后台上传，保存到 `{path}/GeoLite2-
 
 :::warning
 
-- 生产环境不要使用默认 `gin.jwt.secret`
+- `gin.jwt.secret` 首次启动自动生成并写入数据库，无需手动设置；轮换请通过「系统管理」页面进行（修改配置文件无效）
 - 数据库、Valkey、SMTP、OAuth、FRP token 使用强密码或随机密钥
 - `host`、Ingress 域名应与用户访问地址一致，`gin.origins` 应包含前端页面的实际 `Origin`
 - 部署在反向代理后时正确设置 `gin.proxies`
