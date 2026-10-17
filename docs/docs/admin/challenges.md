@@ -59,10 +59,22 @@ description: 创建和测试静态题、动态附件题与容器题，管理附�
 
 ## 网络策略
 
-在网络策略编辑器中填写 Kubernetes NetworkPolicy **spec** 列表（JSON）。以下示例允许发往指定私网网段的出站流量：
+在网络策略编辑器中填写网络策略列表（JSON）。每条策略包含 `service`（对应 compose 中想要描述的服务名）、`from` 与 `to` 数组，数组元素为 Kubernetes `ipBlock`（`cidr` 与可选的 `except`）。
+
+平台的默认策略是**拒绝全部出网**（deny-all egress）：平台为每个实例创建的 NetworkPolicy 固定包含 Egress 策略类型，未在 `to:` 中显式放行的出站目标一律不可达。需要出网访问的题目必须在 `to:` 中显式声明目标（如 DNS、服务依赖）。
+
+以下示例放行发往指定私网网段与集群 DNS 的出站流量（DNS 端点地址依集群而异，请按实际集群调整）：
 
 ```json
-[{"policyTypes":["Egress"],"egress":[{"to":[{"ipBlock":{"cidr":"10.0.0.0/8"}}]}]}]
+[
+  {
+    "service": "app",
+    "to": [
+      {"cidr": "10.0.0.0/8"},
+      {"cidr": "10.96.0.10/32"}
+    ]
+  }
+]
 ```
 
-请按题目需要补充 DNS、服务依赖等目标地址，并确认集群 CNI 支持网络策略。保存题目后会开始镜像预热，进度查看方法见[工作负载调度](../deploy/workloads)。
+请按题目需要补充目标地址，并确认集群 CNI 支持网络策略（平台不校验 CNI 是否真正执行 NetworkPolicy）。注意 deny-all 意味着 DNS 也默认不可达：若题目依赖域名解析，请放行集群 DNS 的地址。保存题目后会开始镜像预热，进度查看方法见[工作负载调度](../deploy/workloads)。
