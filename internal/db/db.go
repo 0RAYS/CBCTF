@@ -20,7 +20,7 @@ var (
 	DB     *gorm.DB
 	HTTPDB *gorm.DB
 	TaskDB *gorm.DB
-	// Advisory locks use a separate pool so callbacks can still acquire query connections.
+	// WorkloadLockDB Advisory locks use a separate pool so callbacks can still acquire query connections.
 	WorkloadLockDB *gorm.DB
 	CronDB         *gorm.DB
 )

@@ -12,7 +12,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 	Name   string `json:"name"`
 	UserID uint   `json:"id"`
-	Gen string `json:"gen,omitempty"`
+	Gen    string `json:"gen,omitempty"`
 }
 
 // GenerateToken 生成token
