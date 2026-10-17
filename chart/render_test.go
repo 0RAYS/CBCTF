@@ -105,7 +105,7 @@ func valkeyService(t *testing.T, documents []map[string]any) (string, int) {
 			continue
 		}
 		ports := document["spec"].(map[string]any)["ports"].([]any)
-		return metadata["name"].(string), int(ports[0].(map[string]any)["port"].(int))
+		return metadata["name"].(string), ports[0].(map[string]any)["port"].(int)
 	}
 	t.Fatal("bundled Valkey rendered no primary Service")
 	return "", 0
