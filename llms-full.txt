@@ -194,7 +194,7 @@ helm repo update
 helm show values cbctf/cbctf > values.yaml
 ```
 
-修改 `values.yaml`：至少设置公开地址 `cbctf.host`、`cbctf.gin.origins`、Ingress 域名、StorageClass、JWT 密钥和数据库密码。完整示例、外部数据库及持久化说明见 [Helm 部署](/deploy/helm.md)。
+修改 `values.yaml`：至少设置公开地址 `cbctf.host`、`cbctf.gin.origins`、Ingress 域名、StorageClass 和数据库密码。JWT 签名密钥无需设置——首次启动自动生成并写入数据库。完整示例、外部数据库及持久化说明见 [Helm 部署](/deploy/helm.md)。
 
 ```bash
 helm upgrade --install cbctf cbctf/cbctf \
@@ -568,7 +568,6 @@ helm uninstall cbctf -n cbctf
 | `cbctf.gin.proxies`                | 可信代理 IP 或 CIDR                    | `10.244.0.0/16`           |
 | `cbctf.gin.origins`                | 允许的浏览器请求 Origin                   | `https://ctf.example.com` |
 | `cbctf.gin.ratelimit.global`       | 全局限流                              | `100`                     |
-| `cbctf.gin.jwt.secret`             | JWT 签名密钥                          | `change-me-long-random`   |
 | `cbctf.gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR       | `10.0.0.0/8`              |
 | `cbctf.gin.pprof.whitelist`        | 允许访问 `/debug/pprof/*` 的 IP 或 CIDR | `127.0.0.1`               |
 | `cbctf.asynq.queues.traffic`       | 靶机流量解析任务并发                        | `2`                       |
@@ -577,7 +576,7 @@ helm uninstall cbctf -n cbctf
 | `cbctf.cheat.ip.whitelist`         | 作弊检测 IP 白名单                       | `10.0.0.0/8`              |
 | `cbctf.webhook.whitelist`          | Webhook 目标白名单                     | `example.com`             |
 
-JWT、PostgreSQL 和 Valkey 密钥会写入 `/app/config.yaml`。
+PostgreSQL 和 Valkey 密钥会写入 `/app/config.yaml`。JWT 签名密钥不再来自部署配置：首次启动自动生成随机值写入数据库并始终以数据库为准，轮换请到「系统管理」页面。
 
 管理后台不能修改 PostgreSQL/GORM、缓存与任务队列、数据目录、Gin 监听地址和监听端口。
 
@@ -830,34 +829,34 @@ Chart `0.0.30` 起内置服务由官方 [Valkey Chart](https://valkey.io/valkey-
 
 ## 常用配置项
 
-| 配置项                          | 说明                                         | 示例                          |
-| ---------------------------- | ------------------------------------------ | --------------------------- |
-| `host`                       | 平台对外访问地址，用于根路径跳转、邮件链接、OAuth 回调等，不要带尾部 `/`  | `https://ctf.example.com`   |
-| `path`                       | 数据根目录，存放附件、动态附件、流量文件、GeoIP 数据库等            | `./data`                    |
-| `gin.mode`                   | Gin 模式                                     | `release`                   |
-| `gin.host`                   | HTTP 监听地址                                  | `0.0.0.0`                   |
-| `gin.port`                   | HTTP 监听端口                                  | `8000`                      |
-| `gin.proxies`                | 可信代理 IP 或 CIDR                             | `10.244.0.0/16`             |
-| `gin.upload.picture`         | 图片上传大小限制，单位 MiB                            | `8`                         |
-| `gin.upload.challenge`       | 题目附件上传大小限制，单位 MiB                          | `8`                         |
-| `gin.upload.writeup`         | 题解上传大小限制，单位 MiB                            | `8`                         |
-| `gin.ratelimit.global`       | 全局每分钟限流                                    | `100`                       |
-| `gin.ratelimit.whitelist`    | 跳过限流的 IP 或 CIDR                            | `127.0.0.1`                 |
-| `gin.origins`                | 允许的浏览器请求 Origin，用于跨域请求与认证 cookie 判断        | `https://ctf.example.com`   |
-| `gin.jwt.secret`             | JWT 签名密钥，生产环境必须替换默认值                       | `change-me-long-random`     |
-| `gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR                | `10.0.0.0/8`                |
-| `gin.pprof.whitelist`        | 允许访问 `/debug/pprof/*` 的 IP 或 CIDR          | `127.0.0.1`                 |
-| `gorm.postgres.host`         | PostgreSQL 地址                              | `postgres.cbctf.svc`        |
-| `gorm.postgres.port`         | PostgreSQL 端口                              | `5432`                      |
-| `gorm.postgres.user`         | PostgreSQL 用户名                             | `cbctf`                     |
-| `gorm.postgres.pwd`          | PostgreSQL 密码                              | `example-postgres-password` |
-| `gorm.postgres.db`           | PostgreSQL 数据库名                            | `cbctf`                     |
-| `gorm.postgres.sslmode`      | 布尔值，`false` 为 `disable`，`true` 为 `require` | `false`                     |
-| `redis.host`                 | 缓存与任务队列地址，由 Chart 从 `valkey.*` 渲染          | `cbctf-valkey.cbctf.svc`    |
-| `redis.port`                 | 缓存与任务队列端口                                  | `6379`                      |
-| `redis.pwd`                  | 缓存与任务队列密码                                  | `example-valkey-password`   |
-| `registration.enabled`       | 是否允许公开注册                                   | `true`                      |
-| `registration.default_group` | 新用户默认分组 ID，`0` 表示不指定                       | `0`                         |
+| 配置项                          | 说明                                                 | 示例                          |
+| ---------------------------- | -------------------------------------------------- | --------------------------- |
+| `host`                       | 平台对外访问地址，用于根路径跳转、邮件链接、OAuth 回调等，不要带尾部 `/`          | `https://ctf.example.com`   |
+| `path`                       | 数据根目录，存放附件、动态附件、流量文件、GeoIP 数据库等                    | `./data`                    |
+| `gin.mode`                   | Gin 模式                                             | `release`                   |
+| `gin.host`                   | HTTP 监听地址                                          | `0.0.0.0`                   |
+| `gin.port`                   | HTTP 监听端口                                          | `8000`                      |
+| `gin.proxies`                | 可信代理 IP 或 CIDR                                     | `10.244.0.0/16`             |
+| `gin.upload.picture`         | 图片上传大小限制，单位 MiB                                    | `8`                         |
+| `gin.upload.challenge`       | 题目附件上传大小限制，单位 MiB                                  | `8`                         |
+| `gin.upload.writeup`         | 题解上传大小限制，单位 MiB                                    | `8`                         |
+| `gin.ratelimit.global`       | 全局每分钟限流                                            | `100`                       |
+| `gin.ratelimit.whitelist`    | 跳过限流的 IP 或 CIDR                                    | `127.0.0.1`                 |
+| `gin.origins`                | 允许的浏览器请求 Origin，用于跨域请求与认证 cookie 判断                | `https://ctf.example.com`   |
+| `gin.jwt.secret`             | JWT 签名密钥。首次启动自动生成随机值写入数据库，此后一律以数据库为准；轮换请使用「系统管理」页面 | （自动生成）                      |
+| `gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR                        | `10.0.0.0/8`                |
+| `gin.pprof.whitelist`        | 允许访问 `/debug/pprof/*` 的 IP 或 CIDR                  | `127.0.0.1`                 |
+| `gorm.postgres.host`         | PostgreSQL 地址                                      | `postgres.cbctf.svc`        |
+| `gorm.postgres.port`         | PostgreSQL 端口                                      | `5432`                      |
+| `gorm.postgres.user`         | PostgreSQL 用户名                                     | `cbctf`                     |
+| `gorm.postgres.pwd`          | PostgreSQL 密码                                      | `example-postgres-password` |
+| `gorm.postgres.db`           | PostgreSQL 数据库名                                    | `cbctf`                     |
+| `gorm.postgres.sslmode`      | 布尔值，`false` 为 `disable`，`true` 为 `require`         | `false`                     |
+| `redis.host`                 | 缓存与任务队列地址，由 Chart 从 `valkey.*` 渲染                  | `cbctf-valkey.cbctf.svc`    |
+| `redis.port`                 | 缓存与任务队列端口                                          | `6379`                      |
+| `redis.pwd`                  | 缓存与任务队列密码                                          | `example-valkey-password`   |
+| `registration.enabled`       | 是否允许公开注册                                           | `true`                      |
+| `registration.default_group` | 新用户默认分组 ID，`0` 表示不指定                               | `0`                         |
 
 ## 异步任务配置
 
@@ -902,7 +901,6 @@ Helm 会把以下值渲染进 ConfigMap：
 
 | Values                                  | 说明                                       |
 | --------------------------------------- | ---------------------------------------- |
-| `cbctf.gin.jwt.secret`                  | JWT 签名密钥                                 |
 | `postgres.auth.password`                | 数据库密码                                    |
 | `valkey.auth.aclUsers.default.password` | 内置 Valkey 密码                             |
 | `valkey.password`                       | 外部 Valkey 或使用 `usersExistingSecret` 时的密码 |
@@ -927,7 +925,7 @@ GeoLite2-City 数据库可通过管理后台上传，保存到 `{path}/GeoLite2-
 
 :::warning
 
-- 生产环境不要使用默认 `gin.jwt.secret`
+- `gin.jwt.secret` 首次启动自动生成并写入数据库，无需手动设置；轮换请通过「系统管理」页面进行（修改配置文件无效）
 - 数据库、Valkey、SMTP、OAuth、FRP token 使用强密码或随机密钥
 - `host`、Ingress 域名应与用户访问地址一致，`gin.origins` 应包含前端页面的实际 `Origin`
 - 部署在反向代理后时正确设置 `gin.proxies`
@@ -1306,7 +1304,7 @@ Valkey 用于缓存和 Asynq 任务队列，兼容 Redis 协议。连接失败�
 :::warning
 
 - 首次登录后立即修改 `admin` 密码
-- 生产环境设置固定、足够长的 `gin.jwt.secret`
+- `gin.jwt.secret` 首次启动自动生成并写入数据库；轮换使用「系统管理」页面，修改部署配置无效
 - 数据库、Valkey、SMTP、OAuth、FRP 使用强密码或随机密钥
 - 使用 HTTPS，并正确配置 Ingress TLS
 - 限制管理后台访问来源，按角色授予最小权限
@@ -2064,9 +2062,7 @@ url: /guide/features/auth.md
 
 ### JWT 配置
 
-| 配置项              | 说明               |
-| ---------------- | ---------------- |
-| `gin.jwt.secret` | JWT 签名密钥，必须替换默认值 |
+JWT 签名密钥在首次启动时自动生成随机值并写入数据库，此后一律以数据库中的值为准——配置文件或部署配置中的值不再生效。轮换密钥请使用「系统管理」页面，保存后立即生效并使所有现存会话失效（用户需重新登录）。
 
 ### 邮箱验证
 
@@ -2560,13 +2556,25 @@ url: /admin/challenges.md
 
 ## 网络策略
 
-在网络策略编辑器中填写 Kubernetes NetworkPolicy **spec** 列表（JSON）。以下示例允许发往指定私网网段的出站流量：
+在网络策略编辑器中填写网络策略列表（JSON）。每条策略包含 `service`（对应 compose 中想要描述的服务名）、`from` 与 `to` 数组，数组元素为 Kubernetes `ipBlock`（`cidr` 与可选的 `except`）。
+
+平台的默认策略是**拒绝全部出网**（deny-all egress）：平台为每个实例创建的 NetworkPolicy 固定包含 Egress 策略类型，未在 `to:` 中显式放行的出站目标一律不可达。需要出网访问的题目必须在 `to:` 中显式声明目标（如 DNS、服务依赖）。
+
+以下示例放行发往指定私网网段与集群 DNS 的出站流量（DNS 端点地址依集群而异，请按实际集群调整）：
 
 ```json
-[{"policyTypes":["Egress"],"egress":[{"to":[{"ipBlock":{"cidr":"10.0.0.0/8"}}]}]}]
+[
+  {
+    "service": "app",
+    "to": [
+      {"cidr": "10.0.0.0/8"},
+      {"cidr": "10.96.0.10/32"}
+    ]
+  }
+]
 ```
 
-请按题目需要补充 DNS、服务依赖等目标地址，并确认集群 CNI 支持网络策略。保存题目后会开始镜像预热，进度查看方法见[工作负载调度](/deploy/workloads.md)。
+请按题目需要补充目标地址，并确认集群 CNI 支持网络策略（平台不校验 CNI 是否真正执行 NetworkPolicy）。注意 deny-all 意味着 DNS 也默认不可达：若题目依赖域名解析，请放行集群 DNS 的地址。保存题目后会开始镜像预热，进度查看方法见[工作负载调度](/deploy/workloads.md)。
 
 
 
