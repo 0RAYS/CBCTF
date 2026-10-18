@@ -30,7 +30,6 @@ func buildPermissionChecks() []permissionCheck {
 		{Resource: "pods", Verb: "watch", Namespace: ns},
 		{Resource: "pods", Verb: "delete", Namespace: ns},
 		{Resource: "pods", Verb: "deletecollection", Namespace: ns},
-		{Resource: "pods", Subresource: "exec", Verb: "create", Namespace: ns},
 		{Resource: "pods", Subresource: "log", Verb: "get", Namespace: ns},
 		// Core: Services
 		{Resource: "services", Verb: "create", Namespace: ns},
