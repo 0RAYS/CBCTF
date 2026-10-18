@@ -1,13 +1,29 @@
 package k8s
 
 import (
+	"CBCTF/internal/log"
+	"context"
 	"fmt"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"CBCTF/internal/model"
 )
+
+func checkResources() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	if _, ret := GetNamespace(ctx, globalNamespace); !ret.OK {
+		log.Logger.Fatalf("Namespace %q not found: %s", globalNamespace, ret.Msg)
+	}
+	if _, ret := GetPVC(ctx, nfsVolumeClaim); !ret.OK {
+		log.Logger.Warningf("PersistentVolumeClaim %q not found: %s", nfsVolumeClaim, ret.Msg)
+		log.Logger.Warningf("Dynamic attachments will not be generated correctly")
+	}
+	log.Logger.Info("K8s resource check completed")
+}
 
 func workloadRequests(limits corev1.ResourceList) corev1.ResourceList {
 	requests := limits.DeepCopy()
