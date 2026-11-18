@@ -101,12 +101,11 @@ func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWit
 			contest_challenges.name AS contest_challenge_name,
 			contest_challenges.category AS contest_challenge_category,
 			contest_challenges.hidden AS contest_challenge_hidden,
-			challenges.id AS challenge_id,
-			challenges.rand_id AS challenge_rand_id,
-			challenges.name AS challenge_name`).
+			contest_challenges.challenge_id AS challenge_id,
+			contest_challenges.rand_id AS challenge_rand_id,
+			contest_challenges.name AS challenge_name`).
 		Joins("INNER JOIN contest_flags ON team_flags.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL").
 		Joins("INNER JOIN contest_challenges ON contest_flags.contest_challenge_id = contest_challenges.id AND contest_challenges.deleted_at IS NULL").
-		Joins("INNER JOIN challenges ON contest_challenges.challenge_id = challenges.id AND challenges.deleted_at IS NULL").
 		Where("team_flags.team_id IN ? AND team_flags.deleted_at IS NULL", teamIDL).
 		Scan(&results)
 	if res.Error != nil {

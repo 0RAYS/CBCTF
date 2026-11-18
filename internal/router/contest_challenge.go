@@ -75,7 +75,6 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 	status, ret := service.GetContestChallengeStatus(
 		db.DB.WithContext(ctx.Request.Context()),
 		middleware.GetTeam(ctx),
-		middleware.GetChallenge(ctx),
 		middleware.GetContestChallenge(ctx),
 	)
 	if !ret.OK {

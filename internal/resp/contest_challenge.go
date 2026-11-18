@@ -20,11 +20,14 @@ func getContestChallengeBaseResp(contestChallenge model.ContestChallenge) gin.H 
 	var score float64
 	var solvers int64
 	for _, flag := range contestChallenge.ContestFlags {
+		if !flag.Active {
+			continue
+		}
 		score += flag.CurrentScore
 		solvers += flag.Solvers
 	}
 	return gin.H{
-		"id":          contestChallenge.Challenge.RandID,
+		"id":          contestChallenge.RandID,
 		"name":        contestChallenge.Name,
 		"description": contestChallenge.Description,
 		"attempt":     contestChallenge.Attempt,

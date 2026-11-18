@@ -54,7 +54,6 @@ func SubmitContestFlag(
 	user model.User,
 	team model.Team,
 	contest model.Contest,
-	challenge model.Challenge,
 	contestChallenge model.ContestChallenge,
 	form dto.SubmitFlagForm,
 	ip string,
@@ -85,7 +84,7 @@ func SubmitContestFlag(
 		return ret
 	}
 	if solved {
-		queueTeamVictimStop(tx, team.ID, challenge.ID)
+		queueTeamVictimStop(tx, team.ID, contestChallenge.ID)
 	}
 	return model.SuccessRetVal()
 }

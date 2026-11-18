@@ -32,7 +32,7 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	if info, err := os.Stat(challenge.AttachmentCachePath(0, flags)); err == nil && info.Size() > 0 {
 		return model.SuccessRetVal()
 	}
-	generator, lockToken, ret := GetGenerator(tx, 0, challenge)
+	generator, lockToken, ret := GetGenerator(tx, challenge)
 	if !ret.OK {
 		return ret
 	}
@@ -78,8 +78,8 @@ func GetTestChallengeStatus(tx *gorm.DB, challenge model.Challenge) view.Contest
 		Attempts: 0,
 		Init:     true,
 		Solved:   false,
-		Remote:   GetVictimStatus(tx, 0, challenge),
-		FileName: buildContestChallengeFileName(tx, challenge, 0),
+		Remote:   GetVictimStatus(tx, 0, 0, challenge.ID, challenge.Type),
+		FileName: buildSourceFileName(tx, challenge, 0),
 	}
 }
 

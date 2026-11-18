@@ -17,7 +17,7 @@ import (
 func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.RetVal {
 	contestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads:   map[string]db.GetOptions{"ContestFlags": {}, "Challenge": {}},
+		Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
 	})
 	if !ret.OK {
 		return ret
@@ -29,7 +29,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 				return ret
 			}
 			if contestChallenge.Type == model.DynamicChallengeType {
-				if err := task.EnqueueGenAttachmentTask(team.CaptainID, contest.ID, contestChallenge.Challenge, team.ID, teamFlags); err != nil {
+				if err := task.EnqueueGenAttachmentTask(team.CaptainID, model.NewContestChallengeSource(contestChallenge), team.ID, teamFlags); err != nil {
 					log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 					return model.RetVal{
 						Msg: i18n.Model.CreateError,
@@ -193,7 +193,7 @@ func ListTeamFlagViews(tx *gorm.DB, team model.Team) ([]view.TeamFlagChallengeVi
 	return result, model.SuccessRetVal()
 }
 
-func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, challenge model.Challenge, contestChallenge model.ContestChallenge) model.RetVal {
+func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) model.RetVal {
 	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
@@ -206,11 +206,11 @@ func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest mo
 		if !createRet.OK {
 			return createRet
 		}
-		if challenge.Type != model.DynamicChallengeType {
+		if contestChallenge.Type != model.DynamicChallengeType {
 			return model.SuccessRetVal()
 		}
 
-		if err := task.EnqueueGenAttachmentTask(user.ID, contest.ID, challenge, team.ID, teamFlags); err != nil {
+		if err := task.EnqueueGenAttachmentTask(user.ID, model.NewContestChallengeSource(contestChallenge), team.ID, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 		}
@@ -218,7 +218,7 @@ func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest mo
 	})
 }
 
-func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, challenge model.Challenge, contestChallenge model.ContestChallenge) model.RetVal {
+func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) model.RetVal {
 	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
@@ -231,11 +231,11 @@ func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest m
 		if !updateRet.OK {
 			return updateRet
 		}
-		if challenge.Type != model.DynamicChallengeType {
+		if contestChallenge.Type != model.DynamicChallengeType {
 			return model.SuccessRetVal()
 		}
 
-		if err := task.EnqueueGenAttachmentTask(user.ID, contest.ID, challenge, team.ID, teamFlags); err != nil {
+		if err := task.EnqueueGenAttachmentTask(user.ID, model.NewContestChallengeSource(contestChallenge), team.ID, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 		}
@@ -245,8 +245,8 @@ func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest m
 		return ret
 	}
 
-	if challenge.Type == model.PodsChallengeType {
-		queueTeamVictimStop(tx, team.ID, challenge.ID)
+	if contestChallenge.Type == model.PodsChallengeType {
+		queueTeamVictimStop(tx, team.ID, contestChallenge.ID)
 	}
 	return model.SuccessRetVal()
 }

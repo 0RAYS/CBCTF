@@ -38,12 +38,18 @@ func TestChallengeListAndStatusUseDownloadNameInsteadOfServerPath(t *testing.T) 
 	if err := os.WriteFile(challenge.StaticPath(), []byte("fixture"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	contestChallenge := model.ContestChallenge{Challenge: challenge}
+	contestChallenge := model.ContestChallenge{ID: 7, Type: model.StaticChallengeType}
+	if err := os.MkdirAll(filepath.Dir(contestChallenge.StaticPath()), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(contestChallenge.StaticPath(), []byte("fixture"), 0600); err != nil {
+		t.Fatal(err)
+	}
 	list, listRet := BuildContestChallengeRuntimeView(tx, model.Team{}, contestChallenge)
 	if !listRet.OK {
 		t.Fatalf("runtime view: %+v", listRet)
 	}
-	status, ret := GetContestChallengeStatus(tx, model.Team{}, challenge, contestChallenge)
+	status, ret := GetContestChallengeStatus(tx, model.Team{}, contestChallenge)
 	if !ret.OK {
 		t.Fatal(ret)
 	}

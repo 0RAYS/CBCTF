@@ -41,6 +41,18 @@ func ChallengeImages(challenge model.Challenge) []string {
 	return k8s.ChallengeImages(challenge, challengeSidecarImages(challenge.Type)...)
 }
 
+// ContestChallengeImages returns the images of a contest challenge copy.
+func ContestChallengeImages(contestChallenge model.ContestChallenge) []string {
+	return k8s.ContestChallengeImages(contestChallenge, challengeSidecarImages(contestChallenge.Type)...)
+}
+
+// warmContestChallengeImages warms up the images of a contest challenge copy.
+func warmContestChallengeImages(contestChallenge model.ContestChallenge) {
+	if err := task.EnqueuePrepullTask(ContestChallengeImages(contestChallenge)); err != nil {
+		log.Logger.Warningf("Failed to enqueue image warmup: contest_challenge_id=%d error=%v", contestChallenge.ID, err)
+	}
+}
+
 // ListChallengeImages covers the whole library, including challenges not yet
 // referenced by a contest, plus the platform's enabled runtime dependencies.
 func ListChallengeImages(tx *gorm.DB) ([]string, model.RetVal) {
