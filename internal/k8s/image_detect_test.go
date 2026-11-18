@@ -24,7 +24,7 @@ func truncatedNode(name string) *corev1.Node {
 			Conditions: []corev1.NodeCondition{{Type: corev1.NodeReady, Status: corev1.ConditionTrue}},
 		},
 	}
-	for i := 0; i < nodeImageReportLimit; i++ {
+	for i := range nodeImageReportLimit {
 		node.Status.Images = append(node.Status.Images, corev1.ContainerImage{
 			Names: []string{fmt.Sprintf("docker.io/library/filler-%d:latest", i)},
 		})
