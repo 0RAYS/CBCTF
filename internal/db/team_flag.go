@@ -198,6 +198,22 @@ func (t *TeamFlagRepo) CountSolvedForChallenge(teamID uint, contestChallengeID u
 	return count, model.SuccessRetVal()
 }
 
+// CountSolvedTeamsForContestChallenge 统计已解出该比赛题目的队伍数。
+// 只统计生效（active = true）flag 的解题记录，归档代次不计入。
+func (t *TeamFlagRepo) CountSolvedTeamsForContestChallenge(contestChallengeID uint) (int64, model.RetVal) {
+	var count int64
+	res := t.DB.Model(&model.TeamFlag{}).
+		Joins("INNER JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
+		Where("contest_flags.contest_challenge_id = ? AND team_flags.solved = true AND contest_flags.active = true", contestChallengeID).
+		Distinct("team_flags.team_id").
+		Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count solved teams for contest challenge: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
+}
+
 func (t *TeamFlagRepo) CountGenerated(teamID uint, contestFlagIDL ...uint) (int64, model.RetVal) {
 	if len(contestFlagIDL) == 0 {
 		return 0, model.SuccessRetVal()
