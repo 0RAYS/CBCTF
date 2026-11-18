@@ -1,4 +1,4 @@
-import ReactEChartsCore from 'echarts-for-react/esm/core';
+import ReactEChartsCore from 'echarts-for-react/lib/core';
 import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import { GraphicComponent, GridComponent, TooltipComponent } from 'echarts/components';
