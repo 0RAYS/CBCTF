@@ -89,6 +89,14 @@ export function removeContestChallenge(contestId, challengeId) {
   });
 }
 
+// 重置比赛题目的解题记录
+export function resetContestChallengeSolves(contestId, challengeId) {
+  return request({
+    url: `/admin/contests/${contestId}/challenges/${challengeId}/reset-solves`,
+    method: 'POST',
+  });
+}
+
 // 更新比赛信息
 export function updateContestInfo(contestId, data) {
   return request({

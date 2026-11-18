@@ -1,10 +1,11 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconPlus, IconTrash, IconRotateClockwise } from '@tabler/icons-react';
 import { Button, Input, Modal, Spinner, Textarea } from '../../../../common';
 import Checkbox from '../../../../common/Checkbox';
+import ConfirmModal from '../../../../common/ConfirmModal';
 import { getChallengeFlags, updateChallengeFlag } from '../../../../../api/admin/challenge';
-import { updateContestChallenge } from '../../../../../api/admin/contest';
+import { resetContestChallengeSolves, updateContestChallenge } from '../../../../../api/admin/contest';
 import { toast } from '../../../../../utils/toast';
 import FlagEditor from './FlagEditor';
 import FlagSolversDialog from './FlagSolversDialog';
@@ -19,6 +20,8 @@ export default function ChallengeEditorDialog({ contestId, challenge, onClose, o
   const [loadError, setLoadError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [solvers, setSolvers] = useState(null);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const busy = useRef(false);
   const alive = useRef(true);
   const fetchFailure = useEffectEvent(() => t('admin.contests.challenges.toast.fetchListFailed'));
@@ -52,7 +55,9 @@ export default function ChallengeEditorDialog({ contestId, challenge, onClose, o
     if (response.code !== 200) throw new Error(response.msg || t('admin.contests.challenges.toast.updateFailed'));
     if (!alive.current) return;
     setSavedFlags((previous) => previous.map((item) => (item.id === flag.id ? flag : item)));
-    toast.success({ description: t('admin.contests.challenges.toast.updateFlagSuccess') });
+    toast.success({
+      description: t('admin.contests.challenges.toast.updateFlagSuccess'),
+    });
     const refresh = await getChallengeFlags(contestId, challenge.id);
     if (!alive.current || refresh.code !== 200) return;
     const updated = refresh.data?.find((item) => item.id === flag.id);
@@ -84,7 +89,9 @@ export default function ChallengeEditorDialog({ contestId, challenge, onClose, o
         const response = await updateContestChallenge(contestId, challenge.id, draft);
         if (response.code !== 200) throw new Error(response.msg || t('admin.contests.challenges.toast.updateFailed'));
         if (!alive.current) return;
-        toast.success({ description: t('admin.contests.challenges.toast.updateSuccess') });
+        toast.success({
+          description: t('admin.contests.challenges.toast.updateSuccess'),
+        });
         onSaved();
         onClose();
       }
@@ -97,6 +104,34 @@ export default function ChallengeEditorDialog({ contestId, challenge, onClose, o
   };
   const close = () => {
     if (!busy.current) onClose();
+  };
+
+  // 重置解题记录是破坏性操作，只能在这里显式触发
+  const resetSolves = async () => {
+    if (resetting) return;
+    setResetting(true);
+    try {
+      const response = await resetContestChallengeSolves(contestId, challenge.id);
+      if (response.code !== 200)
+        throw new Error(response.msg || t('admin.contests.challenges.toast.resetSolvesFailed'));
+      if (!alive.current) return;
+      setResetOpen(false);
+      toast.success({
+        description: t('admin.contests.challenges.toast.resetSolvesSuccess', {
+          teams: response.data?.cleared_teams ?? 0,
+          submissions: response.data?.cleared_submissions ?? 0,
+        }),
+      });
+      const refresh = await getChallengeFlags(contestId, challenge.id);
+      if (!alive.current || refresh.code !== 200) return;
+      setFlags(refresh.data || []);
+      setSavedFlags(refresh.data || []);
+      onSaved();
+    } catch (error) {
+      if (alive.current) toast.danger({ description: error.message });
+    } finally {
+      if (alive.current) setResetting(false);
+    }
   };
   return (
     <>
@@ -121,6 +156,13 @@ export default function ChallengeEditorDialog({ contestId, challenge, onClose, o
             <legend className="text-lg font-mono text-neutral-50">
               {t('admin.contests.challengeModal.sections.basic')}
             </legend>
+            {challenge.source_challenge_id > 0 && (
+              <p className="text-xs font-mono text-neutral-500">
+                {t('admin.contests.challengeModal.labels.sourceChallenge', {
+                  id: challenge.source_challenge_id,
+                })}
+              </p>
+            )}
             <Input
               label={t('admin.contests.challengeModal.labels.name')}
               value={draft.name}
@@ -196,7 +238,18 @@ export default function ChallengeEditorDialog({ contestId, challenge, onClose, o
             })}
           </fieldset>
           <section className="space-y-4">
-            <h3 className="text-lg font-mono text-neutral-50">{t('admin.contests.challengeModal.sections.flags')}</h3>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-lg font-mono text-neutral-50">{t('admin.contests.challengeModal.sections.flags')}</h3>
+              <Button
+                size="sm"
+                variant="danger"
+                icon={<IconRotateClockwise size={15} />}
+                disabled={saving || loading}
+                onClick={() => setResetOpen(true)}
+              >
+                {t('admin.contests.challengeModal.actions.resetSolves')}
+              </Button>
+            </div>
             {loading ? (
               <Spinner />
             ) : loadError ? (
@@ -234,6 +287,17 @@ export default function ChallengeEditorDialog({ contestId, challenge, onClose, o
           challengeId={challenge.id}
         />
       )}
+      <ConfirmModal
+        isOpen={resetOpen}
+        onClose={() => setResetOpen(false)}
+        onConfirm={resetSolves}
+        type="danger"
+        loading={resetting}
+        title={t('admin.contests.challengeModal.resetSolves.title')}
+        confirmText={t('admin.contests.challengeModal.resetSolves.confirm')}
+      >
+        <p className="text-sm text-neutral-300">{t('admin.contests.challengeModal.resetSolves.description')}</p>
+      </ConfirmModal>
     </>
   );
 }

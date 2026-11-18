@@ -393,6 +393,10 @@
           "attempts": "Attempts",
           "hidden": "Hide challenge",
           "flagValueHint": "Format: static{value} | uuid{} | leet{value}",
+          "generation": "Generation {{generation}}",
+          "archived": "Archived",
+          "flagChangeNote": "Changing the flag template keeps existing solves; unsolved teams receive the new answer automatically.",
+          "sourceChallenge": "Copied from bank challenge #{{id}}; the contest copy is independent.",
           "scoreCurve": "Score curve",
           "initialScore": "Initial score",
           "currentScore": "Current score",
@@ -416,7 +420,13 @@
           "viewSolvers": "View Solvers",
           "addTag": "Add tag",
           "addHint": "Add hint",
-          "add": "Add Challenge"
+          "add": "Add Challenge",
+          "resetSolves": "Reset Solves"
+        },
+        "resetSolves": {
+          "title": "Reset Challenge Solves",
+          "description": "This clears every team's solve record for this challenge and recalculates scores and rankings. It cannot be undone.",
+          "confirm": "Reset Solves"
         },
         "solversModal": {
           "title": "Flag #{{index}} Solvers",
@@ -977,7 +987,9 @@
           "updateFailed": "Failed to update challenge",
           "removeSuccess": "Challenge removed",
           "removeFailed": "Failed to remove challenge",
-          "updateFlagSuccess": "Challenge flag updated"
+          "updateFlagSuccess": "Challenge flag updated",
+          "resetSolvesSuccess": "Reset {{teams}} teams and {{submissions}} submissions",
+          "resetSolvesFailed": "Failed to reset solves"
         }
       },
       "scoreboard": {
@@ -1254,7 +1266,8 @@
         "updateSuccess": "Challenge updated",
         "updateFailed": "Failed to update challenge",
         "deleteSuccess": "Challenge deleted",
-        "deleteFailed": "Failed to delete challenge"
+        "deleteFailed": "Failed to delete challenge",
+        "deleteKeepsContestCopies": "{{count}} contest challenge copies and their solves are unaffected"
       },
       "testModal": {
         "title": "Test",
@@ -1301,7 +1314,9 @@
       "delete": {
         "title": "Confirm Delete Challenge",
         "prompt": "Delete this challenge?",
-        "warning": "This action cannot be undone. Proceed with caution."
+        "warning": "This action cannot be undone. Proceed with caution.",
+        "usageNotice": "This challenge is used by {{count}} contest challenges. Contest copies are independent, so deleting it does not affect running contests or their solves.",
+        "usageItem": "{{contest}} · {{name}} ({{solvers}} solved)"
       },
       "sections": {
         "basic": "Basic Info",
