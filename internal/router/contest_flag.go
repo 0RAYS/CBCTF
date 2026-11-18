@@ -55,7 +55,7 @@ func UpdateContestFlag(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeFlagEventType)
-	ret := service.UpdateContestFlag(db.DB.WithContext(ctx.Request.Context()), middleware.GetContestFlag(ctx), form)
+	ret := service.UpdateContestFlag(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), middleware.GetContestFlag(ctx), form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

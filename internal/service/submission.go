@@ -154,15 +154,22 @@ func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestC
 }
 
 // CheckIfSolved contestChallenge 需要预加载 ContestFlags
+// 只有当前生效（active）的 flag 才参与"是否解出"的判定。
 func CheckIfSolved(tx *gorm.DB, team model.Team, contestFlags []model.ContestFlag) (bool, model.RetVal) {
 	if len(contestFlags) == 0 {
 		return true, model.SuccessRetVal()
+	}
+	activeCount := 0
+	for _, flag := range contestFlags {
+		if flag.Active {
+			activeCount++
+		}
 	}
 	solvedCount, ret := db.InitTeamFlagRepo(tx).CountSolvedForChallenge(team.ID, contestFlags[0].ContestChallengeID)
 	if !ret.OK {
 		return false, ret
 	}
-	return solvedCount == int64(len(contestFlags)), model.SuccessRetVal()
+	return solvedCount == int64(activeCount), model.SuccessRetVal()
 }
 
 func ListTeamSubmissions(tx *gorm.DB, team model.Team, form dto.ListModelsForm) ([]model.Submission, int64, model.RetVal) {

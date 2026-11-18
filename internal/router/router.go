@@ -420,6 +420,7 @@ func Init() *gin.Engine {
 				adminContestChallenge.GET("", GetAdminContestChallenge)
 				adminContestChallenge.PUT("", UpdateContestChallenge)
 				adminContestChallenge.DELETE("", DeleteContestChallenge)
+				adminContestChallenge.POST("/reset-solves", ResetContestChallengeSolves)
 
 				//不允许后期创建和删除
 				adminContestChallenge.GET("/flags", GetContestFlags)
