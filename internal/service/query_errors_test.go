@@ -36,7 +36,8 @@ func TestQueryFailuresDoNotBecomeBusinessStates(t *testing.T) {
 		func() (bool, model.RetVal) { return CheckIfGenerated(database, model.Team{ID: 1}, flags) },
 		func() (bool, model.RetVal) { return CheckIfSolved(database, model.Team{ID: 1}, flags) },
 		func() (bool, model.RetVal) {
-			return db.InitContestChallengeRepo(database).IsUniqueContestChallenge(1, 1)
+			contestChallenge, ret := db.InitContestChallengeRepo(database).GetByRandID("missing")
+			return contestChallenge.ID == 1, ret
 		},
 	} {
 		if value, ret := check(); ret.OK || value {
