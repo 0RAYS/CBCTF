@@ -72,6 +72,7 @@ data:
       priority_class_name: {{ .Values.cbctf.k8s.priorityClassName | quote }}
       worker_image: {{ .Values.cbctf.k8s.workerImage | quote }}
       generator_pool_size: {{ .Values.cbctf.k8s.generatorPoolSize }}
+      image_pull_secret: {{ .Values.cbctf.k8s.imagePullSecret | quote }}
       frp:
         on: {{ .Values.cbctf.k8s.frp.on }}
         frpc: {{ .Values.cbctf.k8s.frp.frpc | quote }}

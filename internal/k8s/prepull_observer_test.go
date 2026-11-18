@@ -180,7 +180,7 @@ func TestPrepullRetainsResultsAfterControllerCollection(t *testing.T) {
 
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			err := PrepullImages(ctx, []string{"example/image:v1"}, nil, string(corev1.PullAlways))
+			err := PrepullImages(ctx, []string{"example/image:v1"}, nil, string(corev1.PullAlways), "")
 			wantCommand := "hdel"
 			if tc.reason != "" {
 				wantCommand = "hset"

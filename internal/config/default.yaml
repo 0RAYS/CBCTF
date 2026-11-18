@@ -72,11 +72,13 @@ k8s:
   # Deployment-only; empty uses {namespace}-shared-volume
   shared_volume_claim: ""
   # Docker image
-  capture: ghcr.io/domcyrus/rustnet:latest
+  capture: ghcr.io/domcyrus/rustnet:1.7
   capture_enabled: true
   priority_class_name: ""
   worker_image: ghcr.io/0rays/cbctf-worker:latest
   generator_pool_size: 2
+  # Existing image pull secret in the platform namespace, empty disables it
+  image_pull_secret: ""
   frp:
     on: false
     # Docker image
