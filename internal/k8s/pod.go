@@ -38,6 +38,7 @@ type CreatePodOptions struct {
 	Containers        []corev1.Container
 	InitContainers    []corev1.Container
 	Volumes           []corev1.Volume
+	ImagePullSecret   string
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, model.RetVal) {
@@ -60,6 +61,10 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 	if len(annotations) == 0 {
 		annotations = nil
 	}
+	var imagePullSecrets []corev1.LocalObjectReference
+	if options.ImagePullSecret != "" {
+		imagePullSecrets = []corev1.LocalObjectReference{{Name: options.ImagePullSecret}}
+	}
 	pod := &corev1.Pod{
 		OwnerReferences: resourceOwners(ctx),
 		Name:            options.Name,
@@ -74,6 +79,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 			Containers:                    options.Containers,
 			InitContainers:                options.InitContainers,
 			Volumes:                       options.Volumes,
+			ImagePullSecrets:              imagePullSecrets,
 			TerminationGracePeriodSeconds: new(int64(3)),
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},

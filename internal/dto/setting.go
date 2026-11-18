@@ -33,6 +33,7 @@ type UpdateSettingForm struct {
 	K8SPriorityClassName *string              `form:"k8s_priority_class_name" json:"k8s_priority_class_name" binding:"omitempty,max=253"`
 	K8SWorkerImage       *string              `form:"k8s_worker_image" json:"k8s_worker_image" binding:"omitempty,min=1"`
 	K8SGeneratorPoolSize *int                 `form:"k8s_generator_pool_size" json:"k8s_generator_pool_size" binding:"omitempty,gte=0"`
+	K8SImagePullSecret  *string              `form:"k8s_image_pull_secret" json:"k8s_image_pull_secret" binding:"omitempty,max=253"`
 	K8SFrpOn             *bool                `form:"k8s_frp_on" json:"k8s_frp_on"`
 	K8SFrpFrpcImage      *string              `form:"k8s_frp_frpc" json:"k8s_frp_frpc" binding:"omitempty,min=1"`
 	K8SFrpNginxImage     *string              `form:"k8s_frp_nginx" json:"k8s_frp_nginx" binding:"omitempty,min=1"`

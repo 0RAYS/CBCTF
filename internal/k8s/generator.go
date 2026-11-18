@@ -55,6 +55,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 		PriorityClassName: config.Env.K8S.PriorityClassName,
 		Name:              generator.Name,
 		Labels:            labels,
+		ImagePullSecret:   config.Env.K8S.ImagePullSecret,
 		InitContainers: []corev1.Container{
 			{
 				Name:            "worker-install",

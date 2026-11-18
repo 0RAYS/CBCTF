@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 	"testing"
 
@@ -201,6 +202,38 @@ func TestValkeyPersistenceIsRetainedOnUninstall(t *testing.T) {
 	}
 	if !volume {
 		t.Fatal("bundled Valkey rendered no volume")
+	}
+}
+
+// The image pull secret selector needs the platform to list the existing
+// secrets of its own namespace, so the chart has to hand the name over and to
+// grant the matching permission.
+func TestImagePullSecretIsConfigurableAndListable(t *testing.T) {
+	documents := render(t, "cbctf.k8s.imagePullSecret=registry-key")
+	config := appConfig(t, documents)
+	if config["k8s"].(map[string]any)["image_pull_secret"] != "registry-key" {
+		t.Fatal("image pull secret does not reach the platform configuration")
+	}
+	found := false
+	for _, document := range documents {
+		if document["kind"] != "Role" {
+			continue
+		}
+		for _, raw := range document["rules"].([]any) {
+			rule := raw.(map[string]any)
+			if !slices.Contains(rule["resources"].([]any), "secrets") {
+				continue
+			}
+			if slices.Contains(rule["verbs"].([]any), "list") {
+				found = true
+			}
+			if slices.Contains(rule["verbs"].([]any), "get") || slices.Contains(rule["verbs"].([]any), "*") {
+				t.Fatalf("the secret permission is broader than listing: %v", rule["verbs"])
+			}
+		}
+	}
+	if !found {
+		t.Fatal("the platform cannot list the image pull secrets of its namespace")
 	}
 }
 

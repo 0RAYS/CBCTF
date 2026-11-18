@@ -77,6 +77,8 @@ k8s:
   priority_class_name: ""
   worker_image: ghcr.io/0rays/cbctf-worker:latest
   generator_pool_size: 2
+  # Existing image pull secret in the platform namespace, empty disables it
+  image_pull_secret: ""
   frp:
     on: false
     # Docker image
