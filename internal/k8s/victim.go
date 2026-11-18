@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"maps"
-	"os"
-	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -64,6 +62,16 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	)
 	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag})
 	victim.Resources.UIDs = make(map[string]string)
+	if config.Env.K8S.CaptureEnabled {
+		// The capture sidecar writes the traffic captures into the victim
+		// traffic directory, which has to exist and belong to the capture
+		// user before the pods are created.
+		if err := prepareCaptureTrafficDir(victim); err != nil {
+			log.Logger.Warningf(
+				"Failed to prepare traffic directory for victim %d: %s", victim.ID, err,
+			)
+		}
+	}
 	workloadCtx, ret := createVictimRoot(ctx, victim, "workloads")
 	if !ret.OK {
 		return victim, ret
@@ -128,47 +136,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				log.Logger.Debugf("Created victim vm: victim_id=%d vm=%s", victim.ID, pod.Name)
 				return nil
 			}
-			capture := corev1.Container{
-				Resources:       sidecarResources(),
-				Name:            CaptureContainerName,
-				Image:           config.Env.K8S.CaptureImage,
-				ImagePullPolicy: corev1.PullIfNotPresent,
-				Command:         []string{"/bin/sh", "-c"},
-				VolumeMounts: []corev1.VolumeMount{
-					{
-						Name:      nfsVolumeName,
-						MountPath: "/root/mnt",
-						SubPath: strings.TrimPrefix(
-							strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
-						),
-					},
-				},
-				SecurityContext: &corev1.SecurityContext{
-					Privileged:               new(false),
-					AllowPrivilegeEscalation: new(false),
-					ReadOnlyRootFilesystem:   new(false),
-					Capabilities: &corev1.Capabilities{
-						Drop: []corev1.Capability{"ALL"},
-						Add:  []corev1.Capability{"NET_RAW", "BPF", "PERFMON"},
-					},
-					SeccompProfile: &corev1.SeccompProfile{
-						Type: corev1.SeccompProfileTypeRuntimeDefault,
-					},
-				},
-				Stdin: true,
-				TTY:   true,
-			}
-			command := fmt.Sprintf("rustnet -i any --pcap-export /root/mnt/pod-%s.pcap", pod.Name)
-			if _, err := os.Stat(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")); err == nil {
-				command = fmt.Sprintf("rustnet -i any --geoip-city /root/GeoLite2-City.mmdb --pcap-export /root/mnt/pod-%s.pcap", pod.Name)
-				capture.VolumeMounts = append(capture.VolumeMounts, corev1.VolumeMount{
-					Name:      nfsVolumeName,
-					MountPath: "/root/GeoLite2-City.mmdb",
-					SubPath:   "GeoLite2-City.mmdb",
-					ReadOnly:  true,
-				})
-			}
-			capture.Command = append(capture.Command, command)
+			capture := captureContainer(victim, fmt.Sprintf("pod-%s.pcap", pod.Name))
 			var containers []corev1.Container
 			var volumes []corev1.Volume
 			if config.Env.K8S.CaptureEnabled {
@@ -238,6 +206,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				Networks:          networks,
 				Containers:        containers,
 				Volumes:           volumes,
+				ImagePullSecret:   config.Env.K8S.ImagePullSecret,
 			}
 
 			p, ret := CreatePod(ctx, pOptions)

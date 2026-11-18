@@ -195,6 +195,7 @@ func Init() *gin.Engine {
 			adminSystem.GET("/status", SystemStatus)
 			adminSystem.GET("/config", SystemConfig)
 			adminSystem.PUT("/config", UpdateSystem)
+			adminSystem.GET("/image-pull-secrets", GetImagePullSecrets)
 			adminSystem.POST("/geocity-db", UploadGeoCityDB)
 			adminSystem.POST("/restart", RestartSystem)
 		}

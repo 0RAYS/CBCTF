@@ -2,7 +2,7 @@ apiVersion: v2
 name: cbctf
 description: A Kubernetes-native CTF competition platform
 type: application
-version: 0.0.31
+version: 0.0.33
 appVersion: "latest"
 keywords:
   - ctf

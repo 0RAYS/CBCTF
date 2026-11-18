@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"math/big"
 	"net"
-	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 
@@ -118,6 +116,16 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frp.Frps))))
 	frps := config.Env.K8S.Frp.Frps[idxBig.Int64()]
 	log.Logger.Debugf("Creating frpc resources: victim_id=%d frps=%s endpoints=%d", victim.ID, frps.Host, len(victim.Endpoints))
+	if config.Env.K8S.CaptureEnabled {
+		// The capture sidecar writes the traffic captures into the victim
+		// traffic directory, which has to exist and belong to the capture
+		// user before the pod is created.
+		if err := prepareCaptureTrafficDir(victim); err != nil {
+			log.Logger.Warningf(
+				"Failed to prepare traffic directory for victim %d: %s", victim.ID, err,
+			)
+		}
+	}
 	portRange := make([]int32, 0)
 	for _, pr := range frps.Allowed {
 		for i := pr.From; i <= pr.To; i++ {
@@ -249,47 +257,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 					},
 				},
 			}
-			capture := corev1.Container{
-				Resources:       sidecarResources(),
-				Name:            CaptureContainerName,
-				Image:           config.Env.K8S.CaptureImage,
-				ImagePullPolicy: corev1.PullIfNotPresent,
-				Command:         []string{"/bin/sh", "-c"},
-				VolumeMounts: []corev1.VolumeMount{
-					{
-						Name:      nfsVolumeName,
-						MountPath: "/root/mnt",
-						SubPath: strings.TrimPrefix(
-							strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
-						),
-					},
-				},
-				SecurityContext: &corev1.SecurityContext{
-					Privileged:               new(false),
-					AllowPrivilegeEscalation: new(false),
-					ReadOnlyRootFilesystem:   new(false),
-					Capabilities: &corev1.Capabilities{
-						Drop: []corev1.Capability{"ALL"},
-						Add:  []corev1.Capability{"NET_RAW", "BPF", "PERFMON"},
-					},
-					SeccompProfile: &corev1.SeccompProfile{
-						Type: corev1.SeccompProfileTypeRuntimeDefault,
-					},
-				},
-				Stdin: true,
-				TTY:   true,
-			}
-			command := "rustnet -i any --pcap-export /root/mnt/frpc.pcap"
-			if _, err := os.Stat(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")); err == nil {
-				command = "rustnet -i any --geoip-city /root/GeoLite2-City.mmdb  --pcap-export /root/mnt/frpc.pcap"
-				capture.VolumeMounts = append(capture.VolumeMounts, corev1.VolumeMount{
-					Name:      nfsVolumeName,
-					MountPath: "/root/GeoLite2-City.mmdb",
-					SubPath:   "GeoLite2-City.mmdb",
-					ReadOnly:  true,
-				})
-			}
-			capture.Command = append(capture.Command, command)
+			capture := captureContainer(victim, "frpc.pcap")
 			volumes := []corev1.Volume{fcmVolume}
 			if len(nginx.Streams) > 0 {
 				volumes = append(volumes, ncmVolume)
@@ -307,6 +275,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				Labels:            labels,
 				Containers:        containers,
 				Volumes:           volumes,
+				ImagePullSecret:   config.Env.K8S.ImagePullSecret,
 			}
 			p, ret := CreatePod(ctx, options)
 			if !ret.OK {
