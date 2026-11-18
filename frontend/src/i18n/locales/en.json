@@ -2201,6 +2201,7 @@
         "registrationDefaultGroup": "Default Group for New Users"
       },
       "hints": {
+        "k8sCapture": "Capture image used by the capture sidecar. The sidecar runs as root and needs CAP_NET_RAW, CAP_BPF and CAP_PERFMON to keep the eBPF process attribution of the captured connections.",
         "k8sCaptureEnabled": "Applies to new victim and FRPC Pods. Disabling capture removes their capture container and related storage mounts.",
         "k8sPriorityClassName": "Name of an existing Kubernetes PriorityClass for new Pods. Leave empty to use the cluster default.",
         "k8sWorkerImage": "Independent image containing /app/worker, such as ghcr.io/0rays/cbctf-worker:latest. Applies to new generators.",

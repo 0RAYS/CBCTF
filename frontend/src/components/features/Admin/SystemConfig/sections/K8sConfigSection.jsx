@@ -22,6 +22,7 @@ export function K8sConfigSection({ config, updateConfig }) {
       <ConfigField
         label={t('admin.system.labels.k8sCapture')}
         value={config.k8s.capture}
+        description={t('admin.system.hints.k8sCapture')}
         onChange={(value) =>
           updateConfig((draft) => {
             draft.k8s.capture = value;
