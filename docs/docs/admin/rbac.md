@@ -50,8 +50,8 @@ description: 通过用户分组和角色配置后台访问、比赛管理与选�
 | 题库与测试 | `admin:challenge:*` |
 | 比赛与比赛题目 | `admin:contest:*`、`admin:contest_challenge:*`、`admin:contest_challenge_flag:*` |
 | 队伍与题解 | `admin:team:*`、`admin:team_writeup:list/read`、`admin:contest_writeup:export` |
-| 全局资源 | `admin:image:pull`、`admin:victim:control`、`admin:generator:control`、`admin:traffic:read` |
-| 比赛资源 | `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`、`admin:contest_traffic:read` |
+| 全局资源 | `admin:image:pull`、`admin:image:detect`、`admin:victim:control`、`admin:generator:control`、`admin:traffic:read` |
+| 比赛资源 | `admin:contest_image:pull`、`admin:contest_image:detect`、`admin:contest_victim:control`、`admin:contest_generator:control`、`admin:contest_traffic:read` |
 | SMTP | `admin:smtp:*`，其中发测试邮件为 `admin:smtp:test` |
 | 定时任务 | `admin:cronjob:list`、`admin:cronjob:update` |
 | 系统配置 | `admin:system:read/update/restart` |

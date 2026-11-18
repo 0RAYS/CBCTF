@@ -60,6 +60,6 @@ description: 按实际管理界面创建和发布比赛，维护比赛题目、�
 
 ## 主要权限
 
-比赛管理使用 `admin:contest:*`；比赛题目使用 `admin:contest_challenge:*`，Flag 使用 `admin:contest_challenge_flag:*`。比赛范围的镜像、靶机、生成器分别使用 `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`，不要与全局权限混淆。
+比赛管理使用 `admin:contest:*`；比赛题目使用 `admin:contest_challenge:*`，Flag 使用 `admin:contest_challenge_flag:*`。比赛范围的镜像、靶机、生成器分别使用 `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`，不要与全局权限混淆。节点镜像检测使用 `admin:image:detect`，比赛范围的镜像检测使用 `admin:contest_image:detect`。
 
 题解列表/下载使用 `admin:team_writeup:list/read`，整场导出使用 `admin:contest_writeup:export`。完整权限名称可在后台「权限」页查看。
