@@ -1,8 +1,15 @@
-import { getAdminPullImages, pullAdminImages } from '../../api/admin/image';
+import { detectAdminImages, getAdminPullImages, pullAdminImages } from '../../api/admin/image';
 import ImagesPullManagement from '../../components/features/Admin/images/ImagesPullManagement.jsx';
 
 function AdminImages() {
-  return <ImagesPullManagement scope="global" fetchImages={getAdminPullImages} pullImages={pullAdminImages} />;
+  return (
+    <ImagesPullManagement
+      scope="global"
+      fetchImages={getAdminPullImages}
+      pullImages={pullAdminImages}
+      detectImages={detectAdminImages}
+    />
+  );
 }
 
 export default AdminImages;

@@ -15,3 +15,12 @@ export const pullAdminImages = (data) => {
     data,
   });
 };
+
+// 手动触发镜像检测
+export const detectAdminImages = () => {
+  return request({
+    url: '/admin/images/detect',
+    method: 'POST',
+    noToast: true,
+  });
+};

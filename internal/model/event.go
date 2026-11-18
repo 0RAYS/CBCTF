@@ -71,6 +71,7 @@ const (
 	ResetChallengeEventType     = "reset_challenge"
 	DownloadAttachmentEventType = "download_attachment"
 	PullImageEventType          = "pull_image"
+	DetectImageEventType        = "detect_image"
 	StartVictimEventType        = "start_victim"
 	ExtendVictimEventType       = "extend_victim"
 	StopVictimEventType         = "stop_victim"
@@ -123,7 +124,7 @@ var EventTypes = []string{
 	JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType,
 	LeaveTeamEventType, KickMemberEventType,
 	InitChallengeEventType, ResetChallengeEventType,
-	DownloadAttachmentEventType, PullImageEventType, StartVictimEventType, ExtendVictimEventType, StopVictimEventType,
+	DownloadAttachmentEventType, PullImageEventType, DetectImageEventType, StartVictimEventType, ExtendVictimEventType, StopVictimEventType,
 	DownloadTrafficEventType,
 	ReadFlagEventType, SubmitFlagEventType,
 	StartGeneratorEventType, StopGeneratorEventType,

@@ -17,6 +17,9 @@ type pullTarget struct {
 
 type pullResult struct {
 	pulled bool
+	// absent marks an image the node does not hold, which only
+	// imagePullPolicy: Never can prove.
+	absent bool
 	reason string
 }
 
@@ -24,6 +27,7 @@ type pullResult struct {
 // have already disappeared from the informer store.
 type pullResults struct {
 	batch   string
+	label   string
 	mu      sync.Mutex
 	results map[pullTarget]pullResult
 	changed chan struct{}
@@ -34,7 +38,7 @@ func (p *pullResults) observe(obj any) {
 		obj = deleted.Obj
 	}
 	pod, ok := obj.(*corev1.Pod)
-	if !ok || pod == nil || pod.Labels[prepullLabel] != p.batch || pod.Spec.NodeName == "" {
+	if !ok || pod == nil || pod.Labels[p.label] != p.batch || pod.Spec.NodeName == "" {
 		return
 	}
 
@@ -48,6 +52,9 @@ func (p *pullResults) observe(obj any) {
 				continue
 			}
 			switch waiting.Reason {
+			case "ErrImageNeverPull":
+				result.absent = true
+				result.reason = waiting.Reason
 			case "ErrImagePull", "ImagePullBackOff", "InvalidImageName":
 				result.reason = waiting.Reason
 			default:
@@ -59,8 +66,9 @@ func (p *pullResults) observe(obj any) {
 				continue
 			}
 			target := pullTarget{node: pod.Spec.NodeName, image: container.Image}
-			// A later transient status must not undo proof of a successful pull.
-			if !p.results[target].pulled {
+			// A later transient status must not undo proof of a successful pull
+			// or of an image the node does not hold.
+			if !p.results[target].pulled && !p.results[target].absent {
 				p.results[target] = result
 			}
 			select {

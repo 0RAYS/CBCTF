@@ -63,7 +63,7 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 | Challenges | 管理题库、附件、Flag、动态附件和容器题测试 |
 | Victims    | 查看和停止运行中的靶机，查看流量        |
 | Generators | 查看和控制动态附件生成器            |
-| Images     | 预热题目镜像                  |
+| Images     | 检测节点镜像并预热题目镜像             |
 | OAuth      | 管理 OAuth2（含手动配置的 OIDC 端点）和 CAS 登录提供商 |
 | SMTP       | 管理邮件发送配置和邮件记录           |
 | CronJobs   | 查看和更新后台 Cron 任务         |
@@ -85,7 +85,7 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 | Challenges | 比赛题目和比赛内 Flag              |
 | Scoreboard | 排行榜和排名时间线                  |
 | Teams      | 队伍、成员、提交、Flag、Writeup、靶机历史 |
-| Images     | 比赛题目镜像预热                   |
+| Images     | 检测比赛题目镜像并预热                 |
 | Victims    | 比赛内靶机预热、查看和停止              |
 | Generators | 比赛内动态附件生成器管理               |
 | Cheats     | 作弊检测记录                     |

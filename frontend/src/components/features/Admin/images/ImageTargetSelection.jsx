@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IconCheck, IconDownload, IconSearch } from '@tabler/icons-react';
 import { Button, Card, Chip, EmptyState, Input } from '../../../common';
-import { buildTargetKey, selectableTargetKeys } from './imageModel';
+import { buildTargetKey, imageState, selectableTargetKeys } from './imageModel';
 
 export default function ImageTargetSelection({
   scopeKey,
@@ -26,7 +26,7 @@ export default function ImageTargetSelection({
       <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
         <div>
           <h2 className="text-lg font-mono text-neutral-50">{t(`${scopeKey}.selection.title`)}</h2>
-          <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">{t(`${scopeKey}.selection.subtitle`)}</p>
+          <p className="mt-2 text-sm font-mono text-neutral-400 leading-6">{t(`${scopeKey}.selection.subtitle`)}</p>
         </div>
         <Button
           variant="outline"
@@ -70,7 +70,7 @@ export default function ImageTargetSelection({
                 <div className="break-all text-sm font-mono text-neutral-50 mb-3">{imageName}</div>
                 <div className="flex flex-wrap gap-2">
                   {nodes.map((node) => {
-                    const isMissing = !node.images.includes(imageName);
+                    const state = imageState(node, imageName);
                     const isSelected = selectedTargetKeys.includes(buildTargetKey(node.node, imageName));
                     const isSelectable = selectableKeys.has(buildTargetKey(node.node, imageName));
                     return (
@@ -90,19 +90,15 @@ export default function ImageTargetSelection({
                       >
                         <span>{node.node}</span>
                         <Chip
-                          label={
-                            isMissing
-                              ? t('admin.contests.imagesPull.status.missing')
-                              : t('admin.contests.imagesPull.status.present')
-                          }
+                          label={t(`admin.contests.imagesPull.status.${state}`)}
                           variant="tag"
                           size="sm"
                           colorClass={
-                            !isMissing
-                              ? 'border-neutral-300/20 text-neutral-500'
-                              : isSelected
-                                ? 'border-geek-400/40 text-geek-300'
-                                : 'border-amber-400/40 text-amber-300'
+                            state === 'present'
+                              ? 'border-green-400/30 text-green-300'
+                              : state === 'missing'
+                                ? 'border-amber-400/30 text-amber-300'
+                                : 'border-neutral-300/20 text-neutral-500'
                           }
                         />
                         {isSelected && <IconCheck size={14} />}
