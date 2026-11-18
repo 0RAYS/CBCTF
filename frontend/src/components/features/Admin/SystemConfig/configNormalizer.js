@@ -81,6 +81,7 @@ export function normalizeConfig(source) {
       priority_class_name: source.k8s_priority_class_name,
       worker_image: source.k8s_worker_image,
       generator_pool_size: source.k8s_generator_pool_size,
+      image_pull_secret: fallback(source?.k8s_image_pull_secret, fallback(source?.k8s?.image_pull_secret, '')),
       frp: {
         frpc: fallback(source?.k8s_frp_frpc, fallback(source?.k8s?.frp?.frpc, '')),
         nginx: fallback(source?.k8s_frp_nginx, fallback(source?.k8s?.frp?.nginx, '')),

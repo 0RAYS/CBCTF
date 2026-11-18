@@ -206,6 +206,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				Networks:          networks,
 				Containers:        containers,
 				Volumes:           volumes,
+				ImagePullSecret:   config.Env.K8S.ImagePullSecret,
 			}
 
 			p, ret := CreatePod(ctx, pOptions)

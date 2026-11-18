@@ -83,6 +83,7 @@ type Config struct {
 		PriorityClassName string `mapstructure:"priority_class_name" json:"priority_class_name"`
 		WorkerImage       string `mapstructure:"worker_image" json:"worker_image"`
 		GeneratorPoolSize int    `mapstructure:"generator_pool_size" json:"generator_pool_size"`
+		ImagePullSecret  string `mapstructure:"image_pull_secret" json:"image_pull_secret"`
 		Frp               struct {
 			On         bool         `mapstructure:"on" json:"on"`
 			FrpcImage  string       `mapstructure:"frpc" json:"frpc"`

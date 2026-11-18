@@ -15,11 +15,12 @@ import (
 )
 
 type CreateJobOptions struct {
-	Name         string
-	Labels       map[string]string
-	Images       []string
-	PullPolicy   string
-	SelectedNode string
+	Name            string
+	Labels          map[string]string
+	Images          []string
+	PullPolicy      string
+	SelectedNode    string
+	ImagePullSecret string
 }
 
 func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, model.RetVal) {
@@ -49,6 +50,10 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 			RestartPolicy:   new(corev1.ContainerRestartPolicyNever),
 		})
 	}
+	var imagePullSecrets []corev1.LocalObjectReference
+	if options.ImagePullSecret != "" {
+		imagePullSecrets = []corev1.LocalObjectReference{{Name: options.ImagePullSecret}}
+	}
 	job := &batchv1.Job{
 		Name:      options.Name,
 		Namespace: globalNamespace,
@@ -68,6 +73,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 					EnableServiceLinks:           new(false),
 					Affinity:                     affinity,
 					Containers:                   containers,
+					ImagePullSecrets:             imagePullSecrets,
 					RestartPolicy:                corev1.RestartPolicyNever,
 				},
 			},

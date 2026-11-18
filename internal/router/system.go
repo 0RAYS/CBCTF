@@ -13,6 +13,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
@@ -128,6 +129,7 @@ func SystemConfig(ctx *gin.Context) {
 		"k8s_priority_class_name": config.Env.K8S.PriorityClassName,
 		"k8s_worker_image":        config.Env.K8S.WorkerImage,
 		"k8s_generator_pool_size": config.Env.K8S.GeneratorPoolSize,
+		"k8s_image_pull_secret": config.Env.K8S.ImagePullSecret,
 		"k8s_frp_on":              config.Env.K8S.Frp.On,
 		"k8s_frp_frpc":            config.Env.K8S.Frp.FrpcImage,
 		"k8s_frp_nginx":           config.Env.K8S.Frp.NginxImage,
@@ -140,6 +142,17 @@ func SystemConfig(ctx *gin.Context) {
 		"geocity_db":                 geocityDBPath,
 	}
 	resp.JSON(ctx, model.SuccessRetVal(data))
+}
+
+// GetImagePullSecrets lists the image pull secrets of the platform namespace,
+// so an administrator can select an existing one.
+func GetImagePullSecrets(ctx *gin.Context) {
+	names, ret := k8s.ListImagePullSecrets(ctx.Request.Context())
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	resp.JSON(ctx, model.SuccessRetVal(names))
 }
 
 func UpdateSystem(ctx *gin.Context) {

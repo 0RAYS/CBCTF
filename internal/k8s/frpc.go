@@ -275,6 +275,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				Labels:            labels,
 				Containers:        containers,
 				Volumes:           volumes,
+				ImagePullSecret:   config.Env.K8S.ImagePullSecret,
 			}
 			p, ret := CreatePod(ctx, options)
 			if !ret.OK {
