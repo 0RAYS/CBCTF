@@ -187,3 +187,76 @@ type NodePortEndpoint struct {
 	PodName  string   `json:"pod_name"`
 	Endpoint Endpoint `json:"endpoint"`
 }
+
+// DeepCopy 返回 ChallengeTemplate 的深拷贝。
+// 题目加入比赛后需要持有一份独立副本，模板内含多层 slice / map，
+// 浅拷贝会让题库与比赛共享底层数组，改动一侧会污染另一侧。
+func (t ChallengeTemplate) DeepCopy() ChallengeTemplate {
+	if t.Pods == nil {
+		return ChallengeTemplate{}
+	}
+	pods := make([]ChallengePodTemplate, 0, len(t.Pods))
+	for _, pod := range t.Pods {
+		pods = append(pods, ChallengePodTemplate{
+			Key:          pod.Key,
+			Name:         pod.Name,
+			ServicePorts: pod.ServicePorts.DeepCopy(),
+			Networks:     pod.Networks.DeepCopy(),
+			Containers:   copyChallengeContainers(pod.Containers),
+		})
+	}
+	return ChallengeTemplate{Pods: pods}
+}
+
+func copyChallengeContainers(containers []ChallengeContainerTemplate) []ChallengeContainerTemplate {
+	if containers == nil {
+		return nil
+	}
+	result := make([]ChallengeContainerTemplate, 0, len(containers))
+	for _, container := range containers {
+		result = append(result, ChallengeContainerTemplate{
+			Key:          container.Key,
+			Name:         container.Name,
+			Image:        container.Image,
+			CPU:          container.CPU,
+			Memory:       container.Memory,
+			WorkingDir:   container.WorkingDir,
+			Command:      append([]string(nil), container.Command...),
+			Environment:  copyStringMap(container.Environment),
+			KubeVirt:     container.KubeVirt,
+			Bootloader:   container.Bootloader,
+			SecureBoot:   container.SecureBoot,
+			UserData:     container.UserData.DeepCopy(),
+			VolumeMounts: append([]XVolume(nil), container.VolumeMounts...),
+			Exposes:      container.Exposes.DeepCopy(),
+		})
+	}
+	return result
+}
+
+func (c CloudInitConfig) DeepCopy() CloudInitConfig {
+	if c.Users == nil && c.Groups == nil && c.WriteFiles == nil {
+		return CloudInitConfig{}
+	}
+	result := CloudInitConfig{WriteFiles: append([]CloudInitWriteFile(nil), c.WriteFiles...)}
+	for _, user := range c.Users {
+		user.SSHAuthorizedKeys = append([]string(nil), user.SSHAuthorizedKeys...)
+		result.Users = append(result.Users, user)
+	}
+	for _, group := range c.Groups {
+		group.Members = append([]string(nil), group.Members...)
+		result.Groups = append(result.Groups, group)
+	}
+	return result
+}
+
+func copyStringMap(source map[string]string) map[string]string {
+	if source == nil {
+		return nil
+	}
+	result := make(map[string]string, len(source))
+	for key, value := range source {
+		result[key] = value
+	}
+	return result
+}

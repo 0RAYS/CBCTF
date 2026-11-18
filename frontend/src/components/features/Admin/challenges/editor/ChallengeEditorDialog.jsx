@@ -19,6 +19,7 @@ export default function ChallengeEditorDialog({
     docker_compose: '',
     network_policies: [{ from: [{ cidr: '', except: [''] }], to: [{ cidr: '', except: [''] }] }],
   },
+  usages = [],
   categories = [],
   onClose,
   onSubmit,
@@ -78,6 +79,24 @@ export default function ChallengeEditorDialog({
             <h3 className="text-2xl font-mono text-neutral-50 mb-4">{t('admin.challengeModal.delete.title')}</h3>
             <p className="text-neutral-400 font-mono text-lg mb-2">{t('admin.challengeModal.delete.prompt')}</p>
             <p className="text-red-400 font-mono text-sm">{t('admin.challengeModal.delete.warning')}</p>
+            {usages.length > 0 && (
+              <div className="mt-6 rounded-md border border-geek-600/30 bg-geek-400/10 p-3 text-left">
+                <p className="text-sm text-geek-300 font-mono">
+                  {t('admin.challengeModal.delete.usageNotice', { count: usages.length })}
+                </p>
+                <ul className="mt-2 space-y-1 text-xs text-neutral-300 font-mono">
+                  {usages.map((usage) => (
+                    <li key={usage.id}>
+                      {t('admin.challengeModal.delete.usageItem', {
+                        contest: usage.contest_name || `#${usage.contest_id}`,
+                        name: usage.name,
+                        solvers: usage.solvers || 0,
+                      })}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       ) : (

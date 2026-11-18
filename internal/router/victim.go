@@ -21,9 +21,8 @@ func StartVictim(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx)
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
-	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	ret := service.StartVictim(db.DB.WithContext(ctx.Request.Context()), user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
+	ret := service.StartVictim(db.DB.WithContext(ctx.Request.Context()), user.ID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -32,7 +31,7 @@ func StartVictim(ctx *gin.Context) {
 
 func ExtendVictimDuration(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ExtendVictimEventType)
-	victim, ret := service.ExtendVictimDuration(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx), middleware.GetChallenge(ctx))
+	victim, ret := service.ExtendVictimDuration(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx), middleware.GetContestChallenge(ctx).ID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -48,7 +47,7 @@ func ExtendVictimDuration(ctx *gin.Context) {
 
 func StopVictim(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
-	if ret := service.StopAliveVictim(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx), middleware.GetChallenge(ctx)); !ret.OK {
+	if ret := service.StopAliveVictim(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx), middleware.GetContestChallenge(ctx).ID); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}

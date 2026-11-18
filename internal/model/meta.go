@@ -40,10 +40,9 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		UniqueFields: []string{"id", "name"},
 	},
 	reflect.TypeFor[ContestChallenge](): {
-		Name:          "ContestChallenge",
-		Table:         "contest_challenges",
-		UniqueFields:  []string{"id"},
-		UniqueIndexes: [][]string{{"contest_id", "challenge_id"}},
+		Name:         "ContestChallenge",
+		Table:        "contest_challenges",
+		UniqueFields: []string{"id", "rand_id"},
 	},
 	reflect.TypeFor[ContestFlag](): {
 		Name:         "ContestFlag",

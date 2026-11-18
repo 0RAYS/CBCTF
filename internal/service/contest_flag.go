@@ -17,15 +17,18 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 	if !ret.OK {
 		return false, model.ContestFlag{}, model.TeamFlag{}, ret
 	}
-	if len(contestFlagL) == 0 {
-		return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound}
+	activeFlagL := make([]model.ContestFlag, 0, len(contestFlagL))
+	for _, contestFlag := range contestFlagL {
+		if contestFlag.Active {
+			activeFlagL = append(activeFlagL, contestFlag)
+		}
 	}
 	teamFlag, ret := db.InitTeamFlagRepo(tx).GetByContestChallengeAndValue(team.ID, contestChallenge.ID, value)
 	if !ret.OK && ret.Msg != i18n.Model.TeamFlag.NotFound {
 		return false, model.ContestFlag{}, model.TeamFlag{}, ret
 	}
 	if ret.OK {
-		for _, contestFlag := range contestFlagL {
+		for _, contestFlag := range activeFlagL {
 			if contestFlag.ID != teamFlag.ContestFlagID {
 				continue
 			}
@@ -35,8 +38,11 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 			return true, contestFlag, teamFlag, model.SuccessRetVal()
 		}
 	}
+	if len(activeFlagL) == 0 {
+		return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound}
+	}
 	// 没有找到答案, 则默认为第一个flag
-	return false, contestFlagL[0], model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.NotMatch}
+	return false, activeFlagL[0], model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.NotMatch}
 }
 
 func CalcContestFlagState(tx *gorm.DB, contestFlag model.ContestFlag) (int64, float64, model.RetVal) {
@@ -54,7 +60,6 @@ func SubmitContestFlag(
 	user model.User,
 	team model.Team,
 	contest model.Contest,
-	challenge model.Challenge,
 	contestChallenge model.ContestChallenge,
 	form dto.SubmitFlagForm,
 	ip string,
@@ -85,7 +90,7 @@ func SubmitContestFlag(
 		return ret
 	}
 	if solved {
-		queueTeamVictimStop(tx, team.ID, challenge.ID)
+		queueTeamVictimStop(tx, team.ID, contestChallenge.ID)
 	}
 	return model.SuccessRetVal()
 }
@@ -95,19 +100,4 @@ func ListContestFlags(tx *gorm.DB, contestChallenge model.ContestChallenge) ([]m
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	return flags, ret
-}
-
-func UpdateContestFlag(tx *gorm.DB, contestFlag model.ContestFlag, form dto.UpdateContestFlagForm) model.RetVal {
-	currentScore := contestFlag.CurrentScore
-	if form.Score != nil && *form.Score < currentScore {
-		currentScore = *form.Score
-	}
-	return db.InitContestFlagRepo(tx).Update(contestFlag.ID, db.UpdateContestFlagOptions{
-		Value:        form.Value,
-		Score:        form.Score,
-		CurrentScore: &currentScore,
-		Decay:        form.Decay,
-		MinScore:     form.MinScore,
-		ScoreType:    form.ScoreType,
-	})
 }

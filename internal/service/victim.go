@@ -47,45 +47,103 @@ func needVPC(pods []model.ChallengePodTemplate) bool {
 	return false
 }
 
-func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge) (model.VictimSpec, model.RetVal) {
-	spec := model.VictimSpec{
-		Pods:            make([]model.PodSpec, 0, len(challenge.Template.Pods)),
-		NetworkPolicies: challenge.NetworkPolicies,
-		FrpEnabled:      config.Env.K8S.Frp.On,
+// victimFlagSpec 靶机规格中的一条 flag。
+// Key 用于关联队伍手里的答案：比赛题目副本用 contest_flag_id，题库测试模式用 challenge_flag_id。
+type victimFlagSpec struct {
+	Key       uint
+	Value     string
+	Binding   model.FlagBinding
+	TeamValue string
+	HasTeam   bool
+}
+
+// victimSpecSource 靶机规格来源。
+// 比赛内一律使用比赛题目副本，题库题目只在管理员测试模式下使用。
+type victimSpecSource struct {
+	Template         model.ChallengeTemplate
+	NetworkPolicies  model.NetworkPolicies
+	Flags            []victimFlagSpec
+	ChallengeFlagIDs []uint
+	ContestFlagIDs   []uint
+}
+
+// buildVictimSpecSourceContestChallenge 依据比赛题目副本构造规格来源。
+func buildVictimSpecSourceContestChallenge(tx *gorm.DB, victim model.Victim, contestChallenge model.ContestChallenge) (victimSpecSource, model.RetVal) {
+	source := victimSpecSource{
+		Template:        contestChallenge.Template,
+		NetworkPolicies: contestChallenge.NetworkPolicies,
 	}
-	flagValues := make(map[uint]string)
-	if victim.TeamID.Valid {
-		challengeFlagIDs := make([]uint, 0, len(challenge.ChallengeFlags))
-		for _, challengeFlag := range challenge.ChallengeFlags {
-			challengeFlagIDs = append(challengeFlagIDs, challengeFlag.ID)
+	for _, flag := range contestChallenge.ContestFlags {
+		if !flag.Active {
+			continue
 		}
-		if len(challengeFlagIDs) > 0 {
-			teamFlags, _, ret := db.InitTeamFlagRepo(tx).List(-1, -1, db.GetOptions{
-				Conditions: map[string]any{
-					"team_id":           victim.TeamID.V,
-					"challenge_flag_id": challengeFlagIDs,
-				},
-			})
-			if !ret.OK && ret.Msg != i18n.Model.NotFound {
-				return model.VictimSpec{}, ret
-			}
-			for _, teamFlag := range teamFlags {
-				flagValues[teamFlag.ChallengeFlagID] = teamFlag.Value
-			}
+		source.Flags = append(source.Flags, victimFlagSpec{
+			Key:     flag.ID,
+			Value:   flag.Value,
+			Binding: flag.Binding,
+		})
+		source.ContestFlagIDs = append(source.ContestFlagIDs, flag.ID)
+	}
+	if !victim.TeamID.Valid || len(source.ContestFlagIDs) == 0 {
+		return source, model.SuccessRetVal()
+	}
+	teamFlags, _, ret := db.InitTeamFlagRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"team_id":         victim.TeamID.V,
+			"contest_flag_id": source.ContestFlagIDs,
+		},
+	})
+	if !ret.OK && ret.Msg != i18n.Model.NotFound {
+		return victimSpecSource{}, ret
+	}
+	values := make(map[uint]string, len(teamFlags))
+	for _, teamFlag := range teamFlags {
+		values[teamFlag.ContestFlagID] = teamFlag.Value
+	}
+	for i := range source.Flags {
+		if value, ok := values[source.Flags[i].Key]; ok {
+			source.Flags[i].TeamValue = value
+			source.Flags[i].HasTeam = true
 		}
+	}
+	return source, model.SuccessRetVal()
+}
+
+// buildVictimSpecSourceChallenge 依据题库题目构造规格来源，仅用于管理员测试模式。
+func buildVictimSpecSourceChallenge(challenge model.Challenge) victimSpecSource {
+	source := victimSpecSource{
+		Template:        challenge.Template,
+		NetworkPolicies: challenge.NetworkPolicies,
+	}
+	for _, flag := range challenge.ChallengeFlags {
+		source.Flags = append(source.Flags, victimFlagSpec{
+			Key:     flag.ID,
+			Value:   flag.Value,
+			Binding: flag.Binding,
+		})
+		source.ChallengeFlagIDs = append(source.ChallengeFlagIDs, flag.ID)
+	}
+	return source
+}
+
+func buildVictimSpec(tx *gorm.DB, victim model.Victim, source victimSpecSource) (model.VictimSpec, model.RetVal) {
+	spec := model.VictimSpec{
+		Pods:            make([]model.PodSpec, 0, len(source.Template.Pods)),
+		NetworkPolicies: source.NetworkPolicies,
+		FrpEnabled:      config.Env.K8S.Frp.On,
 	}
 	type containerKey struct {
 		pod, container string
 	}
-	containerFlags := make(map[containerKey][]model.ChallengeFlag, len(challenge.ChallengeFlags))
-	for _, flag := range challenge.ChallengeFlags {
+	containerFlags := make(map[containerKey][]victimFlagSpec, len(source.Flags))
+	for _, flag := range source.Flags {
 		key := containerKey{flag.Binding.PodKey, flag.Binding.ContainerKey}
 		containerFlags[key] = append(containerFlags[key], flag)
 	}
 	testMode := !victim.TeamID.Valid
-	if !needVPC(challenge.Template.Pods) {
+	if !needVPC(source.Template.Pods) {
 		containerCount := 0
-		for _, podTemplate := range challenge.Template.Pods {
+		for _, podTemplate := range source.Template.Pods {
 			containerCount += len(podTemplate.Containers)
 		}
 		mergedPod := model.PodSpec{
@@ -94,7 +152,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			Networks:     make(model.Networks, 0),
 			Containers:   make([]model.VictimContainerSpec, 0, containerCount),
 		}
-		for _, podTemplate := range challenge.Template.Pods {
+		for _, podTemplate := range source.Template.Pods {
 			for _, expose := range podTemplate.ServicePorts {
 				if !slices.ContainsFunc(mergedPod.ServicePorts, func(p model.Expose) bool {
 					return p.Port == expose.Port && strings.EqualFold(p.Protocol, expose.Protocol)
@@ -104,7 +162,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			}
 			for _, containerTemplate := range podTemplate.Containers {
 				flags := containerFlags[containerKey{podTemplate.Key, containerTemplate.Key}]
-				containerSpec, ret := buildVictimContainerSpec(containerTemplate, flags, flagValues, testMode)
+				containerSpec, ret := buildVictimContainerSpec(containerTemplate, flags, testMode)
 				if !ret.OK {
 					return model.VictimSpec{}, ret
 				}
@@ -120,7 +178,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 		Subnets: make([]*model.Subnet, 0),
 	}
 	networkPlans := make(map[string]*model.Subnet)
-	for _, podTemplate := range challenge.Template.Pods {
+	for _, podTemplate := range source.Template.Pods {
 		podSpec := model.PodSpec{
 			Key:          podTemplate.Key,
 			ServicePorts: append(model.Exposes(nil), podTemplate.ServicePorts...),
@@ -129,7 +187,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 		}
 		for _, containerTemplate := range podTemplate.Containers {
 			flags := containerFlags[containerKey{podTemplate.Key, containerTemplate.Key}]
-			containerSpec, ret := buildVictimContainerSpec(containerTemplate, flags, flagValues, testMode)
+			containerSpec, ret := buildVictimContainerSpec(containerTemplate, flags, testMode)
 			if !ret.OK {
 				return model.VictimSpec{}, ret
 			}
@@ -156,7 +214,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 	return spec, model.SuccessRetVal()
 }
 
-func buildVictimContainerSpec(template model.ChallengeContainerTemplate, flags []model.ChallengeFlag, flagValues map[uint]string, testMode bool) (model.VictimContainerSpec, model.RetVal) {
+func buildVictimContainerSpec(template model.ChallengeContainerTemplate, flags []victimFlagSpec, testMode bool) (model.VictimContainerSpec, model.RetVal) {
 	spec := model.VictimContainerSpec{
 		Key:   template.Key,
 		Name:  template.Name,
@@ -178,8 +236,8 @@ func buildVictimContainerSpec(template model.ChallengeContainerTemplate, flags [
 	maps.Copy(spec.Environment, template.Environment)
 	for _, flag := range flags {
 		value := flag.Value
-		if injected, ok := flagValues[flag.ID]; ok {
-			value = injected
+		if flag.HasTeam {
+			value = flag.TeamValue
 		} else if testMode {
 			value = fmt.Sprintf("flag{%s}", renderChallengeFlagValue(flag.Value))
 		}
@@ -221,27 +279,33 @@ func buildPodRecords(victim model.Victim) []model.Pod {
 	return pods
 }
 
+// StartVictim 启动靶机。
+// contestChallengeID 大于 0 时使用比赛题目副本（规格与 flag 均来自副本）；
+// 为 0 时是管理员对题库题目的测试模式，直接使用题库题目。
 func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID, challengeID uint, durationL ...time.Duration) model.RetVal {
-	var (
-		challengeRepo = db.InitChallengeRepo(tx)
-		victim        model.Victim
-	)
+	var victim model.Victim
 	victimRepo := db.InitVictimRepo(tx)
-	if _, ret := victimRepo.HasAliveVictim(teamID, challengeID); ret.OK {
-		log.Logger.Debugf("Start victim rejected: team_id=%d challenge_id=%d already has alive victim", teamID, challengeID)
+	var (
+		source    victimSpecSource
+		ret       model.RetVal
+		hasVictim bool
+	)
+	if contestChallengeID > 0 {
+		if _, ret = victimRepo.HasAliveVictimByContestChallenge(teamID, contestChallengeID); ret.OK {
+			hasVictim = true
+		} else if ret.Msg != i18n.Model.NotFound {
+			return ret
+		}
+	} else {
+		if _, ret = victimRepo.HasAliveVictim(teamID, challengeID); ret.OK {
+			hasVictim = true
+		} else if ret.Msg != i18n.Model.NotFound {
+			return ret
+		}
+	}
+	if hasVictim {
+		log.Logger.Debugf("Start victim rejected: team_id=%d contest_challenge_id=%d challenge_id=%d already has alive victim", teamID, contestChallengeID, challengeID)
 		return model.RetVal{Msg: i18n.Model.Victim.NotStartable}
-	} else if ret.Msg != i18n.Model.NotFound {
-		return ret
-	}
-	challenge, ret := challengeRepo.GetByID(challengeID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
-	})
-	if !ret.OK {
-		return ret
-	}
-	duration := 2 * time.Hour
-	if len(durationL) > 0 && durationL[0] > 0 {
-		duration = durationL[0]
 	}
 	baseVictim := model.Victim{
 		ChallengeID:        challengeID,
@@ -250,7 +314,31 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		TeamID:             sql.Null[uint]{V: teamID, Valid: teamID > 0},
 		UserID:             userID,
 	}
-	spec, ret := buildVictimSpec(tx, baseVictim, challenge)
+	if contestChallengeID > 0 {
+		contestChallenge, getRet := db.InitContestChallengeRepo(tx).GetByID(contestChallengeID, db.GetOptions{
+			Preloads: map[string]db.GetOptions{"ContestFlags": {}},
+		})
+		if !getRet.OK {
+			return getRet
+		}
+		source, ret = buildVictimSpecSourceContestChallenge(tx, baseVictim, contestChallenge)
+		if !ret.OK {
+			return ret
+		}
+	} else {
+		challenge, getRet := db.InitChallengeRepo(tx).GetByID(challengeID, db.GetOptions{
+			Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
+		})
+		if !getRet.OK {
+			return getRet
+		}
+		source = buildVictimSpecSourceChallenge(challenge)
+	}
+	duration := 2 * time.Hour
+	if len(durationL) > 0 && durationL[0] > 0 {
+		duration = durationL[0]
+	}
+	spec, ret := buildVictimSpec(tx, baseVictim, source)
 	if !ret.OK {
 		return ret
 	}
@@ -297,18 +385,28 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	return model.SuccessRetVal()
 }
 
-func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) view.VictimStatusView {
+// GetVictimStatus 返回队伍在指定题目上的靶机状态。
+// contestChallengeID 大于 0 时按比赛题目查找，否则按题库题目查找（测试模式）。
+func GetVictimStatus(tx *gorm.DB, teamID, contestChallengeID, challengeID uint, challengeType model.ChallengeType) view.VictimStatusView {
 	data := view.VictimStatusView{
 		Targets:   make([]string, 0),
 		Duration:  0,
 		Remaining: 0,
 		Status:    "Down",
 	}
-	if challenge.Type != model.PodsChallengeType {
+	if challengeType != model.PodsChallengeType {
 		data.Status = "not_docker"
 		return data
 	}
-	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(teamID, challenge.ID)
+	var (
+		victim model.Victim
+		ret    model.RetVal
+	)
+	if contestChallengeID > 0 {
+		victim, ret = db.InitVictimRepo(tx).HasAliveVictimByContestChallenge(teamID, contestChallengeID)
+	} else {
+		victim, ret = db.InitVictimRepo(tx).HasAliveVictim(teamID, challengeID)
+	}
 	if !ret.OK {
 		return data
 	}
@@ -319,9 +417,10 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) view.V
 	return data
 }
 
-func ExtendVictimDuration(tx *gorm.DB, team model.Team, challenge model.Challenge) (model.Victim, model.RetVal) {
+// ExtendVictimDuration 延长队伍在比赛题目上的靶机时长。
+func ExtendVictimDuration(tx *gorm.DB, team model.Team, contestChallengeID uint) (model.Victim, model.RetVal) {
 	repo := db.InitVictimRepo(tx)
-	victim, ret := repo.HasAliveVictim(team.ID, challenge.ID)
+	victim, ret := repo.HasAliveVictimByContestChallenge(team.ID, contestChallengeID)
 	if !ret.OK {
 		return model.Victim{}, ret
 	}
@@ -349,8 +448,9 @@ func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	return ForceStopVictim(tx, victim)
 }
 
-func StopAliveVictim(tx *gorm.DB, team model.Team, challenge model.Challenge) model.RetVal {
-	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(team.ID, challenge.ID)
+// StopAliveVictim 停止队伍在比赛题目上的靶机。
+func StopAliveVictim(tx *gorm.DB, team model.Team, contestChallengeID uint) model.RetVal {
+	victim, ret := db.InitVictimRepo(tx).HasAliveVictimByContestChallenge(team.ID, contestChallengeID)
 	if !ret.OK {
 		return ret
 	}
@@ -442,15 +542,16 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 	if len(form.Challenges) == 0 || form.TeamRatio <= 0 || form.TeamRatio > 1 {
 		return model.SuccessRetVal()
 	}
-	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"type": model.PodsChallengeType, "rand_id": form.Challenges},
+	contestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"contest_id": contest.ID,
+			"rand_id":    form.Challenges,
+			"type":       model.PodsChallengeType,
+		},
+		Preloads: map[string]db.GetOptions{"ContestFlags": {}},
 	})
 	if !ret.OK {
 		return ret
-	}
-	challengeIDL := make([]uint, 0)
-	for _, challenge := range challenges {
-		challengeIDL = append(challengeIDL, challenge.ID)
 	}
 	teams, _, ret := db.InitTeamRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
@@ -469,65 +570,56 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 		return ret
 	}
 	teams = teams[:teamCount]
-	contestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challengeIDL},
-		Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
-	})
-	if !ret.OK {
-		return ret
-	}
-	randIDs := make(map[uint]string, len(challenges))
-	for _, challenge := range challenges {
-		randIDs[challenge.ID] = challenge.RandID
-	}
-	byRandID := make(map[string]model.ContestChallenge, len(contestChallenges))
-	for _, challenge := range contestChallenges {
-		byRandID[randIDs[challenge.ChallengeID]] = challenge
+	byRandID := make(map[string][]model.ContestChallenge, len(contestChallenges))
+	for _, contestChallenge := range contestChallenges {
+		byRandID[contestChallenge.RandID] = append(byRandID[contestChallenge.RandID], contestChallenge)
 	}
 	duration := time.Duration(form.Duration) * time.Second
 	batch := model.NewBatch(len(form.Challenges) * len(teams))
 	for _, randID := range form.Challenges {
-		contestChallenge, exists := byRandID[randID]
+		contestChallengeL := byRandID[randID]
 		for _, team := range teams {
 			if tx.Statement.Context.Err() != nil {
 				return batch.Result(tx.Statement.Context)
 			}
-			id := fmt.Sprintf("team:%d/challenge:%s", team.ID, randID)
-			if !exists {
-				batch.Fail(id, "lookup", model.RetVal{Msg: i18n.Model.NotFound})
+			if len(contestChallengeL) == 0 {
+				batch.Fail(fmt.Sprintf("team:%d/challenge:%s", team.ID, randID), "lookup", model.RetVal{Msg: i18n.Model.NotFound})
 				continue
 			}
-			solved, checkRet := CheckIfSolved(tx, team, contestChallenge.ContestFlags)
-			if !checkRet.OK {
-				batch.Fail(id, "read_solved", checkRet)
-				return batch.Result(tx.Statement.Context)
-			}
-			if solved {
-				batch.Skip(id, "already_solved")
-				continue
-			}
-			generated, checkRet := CheckIfGenerated(tx, team, contestChallenge.ContestFlags)
-			if !checkRet.OK {
-				batch.Fail(id, "read_flags", checkRet)
-				return batch.Result(tx.Statement.Context)
-			}
-			if !generated {
-				if _, ret = CreateTeamFlag(tx, team, contest, contestChallenge); !ret.OK {
-					batch.Fail(id, "create_flags", ret)
+			for _, contestChallenge := range contestChallengeL {
+				id := fmt.Sprintf("team:%d/challenge:%s/instance:%d", team.ID, randID, contestChallenge.ID)
+				solved, checkRet := CheckIfSolved(tx, team, contestChallenge.ContestFlags)
+				if !checkRet.OK {
+					batch.Fail(id, "read_solved", checkRet)
+					return batch.Result(tx.Statement.Context)
+				}
+				if solved {
+					batch.Skip(id, "already_solved")
+					continue
+				}
+				generated, checkRet := CheckIfGenerated(tx, team, contestChallenge.ContestFlags)
+				if !checkRet.OK {
+					batch.Fail(id, "read_flags", checkRet)
+					return batch.Result(tx.Statement.Context)
+				}
+				if !generated {
+					if _, ret = CreateTeamFlag(tx, team, contest, contestChallenge); !ret.OK {
+						batch.Fail(id, "create_flags", ret)
+						if model.BatchDependencyFailed(ret) {
+							return batch.Result(tx.Statement.Context)
+						}
+						continue
+					}
+				}
+				if ret = StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID, duration); ret.OK {
+					batch.Success(id, "queued")
+				} else if ret.Msg == i18n.Model.Victim.NotStartable {
+					batch.Skip(id, "already_active")
+				} else {
+					batch.Fail(id, "start", ret)
 					if model.BatchDependencyFailed(ret) {
 						return batch.Result(tx.Statement.Context)
 					}
-					continue
-				}
-			}
-			if ret = StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID, duration); ret.OK {
-				batch.Success(id, "queued")
-			} else if ret.Msg == i18n.Model.Victim.NotStartable {
-				batch.Skip(id, "already_active")
-			} else {
-				batch.Fail(id, "start", ret)
-				if model.BatchDependencyFailed(ret) {
-					return batch.Result(tx.Statement.Context)
 				}
 			}
 		}

@@ -26,20 +26,26 @@ const (
 type ContestFlag struct {
 	ContestID          uint             `gorm:"index" json:"contest_id"`
 	Contest            Contest          `json:"-"`
-	ContestChallengeID uint             `gorm:"index" json:"contest_challenge_id"`
+	ContestChallengeID uint             `gorm:"index;index:idx_contest_flags_challenge_active,priority:1" json:"contest_challenge_id"`
 	ContestChallenge   ContestChallenge `json:"-"`
 	ChallengeFlagID    uint             `gorm:"index" json:"challenge_flag_id"`
 	ChallengeFlag      ChallengeFlag    `json:"-"`
 	Submissions        []Submission     `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	TeamFlags          []TeamFlag       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Value              string           `json:"value"`
-	Score              float64          `gorm:"default:1000" json:"score"`
-	CurrentScore       float64          `gorm:"default:1000" json:"current_score"`
-	Decay              float64          `gorm:"default:50" json:"decay"`
-	MinScore           float64          `gorm:"default:100" json:"min_score"`
-	ScoreType          ScoreType        `gorm:"default:0" json:"score_type"`
-	Solvers            int64            `json:"solvers"`
-	Last               time.Time        `gorm:"default:null" json:"last"`
+	// Binding 为题库 flag 注入绑定的副本
+	Binding FlagBinding `gorm:"serializer:json;type:jsonb;default:'{}'" json:"binding"`
+	// Generation 为代次。flag 模板变更时旧代次归档（Active=false），新代次继续递增。
+	Generation int `gorm:"default:1;index:idx_contest_flags_challenge_active,priority:3" json:"generation"`
+	// Active 表示该 flag 是否为当前生效代次，只有生效代次参与发题与计分
+	Active       bool      `gorm:"default:true;index:idx_contest_flags_challenge_active,priority:2" json:"active"`
+	Score        float64   `gorm:"default:1000" json:"score"`
+	CurrentScore float64   `gorm:"default:1000" json:"current_score"`
+	Decay        float64   `gorm:"default:50" json:"decay"`
+	MinScore     float64   `gorm:"default:100" json:"min_score"`
+	ScoreType    ScoreType `gorm:"default:0" json:"score_type"`
+	Solvers      int64     `json:"solvers"`
+	Last         time.Time `gorm:"default:null" json:"last"`
 	BaseModel
 }
 

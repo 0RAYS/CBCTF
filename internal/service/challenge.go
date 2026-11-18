@@ -526,13 +526,6 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 			})
 		case model.PodsChallengeType:
 			if form.DockerCompose != nil {
-				challengeFlagIDL := make([]uint, 0, len(challenge.ChallengeFlags))
-				for _, flag := range challenge.ChallengeFlags {
-					challengeFlagIDL = append(challengeFlagIDL, flag.ID)
-				}
-				if ret := db.InitChallengeFlagRepo(tx).Delete(challengeFlagIDL...); !ret.OK {
-					return ret
-				}
 				template, flags, ret := buildChallengeTemplate(*form.DockerCompose)
 				if !ret.OK {
 					return ret
@@ -546,14 +539,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 				}); !ret.OK {
 					return ret
 				}
-				repo := db.InitChallengeFlagRepo(tx)
-				for _, flag := range flags {
-					flag.ChallengeID = challenge.ID
-					if _, ret = repo.Create(flag); !ret.OK {
-						return ret
-					}
-				}
-				return model.SuccessRetVal()
+				return ReconcileChallengeFlags(tx, challenge, flags)
 			}
 			return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 				Name:            form.Name,

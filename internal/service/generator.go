@@ -20,53 +20,59 @@ import (
 	"CBCTF/internal/utils"
 )
 
+// resolveGeneratorSource 按 rand_id 解析生成器来源。
+// 比赛内使用比赛题目副本，题库题目只在全局管理页与测试模式下使用。
+func resolveGeneratorSource(tx *gorm.DB, contestID uint, randID string) (model.GeneratorSourceSnapshot, model.RetVal) {
+	if contestID > 0 {
+		contestChallenge, ret := db.InitContestChallengeRepo(tx).GetByRandID(randID, db.GetOptions{
+			Conditions: map[string]any{"contest_id": contestID},
+		})
+		if !ret.OK {
+			return model.GeneratorSourceSnapshot{}, ret
+		}
+		if contestChallenge.Type != model.DynamicChallengeType {
+			return model.GeneratorSourceSnapshot{}, model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
+		}
+		return model.NewContestChallengeSource(contestChallenge), model.SuccessRetVal()
+	}
+	challenge, ret := db.InitChallengeRepo(tx).GetByRandID(randID)
+	if !ret.OK {
+		return model.GeneratorSourceSnapshot{}, ret
+	}
+	if challenge.Type != model.DynamicChallengeType {
+		return model.GeneratorSourceSnapshot{}, model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
+	}
+	return model.NewChallengeSource(challenge), model.SuccessRetVal()
+}
+
 func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) model.RetVal {
 	if len(form.Challenges) == 0 {
 		return model.SuccessRetVal()
 	}
-	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"type": model.DynamicChallengeType, "rand_id": form.Challenges},
-	})
-	if !ret.OK {
-		return ret
-	}
-	contestChallengeRepo := db.InitContestChallengeRepo(tx)
 	generatorRepo := db.InitGeneratorRepo(tx)
-	byID := make(map[string]model.Challenge, len(challenges))
-	for _, challenge := range challenges {
-		byID[challenge.RandID] = challenge
-	}
 	batch := model.NewBatch(len(form.Challenges))
 	for index, randID := range form.Challenges {
 		if tx.Statement.Context.Err() != nil {
 			return batch.Result(tx.Statement.Context)
 		}
 		key := fmt.Sprintf("challenge:%s/instance:%d", randID, index+1)
-		challenge, exists := byID[randID]
-		if !exists {
-			batch.Fail(key, "lookup", model.RetVal{Msg: i18n.Model.NotFound})
+		source, ret := resolveGeneratorSource(tx, contestID, randID)
+		if !ret.OK {
+			batch.Fail(key, "lookup", ret)
+			if model.BatchDependencyFailed(ret) {
+				return batch.Result(tx.Statement.Context)
+			}
 			continue
 		}
-		if contestID > 0 {
-			_, ret = contestChallengeRepo.Get(db.GetOptions{
-				Conditions: map[string]any{"contest_id": contestID, "challenge_id": challenge.ID},
-			})
-			if !ret.OK {
-				batch.Fail(key, "contest_membership", ret)
-				if model.BatchDependencyFailed(ret) {
-					return batch.Result(tx.Statement.Context)
-				}
-				continue
-			}
-		}
 		generator, ret := generatorRepo.Create(model.Generator{
-			WorkerToken:   utils.RandHexStr(64),
-			Image:         challenge.GeneratorImage,
-			ChallengeID:   challenge.ID,
-			ChallengeName: challenge.Name,
-			ContestID:     sql.Null[uint]{V: contestID, Valid: contestID > 0},
-			Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandHexStr(6)),
-			Status:        model.WaitingGeneratorStatus,
+			WorkerToken:        utils.RandHexStr(64),
+			Image:              source.SourceImage(),
+			ChallengeID:        source.SourceChallengeID(),
+			ChallengeName:      source.SourceName(),
+			ContestChallengeID: sql.Null[uint]{V: source.SourceContestChallengeID(), Valid: source.SourceContestChallengeID() > 0},
+			ContestID:          sql.Null[uint]{V: source.SourceContestID(), Valid: source.SourceContestID() > 0},
+			Name:               fmt.Sprintf("gen-%d-%d-%s", source.SourceContestID(), source.SourceID(), utils.RandHexStr(6)),
+			Status:             model.WaitingGeneratorStatus,
 		})
 		if !ret.OK {
 			batch.Fail(key, "create", ret)
@@ -75,13 +81,13 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 			}
 			continue
 		}
-		if _, err := task.EnqueueStartGeneratorTask(challenge, generator); err != nil {
+		if _, err := task.EnqueueStartGeneratorTask(source, generator); err != nil {
 			batch.Fail(fmt.Sprintf("%s/generator:%d", key, generator.ID), "enqueue", model.RetVal{Msg: i18n.Task.EnqueueError})
-			log.Logger.Warningf("Failed to enqueue start generator task: generator_id=%d name=%s challenge_id=%d error=%v", generator.ID, generator.Name, challenge.ID, err)
+			log.Logger.Warningf("Failed to enqueue start generator task: generator_id=%d name=%s source_id=%d error=%v", generator.ID, generator.Name, source.SourceID(), err)
 			if ret := generatorRepo.Delete(generator.ID); !ret.OK {
 				log.Logger.Warningf(
-					"Failed to delete generator after enqueue failure: generator_id=%d name=%s challenge_id=%d reason=%s",
-					generator.ID, generator.Name, challenge.ID, ret.Msg,
+					"Failed to delete generator after enqueue failure: generator_id=%d name=%s source_id=%d reason=%s",
+					generator.ID, generator.Name, source.SourceID(), ret.Msg,
 				)
 			}
 			return batch.Result(tx.Statement.Context)
@@ -91,11 +97,11 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 	return batch.Result(tx.Statement.Context)
 }
 
-func warmGeneratorPool(contestID uint, challenge model.Challenge) {
+func warmGeneratorPool(source model.GeneratorSourceSnapshot) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := task.EnsureGeneratorPool(ctx, contestID, challenge); err != nil {
-		log.Logger.Warningf("Failed to warm generator pool: challenge_id=%d error=%v", challenge.ID, err)
+	if err := task.EnsureGeneratorPool(ctx, source); err != nil {
+		log.Logger.Warningf("Failed to warm generator pool: source_id=%d error=%v", source.SourceID(), err)
 	}
 }
 
@@ -207,21 +213,23 @@ func stopGeneratorResources(tx *gorm.DB, options db.GetOptions) model.RetVal {
 	return batch.Result(tx.Statement.Context)
 }
 
-func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model.Generator, string, model.RetVal) {
+func GetGenerator(tx *gorm.DB, source model.GeneratorSource) (model.Generator, string, model.RetVal) {
 	ctx, cancel := context.WithTimeout(tx.Statement.Context, 5*time.Second)
 	defer cancel()
-	generator, lockToken, err := redis.LockAvailableGenerator(ctx, contestID, challenge.ID)
+	target := source.SourceTarget()
+	generator, lockToken, err := redis.LockAvailableGenerator(ctx, target)
 	if err == nil {
 		return generator, lockToken, model.SuccessRetVal()
 	}
 	if errors.Is(err, redis.ErrGeneratorPoolEmpty) {
 		options := db.GetOptions{Conditions: map[string]any{
-			"challenge_id": challenge.ID,
-			"status":       model.RunningGeneratorStatus,
+			"status": model.RunningGeneratorStatus,
 		}}
-		if contestID > 0 {
-			options.Conditions["contest_id"] = contestID
+		if target.ContestChallengeID > 0 {
+			options.Conditions["contest_challenge_id"] = target.ContestChallengeID
+			options.Conditions["contest_id"] = target.ContestID
 		} else {
+			options.Conditions["challenge_id"] = target.ChallengeID
 			options.Conditions["contest_id"] = nil
 		}
 		generators, _, ret := db.InitGeneratorRepo(tx).List(-1, -1, options)
@@ -236,7 +244,7 @@ func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model
 				return model.Generator{}, "", model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 			}
 		}
-		generator, lockToken, err = redis.LockAvailableGenerator(ctx, contestID, challenge.ID)
+		generator, lockToken, err = redis.LockAvailableGenerator(ctx, target)
 		if err == nil {
 			return generator, lockToken, model.SuccessRetVal()
 		}

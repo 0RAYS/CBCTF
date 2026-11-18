@@ -202,31 +202,30 @@ func GetScoreboardViews(tx *gorm.DB, contest model.Contest, limit, offset int, a
 	}
 	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads:   map[string]db.GetOptions{"ContestChallenge": {Preloads: map[string]db.GetOptions{"Challenge": {}}}},
+		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
 	})
 	if !ret.OK {
 		return nil, 0, ret
 	}
 	contestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID, "hidden": false},
-		Preloads:   map[string]db.GetOptions{"Challenge": {}},
 	})
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	challengeMap := make(map[string]model.Challenge)
+	challengeMap := make(map[string]model.ContestChallenge)
 	for _, contestChallenge := range contestChallenges {
 		if contestChallenge.Hidden {
 			continue
 		}
-		challengeMap[contestChallenge.Challenge.RandID] = contestChallenge.Challenge
+		challengeMap[contestChallenge.RandID] = contestChallenge
 	}
 	globalMap := make(map[string]int)
 	for _, contestFlag := range contestFlags {
 		if contestFlag.ContestChallenge.Hidden {
 			continue
 		}
-		globalMap[contestFlag.ContestChallenge.Challenge.RandID]++
+		globalMap[contestFlag.ContestChallenge.RandID]++
 	}
 	teamMap := make(map[uint]map[string]int)
 	teamIDs := make([]uint, 0, len(teams))

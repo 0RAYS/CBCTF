@@ -12,6 +12,7 @@ import {
   getChallenge,
   getChallengeCategories,
   getChallengeList,
+  getChallengeUsages,
   updateChallenge,
   uploadChallengeFile,
 } from '../../api/admin/challenge';
@@ -30,6 +31,8 @@ function ChallengesManagement() {
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [mode, setMode] = useState('add'); // 'add' | 'edit' | 'delete'
   const [selectedChallenge, setSelectedChallenge] = useState(null);
+  // 删除题库题目之前先查清引用范围，比赛题目是独立副本，删除题库不影响比赛
+  const [deleteUsages, setDeleteUsages] = useState([]);
   const [editChallenge, setEditChallenge] = useState({
     name: '',
     description: '',
@@ -222,7 +225,15 @@ function ChallengesManagement() {
   const handleDeleteChallenge = (challenge) => {
     setMode('delete');
     setSelectedChallenge(challenge);
+    setDeleteUsages([]);
     setIsModalOpen(true);
+    getChallengeUsages(challenge.id)
+      .then((response) => {
+        if (response.code === 200) setDeleteUsages(response.data?.usages || []);
+      })
+      .catch(() => {
+        // 引用范围查询失败不阻断删除
+      });
   };
 
   const handleUploadAttachment = (challenge) => {
@@ -354,6 +365,12 @@ function ChallengesManagement() {
         toast.success({
           description: t(`admin.challenge.toast.${actionKey}Success`),
         });
+        const keptCount = response.data?.contest_challenge_count || 0;
+        if (mode === 'delete' && keptCount > 0) {
+          toast.success({
+            description: t('admin.challenge.toast.deleteKeepsContestCopies', { count: keptCount }),
+          });
+        }
         setIsModalOpen(false);
         await fetchChallenges();
       }
@@ -400,6 +417,7 @@ function ChallengesManagement() {
         isOpen={isModalOpen}
         mode={mode}
         challenge={editChallenge}
+        usages={deleteUsages}
         categories={categories}
         onClose={handleCloseModal}
         onSubmit={handleSubmitChallenge}

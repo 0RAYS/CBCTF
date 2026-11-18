@@ -393,6 +393,10 @@
           "attempts": "尝试次数",
           "hidden": "隐藏题目",
           "flagValueHint": "格式: static{value} | uuid{} | leet{value}",
+          "generation": "第 {{generation}} 代",
+          "archived": "已归档",
+          "flagChangeNote": "修改 flag 模板会保留已有解题记录，未解出的队伍会自动拿到新答案。",
+          "sourceChallenge": "复制自题库题目 #{{id}}，比赛副本相互独立。",
           "scoreCurve": "分数曲线",
           "initialScore": "初始分值",
           "currentScore": "当前分值",
@@ -416,7 +420,13 @@
           "viewSolvers": "查看解题队伍",
           "addTag": "添加标签",
           "addHint": "添加提示",
-          "add": "添加赛题"
+          "add": "添加赛题",
+          "resetSolves": "重置解题记录"
+        },
+        "resetSolves": {
+          "title": "重置本题解题记录",
+          "description": "将清空本题所有队伍的解题记录，并重算队伍分数与排名。此操作不可撤销。",
+          "confirm": "确认重置"
         },
         "solversModal": {
           "title": "Flag #{{index}} 解题队伍",
@@ -977,7 +987,9 @@
           "updateFailed": "更新题目失败",
           "removeSuccess": "移出题目成功",
           "removeFailed": "移出题目失败",
-          "updateFlagSuccess": "更新题目flag成功"
+          "updateFlagSuccess": "更新题目flag成功",
+          "resetSolvesSuccess": "已重置 {{teams}} 支队伍、{{submissions}} 条提交记录",
+          "resetSolvesFailed": "重置解题记录失败"
         }
       },
       "scoreboard": {
@@ -1254,7 +1266,8 @@
         "updateSuccess": "更新题目成功",
         "updateFailed": "更新题目失败",
         "deleteSuccess": "删除题目成功",
-        "deleteFailed": "删除题目失败"
+        "deleteFailed": "删除题目失败",
+        "deleteKeepsContestCopies": "{{count}} 个比赛题目副本与解题记录不受影响"
       },
       "testModal": {
         "title": "测试",
@@ -1301,7 +1314,9 @@
       "delete": {
         "title": "确认删除题目",
         "prompt": "确定删除此题目吗？",
-        "warning": "此操作不可撤销, 请谨慎操作"
+        "warning": "此操作不可撤销, 请谨慎操作",
+        "usageNotice": "该题库题已被 {{count}} 个比赛题目引用。比赛题目是独立副本，删除题库题不会影响正在进行的比赛与解题记录。",
+        "usageItem": "{{contest}} · {{name}}（已解出 {{solvers}} 队）"
       },
       "sections": {
         "basic": "基本信息",

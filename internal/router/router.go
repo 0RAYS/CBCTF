@@ -294,6 +294,7 @@ func Init() *gin.Engine {
 		adminChallenge := admin.Group("/challenges/:challengeID", middleware.SetChallenge)
 		{
 			adminChallenge.GET("", GetChallenge)
+			adminChallenge.GET("/usages", GetChallengeUsages)
 			adminChallenge.GET("/download",
 				middleware.SetChallengeFile, DownloadFile(model.DownloadAttachmentEventType),
 			)
@@ -412,7 +413,7 @@ func Init() *gin.Engine {
 			}
 
 			adminContest.GET("/challenges", GetAllContestChallenges)
-			adminContest.GET("/challenges/others", GetChallengeNotInContest)
+			adminContest.GET("/challenges/others", GetAvailableChallenges)
 			adminContest.GET("/challenges/categories", GetContestChallengeCategories)
 			adminContest.POST("/challenges", AddContestChallenge)
 			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetContestChallenge)
@@ -420,6 +421,7 @@ func Init() *gin.Engine {
 				adminContestChallenge.GET("", GetAdminContestChallenge)
 				adminContestChallenge.PUT("", UpdateContestChallenge)
 				adminContestChallenge.DELETE("", DeleteContestChallenge)
+				adminContestChallenge.POST("/reset-solves", ResetContestChallengeSolves)
 
 				//不允许后期创建和删除
 				adminContestChallenge.GET("/flags", GetContestFlags)

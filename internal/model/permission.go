@@ -130,6 +130,9 @@ const (
 	PermAdminImagePull        = "admin:image:pull"
 	PermAdminContestImagePull = "admin:contest_image:pull"
 
+	PermAdminImageDetect        = "admin:image:detect"
+	PermAdminContestImageDetect = "admin:contest_image:detect"
+
 	PermAdminVictimControl        = "admin:victim:control"
 	PermAdminContestVictimControl = "admin:contest_victim:control"
 
@@ -199,15 +202,15 @@ var RoutePermissions = map[string]string{
 	"GET /admin/ip": PermAdminIPSearch,
 
 	// /admin/system
-	"GET /admin/system/status":      PermAdminSystemStatus,
-	"GET /admin/system/config":      PermAdminSystemRead,
-	"PUT /admin/system/config":      PermAdminSystemUpdate,
+	"GET /admin/system/status":             PermAdminSystemStatus,
+	"GET /admin/system/config":             PermAdminSystemRead,
+	"PUT /admin/system/config":             PermAdminSystemUpdate,
 	"GET /admin/system/image-pull-secrets": PermAdminSystemRead,
-	"POST /admin/system/geocity-db": PermAdminSystemUpdate,
-	"POST /admin/system/restart":    PermAdminSystemRestart,
-	"GET /admin/branding":           PermAdminBrandingRead,
-	"PUT /admin/branding":           PermAdminBrandingUpdate,
-	"POST /admin/branding/logo":     PermAdminBrandingUpdate,
+	"POST /admin/system/geocity-db":        PermAdminSystemUpdate,
+	"POST /admin/system/restart":           PermAdminSystemRestart,
+	"GET /admin/branding":                  PermAdminBrandingRead,
+	"PUT /admin/branding":                  PermAdminBrandingUpdate,
+	"POST /admin/branding/logo":            PermAdminBrandingUpdate,
 
 	// /admin/permissions
 	"GET /admin/permissions":               PermAdminPermissionList,
@@ -304,8 +307,9 @@ var RoutePermissions = map[string]string{
 	"GET /admin/generators/:generatorID/status": PermAdminGeneratorControl,
 
 	// /admin/images
-	"GET /admin/images":  PermAdminImagePull,
-	"POST /admin/images": PermAdminImagePull,
+	"GET /admin/images":         PermAdminImagePull,
+	"POST /admin/images":        PermAdminImagePull,
+	"POST /admin/images/detect": PermAdminImageDetect,
 
 	// /admin/contests
 	"GET /admin/contests":                             PermAdminContestList,
@@ -364,8 +368,9 @@ var RoutePermissions = map[string]string{
 	"GET /admin/contests/:contestID/challenges/:challengeID/flags/:flagID/solvers": PermAdminContestChallengeFlagList,
 
 	// /admin/contests/:contestID/images
-	"GET /admin/contests/:contestID/images":  PermAdminContestImagePull,
-	"POST /admin/contests/:contestID/images": PermAdminContestImagePull,
+	"GET /admin/contests/:contestID/images":         PermAdminContestImagePull,
+	"POST /admin/contests/:contestID/images":        PermAdminContestImagePull,
+	"POST /admin/contests/:contestID/images/detect": PermAdminContestImageDetect,
 
 	// /admin/contests/:contestID/victims
 	"GET /admin/contests/:contestID/victims":                     PermAdminContestVictimControl,
@@ -396,6 +401,7 @@ var RoutePermissions = map[string]string{
 
 var Permissions = []Permission{
 	{Name: PermAdminContestImagePull, Resource: "admin:contest_image", Operation: "pull", Description: "拉取比赛镜像"},
+	{Name: PermAdminContestImageDetect, Resource: "admin:contest_image", Operation: "detect", Description: "检测比赛镜像是否就绪"},
 	{Name: PermAdminContestVictimControl, Resource: "admin:contest_victim", Operation: "control", Description: "控制比赛靶机"},
 	{Name: PermAdminContestGeneratorControl, Resource: "admin:contest_generator", Operation: "control", Description: "控制比赛生成器"},
 	{Name: PermAdminTrafficRead, Resource: "admin:traffic", Operation: "read", Description: "查看全局靶机流量"},
@@ -527,6 +533,8 @@ var Permissions = []Permission{
 	{Name: PermAdminContestChallengeFlagUpdate, Resource: "admin:contest_challenge_flag", Operation: "update", Description: "更新比赛题目 Flag"},
 
 	{Name: PermAdminImagePull, Resource: "admin:image", Operation: "pull", Description: "拉取镜像"},
+
+	{Name: PermAdminImageDetect, Resource: "admin:image", Operation: "detect", Description: "检测节点镜像是否就绪"},
 
 	{Name: PermAdminVictimControl, Resource: "admin:victim", Operation: "control", Description: "控制靶机"},
 

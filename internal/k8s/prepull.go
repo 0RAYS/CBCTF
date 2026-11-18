@@ -244,9 +244,18 @@ func containerImages(containers []corev1.Container) []string {
 
 // ChallengeImages includes platform sidecars in the same warmup generation.
 func ChallengeImages(challenge model.Challenge, sidecars ...string) []string {
+	return templateImages(challenge.GeneratorImage, challenge.Template, sidecars...)
+}
+
+// ContestChallengeImages returns the images of a contest challenge copy.
+func ContestChallengeImages(contestChallenge model.ContestChallenge, sidecars ...string) []string {
+	return templateImages(contestChallenge.GeneratorImage, contestChallenge.Template, sidecars...)
+}
+
+func templateImages(generatorImage string, template model.ChallengeTemplate, sidecars ...string) []string {
 	images := append([]string(nil), sidecars...)
-	images = append(images, challenge.GeneratorImage)
-	for _, pod := range challenge.Template.Pods {
+	images = append(images, generatorImage)
+	for _, pod := range template.Pods {
 		for _, container := range pod.Containers {
 			images = append(images, container.Image)
 		}
