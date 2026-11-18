@@ -21,13 +21,15 @@ const (
 	stopGeneratorTaskType  = "tasks:generator:stop"
 )
 
+// StartGeneratorPayload 生成器启动任务的载荷。
+// 题目以快照形式携带：比赛内的生成器使用比赛题目副本，题库题目只在测试模式下使用。
 type StartGeneratorPayload struct {
-	Challenge model.Challenge
+	Source    model.GeneratorSourceSnapshot
 	Generator model.Generator
 }
 
-func EnqueueStartGeneratorTask(challenge model.Challenge, generator model.Generator) (*asynq.TaskInfo, error) {
-	payload, err := msgpack.Marshal(StartGeneratorPayload{challenge, generator})
+func EnqueueStartGeneratorTask(source model.GeneratorSourceSnapshot, generator model.Generator) (*asynq.TaskInfo, error) {
+	payload, err := msgpack.Marshal(StartGeneratorPayload{source, generator})
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +46,7 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 		cleanupQueued := false
 		claimed := false
 		err := func() error {
-			challenge := payload.Challenge
+			source := payload.Source
 			generator := payload.Generator
 			generatorRepo := db.InitGeneratorRepo(db.TaskDB.WithContext(ctx))
 			currentGenerator, ret := generatorRepo.GetByID(generator.ID)
@@ -65,8 +67,8 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 			claimed = true
 			generator = currentGenerator
 			startCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
-			log.Logger.Infof("Starting generator provisioning: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
-			_, ret = k8s.StartGenerator(startCtx, challenge, generator)
+			log.Logger.Infof("Starting generator provisioning: generator_id=%d name=%s source_id=%d", generator.ID, generator.Name, source.SourceID())
+			_, ret = k8s.StartGenerator(startCtx, source, generator)
 			cancel()
 			if !ret.OK {
 				_ = generatorRepo.UpdateIfStatus(generator.ID, model.PendingGeneratorStatus, db.UpdateGeneratorOptions{Status: new(model.TerminatingGeneratorStatus)})
@@ -90,7 +92,7 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 				return fmt.Errorf("register generator failed: %w", err)
 			}
 			registerCancel()
-			log.Logger.Infof("Generator is running: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
+			log.Logger.Infof("Generator is running: generator_id=%d name=%s source_id=%d", generator.ID, generator.Name, source.SourceID())
 			return nil
 		}()
 		if err != nil && claimed && !cleanupQueued {

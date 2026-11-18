@@ -12,7 +12,11 @@ import (
 
 func CheckChallengeType(t model.ChallengeType) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if GetChallenge(ctx).Type != t {
+		challengeType := GetChallenge(ctx).Type
+		if contestChallenge := GetContestChallenge(ctx); contestChallenge.ID > 0 {
+			challengeType = contestChallenge.Type
+		}
+		if challengeType != t {
 			resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
 			return
 		}

@@ -278,22 +278,30 @@ func SetTeamWriteupFile(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// SetAttachmentFile 准备题目附件。
+// 比赛内使用比赛题目副本的附件，测试模式使用题库题目的附件。
 func SetAttachmentFile(test bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		challenge := GetChallenge(ctx)
-		if test && challenge.Type == model.DynamicChallengeType {
-			if ret := service.GenTestAttachment(db.DB.WithContext(ctx.Request.Context()), challenge); !ret.OK {
-				resp.AbortJSON(ctx, ret)
-				return
+		var source model.GeneratorSource
+		if contestChallenge := GetContestChallenge(ctx); contestChallenge.ID > 0 {
+			source = contestChallenge
+		} else {
+			challenge := GetChallenge(ctx)
+			if test && challenge.Type == model.DynamicChallengeType {
+				if ret := service.GenTestAttachment(db.DB.WithContext(ctx.Request.Context()), challenge); !ret.OK {
+					resp.AbortJSON(ctx, ret)
+					return
+				}
 			}
+			source = challenge
 		}
-		path, pathRet := service.AttachmentPath(db.DB.WithContext(ctx.Request.Context()), challenge, GetTeam(ctx).ID)
+		path, pathRet := service.AttachmentPath(db.DB.WithContext(ctx.Request.Context()), source, GetTeam(ctx).ID)
 		if !pathRet.OK {
 			resp.AbortJSON(ctx, pathRet)
 			return
 		}
 		record, ret := db.InitFileRepo(db.DB.WithContext(ctx.Request.Context())).Get(db.GetOptions{
-			Conditions: map[string]any{"model": model.Name(challenge), "model_id": challenge.ID, "type": model.ChallengeFileType}},
+			Conditions: map[string]any{"model": model.Name(source), "model_id": source.SourceID(), "type": model.ChallengeFileType}},
 		)
 		if ret.OK && string(record.Path) == path {
 			ctx.Set("File", record)
@@ -383,13 +391,8 @@ func SetContestChallenge(ctx *gin.Context) {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
-	challenge, ret := db.InitChallengeRepo(db.DB.WithContext(ctx.Request.Context())).GetByRandID(challengeID.ChallengeID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	contestChallenge, ret := db.InitContestChallengeRepo(db.DB.WithContext(ctx.Request.Context())).Get(db.GetOptions{
-		Conditions: map[string]any{"challenge_id": challenge.ID, "contest_id": GetContest(ctx).ID},
+	contestChallenge, ret := db.InitContestChallengeRepo(db.DB.WithContext(ctx.Request.Context())).GetByRandID(challengeID.ChallengeID, db.GetOptions{
+		Conditions: map[string]any{"contest_id": GetContest(ctx).ID},
 	})
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
@@ -400,7 +403,6 @@ func SetContestChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set("ContestChallenge", contestChallenge)
-	ctx.Set("Challenge", challenge)
 	ctx.Next()
 }
 

@@ -32,24 +32,29 @@ func GeneratorLabels(generator model.Generator, tags ...map[string]string) map[s
 		"challenge_id": strconv.Itoa(int(generator.ChallengeID)),
 		"generator_id": strconv.Itoa(int(generator.ID)),
 	}
+	if generator.ContestChallengeID.Valid {
+		labels["contest_challenge_id"] = strconv.Itoa(int(generator.ContestChallengeID.V))
+	}
 	if len(tags) > 0 {
 		maps.Copy(labels, tags[0])
 	}
 	return labels
 }
 
-func StartGenerator(ctx context.Context, challenge model.Challenge, generator model.Generator) (*corev1.Pod, model.RetVal) {
+// StartGenerator 创建生成器 Pod。
+// source 决定生成器镜像与挂载目录：比赛内使用比赛题目副本，测试模式使用题库题目。
+func StartGenerator(ctx context.Context, source model.GeneratorSource, generator model.Generator) (*corev1.Pod, model.RetVal) {
 	var (
 		pod    *corev1.Pod
 		ret    model.RetVal
 		labels = GeneratorLabels(generator, map[string]string{RoleLabel: GeneratorPodTag})
 	)
-	if challenge.GeneratorImage == "" {
+	if source.SourceImage() == "" {
 		return nil, model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
 	}
 	log.Logger.Debugf(
-		"Creating generator pod: generator_id=%d name=%s challenge_id=%d image=%s",
-		generator.ID, generator.Name, challenge.ID, challenge.GeneratorImage,
+		"Creating generator pod: generator_id=%d name=%s source_id=%d image=%s",
+		generator.ID, generator.Name, source.SourceID(), source.SourceImage(),
 	)
 	pod, ret = CreatePod(ctx, CreatePodOptions{
 		PriorityClassName: config.Env.K8S.PriorityClassName,
@@ -70,7 +75,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 			{
 				Name:            "generator",
 				Resources:       corev1.ResourceRequirements{Requests: workloadRequests(nil)},
-				Image:           challenge.GeneratorImage,
+				Image:           source.SourceImage(),
 				ImagePullPolicy: corev1.PullIfNotPresent,
 				Env:             []corev1.EnvVar{{Name: "CBCTF_WORKER_TOKEN", Value: generator.WorkerToken}},
 				ReadinessProbe: &corev1.Probe{
@@ -88,7 +93,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 						Name:      nfsVolumeName,
 						MountPath: "/root/mnt",
 						SubPath: strings.TrimPrefix(
-							strings.TrimPrefix(challenge.BasicDir(), config.Env.Path), "/",
+							strings.TrimPrefix(source.SourceDir(), config.Env.Path), "/",
 						),
 					},
 				},
@@ -110,7 +115,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 	if !ret.OK {
 		return nil, ret
 	}
-	log.Logger.Debugf("Created generator pod: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
+	log.Logger.Debugf("Created generator pod: generator_id=%d name=%s source_id=%d", generator.ID, generator.Name, source.SourceID())
 	return pod, model.SuccessRetVal()
 }
 
@@ -151,9 +156,9 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 // GenAttachment streams a completed artifact directly from the worker into an
 // immutable cache path. The worker's output directory is local EmptyDir, so
 // completion never depends on an NFS client's negative/attribute cache.
-func GenAttachment(ctx context.Context, challenge model.Challenge, generator model.Generator, teamID uint, flags []string) model.RetVal {
-	log.Logger.Debugf("Running attachment generator: team_id=%d challenge_id=%d generator_id=%d", teamID, challenge.ID, generator.ID)
-	if err := generateAttachment(ctx, challenge, generator, teamID, flags); err != nil {
+func GenAttachment(ctx context.Context, source model.GeneratorSource, generator model.Generator, teamID uint, flags []string) model.RetVal {
+	log.Logger.Debugf("Running attachment generator: team_id=%d source_id=%d generator_id=%d", teamID, source.SourceID(), generator.ID)
+	if err := generateAttachment(ctx, source, generator, teamID, flags); err != nil {
 		if errors.Is(err, errGeneratorMissing) {
 			return model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Generator"}}
 		}
@@ -173,7 +178,7 @@ var workerHTTP = &http.Client{
 }
 var errGeneratorMissing = errors.New("generator pod is missing")
 
-func generateAttachment(ctx context.Context, challenge model.Challenge, generator model.Generator, teamID uint, flags []string) error {
+func generateAttachment(ctx context.Context, source model.GeneratorSource, generator model.Generator, teamID uint, flags []string) error {
 	pod, err := cachedPod(ctx, generator.Name)
 	if err != nil {
 		return err
@@ -187,8 +192,8 @@ func generateAttachment(ctx context.Context, challenge model.Challenge, generato
 	if generator.WorkerToken == "" {
 		return fmt.Errorf("generator has no worker token")
 	}
-	revision := worker.SourceRevision(challenge.GeneratorPath())
-	destination := challenge.AttachmentCachePathForRevision(teamID, flags, revision)
+	revision := worker.SourceRevision(source.SourceGeneratorPath())
+	destination := source.SourceAttachmentCachePathForRevision(teamID, flags, revision)
 	body, err := json.Marshal(worker.Request{
 		TeamID:         teamID,
 		Flags:          flags,

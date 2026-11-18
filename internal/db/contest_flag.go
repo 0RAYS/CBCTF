@@ -16,6 +16,9 @@ type ContestFlagRepo struct {
 
 type UpdateContestFlagOptions struct {
 	Value        *string
+	Binding      *model.FlagBinding
+	Generation   *int
+	Active       *bool
 	Score        *float64
 	CurrentScore *float64
 	Decay        *float64
@@ -29,6 +32,15 @@ func (c UpdateContestFlagOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
 	if c.Value != nil {
 		options["value"] = *c.Value
+	}
+	if c.Binding != nil {
+		options["binding"] = *c.Binding
+	}
+	if c.Generation != nil {
+		options["generation"] = *c.Generation
+	}
+	if c.Active != nil {
+		options["active"] = *c.Active
 	}
 	if c.Score != nil {
 		options["score"] = *c.Score

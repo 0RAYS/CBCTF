@@ -22,21 +22,22 @@ import (
 
 const genAttachmentTaskType = "tasks:attachment"
 
+// GenAttachmentPayload 附件生成任务的载荷。
+// 题目以快照形式携带：比赛内的附件由比赛题目副本生成，题库题目只在测试模式下生成。
 type GenAttachmentPayload struct {
-	Flags     []string
-	Challenge model.Challenge
-	UserID    uint
-	TeamID    uint
-	ContestID uint
+	Flags  []string
+	Source model.GeneratorSourceSnapshot
+	UserID uint
+	TeamID uint
 }
 
-func EnqueueGenAttachmentTask(userID, contestID uint, challenge model.Challenge, teamID uint, teamFlags []model.TeamFlag) error {
+func EnqueueGenAttachmentTask(userID uint, source model.GeneratorSourceSnapshot, teamID uint, teamFlags []model.TeamFlag) error {
 	teamFlags = slices.Clone(teamFlags)
 	slices.SortFunc(teamFlags, func(a, b model.TeamFlag) int {
-		if a.ChallengeFlagID < b.ChallengeFlagID {
+		if a.ContestFlagID < b.ContestFlagID {
 			return -1
 		}
-		if a.ChallengeFlagID > b.ChallengeFlagID {
+		if a.ContestFlagID > b.ContestFlagID {
 			return 1
 		}
 		return 0
@@ -46,16 +47,15 @@ func EnqueueGenAttachmentTask(userID, contestID uint, challenge model.Challenge,
 		flags = append(flags, flag.Value)
 	}
 	payload, err := msgpack.Marshal(GenAttachmentPayload{
-		UserID:    userID,
-		Challenge: challenge,
-		TeamID:    teamID,
-		Flags:     flags,
-		ContestID: contestID,
+		UserID: userID,
+		Source: source,
+		TeamID: teamID,
+		Flags:  flags,
 	})
 	if err != nil {
 		return err
 	}
-	path := challenge.AttachmentCachePath(teamID, flags)
+	path := source.SourceAttachmentCachePath(teamID, flags)
 	if info, err := os.Stat(path); err == nil && info.Size() > 0 {
 		return nil
 	}
@@ -99,14 +99,14 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	path := payload.Challenge.AttachmentCachePath(payload.TeamID, payload.Flags)
+	path := payload.Source.SourceAttachmentCachePath(payload.TeamID, payload.Flags)
 	if info, err := os.Stat(path); err == nil && info.Size() > 0 {
 		return nil
 	}
-	generator, lockToken, err := redis.LockAvailableGenerator(ctx, payload.ContestID, payload.Challenge.ID)
+	generator, lockToken, err := redis.LockAvailableGenerator(ctx, payload.Source.SourceTarget())
 	if err != nil {
 		if errors.Is(err, redis.ErrGeneratorPoolEmpty) {
-			if poolErr := EnsureGeneratorPool(ctx, payload.ContestID, payload.Challenge); poolErr != nil {
+			if poolErr := EnsureGeneratorPool(ctx, payload.Source); poolErr != nil {
 				return poolErr
 			}
 		}
@@ -123,14 +123,14 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 		}
 		return redis.ErrNoAvailableGenerator
 	}
-	if current.Image != payload.Challenge.GeneratorImage {
+	if current.Image != payload.Source.SourceImage() {
 		if err := redis.UnregisterGenerator(ctx, current); err != nil {
 			return err
 		}
 		if err := EnqueueStopGeneratorTask(current); err != nil {
 			return err
 		}
-		if err := EnsureGeneratorPool(ctx, payload.ContestID, payload.Challenge); err != nil {
+		if err := EnsureGeneratorPool(ctx, payload.Source); err != nil {
 			return err
 		}
 		return redis.ErrNoAvailableGenerator
@@ -138,7 +138,7 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	generator = current
 
 	generateCtx, cancel := context.WithTimeout(ctx, 80*time.Second)
-	ret = k8s.GenAttachment(generateCtx, payload.Challenge, generator, payload.TeamID, payload.Flags)
+	ret = k8s.GenAttachment(generateCtx, payload.Source, generator, payload.TeamID, payload.Flags)
 	cancel()
 	// Persist the outcome and release broken pool members even after cancellation.
 	finishCtx, finishCancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
@@ -159,8 +159,8 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 		return taskResourceError("generate attachment failed", ret)
 	}
 	log.Logger.Infof(
-		"Attachment generated: user_id=%d team_id=%d challenge_id=%d generator_id=%d",
-		payload.UserID, payload.TeamID, payload.Challenge.ID, generator.ID,
+		"Attachment generated: user_id=%d team_id=%d source_id=%d generator_id=%d",
+		payload.UserID, payload.TeamID, payload.Source.SourceID(), generator.ID,
 	)
 	return nil
 }

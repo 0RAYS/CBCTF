@@ -95,17 +95,14 @@ func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.R
 	return categories, model.SuccessRetVal()
 }
 
-func (c *ChallengeRepo) ListChallengesNotInContest(
-	contestID uint,
+// ListChallengesAvailable 返回题库题目列表。
+// 同一题库题目允许在同场比赛多次添加，因此这里不再排除已加入比赛的题目。
+func (c *ChallengeRepo) ListChallengesAvailable(
 	limit, offset int,
 	name, description, category string,
 	t model.ChallengeType,
 ) ([]model.Challenge, int64, model.RetVal) {
-	tx := c.DB.Model(&model.Challenge{}).
-		Where("NOT EXISTS (?)", c.DB.Model(&model.ContestChallenge{}).
-			Select("1").
-			Where("contest_challenges.challenge_id = challenges.id").
-			Where("contest_challenges.contest_id = ?", contestID))
+	tx := c.DB.Model(&model.Challenge{})
 	if name != "" {
 		tx = tx.Where("challenges.name ILIKE ?", "%"+name+"%")
 	}
@@ -121,19 +118,21 @@ func (c *ChallengeRepo) ListChallengesNotInContest(
 
 	var count int64
 	if res := tx.Count(&count); res.Error != nil {
-		log.Logger.Warningf("Failed to count Challenges not in contest: %s", res.Error)
+		log.Logger.Warningf("Failed to count Challenges: %s", res.Error)
 		return nil, 0, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 
 	var challenges = make([]model.Challenge, 0)
 	if res := tx.Order("challenges.id DESC").Limit(limit).Offset(offset).Find(&challenges); res.Error != nil {
-		log.Logger.Warningf("Failed to list Challenges not in contest: %s", res.Error)
+		log.Logger.Warningf("Failed to list Challenges: %s", res.Error)
 		return nil, 0, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 
 	return challenges, count, model.SuccessRetVal()
 }
 
+// Delete 删除题库题目。
+// 比赛题目在加入时已深拷贝为独立副本，题库删除不会影响比赛题目及其解题记录。
 func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 	if len(randIDL) == 0 {
 		return model.SuccessRetVal()
@@ -144,9 +143,6 @@ func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 		return model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	var ret model.RetVal
-	if ret = InitContestChallengeRepo(c.DB).DeleteByChallengeID(challengeIDL...); !ret.OK {
-		return ret
-	}
 	if ret = InitChallengeFlagRepo(c.DB).DeleteByChallengeID(challengeIDL...); !ret.OK {
 		return ret
 	}
@@ -161,4 +157,14 @@ func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 		return model.RetVal{Msg: i18n.Model.Challenge.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
+}
+
+// ListContestChallengeUsages 返回引用了指定题库题目的比赛题目实例。
+// 用于在删除或修改题库题目前提示其影响范围。
+func (c *ChallengeRepo) ListContestChallengeUsages(challengeID uint) ([]model.ContestChallenge, model.RetVal) {
+	usages, _, ret := InitContestChallengeRepo(c.DB).List(-1, -1, GetOptions{
+		Conditions: map[string]any{"challenge_id": challengeID},
+		Preloads:   map[string]GetOptions{"Contest": {}},
+	})
+	return usages, ret
 }

@@ -27,6 +27,14 @@ type Network struct {
 
 type Networks []Network
 
+// DeepCopy 返回 Networks 的副本。Network 及其成员均为值类型，复制切片即可隔离底层数组。
+func (n Networks) DeepCopy() Networks {
+	if n == nil {
+		return nil
+	}
+	return append(Networks(nil), n...)
+}
+
 func (n Networks) Value() (driver.Value, error) {
 	return json.Marshal(slices.DeleteFunc(n, func(n Network) bool {
 		if n.Definition.CIDR == "" || n.Definition.Gateway == "" || n.Attachment.IP == "" {
@@ -62,6 +70,14 @@ type Expose struct {
 }
 
 type Exposes []Expose
+
+// DeepCopy 返回 Exposes 的副本。Expose 为值类型，复制切片即可隔离底层数组。
+func (e Exposes) DeepCopy() Exposes {
+	if e == nil {
+		return nil
+	}
+	return append(Exposes(nil), e...)
+}
 
 func (e Exposes) Value() (driver.Value, error) {
 	return json.Marshal(slices.DeleteFunc(e, func(n Expose) bool {

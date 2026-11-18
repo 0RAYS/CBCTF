@@ -41,6 +41,15 @@ export const getChallenge = (challengeId) => {
   });
 };
 
+// 获取题库题目被哪些比赛引用
+export const getChallengeUsages = (challengeId) => {
+  return request({
+    url: `/admin/challenges/${challengeId}/usages`,
+    method: 'GET',
+    noToast: true,
+  });
+};
+
 // 创建题目
 export const createChallenge = (data) => {
   return request({
