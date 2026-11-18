@@ -19,7 +19,7 @@ func TestCaptureContainerRunsOutsideRootAndKeepsCapabilities(t *testing.T) {
 	config.Env = &config.Config{Path: path}
 	t.Cleanup(func() { config.Env = previousConfig })
 
-	victim := model.Victim{BaseModel: model.BaseModel{ID: 7}}
+	victim := model.Victim{ID: 7}
 	capture := captureContainer(victim, "pod-victim-7.pcap")
 
 	if capture.Command[0] != captureBinaryPath {
@@ -33,7 +33,7 @@ func TestCaptureContainerRunsOutsideRootAndKeepsCapabilities(t *testing.T) {
 		t.Fatalf("capture command must export %q, got %v", wantPcap, capture.Command)
 	}
 	for _, mount := range capture.VolumeMounts {
-		if mount.MountPath == captureMountPath && mount.MountPath != "/root/mnt" {
+		if mount.MountPath == captureMountPath {
 			continue
 		}
 		if mount.MountPath == "/root/mnt" || mount.MountPath == "/root/GeoLite2-City.mmdb" {
@@ -116,7 +116,7 @@ func TestPrepareCaptureTrafficDirHandsDirectoryToCaptureUser(t *testing.T) {
 	config.Env = &config.Config{Path: path}
 	t.Cleanup(func() { config.Env = previousConfig })
 
-	victim := model.Victim{BaseModel: model.BaseModel{ID: 3}}
+	victim := model.Victim{ID: 3}
 	if err := prepareCaptureTrafficDir(victim); err != nil {
 		if runtime.GOOS == "windows" {
 			// Ownership changes are a linux only concept.
