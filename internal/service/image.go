@@ -79,7 +79,7 @@ func ListNodeNames(ctx context.Context) ([]string, model.RetVal) {
 	return names, model.SuccessRetVal()
 }
 
-// ImageScope identifies one detection scope, so the last result of a scope
+// GlobalImageScope ImageScope identifies one detection scope, so the last result of a scope
 // never mixes with another one.
 func GlobalImageScope() string { return "global" }
 
