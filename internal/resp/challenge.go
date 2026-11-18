@@ -40,3 +40,18 @@ func GetSimpleChallengeResp(challengeView view.SimpleChallengeView) gin.H {
 		"network_policies": challenge.NetworkPolicies,
 	}
 }
+
+// GetChallengeUsageResp 返回引用了题库题目的比赛题目实例。
+func GetChallengeUsageResp(usageView view.ChallengeUsageView) gin.H {
+	contestChallenge := usageView.ContestChallenge
+	return gin.H{
+		"contest_id":   usageView.ContestID,
+		"contest_name": usageView.ContestName,
+		"id":           contestChallenge.RandID,
+		"name":         contestChallenge.Name,
+		"type":         contestChallenge.Type,
+		"category":     contestChallenge.Category,
+		"hidden":       contestChallenge.Hidden,
+		"solvers":      usageView.Solvers,
+	}
+}

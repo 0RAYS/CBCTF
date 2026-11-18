@@ -114,6 +114,12 @@ func UpdateChallenge(ctx *gin.Context) {
 func DeleteChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteChallengeEventType)
 	challenge := middleware.GetChallenge(ctx)
+	// 题库题目删除不影响比赛题目副本，这里先统计引用数量，供前端提示。
+	usageCount, usageRet := service.CountChallengeUsages(db.DB.WithContext(ctx.Request.Context()), challenge)
+	if !usageRet.OK {
+		resp.JSON(ctx, usageRet)
+		return
+	}
 	ret := service.DeleteChallenge(db.DB.WithContext(ctx.Request.Context()), challenge)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
@@ -125,5 +131,21 @@ func DeleteChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"contest_challenge_count": usageCount}))
+}
+
+// GetChallengeUsages 返回引用了该题库题目的比赛题目实例。
+// 用于在修改或删除题库题目前提示其影响范围。
+func GetChallengeUsages(ctx *gin.Context) {
+	challenge := middleware.GetChallenge(ctx)
+	usages, ret := service.ListChallengeUsages(db.DB.WithContext(ctx.Request.Context()), challenge)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	data := make([]gin.H, 0, len(usages))
+	for _, usage := range usages {
+		data = append(data, resp.GetChallengeUsageResp(usage))
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": len(data), "usages": data}))
 }
