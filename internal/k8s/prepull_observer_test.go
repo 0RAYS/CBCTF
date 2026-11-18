@@ -24,6 +24,7 @@ import (
 func TestPullResultsRetainDeletedPodsAndIsolateBatches(t *testing.T) {
 	observed := &pullResults{
 		batch:   "batch-one",
+		label:   prepullLabel,
 		results: make(map[pullTarget]pullResult),
 		changed: make(chan struct{}, 1),
 	}

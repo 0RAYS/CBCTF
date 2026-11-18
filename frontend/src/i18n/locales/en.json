@@ -670,10 +670,15 @@
         },
         "node": {
           "empty": "No matching required images are present on this node",
+          "presentTitle": "Present contest images",
+          "noPresent": "No contest image is present on this node",
           "missingTitle": "Missing contest images",
-          "noMissing": "No contest images missing"
+          "noMissing": "No contest images missing",
+          "unverifiedTitle": "Unverified contest images",
+          "noUnverified": "No unverified contest images"
         },
         "actions": {
+          "detect": "Detect Images",
           "selectAllNodes": "Select All Nodes",
           "deselectAllNodes": "Deselect All Nodes",
           "selectAllTargets": "Select All Pairs",
@@ -689,7 +694,12 @@
         "empty": "No node image data",
         "status": {
           "present": "Present",
-          "missing": "Missing"
+          "missing": "Missing",
+          "unverified": "Unverified"
+        },
+        "detect": {
+          "lastResult": "Last detection: {{time}}",
+          "noResult": "No detection result yet. Detect combines the node image list, the running Pods and an imagePullPolicy: Never probe."
         },
         "statusTitle": "Node Image Inventory",
         "statusSubtitle": "Review currently available images and missing contest images per node.",
@@ -700,7 +710,9 @@
           "manualRequired": "Enter at least one image name",
           "submitSuccess": "Image pull task submitted",
           "skipped": "Pre-pulling skipped by the Never policy",
-          "pullFailed": "Pull failed"
+          "pullFailed": "Pull failed",
+          "detectQueued": "Image detection submitted",
+          "detectFailed": "Failed to submit the image detection"
         }
       },
       "teams": {
@@ -2286,7 +2298,9 @@
       "statusSubtitle": "Review present and missing required images per node, based on the challenge library and runtime dependencies.",
       "node": {
         "missingTitle": "Missing required images",
-        "noMissing": "No required images missing"
+        "noMissing": "No required images missing",
+        "unverifiedTitle": "Unverified required images",
+        "noUnverified": "No unverified required images"
       }
     }
   },

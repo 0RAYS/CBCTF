@@ -17,14 +17,16 @@ import {
     buildTargetKey,
     buildTargets,
     completedImageTargetKeys,
+    formatDetectionTime,
     hasImageTag,
-    missingTargetKeys,
+    imageState,
     normalizeNodes,
     normalizePayload,
     normalizeTargetImages,
     parseManualImages,
     parseTargetKey,
     selectableTargetKeys,
+    unconfirmedTargetKeys,
 } from '../src/components/features/Admin/images/imageModel.js';
 
 test('partial warmup clears only submitted images on successfully queued nodes', () => {
@@ -153,8 +155,8 @@ test('node normalization trims, filters, deduplicates, and sorts without changin
     { node: 'a', images: null },
   ];
   assert.deepEqual(normalizeNodes(input), [
-    { node: 'a', images: [] },
-    { node: 'z', images: ['a:1', 'b:2'] },
+    { node: 'a', images: [], missing: [] },
+    { node: 'z', images: ['a:1', 'b:2'], missing: [] },
   ]);
   assert.equal(input[0].images[0], ' b:2 ');
   assert.deepEqual(normalizeNodes({}), []);
@@ -165,7 +167,7 @@ test('canonical and digest image inventory from warmup is retained and does not 
   const images = ['docker.io/library/nginx:latest', digest];
   const payload = normalizePayload({ nodes: [{ node: 'worker-a', images }], target_images: images });
   assert.deepEqual(payload.targetImages, images);
-  assert.deepEqual(missingTargetKeys(payload.nodes, payload.targetImages), []);
+  assert.deepEqual(unconfirmedTargetKeys(payload.nodes, payload.targetImages), []);
 });
 
 test('image payloads support node arrays and explicit contest targets, including an empty target list', () => {
@@ -173,11 +175,11 @@ test('image payloads support node arrays and explicit contest targets, including
     { node: 'a', images: ['a:1'] },
     { node: 'b', images: ['b:2', 'a:1'] },
   ];
-  assert.deepEqual(normalizePayload(nodes), { nodes: normalizeNodes(nodes), targetImages: ['a:1', 'b:2'] });
+  assert.deepEqual(normalizePayload(nodes), { nodes: normalizeNodes(nodes), targetImages: ['a:1', 'b:2'], detectedAt: '' });
   assert.deepEqual(normalizePayload({ nodes, target_images: [' c:3 ', 'c:3', 'untagged'] }).targetImages, ['c:3']);
   assert.deepEqual(normalizePayload({ nodes, target_images: [] }).targetImages, []);
   assert.deepEqual(normalizeTargetImages(undefined, nodes), ['a:1', 'b:2']);
-  assert.deepEqual(normalizePayload(null), { nodes: [], targetImages: [] });
+  assert.deepEqual(normalizePayload(null), { nodes: [], targetImages: [], detectedAt: '' });
 });
 
 test('manual images use one tagged and deduplicated list for counts and submission', () => {
@@ -196,7 +198,7 @@ test('missing targets exclude present images while manual targets retain every c
     { node: 'a', images: ['app:1'] },
     { node: 'b', images: [] },
   ];
-  assert.deepEqual(missingTargetKeys(nodes, ['app:1', 'db:2']).map(parseTargetKey), [
+  assert.deepEqual(unconfirmedTargetKeys(nodes, ['app:1', 'db:2']).map(parseTargetKey), [
     { node: 'b', image: 'app:1' },
     { node: 'a', image: 'db:2' },
     { node: 'b', image: 'db:2' },
@@ -207,7 +209,7 @@ test('missing targets exclude present images while manual targets retain every c
     { node: 'b', image: 'app:1' },
     { node: 'b', image: 'db:2' },
   ]);
-  assert.deepEqual(missingTargetKeys([], ['app:1']), []);
+  assert.deepEqual(unconfirmedTargetKeys([], ['app:1']), []);
   assert.deepEqual(buildTargets(['a'], []), []);
 });
 
@@ -217,13 +219,43 @@ test('required images absent from every node remain selectable and unrelated ima
     target_images: ['challenge:v1', 'nginx:latest'],
   });
   assert.deepEqual(payload.targetImages, ['challenge:v1', 'nginx:latest']);
-  assert.equal(missingTargetKeys(payload.nodes, payload.targetImages).length, 4);
+  assert.equal(unconfirmedTargetKeys(payload.nodes, payload.targetImages).length, 4);
 });
 
 test('pull policy controls selection of present and missing pairs', () => {
   const nodes = [{ node: 'a', images: ['app:1'] }, { node: 'b', images: [] }];
   const images = ['app:1', 'nginx:latest'];
-  assert.deepEqual(selectableTargetKeys(nodes, images, 'IfNotPresent'), missingTargetKeys(nodes, images));
+  assert.deepEqual(selectableTargetKeys(nodes, images, 'IfNotPresent'), unconfirmedTargetKeys(nodes, images));
   assert.deepEqual(selectableTargetKeys(nodes, images, 'Always').map(parseTargetKey), buildTargets(['a', 'b'], images));
   assert.deepEqual(selectableTargetKeys(nodes, images, 'Never'), []);
+});
+
+test('the last detection decides the image state of every node', () => {
+  const node = { node: 'a', images: ['app:1'], missing: ['db:2'] };
+  assert.equal(imageState(node, 'app:1'), 'present');
+  assert.equal(imageState(node, 'db:2'), 'missing');
+  assert.equal(imageState(node, 'other:1'), 'unverified');
+  const withoutDetection = { node: 'b', images: [], missing: [] };
+  assert.equal(imageState(withoutDetection, 'app:1'), 'unverified');
+});
+
+test('a detection result carries its time and the per node answers', () => {
+  const payload = normalizePayload({
+    nodes: [
+      { node: 'a', images: ['app:1'], missing: ['db:2'] },
+      { node: 'b', images: [], missing: ['app:1', 'db:2'] },
+    ],
+    target_images: ['app:1', 'db:2'],
+    detected_at: '2026-01-02T03:04:05Z',
+  });
+  assert.equal(payload.detectedAt, '2026-01-02T03:04:05Z');
+  assert.deepEqual(payload.targetImages, ['app:1', 'db:2']);
+  assert.deepEqual(payload.nodes[0].missing, ['db:2']);
+  assert.deepEqual(normalizePayload(null).detectedAt, '');
+});
+
+test('the detection time is rendered for the last result only', () => {
+  assert.equal(formatDetectionTime('', 'en'), '');
+  assert.equal(formatDetectionTime('not-a-date', 'en'), 'not-a-date');
+  assert.notEqual(formatDetectionTime('2026-01-02T03:04:05Z', 'en'), '');
 });

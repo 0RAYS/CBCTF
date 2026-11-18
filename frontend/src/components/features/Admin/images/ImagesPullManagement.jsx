@@ -16,7 +16,10 @@ import {
   completedImageTargetKeys,
 } from './imageModel';
 
-function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
+const DETECT_POLL_INTERVAL = 2000;
+const DETECT_POLL_TIMEOUT = 5 * 60 * 1000;
+
+function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages, detectImages }) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const action = useBatchAction(scope);
@@ -26,8 +29,11 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
   const [selectedNodes, setSelectedNodes] = useState([]);
   const [manualImagesText, setManualImagesText] = useState('');
   const [pullPolicy, setPullPolicy] = useState('IfNotPresent');
+  const [detectedAt, setDetectedAt] = useState('');
+  const [detecting, setDetecting] = useState(false);
   const [revision, refresh] = useReducer((value) => value + 1, 0);
   const refreshTimer = useRef(null);
+  const detectedAtRef = useRef('');
 
   const allImages = useMemo(() => normalizeTargetImages(undefined, nodes), [nodes]);
   const availableTargetKeys = useMemo(
@@ -38,6 +44,12 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
   const loadImages = useEffectEvent(() => fetchImages());
   const reportFetchError = useEffectEvent((error) => {
     toast.danger({ description: error.message || t('admin.contests.imagesPull.toast.fetchFailed') });
+  });
+  const applyPayload = useEffectEvent((normalized) => {
+    setNodes(normalized.nodes);
+    setTargetImages(normalized.targetImages);
+    setDetectedAt(normalized.detectedAt);
+    detectedAtRef.current = normalized.detectedAt;
   });
 
   useEffect(() => {
@@ -54,9 +66,7 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
       try {
         const response = await loadImages();
         if (current && response.code === 200) {
-          const normalized = normalizePayload(response.data);
-          setNodes(normalized.nodes);
-          setTargetImages(normalized.targetImages);
+          applyPayload(normalizePayload(response.data));
         }
       } catch (error) {
         if (current) reportFetchError(error);
@@ -68,6 +78,42 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
       current = false;
     };
   }, [revision]);
+
+  // The detection runs in the background, so the page waits for the new result
+  // instead of loading one on every visit.
+  useEffect(() => {
+    if (!detecting) return undefined;
+    let cancelled = false;
+    let busy = false;
+    const deadline = Date.now() + DETECT_POLL_TIMEOUT;
+    const timer = setInterval(async () => {
+      if (cancelled || busy) return;
+      if (Date.now() > deadline) {
+        cancelled = true;
+        setDetecting(false);
+        return;
+      }
+      busy = true;
+      try {
+        const response = await loadImages();
+        if (!cancelled && response?.code === 200) {
+          const normalized = normalizePayload(response.data);
+          if (normalized.detectedAt && normalized.detectedAt !== detectedAtRef.current) {
+            applyPayload(normalized);
+            setDetecting(false);
+          }
+        }
+      } catch {
+        // Keep polling until the deadline.
+      } finally {
+        busy = false;
+      }
+    }, DETECT_POLL_INTERVAL);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [detecting]);
 
   useEffect(() => {
     setSelectedNodes((prev) => prev.filter((node) => nodes.some((item) => item.node === node)));
@@ -155,6 +201,18 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
     await submitTargets(targets, 'admin.contests.imagesPull.toast.manualRequired', true);
   };
 
+  const handleDetect = async () => {
+    if (!detectImages) return;
+    await action.run(() => detectImages(), {
+      successMessage: t('admin.contests.imagesPull.toast.detectQueued'),
+      failureMessage: t('admin.contests.imagesPull.toast.detectFailed'),
+      onResult: (batch) => {
+        if (batch && batch.failed > 0) return;
+        setDetecting(true);
+      },
+    });
+  };
+
   return (
     <div className="space-y-4">
       <BatchResultPanel result={action.result} error={action.error} queued />
@@ -169,6 +227,9 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages }) {
         pullPolicy={pullPolicy}
         loading={loading}
         submitting={action.pending}
+        detecting={detecting}
+        detectedAt={detectedAt}
+        onDetect={handleDetect}
         onTargetToggle={handleTargetToggle}
         onToggleAllTargets={handleToggleAllTargets}
         onNodeToggle={handleNodeToggle}

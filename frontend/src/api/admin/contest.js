@@ -295,6 +295,15 @@ export const pullContestImages = (contestId, data) => {
   });
 };
 
+// 手动触发镜像检测
+export const detectContestImages = (contestId) => {
+  return request({
+    url: `/admin/contests/${contestId}/images/detect`,
+    method: 'POST',
+    noToast: true,
+  });
+};
+
 // 获取积分榜表格视图
 export const getContestScoreboard = (contestId, params = { limit: 20, offset: 0 }) => {
   return request({

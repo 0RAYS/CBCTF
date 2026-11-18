@@ -113,6 +113,7 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 	}
 	observed := &pullResults{
 		batch:   batch,
+		label:   prepullLabel,
 		results: make(map[pullTarget]pullResult),
 		changed: make(chan struct{}, 1),
 	}

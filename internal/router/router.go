@@ -345,6 +345,7 @@ func Init() *gin.Engine {
 		{
 			adminImages.GET("", GetImages)
 			adminImages.POST("", middleware.RateLimit("warmup_images", 1, time.Minute), PullImages)
+			adminImages.POST("/detect", middleware.RateLimit("detect_images", 1, time.Minute), DetectImages)
 		}
 
 		admin.GET("/contests", GetContests)
@@ -433,6 +434,7 @@ func Init() *gin.Engine {
 			{
 				adminContestImages.GET("", GetContestChallengeImage)
 				adminContestImages.POST("", middleware.RateLimit("warmup_images", 1, time.Minute), PullImages)
+				adminContestImages.POST("/detect", middleware.RateLimit("detect_images", 1, time.Minute), DetectContestChallengeImages)
 			}
 
 			adminContestVictims := adminContest.Group("/victims")

@@ -4,14 +4,18 @@ export function hasImageTag(image) {
   return value.lastIndexOf(':') > value.lastIndexOf('/');
 }
 
+function normalizeImageList(images) {
+  if (!Array.isArray(images)) return [];
+  return Array.from(new Set(images.map((image) => String(image || '').trim()).filter(hasImageTag))).sort();
+}
+
 export function normalizeNodes(data) {
   if (!Array.isArray(data)) return [];
   return data
     .map((item) => ({
       node: item?.node || '',
-      images: Array.isArray(item?.images)
-        ? Array.from(new Set(item.images.map((image) => String(image || '').trim()).filter(hasImageTag))).sort()
-        : [],
+      images: normalizeImageList(item?.images),
+      missing: normalizeImageList(item?.missing),
     }))
     .filter((item) => item.node)
     .sort((a, b) => a.node.localeCompare(b.node));
@@ -19,14 +23,18 @@ export function normalizeNodes(data) {
 
 export function normalizeTargetImages(data, nodes) {
   if (Array.isArray(data)) {
-    return Array.from(new Set(data.map((image) => String(image || '').trim()).filter(hasImageTag))).sort();
+    return normalizeImageList(data);
   }
   return Array.from(new Set(nodes.flatMap((node) => node.images))).sort();
 }
 
 export function normalizePayload(data) {
   const nodes = normalizeNodes(data?.nodes ?? data);
-  return { nodes, targetImages: normalizeTargetImages(data?.target_images, nodes) };
+  return {
+    nodes,
+    targetImages: normalizeTargetImages(data?.target_images, nodes),
+    detectedAt: String(data?.detected_at || ''),
+  };
 }
 
 export function parseManualImages(text) {
@@ -53,7 +61,19 @@ export function buildTargets(nodes, images) {
   return nodes.flatMap((node) => images.map((image) => ({ node, image })));
 }
 
-export function missingTargetKeys(nodes, images) {
+export const IMAGE_STATE_PRESENT = 'present';
+export const IMAGE_STATE_MISSING = 'missing';
+export const IMAGE_STATE_UNVERIFIED = 'unverified';
+
+// A node holds an image only when the last detection proved it. Everything
+// else is either proven absent or still unverified.
+export function imageState(node, image) {
+  if (node.images.includes(image)) return IMAGE_STATE_PRESENT;
+  if (node.missing.includes(image)) return IMAGE_STATE_MISSING;
+  return IMAGE_STATE_UNVERIFIED;
+}
+
+export function unconfirmedTargetKeys(nodes, images) {
   return images.flatMap((image) =>
     nodes.filter((node) => !node.images.includes(image)).map((node) => buildTargetKey(node.node, image))
   );
@@ -67,7 +87,7 @@ export function selectableTargetKeys(nodes, images, pullPolicy) {
       images
     ).map(({ node, image }) => buildTargetKey(node, image));
   }
-  return missingTargetKeys(nodes, images);
+  return unconfirmedTargetKeys(nodes, images);
 }
 
 export function completedImageTargetKeys(targets, batch) {
@@ -77,4 +97,18 @@ export function completedImageTargetKeys(targets, batch) {
   return targets
     .filter((target) => completedNodes.has(target.node))
     .map(({ node, image }) => buildTargetKey(node, image));
+}
+
+export function formatDetectionTime(value, language) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString(language || undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
 }

@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconRefresh } from '@tabler/icons-react';
+import { IconRefresh, IconSearch } from '@tabler/icons-react';
 import { Button } from '../../../common';
 import ImagePullSummary from './ImagePullSummary';
 import ImageTargetSelection from './ImageTargetSelection';
 import ManualImagePull from './ManualImagePull';
 import NodeImageInventory from './NodeImageInventory';
+import { formatDetectionTime } from './imageModel';
 
 export default function ImagesPullView({ scope, loading, onRefresh, ...props }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [filterText, setFilterText] = useState('');
   const scopeKey = scope === 'global' ? 'admin.imagesPull' : 'admin.contests.imagesPull';
   const normalizedFilter = filterText.trim().toLowerCase();
@@ -31,10 +32,30 @@ export default function ImagesPullView({ scope, loading, onRefresh, ...props }) 
 
   return (
     <div className="w-full mx-auto space-y-6">
-      <div className="flex justify-end items-center">
-        <Button variant="primary" size="sm" align="icon-left" icon={<IconRefresh size={16} />} onClick={onRefresh}>
-          {t('common.refresh')}
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-xs font-mono text-neutral-500">
+          {props.detectedAt
+            ? t('admin.contests.imagesPull.detect.lastResult', {
+                time: formatDetectionTime(props.detectedAt, i18n.language),
+              })
+            : t('admin.contests.imagesPull.detect.noResult')}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            align="icon-left"
+            icon={<IconSearch size={16} />}
+            loading={props.detecting}
+            disabled={props.detecting}
+            onClick={props.onDetect}
+          >
+            {t('admin.contests.imagesPull.actions.detect')}
+          </Button>
+          <Button variant="primary" size="sm" align="icon-left" icon={<IconRefresh size={16} />} onClick={onRefresh}>
+            {t('common.refresh')}
+          </Button>
+        </div>
       </div>
       <ImagePullSummary
         scopeKey={scopeKey}

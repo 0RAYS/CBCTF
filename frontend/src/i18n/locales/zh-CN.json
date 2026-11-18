@@ -670,10 +670,15 @@
         },
         "node": {
           "empty": "该节点暂无匹配的已存在所需镜像",
+          "presentTitle": "已存在的比赛镜像",
+          "noPresent": "该节点暂无已存在的比赛镜像",
           "missingTitle": "缺失的比赛镜像",
-          "noMissing": "无缺失的比赛镜像"
+          "noMissing": "无缺失的比赛镜像",
+          "unverifiedTitle": "未验证的比赛镜像",
+          "noUnverified": "无未验证的比赛镜像"
         },
         "actions": {
+          "detect": "检测镜像",
           "selectAllNodes": "全选节点",
           "deselectAllNodes": "取消全选节点",
           "selectAllTargets": "全选组合",
@@ -689,7 +694,12 @@
         "empty": "暂无节点镜像数据",
         "status": {
           "present": "已存在",
-          "missing": "缺失"
+          "missing": "缺失",
+          "unverified": "未验证"
+        },
+        "detect": {
+          "lastResult": "最近检测：{{time}}",
+          "noResult": "暂无检测结果，点击「检测镜像」会结合节点镜像清单、运行中的 Pod 和 imagePullPolicy: Never 探针逐节点核对镜像"
         },
         "statusTitle": "节点镜像清单",
         "statusSubtitle": "查看每个节点已存在的镜像和缺失的比赛镜像",
@@ -700,7 +710,9 @@
           "manualRequired": "请输入至少一个镜像名称",
           "submitSuccess": "镜像拉取任务已提交",
           "skipped": "Never 策略已跳过镜像预拉取",
-          "pullFailed": "拉取失败"
+          "pullFailed": "拉取失败",
+          "detectQueued": "已提交镜像检测",
+          "detectFailed": "提交镜像检测失败"
         }
       },
       "teams": {
@@ -2286,7 +2298,9 @@
       "statusSubtitle": "以题库及运行时依赖为基准，查看每个节点已存在和缺失的所需镜像",
       "node": {
         "missingTitle": "缺失的所需镜像",
-        "noMissing": "无缺失的所需镜像"
+        "noMissing": "无缺失的所需镜像",
+        "unverifiedTitle": "未验证的所需镜像",
+        "noUnverified": "无未验证的所需镜像"
       }
     }
   },

@@ -17,6 +17,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/task"
 )
 
@@ -62,10 +63,55 @@ func warmChallengeImages(challenge model.Challenge) {
 	}
 }
 
-func ListNodeImages(ctx context.Context) (map[string][]string, model.RetVal) {
+// ListNodeNames returns the schedulable nodes the detection and the warmup
+// target.
+func ListNodeNames(ctx context.Context) ([]string, model.RetVal) {
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
-	return k8s.ListNodeImages(ctx)
+	nodes, ret := k8s.ListSchedulableNodes(ctx)
+	if !ret.OK {
+		return nil, ret
+	}
+	names := make([]string, 0, len(nodes))
+	for _, node := range nodes {
+		names = append(names, node.Name)
+	}
+	return names, model.SuccessRetVal()
+}
+
+// ImageScope identifies one detection scope, so the last result of a scope
+// never mixes with another one.
+func GlobalImageScope() string { return "global" }
+
+func ContestImageScope(contestID uint) string { return fmt.Sprintf("contest:%d", contestID) }
+
+// DetectImages starts a detection run for one scope. The run probes the nodes
+// with imagePullPolicy: Never and keeps only its last result.
+func DetectImages(ctx context.Context, scope string, images []string) model.RetVal {
+	batch := model.NewBatch(1)
+	if len(images) == 0 {
+		batch.Skip(scope, "no images")
+		return batch.Result(ctx)
+	}
+	if err := task.EnqueueImageDetect(scope, images); err != nil {
+		log.Logger.Warningf("Failed to enqueue image detection: scope=%s error=%v", scope, err)
+		batch.Fail(scope, "enqueue", model.RetVal{Msg: i18n.Task.EnqueueError})
+		return batch.Result(ctx)
+	}
+	batch.Success(scope, "queued")
+	return batch.Result(ctx)
+}
+
+// LoadImageDetection returns the last detection result of a scope, if any.
+func LoadImageDetection(ctx context.Context, scope string) *model.ImageDetection {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	detection, err := redis.LoadImageDetection(ctx, scope)
+	if err != nil {
+		log.Logger.Warningf("Failed to load the image detection result: scope=%s error=%v", scope, err)
+		return nil
+	}
+	return detection
 }
 
 func PullContestChallengeImage(ctx context.Context, form dto.PullImageForm) model.RetVal {
