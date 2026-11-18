@@ -25,6 +25,8 @@ const (
 	UpdateContestChallengeEventType = "update_contest_challenge"
 	DeleteContestChallengeEventType = "delete_contest_challenge"
 
+	ResetContestChallengeSolvesEventType = "reset_contest_challenge_solves"
+
 	UpdateContestChallengeFlagEventType = "update_contest_challenge_flag"
 
 	UpdateCheatEventType      = "update_cheat"
@@ -110,6 +112,7 @@ var EventTypes = []string{
 	CreateContestEventType, UpdateContestEventType, DeleteContestEventType,
 	CreateChallengeEventType, UpdateChallengeEventType, DeleteChallengeEventType, UploadChallengeFileEventType,
 	CreateContestChallengeEventType, UpdateContestChallengeEventType, DeleteContestChallengeEventType,
+	ResetContestChallengeSolvesEventType,
 	UpdateContestChallengeFlagEventType,
 	UpdateCheatEventType, DeleteCheatEventType, DeleteAllCheatEventType, ManualCheckCheatEventType,
 	CreateNoticeEventType, UpdateNoticeEventType, DeleteNoticeEventType,
