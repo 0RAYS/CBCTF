@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { IconUsers } from '@tabler/icons-react';
-import { Button, Input, Select } from '../../../../common';
+import { Button, Chip, Input, Select } from '../../../../common';
 import ScoreCurveChart from '../ScoreCurveChart';
 
 export default function FlagEditor({ flag, index, onChange, onSave, onViewSolvers, disabled, dirty }) {
@@ -10,6 +10,22 @@ export default function FlagEditor({ flag, index, onChange, onSave, onViewSolver
     <fieldset disabled={disabled} className="p-3 border border-neutral-700 rounded-md bg-black/20 space-y-4 min-w-0">
       <legend className="font-mono text-geek-400">Flag #{index + 1}</legend>
       <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {flag.generation > 1 && (
+            <Chip
+              size="sm"
+              label={t('admin.contests.challengeModal.labels.generation', { generation: flag.generation })}
+              colorClass="border-geek-600/30 text-geek-300"
+            />
+          )}
+          {flag.active === false && (
+            <Chip
+              size="sm"
+              label={t('admin.contests.challengeModal.labels.archived')}
+              colorClass="bg-yellow-400/20 text-yellow-300"
+            />
+          )}
+        </div>
         <div className="flex flex-wrap gap-2">
           {flag.id && (
             <Button
@@ -65,6 +81,7 @@ export default function FlagEditor({ flag, index, onChange, onSave, onViewSolver
           />
         ))}
       </div>
+      <p className="text-xs font-mono text-neutral-500">{t('admin.contests.challengeModal.labels.flagChangeNote')}</p>
       <div className={disabled ? 'pointer-events-none' : ''}>
         <ScoreCurveChart
           scoreType={flag.score_type}
