@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"CBCTF/internal/config"
 	"CBCTF/internal/worker"
 )
 
@@ -43,7 +42,7 @@ type ContestChallenge struct {
 
 // BasicDir 比赛题目副本的存储目录
 func (c ContestChallenge) BasicDir() string {
-	return filepath.Join(config.Env.Path, "contest_challenges", strconv.FormatUint(uint64(c.ID), 10))
+	return filepath.Join(DataPath(), "contest_challenges", strconv.FormatUint(uint64(c.ID), 10))
 }
 
 // StaticPath 静态附件的路径

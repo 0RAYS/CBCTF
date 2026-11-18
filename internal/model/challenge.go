@@ -58,8 +58,16 @@ func (c Challenge) AttachmentCachePathForRevision(teamID uint, flags []string, r
 	return filepath.Join(c.BasicDir(), "cache", fmt.Sprintf("%d-%x.zip", teamID, hash))
 }
 
+// DataPath 返回数据根目录。配置尚未初始化时返回空字符串，避免测试环境空指针。
+func DataPath() string {
+	if config.Env == nil {
+		return ""
+	}
+	return config.Env.Path
+}
+
 func (c Challenge) BasicDir() string {
-	return filepath.Join(config.Env.Path, "challenges", strconv.FormatUint(uint64(c.ID), 10))
+	return filepath.Join(DataPath(), "challenges", strconv.FormatUint(uint64(c.ID), 10))
 }
 
 // StaticPath 获取静态题目文件的路径

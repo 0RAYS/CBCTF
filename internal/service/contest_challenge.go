@@ -3,7 +3,6 @@ package service
 import (
 	"os"
 	"slices"
-	"time"
 
 	"gorm.io/gorm"
 
@@ -17,7 +16,6 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 	contestChallengeL := make([]model.ContestChallenge, 0)
 	failedL := make([]string, 0)
 	batch := model.NewBatch(len(form.ChallengeIDs))
-	contestChallengeRepo := db.InitContestChallengeRepo(tx)
 	challengeRepo := db.InitChallengeRepo(tx)
 	for _, challengeRandID := range form.ChallengeIDs {
 		if tx.Statement.Context.Err() != nil {
@@ -34,51 +32,13 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 			}
 			continue
 		}
-		unique, uniqueRet := contestChallengeRepo.IsUniqueContestChallenge(contest.ID, challenge.ID)
-		if !uniqueRet.OK {
-			failedL = append(failedL, challengeRandID)
-			batch.Fail(challengeRandID, "check_existing", uniqueRet)
-			return contestChallengeL, failedL, batch.Result(tx.Statement.Context)
-		}
-		if !unique {
-			batch.Skip(challengeRandID, "already_added")
-			continue
-		}
 		var created model.ContestChallenge
 		ret = db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-			contestChallengeRepo := db.InitContestChallengeRepo(tx2)
-			contestFlagRepo := db.InitContestFlagRepo(tx2)
-			contestChallenge, ret := contestChallengeRepo.Create(model.ContestChallenge{
-				ContestID:   contest.ID,
-				ChallengeID: challenge.ID,
-				Name:        challenge.Name,
-				Description: challenge.Description,
-				Type:        challenge.Type,
-				Category:    challenge.Category,
-				Hidden:      true,
-			})
+			contestChallenge, ret := CopyChallengeToContest(tx2, contest, challenge)
 			if !ret.OK {
 				return ret
 			}
-			for _, flag := range challenge.ChallengeFlags {
-				_, ret = contestFlagRepo.Create(model.ContestFlag{
-					ContestID:          contest.ID,
-					ContestChallengeID: contestChallenge.ID,
-					ChallengeFlagID:    flag.ID,
-					Value:              flag.Value,
-					Score:              1000,
-					CurrentScore:       1000,
-					Decay:              100,
-					MinScore:           100,
-					ScoreType:          0,
-					Solvers:            0,
-					Last:               time.Now(),
-				})
-				if !ret.OK {
-					return ret
-				}
-			}
-			contestChallenge, ret = contestChallengeRepo.GetByID(contestChallenge.ID, db.GetOptions{
+			contestChallenge, ret = db.InitContestChallengeRepo(tx2).GetByID(contestChallenge.ID, db.GetOptions{
 				Preloads: map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
 			})
 			if !ret.OK {

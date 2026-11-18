@@ -42,13 +42,13 @@ func GetChallenges(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "challenges": data}))
 }
 
-func GetChallengeNotInContest(ctx *gin.Context) {
+func GetAvailableChallenges(ctx *gin.Context) {
 	var form dto.GetChallengesForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	challenges, count, ret := service.ListChallengesNotInContest(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form)
+	challenges, count, ret := service.ListAvailableChallenges(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

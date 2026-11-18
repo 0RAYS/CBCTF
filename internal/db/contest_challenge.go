@@ -13,12 +13,17 @@ type ContestChallengeRepo struct {
 }
 
 type UpdateContestChallengeOptions struct {
-	Name        *string
-	Description *string
-	Hidden      *bool
-	Attempt     *int64
-	Hints       *[]string
-	Tags        *[]string
+	Name            *string
+	Description     *string
+	Hidden          *bool
+	Attempt         *int64
+	Hints           *[]string
+	Tags            *[]string
+	Category        *string
+	Type            *model.ChallengeType
+	Template        *model.ChallengeTemplate
+	GeneratorImage  *string
+	NetworkPolicies *model.NetworkPolicies
 }
 
 func (u UpdateContestChallengeOptions) Convert2Map() map[string]any {
@@ -41,6 +46,21 @@ func (u UpdateContestChallengeOptions) Convert2Map() map[string]any {
 	if u.Tags != nil {
 		options["tags"] = *u.Tags
 	}
+	if u.Category != nil {
+		options["category"] = *u.Category
+	}
+	if u.Type != nil {
+		options["type"] = *u.Type
+	}
+	if u.Template != nil {
+		options["template"] = *u.Template
+	}
+	if u.GeneratorImage != nil {
+		options["generator_image"] = *u.GeneratorImage
+	}
+	if u.NetworkPolicies != nil {
+		options["network_policies"] = *u.NetworkPolicies
+	}
 	return options
 }
 
@@ -50,25 +70,16 @@ func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {
 	}
 }
 
+func (c *ContestChallengeRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.ContestChallenge, model.RetVal) {
+	return c.GetByUniqueField("rand_id", randID, optionsL...)
+}
+
 func (c *ContestChallengeRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
 	return c.DeleteByFieldID("contest_id", contestIDL...)
 }
 
 func (c *ContestChallengeRepo) DeleteByChallengeID(challengeIDL ...uint) model.RetVal {
 	return c.DeleteByFieldID("challenge_id", challengeIDL...)
-}
-
-func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challengeID uint) (bool, model.RetVal) {
-	_, ret := c.Get(GetOptions{
-		Conditions: map[string]any{"contest_id": contestID, "challenge_id": challengeID},
-	})
-	if ret.OK {
-		return false, model.SuccessRetVal()
-	}
-	if ret.Msg == i18n.Model.NotFound {
-		return true, model.SuccessRetVal()
-	}
-	return false, ret
 }
 
 func (c *ContestChallengeRepo) ListCategories(contestID uint, t model.ChallengeType) ([]string, model.RetVal) {
@@ -88,13 +99,14 @@ func (c *ContestChallengeRepo) ListUnsolvedID(teamID, contestID uint, category s
 	base := c.DB.Model(&model.ContestChallenge{}).
 		Where("contest_challenges.contest_id = ?", contestID).
 		Where("contest_challenges.hidden = ?", false).
-		Where("EXISTS (SELECT 1 FROM contest_flags WHERE contest_flags.contest_challenge_id = contest_challenges.id AND contest_flags.deleted_at IS NULL)").
+		Where("EXISTS (SELECT 1 FROM contest_flags WHERE contest_flags.contest_challenge_id = contest_challenges.id AND contest_flags.deleted_at IS NULL AND contest_flags.active = true)").
 		Where(`
 			EXISTS (
 				SELECT 1
 				FROM contest_flags
 				WHERE contest_flags.contest_challenge_id = contest_challenges.id
 					AND contest_flags.deleted_at IS NULL
+					AND contest_flags.active = true
 					AND NOT EXISTS (
 						SELECT 1
 						FROM team_flags
