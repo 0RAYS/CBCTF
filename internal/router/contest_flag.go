@@ -23,7 +23,6 @@ func SubmitFlag(ctx *gin.Context) {
 		middleware.GetSelf(ctx),
 		middleware.GetTeam(ctx),
 		middleware.GetContest(ctx),
-		middleware.GetChallenge(ctx),
 		middleware.GetContestChallenge(ctx),
 		form,
 		ctx.ClientIP(),

@@ -52,11 +52,12 @@ func TestGeneratorLeaseIntegration(t *testing.T) {
 	if err := RegisterGenerator(ctx, generator); err != nil {
 		t.Fatal(err)
 	}
-	got, token, err := LockAvailableGenerator(ctx, 0, id)
+	target := model.NewGeneratorTarget(id)
+	got, token, err := LockAvailableGenerator(ctx, target)
 	if err != nil || got.ID != id {
 		t.Fatalf("first lease: %v %+v", err, got)
 	}
-	if _, _, err = LockAvailableGenerator(ctx, 0, id); !errors.Is(err, ErrNoAvailableGenerator) {
+	if _, _, err = LockAvailableGenerator(ctx, target); !errors.Is(err, ErrNoAvailableGenerator) {
 		t.Fatalf("duplicate lease: %v", err)
 	}
 	if valid, err := RefreshGeneratorAttachmentLock(ctx, id, token); err != nil || !valid {
@@ -71,13 +72,13 @@ func TestGeneratorLeaseIntegration(t *testing.T) {
 	if err = RegisterGenerator(ctx, generator); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err = LockAvailableGenerator(ctx, 0, id); !errors.Is(err, ErrNoAvailableGenerator) {
+	if _, _, err = LockAvailableGenerator(ctx, target); !errors.Is(err, ErrNoAvailableGenerator) {
 		t.Fatalf("unregister released active lease: %v", err)
 	}
 	if err = UnlockGeneratorAttachment(ctx, id, token); err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err = LockAvailableGenerator(ctx, 0, id); err != nil {
+	if _, _, err = LockAvailableGenerator(ctx, target); err != nil {
 		t.Fatalf("reacquire: %v", err)
 	}
 }

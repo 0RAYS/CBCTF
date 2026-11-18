@@ -15,24 +15,31 @@ import (
 
 // EnsureGeneratorPool Pool admission is serialized across platform replicas; capacity is reserved
 // by waiting/pending records before a start task is enqueued.
-func EnsureGeneratorPool(ctx context.Context, contestID uint, challenge model.Challenge) error {
-	if challenge.Type != model.DynamicChallengeType || config.Env.K8S.GeneratorPoolSize <= 0 {
+// 比赛题目按比赛题目 id 划分池，题库题目按题库 id 划分池，两者互不干扰。
+func EnsureGeneratorPool(ctx context.Context, source model.GeneratorSourceSnapshot) error {
+	if source.Type != model.DynamicChallengeType || config.Env.K8S.GeneratorPoolSize <= 0 {
 		return nil
 	}
-	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "generator-pool", challenge.ID, func() error {
+	// 锁 id 必须唯一标识一个生成器池：比赛题目用比赛 id 与比赛题目 id 组合。
+	lockID := uint64(source.ChallengeID)
+	if source.ContestChallengeID > 0 {
+		lockID = uint64(source.ContestID)<<32 | uint64(source.ContestChallengeID)
+	}
+	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "generator-pool", uint(lockID), func() error {
 		repo := db.InitGeneratorRepo(db.TaskDB.WithContext(ctx))
 		conditions := map[string]any{
-			"challenge_id": challenge.ID,
-			"image":        challenge.GeneratorImage,
+			"image": source.Image,
 			"status": []string{
 				model.WaitingGeneratorStatus,
 				model.PendingGeneratorStatus,
 				model.RunningGeneratorStatus,
 			},
-			"contest_id": nil,
 		}
-		if contestID > 0 {
-			conditions["contest_id"] = contestID
+		if source.ContestChallengeID > 0 {
+			conditions["contest_challenge_id"] = source.ContestChallengeID
+		} else {
+			conditions["challenge_id"] = source.ChallengeID
+			conditions["contest_id"] = nil
 		}
 		generators, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: conditions})
 		if !ret.OK {
@@ -60,18 +67,19 @@ func EnsureGeneratorPool(ctx context.Context, contestID uint, challenge model.Ch
 		}
 		for i := capacity; i < config.Env.K8S.GeneratorPoolSize; i++ {
 			generator, ret := repo.Create(model.Generator{
-				ChallengeID:   challenge.ID,
-				ChallengeName: challenge.Name,
-				ContestID:     sql.Null[uint]{V: contestID, Valid: contestID > 0},
-				Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandHexStr(12)),
-				WorkerToken:   utils.RandHexStr(64),
-				Image:         challenge.GeneratorImage,
-				Status:        model.WaitingGeneratorStatus,
+				ChallengeID:        source.ChallengeID,
+				ChallengeName:      source.Name,
+				ContestChallengeID: sql.Null[uint]{V: source.ContestChallengeID, Valid: source.ContestChallengeID > 0},
+				ContestID:          sql.Null[uint]{V: source.ContestID, Valid: source.ContestID > 0},
+				Name:               fmt.Sprintf("gen-%d-%d-%s", source.ContestID, source.SourceID(), utils.RandHexStr(12)),
+				WorkerToken:        utils.RandHexStr(64),
+				Image:              source.Image,
+				Status:             model.WaitingGeneratorStatus,
 			})
 			if !ret.OK {
 				return taskResourceError("create generator pool member", ret)
 			}
-			if _, err := EnqueueStartGeneratorTask(challenge, generator); err != nil {
+			if _, err := EnqueueStartGeneratorTask(source, generator); err != nil {
 				_ = repo.Delete(generator.ID)
 				return err
 			}

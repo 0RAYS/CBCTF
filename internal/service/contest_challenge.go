@@ -57,8 +57,8 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 		if ret.OK {
 			contestChallengeL = append(contestChallengeL, created)
 			batch.Success(challengeRandID, "committed")
-			warmChallengeImages(challenge)
-			warmGeneratorPool(contest.ID, challenge)
+			warmContestChallengeImages(created)
+			warmGeneratorPool(model.NewContestChallengeSource(created))
 		}
 	}
 	return contestChallengeL, failedL, batch.Result(tx.Statement.Context)
@@ -67,28 +67,29 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 func ListContestChallengeImages(tx *gorm.DB, contest model.Contest) ([]string, model.RetVal) {
 	challenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads:   map[string]db.GetOptions{"Challenge": {}},
 	})
 	if !ret.OK {
 		return nil, ret
 	}
 	images := make([]string, 0)
 	for _, challenge := range challenges {
-		images = append(images, ChallengeImages(challenge.Challenge)...)
+		images = append(images, ContestChallengeImages(challenge)...)
 	}
 	slices.Sort(images)
 	return slices.Compact(images), model.SuccessRetVal()
 }
 
-func buildContestChallengeFileName(tx *gorm.DB, challenge model.Challenge, teamID uint) string {
-	path, ret := AttachmentPath(tx, challenge, teamID)
+// buildSourceFileName 返回附件的展示文件名。
+// 比赛题目副本与题库题目各自登记自己的附件记录。
+func buildSourceFileName(tx *gorm.DB, source model.GeneratorSource, teamID uint) string {
+	path, ret := AttachmentPath(tx, source, teamID)
 	if !ret.OK {
 		return ""
 	}
 	record, _ := db.InitFileRepo(tx).Get(db.GetOptions{
 		Conditions: map[string]any{
-			"model":    model.Name(challenge),
-			"model_id": challenge.ID,
+			"model":    model.Name(source),
+			"model_id": source.SourceID(),
 			"type":     model.ChallengeFileType,
 		},
 	})
@@ -120,8 +121,8 @@ func BuildContestChallengeRuntimeView(tx *gorm.DB, team model.Team, contestChall
 		Attempts:         attempts,
 		Init:             generated,
 		Solved:           solved,
-		Remote:           GetVictimStatus(tx, team.ID, contestChallenge.Challenge),
-		FileName:         buildContestChallengeFileName(tx, contestChallenge.Challenge, team.ID),
+		Remote:           GetVictimStatus(tx, team.ID, contestChallenge.ID, contestChallenge.ChallengeID, contestChallenge.Type),
+		FileName:         buildSourceFileName(tx, contestChallenge, team.ID),
 	}, model.SuccessRetVal()
 }
 
@@ -140,12 +141,12 @@ func ListContestChallengeViews(tx *gorm.DB, contest model.Contest, team model.Te
 		count = unsolvedCount
 		contestChallenges, _, ret = repo.List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"id": ids},
-			Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
+			Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
 		})
 	} else {
 		options := db.GetOptions{
 			Conditions: map[string]any{"contest_id": contest.ID, "hidden": false},
-			Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
+			Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
 		}
 		if form.Category != "" {
 			options.Conditions["category"] = form.Category
@@ -188,7 +189,7 @@ func ListContestChallengeCategories(tx *gorm.DB, contest model.Contest, form dto
 	return db.InitContestChallengeRepo(tx).ListCategories(contest.ID, form.Type)
 }
 
-func GetContestChallengeStatus(tx *gorm.DB, team model.Team, challenge model.Challenge, contestChallenge model.ContestChallenge) (view.ContestChallengeStatusView, model.RetVal) {
+func GetContestChallengeStatus(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (view.ContestChallengeStatusView, model.RetVal) {
 	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
@@ -196,7 +197,6 @@ func GetContestChallengeStatus(tx *gorm.DB, team model.Team, challenge model.Cha
 		return view.ContestChallengeStatusView{}, ret
 	}
 	contestChallenge.ContestFlags = contestFlags
-	contestChallenge.Challenge = challenge
 	state, ret := BuildContestChallengeRuntimeView(tx, team, contestChallenge)
 	if !ret.OK {
 		return view.ContestChallengeStatusView{}, ret
@@ -220,10 +220,8 @@ func UpdateContestChallenge(tx *gorm.DB, contestChallenge model.ContestChallenge
 		Tags:        form.Tags,
 	})
 	if ret.OK && form.Hidden != nil && !*form.Hidden {
-		if challenge, getRet := db.InitChallengeRepo(tx).GetByID(contestChallenge.ChallengeID); getRet.OK {
-			warmChallengeImages(challenge)
-			warmGeneratorPool(contestChallenge.ContestID, challenge)
-		}
+		warmContestChallengeImages(contestChallenge)
+		warmGeneratorPool(model.NewContestChallengeSource(contestChallenge))
 	}
 	return ret
 }

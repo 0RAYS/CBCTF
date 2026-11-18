@@ -22,6 +22,7 @@ const (
 	GeneratorKeyTmpl               = generatorKeyPrefix + "%d"
 	GeneratorAttachmentLockKeyTmpl = generatorLockKeyPrefix + "%d"
 	generatorContestSetKeyTmpl     = "generators:contest:%d:challenge:%d"
+	generatorContestChallengeKey   = "generators:contest:%d:contest_challenge:%d"
 	generatorLockTTL               = 5 * time.Minute
 )
 
@@ -72,7 +73,7 @@ func RegisterGenerator(ctx context.Context, generator model.Generator) error {
 	}
 	pipe := RDB.TxPipeline()
 	pipe.Set(ctx, fmt.Sprintf(GeneratorKeyTmpl, generator.ID), data, 0)
-	pipe.SAdd(ctx, generatorSetKey(generator.ContestID.V, generator.ContestID.Valid, generator.ChallengeID), generator.ID)
+	pipe.SAdd(ctx, generatorTargetSetKey(generator.Target()), generator.ID)
 	if _, err = pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to register generator in redis: generator_id=%d err=%v", generator.ID, err)
 		return err
@@ -85,7 +86,7 @@ func UnregisterGenerator(ctx context.Context, generator model.Generator) error {
 	pipe.Del(ctx, fmt.Sprintf(GeneratorKeyTmpl, generator.ID))
 	// A running attachment owns its lease until completion/expiry. Removing pool
 	// membership must not release another task's lock during re-registration.
-	pipe.SRem(ctx, generatorSetKey(generator.ContestID.V, generator.ContestID.Valid, generator.ChallengeID), generator.ID)
+	pipe.SRem(ctx, generatorTargetSetKey(generator.Target()), generator.ID)
 	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to unregister generator in redis: generator_id=%d err=%v", generator.ID, err)
 		return err
@@ -93,19 +94,19 @@ func UnregisterGenerator(ctx context.Context, generator model.Generator) error {
 	return nil
 }
 
-func LockAvailableGenerator(ctx context.Context, contestID, challengeID uint) (model.Generator, string, error) {
-	token := fmt.Sprintf("%d:%d:%d", contestID, challengeID, time.Now().UnixNano())
+func LockAvailableGenerator(ctx context.Context, target model.GeneratorTarget) (model.Generator, string, error) {
+	token := fmt.Sprintf("%d:%d:%d", target.ContestID, target.ContestChallengeID, time.Now().UnixNano())
 	result, err := RDB.Eval(
 		ctx,
 		lockAvailableGeneratorScript,
-		[]string{generatorSetKey(contestID, contestID > 0, challengeID)},
+		[]string{generatorTargetSetKey(target)},
 		token,
 		int64(generatorLockTTL/time.Millisecond),
 		generatorKeyPrefix,
 		generatorLockKeyPrefix,
 	).Result()
 	if err != nil {
-		log.Logger.Warningf("Failed to lock available generator: contest_id=%d challenge_id=%d err=%v", contestID, challengeID, err)
+		log.Logger.Warningf("Failed to lock available generator: contest_id=%d challenge_id=%d contest_challenge_id=%d err=%v", target.ContestID, target.ChallengeID, target.ContestChallengeID, err)
 		return model.Generator{}, "", err
 	}
 
@@ -159,4 +160,13 @@ func generatorSetKey(contestID uint, contestValid bool, challengeID uint) string
 		contestID = 0
 	}
 	return fmt.Sprintf(generatorContestSetKeyTmpl, contestID, challengeID)
+}
+
+// generatorTargetSetKey 返回生成器池的集合键。
+// 比赛题目优先使用独立的命名空间，避免与题库题目的池互相干扰。
+func generatorTargetSetKey(target model.GeneratorTarget) string {
+	if target.ContestChallengeID > 0 {
+		return fmt.Sprintf(generatorContestChallengeKey, target.ContestID, target.ContestChallengeID)
+	}
+	return generatorSetKey(target.ContestID, target.ContestID > 0, target.ChallengeID)
 }
