@@ -41,7 +41,7 @@ func closeTimeoutVictimsTask() model.RetVal {
 				)
 			} else {
 				batch.Fail(key, "stop", ret)
-				log.Logger.Warningf("Failed to queue timeout victim stop: victim_id=%d reason=%s", victim.ID, ret.Msg)
+				log.Logger.Warningf("Failed to queue timeout victim stop: victim_id=%d reason=%v", victim.ID, ret)
 				if model.BatchDependencyFailed(ret) {
 					return batch.Result(ctx)
 				}
@@ -61,7 +61,7 @@ func closeUnCtrlVictimsTask() model.RetVal {
 	roots, err := k8s.ListVictimRoots(listCtx)
 	listCancel()
 	if err != nil {
-		return model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VictimRoot", "Error": err.Error()}}
+		return model.FailRetVal(i18n.K8S.GetError, "VictimRoot", "", err)
 	}
 	var orphans []model.Victim
 	for _, victim := range roots {

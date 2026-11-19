@@ -29,10 +29,7 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 			ClientIP: ctx.ClientIP(),
 		})
 		if err != nil {
-			resp.AbortJSON(ctx, model.RetVal{
-				Msg:  i18n.Redis.SetError,
-				Attr: map[string]any{"Key": name, "Error": err.Error()},
-			})
+			resp.AbortJSON(ctx, model.FailRetVal(i18n.Redis.SetError, "Cache", name, err))
 			return
 		}
 		if !decision.Allowed {
@@ -41,10 +38,8 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 				retryAfterSeconds = 1
 			}
 			prometheus.RecordRateLimitHit(name)
-			resp.AbortJSON(ctx, model.RetVal{
-				Msg:  i18n.Response.TooManyRequests,
-				Attr: map[string]any{"Seconds": retryAfterSeconds},
-			})
+			resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.TooManyRequests, "RateLimit", name, nil).
+				WithAttrs(map[string]any{"Seconds": retryAfterSeconds}))
 			return
 		}
 		ctx.Next()

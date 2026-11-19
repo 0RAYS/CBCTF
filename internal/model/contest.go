@@ -12,13 +12,6 @@ var (
 	ContestIsOver    = i18n.Model.Contest.IsOver
 )
 
-// Contest 赛事
-// HasMany Team
-// ManyToMany User
-// HasMany Notice
-// HasMany ContestChallenge
-// HasMany ContestFlag
-// HasMany Submission
 type Contest struct {
 	Teams             []Team             `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Users             []User             `gorm:"many2many:user_contests;" json:"-"`

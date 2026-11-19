@@ -8,12 +8,10 @@ import (
 	"github.com/google/uuid"
 )
 
-// UUID 生成随机uuid
 func UUID() string {
 	return uuid.New().String()
 }
 
-// RandHexStr 生成随机字符串
 func RandHexStr(n int) string {
 	result := make([]byte, n)
 	_, err := rand.Read(result)

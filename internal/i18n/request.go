@@ -1,7 +1,6 @@
 package i18n
 
 var Response = struct {
-	// Error
 	BadRequest      string
 	Unauthorized    string
 	Forbidden       string

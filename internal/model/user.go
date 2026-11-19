@@ -2,11 +2,6 @@ package model
 
 const NeverLoginPWD = "never_login_pwd"
 
-// User
-// ManyToMany Teams
-// ManyToMany Contests
-// ManyToMany Groups
-// HasMany Submissions
 type User struct {
 	Teams           []Team       `gorm:"many2many:user_teams;" json:"-"`
 	Contests        []Contest    `gorm:"many2many:user_contests;" json:"-"`

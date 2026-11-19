@@ -15,8 +15,8 @@ import (
 	ktesting "k8s.io/client-go/testing"
 )
 
-// truncatedNode returns a node whose image list is at the kubelet limit, so
-// the list alone cannot decide the result.
+// truncatedNode has an image list at the kubelet limit, so the list alone
+// cannot decide the result.
 func truncatedNode(name string) *corev1.Node {
 	node := &corev1.Node{
 		Name: name,
@@ -32,8 +32,8 @@ func truncatedNode(name string) *corev1.Node {
 	return node
 }
 
-// The detection must probe with imagePullPolicy: Never, so a node that holds
-// the image starts the container and a node that lacks it fails to pull.
+// The probe uses imagePullPolicy: Never, so a node that holds the image starts
+// the container and a node that lacks it fails to pull.
 func TestDetectNodeImagesProbesWithPullPolicyNever(t *testing.T) {
 	present := "docker.0rays.club/jbnrz/linux-sjk:latest"
 	absent := "docker.0rays.club/jbnrz/missing:latest"
@@ -42,8 +42,8 @@ func TestDetectNodeImagesProbesWithPullPolicyNever(t *testing.T) {
 	if err := client.Tracker().Add(truncatedNode("worker-a")); err != nil {
 		t.Fatal(err)
 	}
-	// The fake tracker has no resource-version replay, unlike the API server.
-	// Establish its watch before simulating the probe Pod.
+	// The fake tracker has no resource-version replay, unlike the API server,
+	// so its watch must exist before the probe Pod is simulated.
 	watching := make(chan struct{})
 	var once sync.Once
 	client.PrependWatchReactor("pods", func(action ktesting.Action) (bool, watch.Interface, error) {
@@ -112,7 +112,7 @@ func TestDetectNodeImagesProbesWithPullPolicyNever(t *testing.T) {
 	}
 }
 
-// A probe that never answers must not be reported as absent.
+// A probe that never answers stays unverified instead of being reported absent.
 func TestDetectNodeImagesKeepsUnansweredProbesUnverified(t *testing.T) {
 	image := "docker.0rays.club/jbnrz/linux-sjk:latest"
 	client := useFakePods(t)
@@ -178,8 +178,8 @@ func TestDetectNodeImagesUsesTheCompleteNodeImageList(t *testing.T) {
 	}
 }
 
-// A truncated list must not hide an image the node runs, so the running Pods
-// prove its presence without a probe.
+// A truncated list does not hide an image the node runs, because the running
+// Pods prove its presence.
 func TestDetectNodeImagesUsesTheRunningPodImages(t *testing.T) {
 	image := "docker.0rays.club/jbnrz/linux-sjk:latest"
 	client := useFakePods(t)
@@ -261,7 +261,7 @@ func TestDetectNodeImagesProbesANodeWithoutImages(t *testing.T) {
 	}
 }
 
-// The detection must probe every node, so one node never answers for another.
+// Every node gets its own probe, so one node never answers for another.
 func TestDetectNodeImagesProbesEveryNode(t *testing.T) {
 	image := "docker.0rays.club/jbnrz/linux-sjk:latest"
 	client := useFakePods(t)
@@ -290,8 +290,8 @@ func TestDetectNodeImagesProbesEveryNode(t *testing.T) {
 	}
 }
 
-// A detection that cannot probe at all must fail instead of reporting every
-// image as absent.
+// A detection that cannot probe at all fails instead of reporting every image
+// as absent.
 func TestDetectNodeImagesFailsWithoutAnyProbe(t *testing.T) {
 	client := useFakePods(t)
 	t.Cleanup(Stop)

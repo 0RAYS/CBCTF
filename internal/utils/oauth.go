@@ -22,10 +22,9 @@ func GetClaimKeys(field string) []string {
 	return results
 }
 
-// GetClaimRawValue resolves a single {key} or {nested.key} placeholder in field,
-// looks up the path in resp, and returns the raw map value converted to T via
-// JSON round-trip. No string formatting or template substitution is performed;
-// the value is returned exactly as it appears in the map.
+// GetClaimRawValue looks up a {key} or {nested.key} path in resp and returns the
+// raw map value converted to T via a JSON round-trip, without any template
+// substitution.
 func GetClaimRawValue[T any](resp map[string]any, key string) (T, bool) {
 	var zero T
 	ks := strings.Split(key, ".")
@@ -43,7 +42,7 @@ func GetClaimRawValue[T any](resp map[string]any, key string) (T, bool) {
 			data = subData
 			continue
 		}
-		// Leaf value: convert to T via JSON round-trip.
+		// Leaf value: converted to T via JSON round-trip.
 		b, err := json.Marshal(v)
 		if err != nil {
 			fmt.Println(err)

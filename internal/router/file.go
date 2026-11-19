@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -38,7 +39,7 @@ func DefaultAssets(ctx *gin.Context) {
 	}
 	file, ok := DefaultPicture[form.Filename]
 	if !ok {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
+		resp.JSON(ctx, model.FailRetVal(i18n.Model.File.NotFound, "File", form.Filename, nil))
 		return
 	}
 	ctx.Writer.Header().Set("File", "true")
@@ -52,11 +53,11 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 		if _, err := os.Stat(string(file.Path)); err != nil {
 			if os.IsNotExist(err) {
 				// 文件不存在时保留数据库记录
-				resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
+				resp.JSON(ctx, model.FailRetVal(i18n.Model.File.NotFound, "File", string(file.Path), nil))
 				return
 			}
 			log.Logger.Warningf("Failed to get file: %s", err)
-			resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+			resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "File", string(file.Path), err))
 			return
 		}
 		ctx.Writer.Header().Set("File", "true")
@@ -69,7 +70,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		file, err := ctx.FormFile(string(model.PictureFileType))
 		if err != nil {
-			resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+			resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Upload", string(model.PictureFileType), err))
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UploadPictureEventType)
@@ -112,7 +113,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 		}
 		if err = ctx.SaveUploadedFile(file, string(record.Path)); err != nil {
 			log.Logger.Warningf("Failed to save file: %s", err)
-			resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+			resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "File", string(record.Path), err))
 			return
 		}
 		if v != "contest" {
@@ -127,7 +128,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 func UploadChallenge(ctx *gin.Context) {
 	file, err := ctx.FormFile(string(model.ChallengeFileType))
 	if err != nil {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Upload", string(model.ChallengeFileType), err))
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadChallengeFileEventType)
@@ -139,7 +140,7 @@ func UploadChallenge(ctx *gin.Context) {
 	case model.DynamicChallengeType:
 		path = challenge.GeneratorPath()
 	default:
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
+		resp.JSON(ctx, model.FailRetVal(i18n.Model.Challenge.InvalidType, "Challenge", fmt.Sprintf("challenge_id=%d,type=%s", challenge.ID, challenge.Type), nil))
 		return
 	}
 	record, ret := service.SaveChallenge(db.DB.WithContext(ctx.Request.Context()), challenge, file, path)
@@ -149,7 +150,7 @@ func UploadChallenge(ctx *gin.Context) {
 	}
 	if err = ctx.SaveUploadedFile(file, string(record.Path)); err != nil {
 		log.Logger.Warningf("Failed to save file: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "File", string(record.Path), err))
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -159,7 +160,7 @@ func UploadChallenge(ctx *gin.Context) {
 func UploadWriteup(ctx *gin.Context) {
 	file, err := ctx.FormFile(string(model.WriteupFileType))
 	if err != nil {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Upload", string(model.WriteupFileType), err))
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadWriteupEventType)
@@ -172,7 +173,7 @@ func UploadWriteup(ctx *gin.Context) {
 	}
 	if err = ctx.SaveUploadedFile(file, string(record.Path)); err != nil {
 		log.Logger.Warningf("Failed to save file: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "File", string(record.Path), err))
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -222,14 +223,14 @@ func ExportContestWriteups(ctx *gin.Context) {
 		if err != nil && !os.IsNotExist(err) {
 			log.Logger.Warningf("Failed to stat writeup directory: %s", err)
 		}
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
+		resp.JSON(ctx, model.FailRetVal(i18n.Model.File.NotFound, "File", src, nil))
 		return
 	}
 	filename := "contest-" + strconv.FormatUint(uint64(contest.ID), 10) + ".zip"
 	dest := filepath.Join(src, "writeups.zip")
-	if err := utils.Zip(src, dest); err != nil {
+	if err := utils.ZipWithContext(context.Background(), src, dest, nil); err != nil {
 		log.Logger.Warningf("Failed to archive contest writeups: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "ContestWriteup", dest, err))
 		return
 	}
 	ctx.Writer.Header().Set("File", "true")

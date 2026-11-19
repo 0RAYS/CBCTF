@@ -36,7 +36,7 @@ func SetCaptchaAnswer(ctx context.Context, id, answer string) model.RetVal {
 	key := fmt.Sprintf(captchaKeyTmpl, id)
 	if err := RDB.Set(ctx, key, strings.TrimSpace(answer), captchaTTL).Err(); err != nil {
 		log.Logger.Warningf("Failed to set captcha answer: %s", err)
-		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.SetError, "Cache", key, err)
 	}
 	return model.SuccessRetVal()
 }
@@ -48,10 +48,10 @@ func VerifyCaptcha(ctx context.Context, id, answer string) model.RetVal {
 	result, err := consumeCaptchaScript.Run(ctx, RDB, []string{key}, strings.TrimSpace(answer)).Int()
 	if err != nil {
 		log.Logger.Warningf("Failed to verify captcha answer: %s", err)
-		return model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.GetError, "Cache", key, err)
 	}
 	if result != 1 {
-		return model.RetVal{Msg: i18n.Model.User.CaptchaWrong}
+		return model.FailRetVal(i18n.Model.User.CaptchaWrong, "Captcha", key, nil)
 	}
 	return model.SuccessRetVal()
 }

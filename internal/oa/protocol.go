@@ -8,11 +8,9 @@ import (
 	"CBCTF/internal/model"
 )
 
-// Protocol describes the handshake of a single external authentication
-// protocol. It deliberately only covers the parts that differ between
-// protocols — building the login redirect and turning the callback request
-// into a normalized claims map. The OAuth router owns the shared
-// login/token/redirect logic and remains protocol-agnostic.
+// Protocol covers only what differs between authentication protocols: building
+// the login redirect and turning the callback request into a normalized claims
+// map. The OAuth router owns the shared login/token/redirect logic.
 type Protocol interface {
 	// ID returns the protocol identifier persisted on model.Oauth.Protocol.
 	ID() string

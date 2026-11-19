@@ -8,7 +8,6 @@ import (
 	"CBCTF/internal/utils"
 )
 
-// LoginForm for user or admin login
 type LoginForm struct {
 	Name      string `form:"name" json:"name" binding:"required"`
 	Password  string `form:"password" json:"password" binding:"required"`
@@ -16,7 +15,6 @@ type LoginForm struct {
 	Captcha   string `form:"captcha" json:"captcha" binding:"required"`
 }
 
-// RegisterForm for user register
 type RegisterForm struct {
 	Name      string `form:"name" json:"name" binding:"required"`
 	Password  string `form:"password" json:"password" binding:"required"`
@@ -32,7 +30,6 @@ func (f *RegisterForm) Validate(_ *gin.Context) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-// ChangePasswordForm for user or admin change password
 type ChangePasswordForm struct {
 	OldPassword string `form:"old" json:"old" binding:"required,nefield=NewPassword"`
 	NewPassword string `form:"new" json:"new" binding:"required,nefield=OldPassword"`
@@ -45,7 +42,6 @@ type ListUsersForm struct {
 	ListModelsForm
 }
 
-// CreateUserForm for create user
 type CreateUserForm struct {
 	Name        string `form:"name" json:"name" binding:"required"`
 	Password    string `form:"password" json:"password" binding:"required"`
@@ -63,14 +59,12 @@ func (f *CreateUserForm) Validate(_ *gin.Context) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-// UpdateSelfForm for user update info
 type UpdateSelfForm struct {
 	Name        *string `form:"name" json:"name" binding:"omitempty,min=1"`
 	Email       *string `form:"email" json:"email" binding:"omitempty,email"`
 	Description *string `form:"description" json:"description"`
 }
 
-// UpdateUserForm for admin update user info
 type UpdateUserForm struct {
 	Name        *string `form:"name" json:"name" binding:"omitempty,min=1"`
 	Email       *string `form:"email" json:"email" binding:"omitempty,email"`
@@ -90,19 +84,16 @@ func (f *UpdateUserForm) Validate(_ *gin.Context) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-// DeleteSelfForm for user delete self
 type DeleteSelfForm struct {
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
-// ForgotPasswordForm for initiating password reset via email
 type ForgotPasswordForm struct {
 	Email     string `form:"email" json:"email" binding:"required,email"`
 	CaptchaID string `form:"captcha_id" json:"captcha_id" binding:"required"`
 	Captcha   string `form:"captcha" json:"captcha" binding:"required"`
 }
 
-// ResetPasswordForm for completing password reset with token
 type ResetPasswordForm struct {
 	Token    string `form:"token" json:"token" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`

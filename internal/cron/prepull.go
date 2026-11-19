@@ -24,7 +24,7 @@ func warmChallengeImagesTask() model.RetVal {
 		}
 		if err := task.EnqueuePrepullTask(service.ChallengeImages(challenge)); err != nil {
 			log.Logger.Warningf("Scheduled warmup enqueue failed: challenge_id=%d error=%v", challenge.ID, err)
-			batch.Fail(fmt.Sprint(challenge.ID), "enqueue", model.RetVal{Msg: i18n.Task.EnqueueError})
+			batch.Fail(fmt.Sprint(challenge.ID), "enqueue", model.FailRetVal(i18n.Task.EnqueueError, "Challenge", fmt.Sprintf("challenge_id=%d", challenge.ID), err))
 			return batch.Result(db.CronDB.Statement.Context)
 		}
 		batch.Success(fmt.Sprint(challenge.ID), "queued")

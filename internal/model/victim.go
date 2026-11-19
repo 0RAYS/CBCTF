@@ -24,12 +24,6 @@ const (
 )
 
 // Victim 靶机实例
-// BelongsTo Challenge
-// BelongsTo Contest (nullable)
-// BelongsTo ContestChallenge (nullable)
-// BelongsTo Team (nullable)
-// BelongsTo User
-// HasMany Pod
 type Victim struct {
 	Start            time.Time        `gorm:"default:null" json:"start"`
 	Status           string           `gorm:"index" json:"status"`

@@ -15,7 +15,7 @@ import (
 	"CBCTF/internal/model"
 )
 
-// Download from: https://github.com/logos
+// Logo downloaded from https://github.com/logos
 var (
 	//go:embed logo/github-mark.png
 	githubMarkFile embed.FS

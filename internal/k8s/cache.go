@@ -63,8 +63,9 @@ func stopCaches() {
 	objectCaches = make(map[string]*objectCache)
 }
 
-// One informer per resource and namespace, shared across all callers. A client
-// replacement (in-process restart) discards caches belonging to the old client.
+// cachedObjects runs one informer per resource and namespace, shared across all
+// callers. A client replacement (in-process restart) discards the caches of the
+// old client.
 func cachedObjects(ctx context.Context, kind string) (*objectCache, error) {
 	cacheMu.Lock()
 	if cacheClient != kubeClient {

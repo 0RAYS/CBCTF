@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -101,8 +102,9 @@ func (c *ContestFlagRepo) GetUserSolvedContestFlags(userIDL ...uint) ([]UserSolv
 		Order("submissions.user_id, contest_flags.id, submissions.created_at ASC, submissions.id ASC").
 		Scan(&results)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get ContestFlag: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.ContestFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("user_id=%v", userIDL)
+		log.Logger.Warningf("Failed to get ContestFlag: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.ContestFlag.GetError, "ContestFlag", target, res.Error)
 	}
 	return results, model.SuccessRetVal()
 }
@@ -148,8 +150,9 @@ func (c *ContestFlagRepo) Delete(idL ...uint) model.RetVal {
 		return ret
 	}
 	if res := c.DB.Model(&model.ContestFlag{}).Where("id IN ?", idL).Delete(&model.ContestFlag{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete ContestFlags: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.ContestFlag.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("id=%v", idL)
+		log.Logger.Warningf("Failed to delete ContestFlags: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.ContestFlag.DeleteError, "ContestFlag", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }

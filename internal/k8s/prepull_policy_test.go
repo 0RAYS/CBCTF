@@ -68,8 +68,8 @@ func TestPrepullPoliciesCompareEachTargetNodeInventory(t *testing.T) {
 				if !slices.Equal(terms[0].MatchFields[0].Values, []string{"target"}) {
 					t.Errorf("Job targeted the wrong node: %v", terms)
 				}
-				// Stop after inspecting the submitted Job; completion is covered by
-				// the observer tests without requiring a live Kubernetes controller.
+				// Stop after inspecting the submitted Job; the observer tests
+				// cover completion without a live Kubernetes controller.
 				return true, nil, fmt.Errorf("test job submission observed")
 			})
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)

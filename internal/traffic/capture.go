@@ -623,9 +623,8 @@ func EnrichPcapDirWithContext(ctx context.Context, path string) ([]string, []Sou
 // frpcPcapName 是 frpc pod capture sidecar 写入的固定文件名。
 const frpcPcapName = "frpc.pcap"
 
-// PcapDirResult 读取靶机流量目录的结果：
-//   - Connections：普通 pod 流量，用于拓扑展示。
-//   - FrpcIPs：frpc pod 经 Proxy Protocol 传递的真实客户端 IP。
+// PcapDirResult 读取靶机流量目录的结果。Connections 是普通 pod 流量，用于拓扑展示；
+// FrpcIPs 是 frpc pod 经 Proxy Protocol 传递的真实客户端 IP。
 type PcapDirResult struct {
 	Connections  []Connection
 	FrpcIPs      []string
@@ -762,8 +761,8 @@ func extractFrpcProxyAccesses(ctx context.Context, path string, proxyPorts map[u
 		return nil, ctx.Err()
 	}
 	streams.flush()
-	// Never silently publish a complete-looking anti-cheat evidence index after
-	// an analysis resource limit or a capture gap.
+	// A resource limit or a capture gap leaves the evidence incomplete, so it is
+	// reported instead of being published as a complete anti-cheat index.
 	if len(warnings) > 0 {
 		codes := make([]string, 0, len(warnings))
 		for code := range warnings {

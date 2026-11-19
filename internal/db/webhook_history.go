@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/i18n"
@@ -20,8 +22,9 @@ func InitWebhookHistoryRepo(tx *gorm.DB) *WebhookHistoryRepo {
 
 func (w *WebhookHistoryRepo) Create(wh model.WebhookHistory) (model.WebhookHistory, model.RetVal) {
 	if res := w.DB.Model(&model.WebhookHistory{}).Create(&wh); res.Error != nil {
-		log.Logger.Warningf("Failed to create WebhookHistory: %s", res.Error)
-		return model.WebhookHistory{}, model.RetVal{Msg: i18n.Model.WebhookHistory.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("webhook_id=%d", wh.WebhookID)
+		log.Logger.Warningf("Failed to create WebhookHistory: %s (target=%s)", res.Error, target)
+		return model.WebhookHistory{}, model.FailRetVal(i18n.Model.WebhookHistory.CreateError, model.Name(model.WebhookHistory{}), target, res.Error)
 	}
 	if ret := InitWebhookRepo(w.DB).UpdateStatus(wh.WebhookID, wh.Success, wh.CreatedAt); !ret.OK {
 		return model.WebhookHistory{}, ret

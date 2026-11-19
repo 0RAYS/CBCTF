@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -88,8 +89,9 @@ func (c *ContestRepo) CountUsers(contestID uint) (int64, model.RetVal) {
 	var count int64
 	res := c.DB.Model(&model.UserContest{}).Where("contest_id = ?", contestID).Count(&count)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count contest users: %s", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("contest_id=%d", contestID)
+		log.Logger.Warningf("Failed to count contest users: %s (target=%s)", res.Error, target)
+		return 0, model.FailRetVal(i18n.Model.Contest.GetError, "Contest", target, res.Error)
 	}
 	return count, model.SuccessRetVal()
 }
@@ -98,8 +100,9 @@ func (c *ContestRepo) CountTeams(contestID uint) (int64, model.RetVal) {
 	var count int64
 	res := c.DB.Model(&model.Team{}).Where("contest_id = ?", contestID).Count(&count)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count contest teams: %s", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("contest_id=%d", contestID)
+		log.Logger.Warningf("Failed to count contest teams: %s (target=%s)", res.Error, target)
+		return 0, model.FailRetVal(i18n.Model.Contest.GetError, "Contest", target, res.Error)
 	}
 	return count, model.SuccessRetVal()
 }
@@ -122,8 +125,9 @@ func (c *ContestRepo) CountUsersMap(contestIDL ...uint) (map[uint]int64, model.R
 		Group("contest_id").
 		Scan(&rows)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count contest users: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("contest_id=%v", contestIDL)
+		log.Logger.Warningf("Failed to count contest users: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Contest.GetError, "Contest", target, res.Error)
 	}
 	for _, item := range rows {
 		result[item.ContestID] = item.Count
@@ -149,8 +153,9 @@ func (c *ContestRepo) CountTeamsMap(contestIDL ...uint) (map[uint]int64, model.R
 		Group("contest_id").
 		Scan(&rows)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count contest teams: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("contest_id=%v", contestIDL)
+		log.Logger.Warningf("Failed to count contest teams: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Contest.GetError, "Contest", target, res.Error)
 	}
 	for _, item := range rows {
 		result[item.ContestID] = item.Count
@@ -162,8 +167,9 @@ func (c *ContestRepo) CountNotices(contestID uint) (int64, model.RetVal) {
 	var count int64
 	res := c.DB.Model(&model.Notice{}).Where("contest_id = ?", contestID).Count(&count)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count contest notices: %s", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("contest_id=%d", contestID)
+		log.Logger.Warningf("Failed to count contest notices: %s (target=%s)", res.Error, target)
+		return 0, model.FailRetVal(i18n.Model.Contest.GetError, "Contest", target, res.Error)
 	}
 	return count, model.SuccessRetVal()
 }
@@ -192,8 +198,9 @@ func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
 		return ret
 	}
 	if res := c.DB.Model(&model.Contest{}).Where("id IN ?", idL).Delete(&model.Contest{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Contest: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.Contest.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("id=%v", idL)
+		log.Logger.Warningf("Failed to delete Contest: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.Contest.DeleteError, "Contest", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }

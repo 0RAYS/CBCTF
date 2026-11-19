@@ -36,7 +36,8 @@ func LimitUploadSize(maxBytes int64) gin.HandlerFunc {
 		}
 
 		if ctx.Request.ContentLength > maxBytes {
-			resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.RequestTooLarge, Attr: map[string]any{"Limit": formatByteSize(maxBytes)}})
+			resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.RequestTooLarge, "Upload", ctx.Request.URL.Path, nil).
+				WithAttrs(map[string]any{"Limit": formatByteSize(maxBytes)}))
 			return
 		}
 
@@ -44,10 +45,11 @@ func LimitUploadSize(maxBytes int64) gin.HandlerFunc {
 		if strings.HasPrefix(strings.ToLower(ctx.GetHeader("Content-Type")), "multipart/form-data") {
 			if err := ctx.Request.ParseMultipartForm(multipartFormMemory); err != nil {
 				if _, ok := errors.AsType[*http.MaxBytesError](err); ok {
-					resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.RequestTooLarge, Attr: map[string]any{"Limit": formatByteSize(maxBytes)}})
+					resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.RequestTooLarge, "Upload", ctx.Request.URL.Path, err).
+						WithAttrs(map[string]any{"Limit": formatByteSize(maxBytes)}))
 					return
 				}
-				resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": err.Error()}})
+				resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Upload", ctx.Request.URL.Path, err))
 				return
 			}
 		}

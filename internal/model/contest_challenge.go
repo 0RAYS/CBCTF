@@ -13,10 +13,6 @@ import (
 // ContestChallenge 比赛中的题目副本。
 // 题目加入比赛时会把题库题目深拷贝一份到这里，此后题库的改动不再影响已加入的比赛。
 // ChallengeID 仅用于溯源。
-// BelongsTo Contest
-// BelongsTo Challenge
-// HasMany ContestFlag
-// HasMany Submission
 type ContestChallenge struct {
 	ContestID    uint          `gorm:"index" json:"contest_id"`
 	Contest      Contest       `json:"-"`

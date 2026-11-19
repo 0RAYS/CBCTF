@@ -41,12 +41,10 @@ func ChallengeImages(challenge model.Challenge) []string {
 	return k8s.ChallengeImages(challenge, challengeSidecarImages(challenge.Type)...)
 }
 
-// ContestChallengeImages returns the images of a contest challenge copy.
 func ContestChallengeImages(contestChallenge model.ContestChallenge) []string {
 	return k8s.ContestChallengeImages(contestChallenge, challengeSidecarImages(contestChallenge.Type)...)
 }
 
-// warmContestChallengeImages warms up the images of a contest challenge copy.
 func warmContestChallengeImages(contestChallenge model.ContestChallenge) {
 	if err := task.EnqueuePrepullTask(ContestChallengeImages(contestChallenge)); err != nil {
 		log.Logger.Warningf("Failed to enqueue image warmup: contest_challenge_id=%d error=%v", contestChallenge.ID, err)
@@ -75,8 +73,7 @@ func warmChallengeImages(challenge model.Challenge) {
 	}
 }
 
-// ListNodeNames returns the schedulable nodes the detection and the warmup
-// target.
+// ListNodeNames returns the schedulable nodes the detection and the warmup target.
 func ListNodeNames(ctx context.Context) ([]string, model.RetVal) {
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
@@ -91,7 +88,7 @@ func ListNodeNames(ctx context.Context) ([]string, model.RetVal) {
 	return names, model.SuccessRetVal()
 }
 
-// GlobalImageScope ImageScope identifies one detection scope, so the last result of a scope
+// GlobalImageScope identifies one detection scope, so the last result of a scope
 // never mixes with another one.
 func GlobalImageScope() string { return "global" }
 
@@ -107,7 +104,7 @@ func DetectImages(ctx context.Context, scope string, images []string) model.RetV
 	}
 	if err := task.EnqueueImageDetect(scope, images); err != nil {
 		log.Logger.Warningf("Failed to enqueue image detection: scope=%s error=%v", scope, err)
-		batch.Fail(scope, "enqueue", model.RetVal{Msg: i18n.Task.EnqueueError})
+		batch.Fail(scope, "enqueue", model.FailRetVal(i18n.Task.EnqueueError, "ImageDetect", scope, err))
 		return batch.Result(ctx)
 	}
 	batch.Success(scope, "queued")
@@ -153,7 +150,7 @@ func PullContestChallengeImage(ctx context.Context, form dto.PullImageForm) mode
 		imageName = k8s.NormalizeImage(imageName)
 		node, ok := nodeMap[nodeName]
 		if !ok || node == nil {
-			return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": fmt.Sprintf("Unknown node: %s", nodeName)}}
+			return model.FailRetVal(i18n.Response.BadRequest, "Node", nodeName, fmt.Errorf("unknown node: %s", nodeName))
 		}
 
 		if _, ok = seen[nodeName]; !ok {
@@ -179,7 +176,7 @@ func PullContestChallengeImage(ctx context.Context, form dto.PullImageForm) mode
 		images := targetImages[nodeName]
 		if err := task.EnqueuePrepullTargets(images, []string{nodeName}, form.PullPolicy); err != nil {
 			log.Logger.Warningf("Warmup enqueue failed: node=%s error=%v", nodeName, err)
-			batch.Fail(nodeName, "enqueue", model.RetVal{Msg: i18n.Task.EnqueueError})
+			batch.Fail(nodeName, "enqueue", model.FailRetVal(i18n.Task.EnqueueError, "Node", nodeName, err))
 			return batch.Result(ctx)
 		}
 		batch.Success(nodeName, "queued")

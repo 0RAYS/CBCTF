@@ -29,7 +29,7 @@ type Tx = gorm.DB
 
 func WithTransactionDB(root *gorm.DB, fn func(tx *Tx) model.RetVal) model.RetVal {
 	if root == nil {
-		return model.RetVal{Msg: i18n.DB.Unavailable}
+		return model.FailRetVal(i18n.DB.Unavailable, "Database", "", nil)
 	}
 	var ret model.RetVal
 	err := root.Transaction(func(tx *gorm.DB) error {
@@ -41,7 +41,7 @@ func WithTransactionDB(root *gorm.DB, fn func(tx *Tx) model.RetVal) model.RetVal
 	})
 	if err != nil && (ret.OK || ret.Msg == "") {
 		log.Logger.Warningf("Failed to execute transaction: %s", err)
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Common.UnknownError, "Transaction", "", err)
 	}
 	return ret
 }
@@ -115,28 +115,28 @@ func Init() {
 	log.Logger.Info("Connected to database")
 
 	if ret := InitSettingRepo(DB).InitSettings(); !ret.OK {
-		log.Logger.Fatalf("Failed to init settings: %s %v", ret.Msg, ret.Attr)
+		log.Logger.Fatalf("Failed to init settings: %v", ret)
 	}
 	if ret := InitBrandingRepo(DB).InitDefault(); !ret.OK {
-		log.Logger.Fatalf("Failed to init branding: %s %v", ret.Msg, ret.Attr)
+		log.Logger.Fatalf("Failed to init branding: %v", ret)
 	}
 	if ret := InitPermissionRepo(DB).InitPermissions(); !ret.OK {
-		log.Logger.Fatalf("Failed to init permissions: %s %v", ret.Msg, ret.Attr)
+		log.Logger.Fatalf("Failed to init permissions: %v", ret)
 	}
 	if ret := InitRoleRepo(DB).InitDefaultRoles(); !ret.OK {
-		log.Logger.Fatalf("Failed to init default roles: %s %v", ret.Msg, ret.Attr)
+		log.Logger.Fatalf("Failed to init default roles: %v", ret)
 	}
 	if ret := InitGroupRepo(DB).InitDefaultGroups(); !ret.OK {
-		log.Logger.Fatalf("Failed to init default groups: %s %v", ret.Msg, ret.Attr)
+		log.Logger.Fatalf("Failed to init default groups: %v", ret)
 	}
 	if ret := InitCronJobRepo(DB).InitCronJob(); !ret.OK {
-		log.Logger.Fatalf("Failed to init cron jobs: %s %v", ret.Msg, ret.Attr)
+		log.Logger.Fatalf("Failed to init cron jobs: %v", ret)
 	}
 	if ret := InitUserRepo(DB).InitAdmin(); !ret.OK {
 		log.Logger.Fatalf("Failed to init Admin: %v", ret)
 	}
 	if ret := InitOauthRepo(DB).RegisterDefault(); !ret.OK {
-		log.Logger.Fatalf("Failed to init OAuth providers: %s %v", ret.Msg, ret.Attr)
+		log.Logger.Fatalf("Failed to init OAuth providers: %v", ret)
 	}
 }
 

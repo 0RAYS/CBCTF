@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"errors"
 	"strconv"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -10,18 +11,17 @@ import (
 	"CBCTF/internal/model"
 )
 
-// DeleteCollection must never silently become a namespace/cluster-wide delete.
-// Require a concrete workload owner (or a subnet owner for Kube-OVN IP cleanup),
-// and validate selector syntax. The single selector argument is mandatory.
+// errMissingOwnershipSelector marks a deletion that was refused because the
+// workload ownership selector was missing or invalid.
+var errMissingOwnershipSelector = errors.New("refusing deletion without a valid, non-empty workload ownership selector")
+
+// deleteCollectionOptions builds the selector of a collection deletion. It
+// rejects everything that is not a concrete workload owner (or a subnet owner
+// for Kube-OVN IP cleanup), so a delete can never widen into a namespace-wide
+// or cluster-wide one.
 func deleteCollectionOptions(resource string, filter map[string]string) (metav1.ListOptions, model.RetVal) {
 	invalid := func() (metav1.ListOptions, model.RetVal) {
-		return metav1.ListOptions{}, model.RetVal{
-			Msg: i18n.K8S.DeleteError,
-			Attr: map[string]any{
-				"Model": resource,
-				"Error": "refusing deletion without a valid, non-empty workload ownership selector",
-			},
-		}
+		return metav1.ListOptions{}, model.FailRetVal(i18n.K8S.DeleteError, resource, "", errMissingOwnershipSelector)
 	}
 	if len(filter) == 0 {
 		return invalid()

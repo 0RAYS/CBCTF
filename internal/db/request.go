@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -33,7 +34,7 @@ func (r *RequestRepo) Create(requests ...model.Request) model.RetVal {
 	}
 	if res := r.DB.Model(&model.Request{}).Omit("id").Clauses(clause.OnConflict{Columns: []clause.Column{{Name: "record_id"}}, DoNothing: true}).CreateInBatches(requests, 200); res.Error != nil {
 		log.Logger.Warningf("Failed to create requests: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Name(model.Request{}), "Error": res.Error}}
+		return model.FailRetVal(i18n.Model.CreateError, model.Name(model.Request{}), fmt.Sprintf("count=%d", len(requests)), res.Error)
 	}
 	return model.SuccessRetVal()
 }
@@ -43,7 +44,7 @@ func (r *RequestRepo) CountIP() (int64, model.RetVal) {
 	res := r.DB.Model(&model.Request{}).Distinct("ip").Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Request: %s", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.Request.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		return 0, model.FailRetVal(i18n.Model.Request.GetError, "Request", "", res.Error)
 	}
 	return count, model.SuccessRetVal()
 }
@@ -79,8 +80,9 @@ func (r *RequestRepo) ListSharedContestUserIPs(contestID uint, start, end time.T
 		Order("requests.ip ASC, first_time ASC, requests.user_id ASC").
 		Scan(&userIPL)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to list shared request IPs: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Request.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("contest_id=%d,end=%s,start=%s", contestID, end.Format(time.RFC3339), start.Format(time.RFC3339))
+		log.Logger.Warningf("Failed to list shared request IPs: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Request.GetError, "Request", target, res.Error)
 	}
 	return userIPL, model.SuccessRetVal()
 }

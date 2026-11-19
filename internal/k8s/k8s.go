@@ -78,8 +78,9 @@ func initClients() {
 func configureClientRateLimit(config *rest.Config) {
 	config.QPS = 100
 	config.Burst = 150
-	// Share one process budget across core, Multus, Kube-OVN and KubeVirt clients.
-	// Otherwise each independently creates a limiter, multiplying API-server bursts.
+	// One process-wide budget across the core, Multus, Kube-OVN and KubeVirt
+	// clients, otherwise each creates its own limiter and multiplies the
+	// API-server bursts.
 	config.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(config.QPS, config.Burst)
 	rest.AddUserAgent(config, "cbctf")
 }

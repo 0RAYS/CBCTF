@@ -16,7 +16,7 @@ func ListNodes(ctx context.Context) (*corev1.NodeList, model.RetVal) {
 	nodes, err := kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to list nodes: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Nodes", "Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.K8S.GetError, "Node", "", err)
 	}
 	return nodes, model.SuccessRetVal()
 }
@@ -65,7 +65,8 @@ func ListNodeImages(ctx context.Context) (map[string][]string, model.RetVal) {
 	return images, model.SuccessRetVal()
 }
 
-// Use the same canonical inventory for display and pre-pull decisions.
+// nodeImageSet is the canonical inventory used for both display and pre-pull
+// decisions.
 func nodeImageSet(node *corev1.Node) map[string]struct{} {
 	images := make(map[string]struct{})
 	for _, entry := range node.Status.Images {

@@ -18,8 +18,8 @@ func DeleteEndpointCollection(ctx context.Context, labels map[string]string) mod
 	}
 	err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete EndpointSlice: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "EndpointSlice", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to delete EndpointSlices (%s): %s", options.LabelSelector, err)
+		return model.FailRetVal(i18n.K8S.DeleteError, "EndpointSlice", options.LabelSelector, err)
 	}
 	return model.SuccessRetVal()
 }

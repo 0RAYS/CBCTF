@@ -151,7 +151,7 @@ func GetTraffic(ctx context.Context, victim model.Victim, form dto.GetTrafficFor
 		protocol := normalizeTrafficProtocol(connection.Type)
 		app := normalizeTrafficSubtype(connection.Subtype)
 
-		edgeID := buildTrafficEdgeID(connection.SrcIP, connection.DstIP, direction)
+		edgeID := fmt.Sprintf("%s>%s#%s", connection.SrcIP, connection.DstIP, direction)
 		edge := edges[edgeID]
 		if edge == nil {
 			edge = &trafficEdgeAggregate{
@@ -386,10 +386,10 @@ func loadTrafficSnapshot(ctx context.Context, victim model.Victim) (*traffic.Pca
 	}
 	result, err := traffic.ReadPcapDir(ctx, victim.TrafficBasePath(), victim.TrafficProxyPorts())
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Model.File.ReadPcapError, "Traffic", victim.TrafficBasePath(), err)
 	}
 	if ret = redis.StoreTraffic(ctx, victim, &result); !ret.OK {
-		log.Logger.Warningf("Traffic cache unavailable: victim_id=%d reason=%s", victim.ID, ret.Msg)
+		log.Logger.Warningf("Traffic cache unavailable: victim_id=%d reason=%v", victim.ID, ret)
 	}
 	return &result, model.SuccessRetVal()
 }
@@ -582,10 +582,6 @@ func trafficEdgeKind(srcInternal, dstInternal bool) string {
 	default:
 		return "external"
 	}
-}
-
-func buildTrafficEdgeID(srcIP, dstIP, direction string) string {
-	return fmt.Sprintf("%s>%s#%s", srcIP, dstIP, direction)
 }
 
 func buildTrafficNodeLabel(ip string, internal bool, services []string) string {

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"maps"
 	"os"
 	"path/filepath"
@@ -159,21 +160,21 @@ func UpdateSystem(ctx *gin.Context) {
 func UploadGeoCityDB(ctx *gin.Context) {
 	file, err := ctx.FormFile("file")
 	if err != nil {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Upload", "GeoCityDB", err))
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadGeoCityDBEventType)
 	path := filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")
 	if err = ctx.SaveUploadedFile(file, path); err != nil {
 		log.Logger.Warningf("Failed to save GeoCityDB: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "GeoCityDB", path, err))
 		return
 	}
 	reader, err := geoip2.Open(path)
 	if err != nil {
 		_ = os.Remove(path)
 		log.Logger.Warningf("Failed to load GeoCityDB: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "GeoCityDB", path, err))
 		return
 	}
 	_ = reader.Close()
@@ -185,7 +186,7 @@ func RestartSystem(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.RestartSystemEventType)
 	proc, err := os.FindProcess(os.Getpid())
 	if err != nil {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Process", fmt.Sprintf("pid=%d", os.Getpid()), err))
 		return
 	}
 	go func(proc *os.Process) {

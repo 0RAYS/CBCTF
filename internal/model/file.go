@@ -18,11 +18,6 @@ const (
 	TrafficFileType   FileType = "traffic"
 )
 
-// File
-// BelongsTo Admin
-// BelongsTo User
-// BelongsTo Team
-// BelongsTo Contest
 type File struct {
 	Model    string   `gorm:"not null" json:"model"`
 	ModelID  uint     `gorm:"not null" json:"model_id"`

@@ -5,7 +5,6 @@ import (
 )
 
 var (
-	// HttpRequestsTotal HTTP 基础指标
 	HttpRequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cbctf_http_requests_total",

@@ -33,7 +33,7 @@ func startReadinessController() {
 				Conditions: map[string]any{"status": model.PendingVictimStatus},
 			})
 			if !ret.OK {
-				log.Logger.Warningf("List pending victims failed: %s", ret.Msg)
+				log.Logger.Warningf("List pending victims failed: %v", ret)
 				continue
 			}
 			for _, victim := range victims {
@@ -57,7 +57,7 @@ func reconcileVictim(ctx context.Context, id uint) error {
 		if ret.Msg == i18n.Model.NotFound {
 			return nil
 		}
-		return fmt.Errorf("read victim readiness: %s %v", ret.Msg, ret.Attr)
+		return fmt.Errorf("read victim readiness: %w", ret)
 	}
 	if victim.Status != model.PendingVictimStatus {
 		return nil
@@ -79,7 +79,7 @@ func reconcileVictim(ctx context.Context, id uint) error {
 		}
 		ret = repo.UpdateIfStatus(id, model.PendingVictimStatus, db.UpdateVictimOptions{Status: new(model.TerminatingVictimStatus)})
 		if !ret.OK {
-			return fmt.Errorf("mark terminating: %s", ret.Msg)
+			return fmt.Errorf("mark terminating: %w", ret)
 		}
 		return nil
 	}
@@ -93,7 +93,7 @@ func reconcileVictim(ctx context.Context, id uint) error {
 		ExposedEndpoints: &victim.ExposedEndpoints,
 	})
 	if !ret.OK {
-		return fmt.Errorf("mark running: %s", ret.Msg)
+		return fmt.Errorf("mark running: %w", ret)
 	}
 	log.Logger.Infof("Victim is running: victim_id=%d", id)
 	return nil

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/db"
@@ -39,7 +41,7 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 		}
 	}
 	if len(activeFlagL) == 0 {
-		return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound}
+		return false, model.ContestFlag{}, model.TeamFlag{}, model.FailRetVal(i18n.Model.ContestFlag.NotFound, "ContestFlag", fmt.Sprintf("contest_challenge_id=%d", contestChallenge.ID), nil)
 	}
 	// 没有找到答案, 则默认为第一个flag
 	return false, activeFlagL[0], model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.NotMatch}

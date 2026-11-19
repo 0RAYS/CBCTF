@@ -1,11 +1,14 @@
 package service
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/email"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 )
 
@@ -58,7 +61,7 @@ func DeleteSmtp(tx *gorm.DB, smtp model.Smtp) model.RetVal {
 
 func TestSmtp(smtp model.Smtp, form dto.TestSmtpForm) model.RetVal {
 	if err := email.SendTestEmailViaSMTP(smtp, form.To); err != nil {
-		return model.RetVal{Msg: err.Error()}
+		return model.FailRetVal(i18n.Common.UnknownError, "SMTP", fmt.Sprintf("host=%s,port=%d", smtp.Host, smtp.Port), err)
 	}
 	return model.SuccessRetVal()
 }

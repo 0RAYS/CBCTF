@@ -88,7 +88,7 @@ func CreateChallenge(ctx *gin.Context) {
 	}
 	if err := os.MkdirAll(challenge.BasicDir(), 0755); err != nil {
 		log.Logger.Warningf("create challenge dir err: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.CreateDirError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Model.File.CreateDirError, "Challenge", challenge.BasicDir(), err))
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -127,7 +127,7 @@ func DeleteChallenge(ctx *gin.Context) {
 	}
 	if err := os.RemoveAll(challenge.BasicDir()); err != nil {
 		log.Logger.Warningf("Failed to remove challenge basic dir: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Challenge", challenge.BasicDir(), err))
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)

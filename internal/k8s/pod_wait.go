@@ -22,7 +22,8 @@ func podReady(pod *corev1.Pod) bool {
 	return false
 }
 
-// Only status fields: never include a Pod spec, environment or command in errors.
+// podSummary only reports status fields: a Pod spec, environment or command
+// never belongs in an error message.
 func podSummary(pod *corev1.Pod) string {
 	details := []string{string(pod.Status.Phase)}
 	if pod.Status.Reason != "" {
@@ -53,7 +54,7 @@ func podStartupComplete(pod *corev1.Pod) (bool, error) {
 	if pod.Status.Phase == corev1.PodFailed || pod.Status.Phase == corev1.PodSucceeded {
 		return false, fmt.Errorf("pod %s exited before readiness: %s", pod.Name, podSummary(pod))
 	}
-	// These are long-lived workloads using RestartPolicyNever, not batch Jobs.
+	// These are long-lived workloads with RestartPolicyNever, not batch Jobs.
 	for _, status := range pod.Status.ContainerStatuses {
 		if status.State.Terminated != nil {
 			return false, fmt.Errorf("pod %s container exited: %s", pod.Name, podSummary(pod))
@@ -67,8 +68,9 @@ func podStartupComplete(pod *corev1.Pod) (bool, error) {
 	return podReady(pod), nil
 }
 
-// Relist after expired resource versions and retry disconnected watches. Pin the
-// UID so a deleted/recreated namesake cannot satisfy an earlier start operation.
+// waitPodReady relists after expired resource versions and retries
+// disconnected watches. It pins the UID so a deleted or recreated namesake
+// cannot satisfy an earlier start operation.
 func waitPodReady(ctx context.Context, created *corev1.Pod) (*corev1.Pod, error) {
 	last := created
 	if done, err := podStartupComplete(last); done || err != nil {

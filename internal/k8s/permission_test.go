@@ -42,15 +42,15 @@ func TestPermissionChecksUseScopedSubresources(t *testing.T) {
 	if !found["log"] {
 		t.Fatal("missing pod subresource checks")
 	}
-	// Pod exec was removed together with internal/k8s/exec.go: attachments run in the
-	// standalone worker image and capture runs as a sidecar, so nothing execs into pods.
+	// Nothing execs into pods: attachments run in the standalone worker image
+	// and capture runs as a sidecar.
 	if found["exec"] {
 		t.Fatal("unused pods/exec permission check")
 	}
 }
 
-// No cluster is needed. When Helm is installed, ensure rendered permissions track
-// the actual backend self-check contract instead of testing two hand-written lists.
+// TestHelmRuntimeRBAC checks the rendered chart permissions against the backend
+// self-check contract. It needs no cluster and skips when Helm is missing.
 func TestHelmRuntimeRBAC(t *testing.T) {
 	helm, err := exec.LookPath("helm")
 	if err != nil {

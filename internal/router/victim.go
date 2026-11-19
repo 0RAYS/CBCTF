@@ -2,6 +2,8 @@ package router
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +16,13 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+)
+
+// Errors reported when a victim resource is requested outside its lifecycle.
+var (
+	errVictimNotActive           = errors.New("victim is not active")
+	errPodNotOwnedByVictim       = errors.New("pod does not belong to victim")
+	errContainerNotOwnedByVictim = errors.New("container does not belong to victim")
 )
 
 func StartVictim(ctx *gin.Context) {
@@ -131,7 +140,7 @@ func GetVictimPods(ctx *gin.Context) {
 	switch victim.Status {
 	case model.PendingVictimStatus, model.RunningVictimStatus, model.TerminatingVictimStatus:
 	default:
-		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": "victim is not active"}})
+		resp.JSON(ctx, model.FailRetVal(i18n.K8S.GetError, "Pod", fmt.Sprintf("victim_id=%d", victim.ID), errVictimNotActive))
 		return
 	}
 
@@ -144,7 +153,7 @@ func GetVictimPods(ctx *gin.Context) {
 		return
 	}
 	if podList == nil {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}})
+		resp.JSON(ctx, model.FailRetVal(i18n.K8S.NotFound, "Pod", fmt.Sprintf("victim_id=%d", victim.ID), nil))
 		return
 	}
 	pods := make([]k8s.PodDiagnostics, 0, len(podList.Items))
@@ -161,7 +170,7 @@ func GetVictimPodLogs(ctx *gin.Context) {
 	switch victim.Status {
 	case model.PendingVictimStatus, model.RunningVictimStatus, model.TerminatingVictimStatus:
 	default:
-		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": "victim is not active"}})
+		resp.JSON(ctx, model.FailRetVal(i18n.K8S.GetError, "PodLog", fmt.Sprintf("victim_id=%d", victim.ID), errVictimNotActive))
 		return
 	}
 
@@ -179,7 +188,7 @@ func GetVictimPodLogs(ctx *gin.Context) {
 		return
 	}
 	if !k8s.PodMatchesLabels(pod, k8s.VictimLabels(victim)) {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": "pod does not belong to victim"}})
+		resp.JSON(ctx, model.FailRetVal(i18n.K8S.GetError, "PodLog", form.PodName, errPodNotOwnedByVictim))
 		return
 	}
 	containerFound := false
@@ -191,7 +200,7 @@ func GetVictimPodLogs(ctx *gin.Context) {
 	}
 
 	if !containerFound {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": "container does not belong to victim"}})
+		resp.JSON(ctx, model.FailRetVal(i18n.K8S.GetError, "PodLog", fmt.Sprintf("%s/%s", form.PodName, form.Container), errContainerNotOwnedByVictim))
 		return
 	}
 	logs, ret := k8s.GetPodLogs(ctxTimeout, form.PodName, form.Container, form.Lines)

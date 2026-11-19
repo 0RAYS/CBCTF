@@ -119,8 +119,8 @@ func TestPrepullRetainsResultsAfterControllerCollection(t *testing.T) {
 			if err := client.Tracker().Add(node); err != nil {
 				t.Fatal(err)
 			}
-			// The fake tracker has no resource-version replay, unlike the API server.
-			// Establish its watch before simulating the very short-lived Job Pod.
+			// The fake tracker has no resource-version replay, unlike the API
+			// server, so its watch must exist before the short-lived Job Pod.
 			watching := make(chan struct{})
 			var once sync.Once
 			client.PrependWatchReactor("pods", func(action ktesting.Action) (bool, watch.Interface, error) {

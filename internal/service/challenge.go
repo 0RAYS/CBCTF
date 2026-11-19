@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/netip"
@@ -25,7 +26,7 @@ var (
 )
 
 func invalidComposeYamlRetVal(err string) model.RetVal {
-	return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err}}
+	return model.FailRetVal(i18n.Model.Docker.InvalidComposeYaml, "DockerCompose", "", errors.New(err))
 }
 
 func validateChallengeCompose(config *types.Project) model.RetVal {
@@ -89,7 +90,7 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 		}
 
 		if strings.TrimSpace(service.Image) == "" {
-			return model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
+			return model.FailRetVal(i18n.Model.Challenge.EmptyImage, "Challenge", "service="+label, nil)
 		}
 		kubeVirt, _ := service.Extensions[model.XKubeVirtExtension].(bool)
 		if kubeVirt && !hasVpcNetworks {
@@ -214,7 +215,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 	})
 	if err != nil {
 		log.Logger.Warningf("Failed to load DockerCompose: %v", err)
-		return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.ChallengeTemplate{}, nil, model.FailRetVal(i18n.Common.UnknownError, "ChallengeTemplate", "", err)
 	}
 	if ret := validateChallengeCompose(config); !ret.OK {
 		return model.ChallengeTemplate{}, nil, ret
@@ -234,7 +235,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 			name = app.ContainerName
 		}
 		if app.Image == "" {
-			return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
+			return model.ChallengeTemplate{}, nil, model.FailRetVal(i18n.Model.Challenge.EmptyImage, "Challenge", "service="+name, nil)
 		}
 		containerKey := strings.ToLower(name)
 		podKey := containerKey
@@ -465,7 +466,7 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 				}
 			}
 		default:
-			return model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
+			return model.FailRetVal(i18n.Model.Challenge.InvalidType, "Challenge", fmt.Sprintf("challenge_id=%d,type=%s", challenge.ID, form.Type), nil)
 		}
 		warmChallengeImages(challenge)
 		result, ret = challengeRepo.GetByID(challenge.ID, db.GetOptions{
@@ -548,7 +549,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 				NetworkPolicies: form.NetworkPolicies,
 			})
 		default:
-			return model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
+			return model.FailRetVal(i18n.Model.Challenge.InvalidType, "Challenge", fmt.Sprintf("challenge_id=%d,type=%s", challenge.ID, challenge.Type), nil)
 		}
 	})
 }

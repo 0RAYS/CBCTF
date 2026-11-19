@@ -41,8 +41,9 @@ func GeneratorLabels(generator model.Generator, tags ...map[string]string) map[s
 	return labels
 }
 
-// StartGenerator 创建生成器 Pod，source 决定生成器镜像与挂载目录。
-// 比赛内使用比赛题目副本，测试模式使用题库题目。
+// StartGenerator creates the generator Pod; source decides the generator image
+// and the mount directory. A contest uses the contest challenge copy, test
+// mode the challenge library.
 func StartGenerator(ctx context.Context, source model.GeneratorSource, generator model.Generator) (*corev1.Pod, model.RetVal) {
 	var (
 		pod    *corev1.Pod
@@ -50,7 +51,7 @@ func StartGenerator(ctx context.Context, source model.GeneratorSource, generator
 		labels = GeneratorLabels(generator, map[string]string{RoleLabel: GeneratorPodTag})
 	)
 	if source.SourceImage() == "" {
-		return nil, model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
+		return nil, model.FailRetVal(i18n.Model.Challenge.EmptyImage, "Generator", fmt.Sprintf("generator_id=%d,source_id=%d", generator.ID, source.SourceID()), nil)
 	}
 	log.Logger.Debugf(
 		"Creating generator pod: generator_id=%d name=%s source_id=%d image=%s",
@@ -129,13 +130,7 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 	}
 	if ret.OK {
 		if !GeneratorOwnsPod(generator, pod) {
-			return model.RetVal{
-				Msg: i18n.K8S.DeleteError,
-				Attr: map[string]any{
-					"Model": "Pod",
-					"Error": "refusing to delete a Pod not owned by this generator",
-				},
-			}
+			return model.FailRetVal(i18n.K8S.DeleteError, "Pod", generator.Name, errGeneratorNotOwned)
 		}
 		if ret := DeletePodAndWait(ctx, generator.Name, pod.UID); !ret.OK {
 			return ret
@@ -159,9 +154,9 @@ func GenAttachment(ctx context.Context, source model.GeneratorSource, generator 
 	log.Logger.Debugf("Running attachment generator: team_id=%d source_id=%d generator_id=%d", teamID, source.SourceID(), generator.ID)
 	if err := generateAttachment(ctx, source, generator, teamID, flags); err != nil {
 		if errors.Is(err, errGeneratorMissing) {
-			return model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Generator"}}
+			return model.FailRetVal(i18n.K8S.NotFound, "Generator", generator.Name, nil)
 		}
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Common.UnknownError, "Generator", generator.Name, err)
 	}
 	return model.SuccessRetVal()
 }
@@ -176,6 +171,10 @@ var workerHTTP = &http.Client{
 	},
 }
 var errGeneratorMissing = errors.New("generator pod is missing")
+
+// errGeneratorNotOwned marks a deletion that was refused because the Pod is
+// not owned by the generator.
+var errGeneratorNotOwned = errors.New("refusing to delete a Pod not owned by this generator")
 
 func generateAttachment(ctx context.Context, source model.GeneratorSource, generator model.Generator, teamID uint, flags []string) error {
 	pod, err := cachedPod(ctx, generator.Name)

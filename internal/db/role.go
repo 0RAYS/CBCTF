@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"slices"
 
 	"gorm.io/gorm"
@@ -41,7 +42,7 @@ func (r *RoleRepo) InitDefaultRoles() model.RetVal {
 	for _, role := range model.DefaultRoles {
 		res := r.DB.Model(&model.Role{}).FirstOrCreate(&role, role)
 		if res.Error != nil {
-			return model.RetVal{Msg: i18n.Model.Role.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+			return model.FailRetVal(i18n.Model.Role.GetError, "Role", fmt.Sprintf("name=%s", role.Name), res.Error)
 		}
 		savedRole, ret := r.GetByID(role.ID, GetOptions{Preloads: map[string]GetOptions{"Permissions": {}}})
 		if !ret.OK {
@@ -82,9 +83,7 @@ func (r *RoleRepo) GetFallbackRoleID(excludedRoleIDL ...uint) (uint, model.RetVa
 		return 0, ret
 	}
 	if slices.Contains(excludedRoleIDL, userRole.ID) {
-		return 0, model.RetVal{
-			Msg: i18n.Model.Role.NoFallbackRole,
-		}
+		return 0, model.FailRetVal(i18n.Model.Role.NoFallbackRole, "Role", fmt.Sprintf("name=%s", model.UserRoleName), nil)
 	}
 	return userRole.ID, model.SuccessRetVal()
 }
@@ -113,8 +112,9 @@ func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
 		return ret
 	}
 	if res := r.DB.Model(&model.Role{}).Where("id IN ?", idL).Delete(&model.Role{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Role: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.Role.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("id=%v", idL)
+		log.Logger.Warningf("Failed to delete Role: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.Role.DeleteError, "Role", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }

@@ -15,7 +15,6 @@ type Claims struct {
 	Gen    string `json:"gen,omitempty"`
 }
 
-// GenerateToken 生成token
 func GenerateToken(id uint, name, secret string, generation uint64) (tokenString string, err error) {
 	claim := Claims{
 		UserID:    id,
@@ -29,7 +28,6 @@ func GenerateToken(id uint, name, secret string, generation uint64) (tokenString
 	return tokenString, err
 }
 
-// ParseToken 解析token
 func ParseToken(t, secret string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(t, &Claims{}, func(_ *jwt.Token) (any, error) {
 		return []byte(secret), nil

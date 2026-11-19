@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"slices"
@@ -53,7 +54,7 @@ func GetCaptcha(ctx *gin.Context) {
 	id, image, answer, err := utils.GenerateCaptcha()
 	if err != nil {
 		log.Logger.Warningf("Failed to generate captcha: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Captcha", "", err))
 		return
 	}
 	if ret := redis.SetCaptchaAnswer(ctx.Request.Context(), id, answer); !ret.OK {
@@ -65,7 +66,7 @@ func GetCaptcha(ctx *gin.Context) {
 
 func Register(ctx *gin.Context) {
 	if !config.Env.Registration.Enabled {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.User.NotAllowedRegister})
+		resp.JSON(ctx, model.FailRetVal(i18n.Model.User.NotAllowedRegister, "User", "", nil))
 		return
 	}
 	var form dto.RegisterForm
@@ -90,7 +91,7 @@ func Register(ctx *gin.Context) {
 	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Token", fmt.Sprintf("user_id=%d", user.ID), err))
 		return
 	}
 	ctx.Set("Self", user)
@@ -108,7 +109,7 @@ func Login(ctx *gin.Context) {
 		return
 	}
 	if form.CaptchaID == "" || form.Captcha == "" {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.User.CaptchaRequired})
+		resp.JSON(ctx, model.FailRetVal(i18n.Model.User.CaptchaRequired, "Captcha", "", nil))
 		return
 	}
 	if ret := redis.VerifyCaptcha(ctx.Request.Context(), form.CaptchaID, form.Captcha); !ret.OK {
@@ -124,7 +125,7 @@ func Login(ctx *gin.Context) {
 	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Token", fmt.Sprintf("user_id=%d", user.ID), err))
 		return
 	}
 	ctx.Set("Self", user)

@@ -57,7 +57,7 @@ func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 }
 
 func Init() {
-	// redis connection is shared so the Inspector can't be closed through asynq
+	// Redis connection is shared so the Inspector can't be closed through asynq
 	client = asynq.NewClientFromRedisClient(redis.RDB)
 	inspector = asynq.NewInspectorFromRedisClient(redis.RDB)
 	mux = asynq.NewServeMux()

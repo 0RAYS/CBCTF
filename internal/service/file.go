@@ -25,12 +25,12 @@ func SavePicture(tx *gorm.DB, modelName string, modelID uint, file *multipart.Fi
 	switch suffix {
 	case ".png", ".jpg", ".jpeg", ".gif":
 	default:
-		return model.File{}, model.RetVal{Msg: i18n.Model.File.NotAllowed}
+		return model.File{}, model.FailRetVal(i18n.Model.File.NotAllowed, "File", "suffix="+suffix, nil)
 	}
 	size, hash, err := utils.GetFileInfoByHeader(file)
 	if err != nil {
 		log.Logger.Warningf("Failed to get file info: %s", err)
-		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.File{}, model.FailRetVal(i18n.Common.UnknownError, "File", file.Filename, err)
 	}
 	record, ret := db.InitFileRepo(tx).Create(model.File{
 		RandID:   utils.UUID(),
@@ -64,7 +64,7 @@ func UpdatePicture(tx *gorm.DB, modelName string, id uint, record model.File) (s
 	case "branding":
 		ret = db.InitBrandingRepo(tx).Update(id, db.UpdateBrandingOptions{HomeLogo: &path})
 	default:
-		ret = model.RetVal{Msg: i18n.Model.File.InvalidPicture}
+		ret = model.FailRetVal(i18n.Model.File.InvalidPicture, "File", fmt.Sprintf("model=%s", modelName), nil)
 	}
 	return string(path), ret
 }
@@ -77,7 +77,7 @@ func SaveChallenge(tx *gorm.DB, challenge model.Challenge, file *multipart.FileH
 	size, hash, err := utils.GetFileInfoByHeader(file)
 	if err != nil {
 		log.Logger.Warningf("Failed to get file info: %s", err)
-		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.File{}, model.FailRetVal(i18n.Common.UnknownError, "File", file.Filename, err)
 	}
 	record, ret := fileRepo.Get(db.GetOptions{
 		Conditions: map[string]any{"model": model.Name(challenge), "model_id": challenge.ID, "type": model.ChallengeFileType},
@@ -112,12 +112,12 @@ func SaveWriteup(tx *gorm.DB, contest model.Contest, team model.Team, file *mult
 	switch suffix {
 	case ".pdf", ".docx", ".doc":
 	default:
-		return model.File{}, model.RetVal{Msg: i18n.Model.File.NotAllowed}
+		return model.File{}, model.FailRetVal(i18n.Model.File.NotAllowed, "File", "suffix="+suffix, nil)
 	}
 	size, hash, err := utils.GetFileInfoByHeader(file)
 	if err != nil {
 		log.Logger.Warningf("Failed to get file info: %s", err)
-		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.File{}, model.FailRetVal(i18n.Common.UnknownError, "File", file.Filename, err)
 	}
 	record, ret := db.InitFileRepo(tx).Create(model.File{
 		RandID:   utils.UUID(),

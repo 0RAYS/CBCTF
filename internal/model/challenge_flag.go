@@ -9,9 +9,6 @@ var (
 )
 
 // ChallengeFlag 题库中挑战的 flag 定义
-// BelongsTo Challenge
-// HasMany ContestFlag
-// HasMany TeamFlag
 type ChallengeFlag struct {
 	ChallengeID  uint          `gorm:"index" json:"challenge_id"`
 	Challenge    Challenge     `json:"-"`

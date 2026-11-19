@@ -23,8 +23,8 @@ type pullResult struct {
 	reason string
 }
 
-// Keep observed outcomes until the task consumes them, even if their Pods
-// have already disappeared from the informer store.
+// pullResults keeps observed outcomes until the task consumes them, even if
+// their Pods have already disappeared from the informer store.
 type pullResults struct {
 	batch   string
 	label   string

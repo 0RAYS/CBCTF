@@ -31,27 +31,23 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 			if contestChallenge.Type == model.DynamicChallengeType {
 				if err := task.EnqueueGenAttachmentTask(team.CaptainID, model.NewContestChallengeSource(contestChallenge), team.ID, teamFlags); err != nil {
 					log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-					return model.RetVal{
-						Msg: i18n.Model.CreateError,
-						Attr: map[string]any{
-							"Model": model.Name(model.TeamFlag{}),
-							"Error": err.Error(),
-						},
-					}
+					return model.FailRetVal(
+						i18n.Model.CreateError,
+						model.Name(model.TeamFlag{}),
+						fmt.Sprintf("team_id=%d contest_challenge_id=%d", team.ID, contestChallenge.ID),
+						err,
+					)
 				}
 			}
 			return model.SuccessRetVal()
 		})
 		if !ret.OK {
-			if ret.Attr == nil {
-				ret.Attr = map[string]any{}
-			}
-			ret.Attr["Model"] = model.Name(model.TeamFlag{})
-			if _, ok := ret.Attr["Error"]; !ok {
-				ret.Attr["Error"] = ret.Msg
-			}
-			ret.Msg = i18n.Model.CreateError
-			return ret
+			return model.FailRetVal(
+				i18n.Model.CreateError,
+				model.Name(model.TeamFlag{}),
+				fmt.Sprintf("team_id=%d contest_challenge_id=%d", team.ID, contestChallenge.ID),
+				ret.Cause(),
+			)
 		}
 	}
 	return model.SuccessRetVal()
@@ -70,7 +66,7 @@ func renderChallengeFlagValue(value string) string {
 	return value
 }
 
-// CreateTeamFlag model.ContestChallenge Preload model.ContestFlag
+// CreateTeamFlag 需要 contestChallenge 预加载 ContestFlags
 func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) ([]model.TeamFlag, model.RetVal) {
 	teamFlagRepo := db.InitTeamFlagRepo(tx)
 	teamFlagL := make([]model.TeamFlag, 0)
@@ -104,7 +100,7 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 	return teamFlagL, model.SuccessRetVal()
 }
 
-// UpdateTeamFlag model.ContestChallenge Preload model.ContestFlag
+// UpdateTeamFlag 需要 contestChallenge 预加载 ContestFlags
 func UpdateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) ([]model.TeamFlag, model.RetVal) {
 	submissionRepo := db.InitSubmissionRepo(tx)
 	submissions, _, ret := submissionRepo.List(-1, -1, db.GetOptions{
@@ -212,7 +208,7 @@ func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest mo
 
 		if err := task.EnqueueGenAttachmentTask(user.ID, model.NewContestChallengeSource(contestChallenge), team.ID, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
+			return model.FailRetVal(i18n.Task.EnqueueError, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), err)
 		}
 		return model.SuccessRetVal()
 	})
@@ -237,7 +233,7 @@ func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest m
 
 		if err := task.EnqueueGenAttachmentTask(user.ID, model.NewContestChallengeSource(contestChallenge), team.ID, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
+			return model.FailRetVal(i18n.Task.EnqueueError, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), err)
 		}
 		return model.SuccessRetVal()
 	})

@@ -17,12 +17,6 @@ const (
 	ThirdBloodRate  float64 = 0.01
 )
 
-// ContestFlag
-// BelongsTo Contest
-// BelongsTo ContestChallenge
-// BelongsTo ChallengeFlag
-// HasMany Submission
-// HasMany TeamFlag
 type ContestFlag struct {
 	ContestID          uint             `gorm:"index" json:"contest_id"`
 	Contest            Contest          `json:"-"`

@@ -1,12 +1,5 @@
 package model
 
-// Submission 提交记录
-// BelongsTo ContestChallenge
-// BelongsTo Contest
-// BelongsTo Challenge
-// BelongsTo Team
-// BelongsTo User
-// BelongsTo ContestFlag
 type Submission struct {
 	ContestChallengeID uint             `gorm:"index:idx_submissions_team_challenge_solved,priority:2;index:idx_submissions_team_challenge_unsolved_active,priority:2,where:deleted_at IS NULL AND solved = false;index" json:"contest_challenge_id"`
 	ContestChallenge   ContestChallenge `json:"-"`

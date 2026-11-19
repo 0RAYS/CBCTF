@@ -8,10 +8,6 @@ import (
 	"path/filepath"
 )
 
-func Zip(src string, destZip string) error {
-	return ZipWithContext(context.Background(), src, destZip, nil)
-}
-
 func ZipWithContext(ctx context.Context, src string, destZip string, include func(string) bool) error {
 	zipFile, err := os.CreateTemp(filepath.Dir(destZip), ".archive-*")
 	if err != nil {

@@ -50,8 +50,9 @@ func (s *SubmissionRepo) LockAttemptScope(teamID, contestChallengeID uint) model
 	challengeKey := fmt.Sprintf("contest_challenge:%d", contestChallengeID)
 	res := s.DB.Exec("SELECT pg_advisory_xact_lock(hashtext(?), hashtext(?))", teamKey, challengeKey)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to lock submission attempt scope: team_id=%d contest_challenge_id=%d error=%s", teamID, contestChallengeID, res.Error)
-		return model.RetVal{Msg: i18n.Model.Submission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("contest_challenge_id=%d,team_id=%d", contestChallengeID, teamID)
+		log.Logger.Warningf("Failed to lock submission attempt scope: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.Submission.GetError, "Submission", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }
@@ -92,8 +93,9 @@ func (s *SubmissionRepo) GetBloodRankMap(contestFlagIDL ...uint) (map[uint]map[u
 		Where("blood_rank <= 3").
 		Scan(&rows)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get blood rank: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Submission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("contest_flag_id=%v", contestFlagIDL)
+		log.Logger.Warningf("Failed to get blood rank: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Submission.GetError, "Submission", target, res.Error)
 	}
 
 	for _, row := range rows {
@@ -124,8 +126,9 @@ func (s *SubmissionRepo) ListFlagSolvers(contestFlagID uint) ([]FlagSolverRow, m
 		Order("submissions.created_at ASC, submissions.id ASC").
 		Scan(&rows)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get flag solvers: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Submission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("contest_flag_id=%d", contestFlagID)
+		log.Logger.Warningf("Failed to get flag solvers: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Submission.GetError, "Submission", target, res.Error)
 	}
 	return rows, model.SuccessRetVal()
 }
@@ -140,8 +143,9 @@ func (s *SubmissionRepo) ListSolvedByTeamID(teamIDL ...uint) ([]model.Submission
 		Order("team_id ASC, created_at ASC, id ASC").
 		Find(&submissions)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to list solved submissions: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Submission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("team_id=%v", teamIDL)
+		log.Logger.Warningf("Failed to list solved submissions: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Submission.GetError, "Submission", target, res.Error)
 	}
 	return submissions, model.SuccessRetVal()
 }

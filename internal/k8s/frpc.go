@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 	"net"
@@ -85,16 +86,6 @@ func (c nginxConfig) String() string {
 	return buf.String()
 }
 
-func newFrpcConfig(serverAddr string, serverPort int32, token string) frpcConfig {
-	return frpcConfig{
-		ServerAddr: serverAddr,
-		ServerPort: serverPort,
-		Auth: frpcAuth{
-			Token: token,
-		},
-	}
-}
-
 func addFrpcProxy(config *frpcConfig, protocol string, localIP string, localPort int32, remotePort int32, proxyProtocol bool) {
 	proxy := frpcProxy{
 		Name:       utils.RandHexStr(10),
@@ -109,17 +100,20 @@ func addFrpcProxy(config *frpcConfig, protocol string, localIP string, localPort
 	config.Proxies = append(config.Proxies, proxy)
 }
 
+// errNoFrpsServer marks a victim that cannot be exposed because no FRPS
+// server is configured.
+var errNoFrpsServer = errors.New("no FRPS server is configured")
+
 func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
 	if len(config.Env.K8S.Frp.Frps) == 0 {
-		return victim, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Frps"}}
+		return victim, model.FailRetVal(i18n.K8S.NotFound, "Frps", "frps_pool", errNoFrpsServer)
 	}
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frp.Frps))))
 	frps := config.Env.K8S.Frp.Frps[idxBig.Int64()]
 	log.Logger.Debugf("Creating frpc resources: victim_id=%d frps=%s endpoints=%d", victim.ID, frps.Host, len(victim.Endpoints))
 	if config.Env.K8S.CaptureEnabled {
-		// The capture sidecar writes the traffic captures into the victim
-		// traffic directory, which has to exist and belong to the capture
-		// user before the pod is created.
+		// The capture sidecar writes into the traffic directory, which has to
+		// exist and belong to the capture user before the pod is created.
 		if err := prepareCaptureTrafficDir(victim); err != nil {
 			log.Logger.Warningf(
 				"Failed to prepare traffic directory for victim %d: %s", victim.ID, err,
@@ -140,8 +134,11 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	podFrpcConfigMap := make(map[string]string)
 	podNginxConfigMap := make(map[string]string)
 	podName := fmt.Sprintf("frpc-%d", victim.ID)
-	// 添加一个独立tag, 防止受 NetworkPolicy 影响
-	frpc := newFrpcConfig(frps.Host, frps.Port, frps.Token)
+	frpc := frpcConfig{
+		ServerAddr: frps.Host,
+		ServerPort: frps.Port,
+		Auth:       frpcAuth{Token: frps.Token},
+	}
 	nginx := nginxConfig{}
 	victim.ExposedEndpoints = nil
 	for index, endpoint := range victim.Endpoints {
@@ -149,7 +146,8 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 		if !ret.OK {
 			return victim, ret
 		}
-		// 对于 TCP 协议, 启用 proxy_protocol
+		// TCP endpoints go through nginx so the frpc connection can carry
+		// proxy_protocol.
 		if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
 			listenPort := int32(10000 + index)
 			addFrpcProxy(&frpc, protocol, "127.0.0.1", listenPort, exposedPort, true)
@@ -176,23 +174,21 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	}
 	frpcConfigData, err := frpc.String()
 	if err != nil {
-		return victim, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
+		return victim, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", podName, err)
 	}
 	podFrpcConfigMap[podName] = frpcConfigData
 	podNginxConfigMap[podName] = nginx.String()
 	frpcPodNameL = append(frpcPodNameL, podName)
 	victim.ExposedEndpoints = newEndpoints
-	victim.Pods = append(victim.Pods, func(victimID uint, podNames []string) []model.Pod {
-		frpcPods := make([]model.Pod, 0, len(podNames))
-		for _, name := range podNames {
-			frpcPods = append(frpcPods, model.Pod{
-				VictimID: victimID,
-				Name:     name,
-			})
-		}
-		return frpcPods
-	}(victim.ID, frpcPodNameL)...)
+	for _, name := range frpcPodNameL {
+		victim.Pods = append(victim.Pods, model.Pod{
+			VictimID: victim.ID,
+			Name:     name,
+		})
+	}
 	victim.Resources.FrpcPodNames = append([]string(nil), frpcPodNameL...)
+	// The frpc pod carries its own role tag, so the victim NetworkPolicies,
+	// which select on the victim role, do not match it.
 	labels := VictimLabels(victim, map[string]string{RoleLabel: FrpcPodTag})
 	wg := utils.NewGroup(ctx)
 	groupCtx := wg.Context()
@@ -205,10 +201,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				Data:   map[string]string{"frpc.toml": podFrpcConfigMap[name], "nginx.conf": podNginxConfigMap[name]},
 			})
 			if !ret.OK || fcm == nil {
-				if err, ok := ret.Attr["Error"].(string); ok {
-					return fmt.Errorf("%s", err)
-				}
-				return fmt.Errorf("create frpc configmap failed: %s", ret.Msg)
+				return ret
 			}
 			fcmVolume := corev1.Volume{
 				Name: "frpc-volume",
@@ -278,17 +271,14 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			}
 			p, ret := CreatePod(ctx, options)
 			if !ret.OK {
-				if err, ok := ret.Attr["Error"].(string); ok {
-					return fmt.Errorf("%s", err)
-				}
-				return fmt.Errorf("create frpc pod failed: %s", ret.Msg)
+				return ret
 			}
 			victim.Resources.UIDs[name] = string(p.UID)
 			return nil
 		})
 	}
 	if err = wg.Wait(); err != nil {
-		return victim, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return victim, model.FailRetVal(i18n.Common.UnknownError, "Frpc", podName, err)
 	}
 	log.Logger.Debugf(
 		"Created frpc resources: victim_id=%d frpc_pods=%d exposed_endpoints=%d",

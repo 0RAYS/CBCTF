@@ -13,7 +13,7 @@ import (
 func GetNamespace(ctx context.Context, name string) (*corev1.Namespace, model.RetVal) {
 	ns, err := kubeClient.CoreV1().Namespaces().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Namespace", "Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.K8S.GetError, "Namespace", name, err)
 	}
 	return ns, model.SuccessRetVal()
 }

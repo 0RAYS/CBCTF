@@ -43,7 +43,7 @@ func HandleLoadTrafficTask(ctx context.Context, t *asynq.Task) error {
 	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "traffic", victim.ID, func() error {
 		ret := LoadTraffic(ctx, db.TaskDB, victim)
 		if !ret.OK {
-			return fmt.Errorf("load traffic failed: %s %v", ret.Msg, ret.Attr)
+			return fmt.Errorf("load traffic failed: %w", ret)
 		}
 		return nil
 	})
@@ -64,7 +64,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 	}
 
 	if err := ctx.Err(); err != nil {
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Common.UnknownError, "Traffic", victim.TrafficBasePath(), err)
 	}
 	var archiveIssues []traffic.SourceIssue
 	archive := func(victim model.Victim) (model.File, error) {
@@ -104,19 +104,19 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 	}
 	fileOptions, archiveErr := archive(victim)
 	if archiveErr != nil {
-		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": archiveErr.Error()}}
+		return model.FailRetVal(i18n.Model.File.ReadPcapError, "Traffic", victim.TrafficBasePath(), archiveErr)
 	}
 	if err := ctx.Err(); err != nil {
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Common.UnknownError, "Traffic", victim.TrafficBasePath(), err)
 	}
 	start := time.Now()
 	result, err := traffic.ReadPcapDir(ctx, victim.TrafficBasePath(), victim.TrafficProxyPorts())
 	if err != nil {
 		log.Logger.Warningf("Failed to read victim pcaps: victim_id=%d path=%s error=%s", victim.ID, victim.TrafficBasePath(), err)
-		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Model.File.ReadPcapError, "Traffic", victim.TrafficBasePath(), err)
 	}
 	if err = ctx.Err(); err != nil {
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Common.UnknownError, "Traffic", victim.TrafficBasePath(), err)
 	}
 
 	// 收集所有涉及的 IP：普通 pod src/dst + frpc proxy protocol 真实 IP
@@ -145,7 +145,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 	}
 	report, err := traffic.AnalyzeDir(ctx, victim.TrafficBasePath(), traffic.AnalysisOptions{KnownFlags: knownFlags, InternalIPs: victim.TrafficInternalIPs()})
 	if err != nil {
-		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Model.File.ReadPcapError, "Traffic", victim.TrafficBasePath(), err)
 	}
 	report.AddSourceIssues(result.SourceIssues...)
 	report.AddSourceIssues(archiveIssues...)
@@ -160,8 +160,8 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 			return ret
 		}
 		if count == 0 {
-			if _, ret := fileRepo.Create(fileOptions); !ret.OK {
-				return model.RetVal{Msg: fmt.Sprintf("create traffic archive record failed: %s", ret.Msg)}
+			if _, createRet := fileRepo.Create(fileOptions); !createRet.OK {
+				return model.FailRetVal(i18n.Model.CreateError, "TrafficArchive", fmt.Sprintf("victim_id=%d", victim.ID), createRet.Err)
 			}
 		}
 		return db.InitTrafficRepo(tx).ReplaceAnalysis(victim.ID, ips, accesses, &report, true)

@@ -161,10 +161,10 @@ model:
   webhookHistory:
     createError: "保存 Webhook 投递记录失败：{{.Error}}"
 redis:
-  setError: "写入缓存 {{.Key}} 失败：{{.Error}}"
-  getError: "读取缓存 {{.Key}} 失败：{{.Error}}"
-  notFound: "缓存 {{.Key}} 不存在"
-  deleteError: "删除缓存 {{.Key}} 失败：{{.Error}}"
+  setError: "写入缓存 {{.Target}} 失败：{{.Error}}"
+  getError: "读取缓存 {{.Target}} 失败：{{.Error}}"
+  notFound: "缓存 {{.Target}} 不存在"
+  deleteError: "删除缓存 {{.Target}} 失败：{{.Error}}"
   invalidScriptResult: "缓存服务返回结果无效"
   invalidScriptPort: "端口分配结果无效"
   invalidScriptSuccessFlag: "缓存操作返回状态无效"
@@ -181,3 +181,13 @@ k8s:
   attachmentTimeout: "附件生成超时，请稍后重试"
 db:
   unavailable: "数据库不可用"
+cron:
+  notRegistered: "定时任务未注册：{{.Target}}"
+  invalidSchedule: "定时任务 {{.Target}} 的调度表达式无效：{{.Error}}"
+  postgresPoolError: "获取 PostgreSQL 连接池失败：{{.Error}}"
+  postgresConnError: "获取 PostgreSQL 连接失败：{{.Error}}"
+  postgresLockError: "获取 PostgreSQL 索引重建锁失败：{{.Error}}"
+  postgresListError: "列出 PostgreSQL 索引失败：{{.Error}}"
+  postgresIndexError: "读取 PostgreSQL 索引失败：{{.Error}}"
+  postgresCloseError: "关闭 PostgreSQL 索引列表失败：{{.Error}}"
+  postgresRebuildFail: "部分 PostgreSQL 索引重建失败：成功 {{.Rebuilt}}，失败 {{.Failed}}"

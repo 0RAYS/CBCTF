@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// copied from https://github.com/ret2shell/ret2script/blob/main/src/modules/audit.rs
+// leetTable copied from https://github.com/ret2shell/ret2script/blob/main/src/modules/audit.rs
 var leetTable = map[byte][]byte{
 	// Digits
 	'0': {'0', 'O'},

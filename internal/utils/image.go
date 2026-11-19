@@ -17,7 +17,7 @@ import (
 	"sync"
 )
 
-// ResizePicture only support for png jpg jpeg gif
+// ResizePicture supports png, jpg, jpeg and gif.
 func ResizePicture(path string, width, height int) error {
 	if strings.EqualFold(filepath.Ext(path), ".gif") {
 		return resizeGIF(path, width, height)
@@ -39,7 +39,7 @@ func resizeImage(path string, width, height int) error {
 	if err = os.Rename(path, fmt.Sprintf("%s.bak", path)); err != nil {
 		return err
 	}
-	return saveImage(resizeLanczos(img, width, height), path)
+	return saveImage(resizeImageWithFilter(img, width, height, lanczosFilter), path)
 }
 
 func resizeGIF(path string, width, height int) error {
@@ -101,7 +101,7 @@ func resizeGIF(path string, width, height int) error {
 			dst := image.NewPaletted(src.Bounds(), colors)
 			draw.FloydSteinberg.Draw(dst, src.Bounds(), src, src.Bounds().Min)
 			return dst
-		}(resizeLanczos(canvas, width, height)))
+		}(resizeImageWithFilter(canvas, width, height, lanczosFilter)))
 
 		if i >= len(img.Disposal) {
 			continue
@@ -130,29 +130,7 @@ func resizeGIF(path string, width, height int) error {
 	return gif.EncodeAll(out, resized)
 }
 
-// Portions of the resize implementation are adapted from github.com/disintegration/imaging.
-//
-// The MIT License (MIT)
-//
-// Copyright (c) 2012 Grigory Dryapak
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// Resize adapted from github.com/disintegration/imaging (MIT).
 
 type resizeWeight struct {
 	index  int
@@ -209,10 +187,6 @@ func saveImage(img image.Image, path string) error {
 		err = closeErr
 	}
 	return err
-}
-
-func resizeLanczos(img image.Image, width, height int) *image.NRGBA {
-	return resizeImageWithFilter(img, width, height, lanczosFilter)
 }
 
 func resizeImageWithFilter(img image.Image, width, height int, filter resizeFilter) *image.NRGBA {

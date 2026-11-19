@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 )
 
-// ListModelsForm for get models list
 type ListModelsForm struct {
 	Offset int `form:"offset" json:"offset" binding:"gte=0"`
 	Limit  int `form:"limit" json:"limit" binding:"gte=0,lte=100"`

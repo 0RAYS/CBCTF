@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 
 	"CBCTF/internal/db"
@@ -19,14 +21,13 @@ func IsFullAccess(ctx *gin.Context) bool {
 	return ctx.GetBool("FullAccess")
 }
 
-// SetRole 保存 model.Role 至上下文
 func SetRole(ctx *gin.Context) {
 	type roleIDUri struct {
 		RoleID uint `uri:"roleID" binding:"required"`
 	}
 	var roleID roleIDUri
 	if err := ctx.ShouldBindUri(&roleID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Role", "role_id="+ctx.Param("roleID"), err))
 		return
 	}
 	role, ret := db.InitRoleRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(roleID.RoleID)
@@ -38,7 +39,6 @@ func SetRole(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// GetRole 从上下文中获取 model.Role
 func GetRole(ctx *gin.Context) model.Role {
 	role, ok := ctx.Get("Role")
 	if !ok || role == nil {
@@ -47,14 +47,13 @@ func GetRole(ctx *gin.Context) model.Role {
 	return role.(model.Role)
 }
 
-// SetGroup 保存 model.Group 至上下文
 func SetGroup(ctx *gin.Context) {
 	type groupIDUri struct {
 		GroupID uint `uri:"groupID" binding:"required"`
 	}
 	var groupID groupIDUri
 	if err := ctx.ShouldBindUri(&groupID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Group", "group_id="+ctx.Param("groupID"), err))
 		return
 	}
 	group, ret := db.InitGroupRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(groupID.GroupID)
@@ -66,7 +65,6 @@ func SetGroup(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// GetGroup 从上下文中获取 model.Group
 func GetGroup(ctx *gin.Context) model.Group {
 	group, ok := ctx.Get("Group")
 	if !ok || group == nil {
@@ -75,14 +73,13 @@ func GetGroup(ctx *gin.Context) model.Group {
 	return group.(model.Group)
 }
 
-// SetPermission 保存 model.Permission 至上下文
 func SetPermission(ctx *gin.Context) {
 	type permissionIDUri struct {
 		PermissionID uint `uri:"permissionID" binding:"required"`
 	}
 	var permissionID permissionIDUri
 	if err := ctx.ShouldBindUri(&permissionID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Permission", "permission_id="+ctx.Param("permissionID"), err))
 		return
 	}
 	permission, ret := db.InitPermissionRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(permissionID.PermissionID)
@@ -94,7 +91,6 @@ func SetPermission(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// GetPermission 从上下文中获取 model.Permission
 func GetPermission(ctx *gin.Context) model.Permission {
 	permission, ok := ctx.Get("Permission")
 	if !ok || permission == nil {
@@ -103,14 +99,13 @@ func GetPermission(ctx *gin.Context) model.Permission {
 	return permission.(model.Permission)
 }
 
-// SetUser 保存 model.User 至上下文
 func SetUser(ctx *gin.Context) {
 	type userIDUri struct {
 		UserID uint `uri:"userID" binding:"required"`
 	}
 	var userID userIDUri
 	if err := ctx.ShouldBindUri(&userID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "User", "user_id="+ctx.Param("userID"), err))
 		return
 	}
 	user, ret := db.InitUserRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(userID.UserID)
@@ -122,7 +117,6 @@ func SetUser(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// GetUser 从上下文中获取 model.User
 func GetUser(ctx *gin.Context) model.User {
 	user, ok := ctx.Get("User")
 	if !ok || user == nil {
@@ -131,14 +125,13 @@ func GetUser(ctx *gin.Context) model.User {
 	return user.(model.User)
 }
 
-// SetContest 保存 model.Contest 至上下文
 func SetContest(ctx *gin.Context) {
 	type contestIDUri struct {
 		ContestID uint `uri:"contestID" binding:"required"`
 	}
 	var contestID contestIDUri
 	if err := ctx.ShouldBindUri(&contestID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Contest", "contest_id="+ctx.Param("contestID"), err))
 		return
 	}
 	contest, ret := db.InitContestRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(contestID.ContestID)
@@ -147,14 +140,13 @@ func SetContest(ctx *gin.Context) {
 		return
 	}
 	if !IsFullAccess(ctx) && contest.Hidden {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Contest.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Contest.NotFound, "Contest", fmt.Sprintf("contest_id=%d", contest.ID), nil))
 		return
 	}
 	ctx.Set("Contest", contest)
 	ctx.Next()
 }
 
-// GetContest 从上下文中获取 model.Contest
 func GetContest(ctx *gin.Context) model.Contest {
 	contest, ok := ctx.Get("Contest")
 	if !ok || contest == nil {
@@ -163,14 +155,13 @@ func GetContest(ctx *gin.Context) model.Contest {
 	return contest.(model.Contest)
 }
 
-// SetTeam 保存 model.Team 至上下文
 func SetTeam(ctx *gin.Context) {
 	type teamIDUri struct {
 		TeamID uint `uri:"teamID" binding:"required"`
 	}
 	var teamID teamIDUri
 	if err := ctx.ShouldBindUri(&teamID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Team", "team_id="+ctx.Param("teamID"), err))
 		return
 	}
 	team, ret := db.InitTeamRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(teamID.TeamID)
@@ -179,14 +170,13 @@ func SetTeam(ctx *gin.Context) {
 		return
 	}
 	if contest := GetContest(ctx); contest.ID != 0 && team.ContestID != contest.ID {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Team.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Team.NotFound, "Team", fmt.Sprintf("team_id=%d", team.ID), nil))
 		return
 	}
 	ctx.Set("Team", team)
 	ctx.Next()
 }
 
-// SetTeamByUser 依照 model.User model.Contest 保存 model.Team 至上下文, 调用前前文须设置 model.Contest
 func SetTeamByUser(ctx *gin.Context) {
 	team, ret := db.InitTeamRepo(db.DB.WithContext(ctx.Request.Context())).GetBy2ID(GetSelf(ctx).ID, GetContest(ctx).ID)
 	if !ret.OK {
@@ -197,7 +187,6 @@ func SetTeamByUser(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// GetTeam 从上下文中获取 model.Team
 func GetTeam(ctx *gin.Context) model.Team {
 	team, ok := ctx.Get("Team")
 	if !ok || team == nil {
@@ -206,7 +195,6 @@ func GetTeam(ctx *gin.Context) model.Team {
 	return team.(model.Team)
 }
 
-// SetFile 保存 model.File 至上下文
 func SetFile(t model.FileType) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		type fileIDUri struct {
@@ -214,7 +202,7 @@ func SetFile(t model.FileType) gin.HandlerFunc {
 		}
 		var fileID fileIDUri
 		if err := ctx.ShouldBindUri(&fileID); err != nil {
-			resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+			resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "File", "file_id="+ctx.Param("fileID"), err))
 			return
 		}
 		options := db.GetOptions{}
@@ -262,7 +250,7 @@ func SetTeamWriteupFile(ctx *gin.Context) {
 	}
 	var fileID fileIDUri
 	if err := ctx.ShouldBindUri(&fileID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "File", "file_id="+ctx.Param("fileID"), err))
 		return
 	}
 	file, ret := db.InitFileRepo(db.DB.WithContext(ctx.Request.Context())).GetByRandID(fileID.FileID)
@@ -271,14 +259,14 @@ func SetTeamWriteupFile(ctx *gin.Context) {
 		return
 	}
 	if team := GetTeam(ctx); !(file.Model == model.Name(team) && file.ModelID == team.ID) {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.File.NotFound, "File", fmt.Sprintf("file_id=%d,team_id=%d", file.ID, team.ID), nil))
 		return
 	}
 	ctx.Set("File", file)
 	ctx.Next()
 }
 
-// SetAttachmentFile 准备题目附件，比赛内使用比赛题目副本的附件，测试模式使用题库题目的附件。
+// SetAttachmentFile 准备题目附件，比赛内用比赛题目副本的附件，测试模式用题库题目的附件
 func SetAttachmentFile(test bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var source model.GeneratorSource
@@ -312,7 +300,6 @@ func SetAttachmentFile(test bool) gin.HandlerFunc {
 	}
 }
 
-// GetFile 从上下文中获取 model.File
 func GetFile(ctx *gin.Context) model.File {
 	file, ok := ctx.Get("File")
 	if !ok || file == nil {
@@ -321,14 +308,13 @@ func GetFile(ctx *gin.Context) model.File {
 	return file.(model.File)
 }
 
-// SetNotice 保存 model.Notice 至上下文
 func SetNotice(ctx *gin.Context) {
 	type noticeIDUri struct {
 		NoticeID uint `uri:"noticeID" binding:"required"`
 	}
 	var noticeID noticeIDUri
 	if err := ctx.ShouldBindUri(&noticeID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Notice", "notice_id="+ctx.Param("noticeID"), err))
 		return
 	}
 	notice, ret := db.InitNoticeRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(noticeID.NoticeID)
@@ -337,14 +323,13 @@ func SetNotice(ctx *gin.Context) {
 		return
 	}
 	if contest := GetContest(ctx); contest.ID != 0 && notice.ContestID != contest.ID {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Notice.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Notice.NotFound, "Notice", fmt.Sprintf("notice_id=%d", notice.ID), nil))
 		return
 	}
 	ctx.Set("Notice", notice)
 	ctx.Next()
 }
 
-// GetNotice 从上下文中获取 model.Notice
 func GetNotice(ctx *gin.Context) model.Notice {
 	notice, ok := ctx.Get("Notice")
 	if !ok || notice == nil {
@@ -353,14 +338,13 @@ func GetNotice(ctx *gin.Context) model.Notice {
 	return notice.(model.Notice)
 }
 
-// SetChallenge 保存 model.Challenge 至上下文
 func SetChallenge(ctx *gin.Context) {
 	type challengeIDUri struct {
 		ChallengeID string `uri:"challengeID" binding:"required"`
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Challenge", "challenge_id="+ctx.Param("challengeID"), err))
 		return
 	}
 	challenge, ret := db.InitChallengeRepo(db.DB.WithContext(ctx.Request.Context())).GetByRandID(challengeID.ChallengeID)
@@ -372,7 +356,6 @@ func SetChallenge(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// GetChallenge 从上下文中获取 model.Challenge
 func GetChallenge(ctx *gin.Context) model.Challenge {
 	challenge, ok := ctx.Get("Challenge")
 	if !ok || challenge == nil {
@@ -387,7 +370,7 @@ func SetContestChallenge(ctx *gin.Context) {
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Challenge", "challenge_id="+ctx.Param("challengeID"), err))
 		return
 	}
 	contestChallenge, ret := db.InitContestChallengeRepo(db.DB.WithContext(ctx.Request.Context())).GetByRandID(challengeID.ChallengeID, db.GetOptions{
@@ -398,14 +381,13 @@ func SetContestChallenge(ctx *gin.Context) {
 		return
 	}
 	if contestChallenge.Hidden && !IsFullAccess(ctx) {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Contest.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Contest.NotFound, "ContestChallenge", fmt.Sprintf("contest_challenge_id=%d", contestChallenge.ID), nil))
 		return
 	}
 	ctx.Set("ContestChallenge", contestChallenge)
 	ctx.Next()
 }
 
-// GetContestChallenge 从上下文中获取 model.ContestChallenge
 func GetContestChallenge(ctx *gin.Context) model.ContestChallenge {
 	contestChallenge, ok := ctx.Get("ContestChallenge")
 	if !ok || contestChallenge == nil {
@@ -420,7 +402,7 @@ func SetContestFlag(ctx *gin.Context) {
 	}
 	var flagID flagIDUri
 	if err := ctx.ShouldBindUri(&flagID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "ContestFlag", "flag_id="+ctx.Param("flagID"), err))
 		return
 	}
 	contestFlag, ret := db.InitContestFlagRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(flagID.FlagID)
@@ -429,11 +411,11 @@ func SetContestFlag(ctx *gin.Context) {
 		return
 	}
 	if contest := GetContest(ctx); contest.ID != 0 && contestFlag.ContestID != contest.ID {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.ContestFlag.NotFound, "ContestFlag", fmt.Sprintf("contest_flag_id=%d", contestFlag.ID), nil))
 		return
 	}
 	if contestChallenge := GetContestChallenge(ctx); contestChallenge.ID != 0 && contestFlag.ContestChallengeID != contestChallenge.ID {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.ContestFlag.NotFound, "ContestFlag", fmt.Sprintf("contest_flag_id=%d", contestFlag.ID), nil))
 		return
 	}
 	ctx.Set("ContestFlag", contestFlag)
@@ -448,14 +430,13 @@ func GetContestFlag(ctx *gin.Context) model.ContestFlag {
 	return contestFlag.(model.ContestFlag)
 }
 
-// SetGenerator 保存 model.Generator 至上下文
 func SetGenerator(ctx *gin.Context) {
 	type generatorIDUri struct {
 		GeneratorID uint `uri:"generatorID" binding:"required"`
 	}
 	var generatorID generatorIDUri
 	if err := ctx.ShouldBindUri(&generatorID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Generator", "generator_id="+ctx.Param("generatorID"), err))
 		return
 	}
 	generator, ret := db.InitGeneratorRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(generatorID.GeneratorID)
@@ -464,14 +445,13 @@ func SetGenerator(ctx *gin.Context) {
 		return
 	}
 	if contest := GetContest(ctx); contest.ID != 0 && (!generator.ContestID.Valid || generator.ContestID.V != contest.ID) {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Generator", fmt.Sprintf("generator_id=%d", generator.ID), nil))
 		return
 	}
 	ctx.Set("Generator", generator)
 	ctx.Next()
 }
 
-// GetGenerator 从上下文中获取 model.Generator
 func GetGenerator(ctx *gin.Context) model.Generator {
 	generator, ok := ctx.Get("Generator")
 	if !ok || generator == nil {
@@ -486,7 +466,7 @@ func SetVictim(ctx *gin.Context) {
 	}
 	var victimID victimIDUri
 	if err := ctx.ShouldBindUri(&victimID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Victim", "victim_id="+ctx.Param("victimID"), err))
 		return
 	}
 	victim, ret := db.InitVictimRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(victimID.VictimID, db.GetOptions{Deleted: true})
@@ -495,11 +475,11 @@ func SetVictim(ctx *gin.Context) {
 		return
 	}
 	if contest := GetContest(ctx); contest.ID != 0 && (!victim.ContestID.Valid || victim.ContestID.V != contest.ID) {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Victim.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Victim.NotFound, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), nil))
 		return
 	}
 	if team := GetTeam(ctx); team.ID != 0 && (!victim.TeamID.Valid || victim.TeamID.V != team.ID) {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Victim.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Victim.NotFound, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), nil))
 		return
 	}
 	ctx.Set("Victim", victim)
@@ -520,7 +500,7 @@ func SetCheat(ctx *gin.Context) {
 	}
 	var cheatID cheatIDUri
 	if err := ctx.ShouldBindUri(&cheatID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Cheat", "cheat_id="+ctx.Param("cheatID"), err))
 		return
 	}
 	cheat, ret := db.InitCheatRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(cheatID.CheatID)
@@ -529,7 +509,7 @@ func SetCheat(ctx *gin.Context) {
 		return
 	}
 	if contest := GetContest(ctx); contest.ID != 0 && cheat.ContestID != contest.ID {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Cheat.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Cheat.NotFound, "Cheat", fmt.Sprintf("cheat_id=%d", cheat.ID), nil))
 		return
 	}
 	ctx.Set("Cheat", cheat)
@@ -550,7 +530,7 @@ func SetOauth(ctx *gin.Context) {
 	}
 	var oauthID oauthIDUri
 	if err := ctx.ShouldBindUri(&oauthID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "OAuthProvider", "oauth_id="+ctx.Param("oauthID"), err))
 		return
 	}
 	oauth, ret := db.InitOauthRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(oauthID.OauthID)
@@ -570,14 +550,14 @@ func GetOauth(ctx *gin.Context) model.Oauth {
 	return oauth.(model.Oauth)
 }
 
-// SetOauthUri 不使用数据库查询, 只传递名称, 后续使用内存中的 map 进行获取
+// SetOauthUri 只传递名称，不查库，后续由内存中的 map 解析
 func SetOauthUri(ctx *gin.Context) {
 	type oauthUri struct {
 		OauthUri string `uri:"oauth" binding:"required"`
 	}
 	var oauth oauthUri
 	if err := ctx.ShouldBindUri(&oauth); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "OAuthProvider", "oauth="+ctx.Param("oauth"), err))
 		return
 	}
 	ctx.Set("OauthUri", oauth.OauthUri)
@@ -598,7 +578,7 @@ func SetSmtp(ctx *gin.Context) {
 	}
 	var smtpID smtpIDUri
 	if err := ctx.ShouldBindUri(&smtpID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Smtp", "smtp_id="+ctx.Param("smtpID"), err))
 		return
 	}
 	smtp, ret := db.InitSmtpRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(smtpID.SmtpID)
@@ -624,7 +604,7 @@ func SetCronJob(ctx *gin.Context) {
 	}
 	var cronJobID cronJobIDUri
 	if err := ctx.ShouldBindUri(&cronJobID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "CronJob", "cron_job_id="+ctx.Param("cronJobID"), err))
 		return
 	}
 	cronJob, ret := db.InitCronJobRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(cronJobID.CronJobID)
@@ -650,7 +630,7 @@ func SetWebhook(ctx *gin.Context) {
 	}
 	var webhookID webhookIDUti
 	if err := ctx.ShouldBindUri(&webhookID); err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Webhook", "webhook_id="+ctx.Param("webhookID"), err))
 		return
 	}
 	webhook, ret := db.InitWebhookRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(webhookID.WebhookID)

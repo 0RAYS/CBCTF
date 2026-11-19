@@ -13,10 +13,6 @@ const (
 	StoppedGeneratorStatus     = "stopped"
 )
 
-// Generator
-// BelongsTo Challenge
-// BelongsTo Contest
-// BelongsTo ContestChallenge
 type Generator struct {
 	WorkerToken string `json:"-"`
 	Image       string `json:"image"`

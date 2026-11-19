@@ -28,7 +28,7 @@ func shuffleTeams(teams []model.Team) model.RetVal {
 		n, err := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
 		if err != nil {
 			log.Logger.Errorf("Failed to shuffle teams: %s", err)
-			return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+			return model.FailRetVal(i18n.Common.UnknownError, "Team", "", err)
 		}
 		j := int(n.Int64())
 		teams[i], teams[j] = teams[j], teams[i]
@@ -258,7 +258,7 @@ func buildVictimContainerSpec(template model.ChallengeContainerTemplate, flags [
 				}
 			}
 		default:
-			return model.VictimContainerSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
+			return model.VictimContainerSpec{}, model.FailRetVal(i18n.Model.ChallengeFlag.InvalidType, "ChallengeFlag", "type="+string(flag.Binding.Type), nil)
 		}
 	}
 	return spec, model.SuccessRetVal()
@@ -303,7 +303,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	}
 	if hasVictim {
 		log.Logger.Debugf("Start victim rejected: team_id=%d contest_challenge_id=%d challenge_id=%d already has alive victim", teamID, contestChallengeID, challengeID)
-		return model.RetVal{Msg: i18n.Model.Victim.NotStartable}
+		return model.FailRetVal(i18n.Model.Victim.NotStartable, "Victim", fmt.Sprintf("team_id=%d,contest_challenge_id=%d,challenge_id=%d", teamID, contestChallengeID, challengeID), nil)
 	}
 	baseVictim := model.Victim{
 		ChallengeID:        challengeID,
@@ -374,7 +374,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		if cleanupRet := db.InitVictimRepo(tx).Delete(victim.ID); !cleanupRet.OK {
 			log.Logger.Warningf("Failed to cleanup victim after enqueue failure: victim_id=%d reason=%s", victim.ID, cleanupRet.Msg)
 		}
-		return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Task.EnqueueError, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), err)
 	}
 	log.Logger.Infof(
 		"Start victim queued: victim_id=%d user_id=%d team_id=%d challenge_id=%d contest_id=%d duration=%s pods=%d",
@@ -423,10 +423,10 @@ func ExtendVictimDuration(tx *gorm.DB, team model.Team, contestChallengeID uint)
 		return model.Victim{}, ret
 	}
 	if victim.Status != model.RunningVictimStatus {
-		return model.Victim{}, model.RetVal{Msg: i18n.Model.Victim.NotExtendable}
+		return model.Victim{}, model.FailRetVal(i18n.Model.Victim.NotExtendable, "Victim", fmt.Sprintf("victim_id=%d,status=%s", victim.ID, victim.Status), nil)
 	}
 	if !victim.Start.Add(victim.Duration).Before(time.Now().Add(20 * time.Minute)) {
-		return model.Victim{}, model.RetVal{Msg: i18n.Model.Victim.HasMuchTime}
+		return model.Victim{}, model.FailRetVal(i18n.Model.Victim.HasMuchTime, "Victim", fmt.Sprintf("victim_id=%d,duration=%s", victim.ID, victim.Duration), nil)
 	}
 	duration := victim.Duration + time.Hour
 	if ret = repo.Update(victim.ID, db.UpdateVictimOptions{
@@ -441,7 +441,7 @@ func ExtendVictimDuration(tx *gorm.DB, team model.Team, contestChallengeID uint)
 
 func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	if victim.Status != model.RunningVictimStatus {
-		return model.RetVal{Msg: i18n.Model.Victim.NotStoppable}
+		return model.FailRetVal(i18n.Model.Victim.NotStoppable, "Victim", fmt.Sprintf("victim_id=%d,status=%s", victim.ID, victim.Status), nil)
 	}
 	return ForceStopVictim(tx, victim)
 }
@@ -473,7 +473,7 @@ func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 			victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err,
 		)
 		_ = repo.UpdateIfStatus(victim.ID, model.TerminatingVictimStatus, db.UpdateVictimOptions{Status: new(originalStatus)})
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Common.UnknownError, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), err)
 	}
 	log.Logger.Infof("Stop victim queued: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
 	return model.SuccessRetVal()
@@ -581,7 +581,7 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 				return batch.Result(tx.Statement.Context)
 			}
 			if len(contestChallengeL) == 0 {
-				batch.Fail(fmt.Sprintf("team:%d/challenge:%s", team.ID, randID), "lookup", model.RetVal{Msg: i18n.Model.NotFound})
+				batch.Fail(fmt.Sprintf("team:%d/challenge:%s", team.ID, randID), "lookup", model.FailRetVal(i18n.Model.NotFound, "ContestChallenge", fmt.Sprintf("rand_id=%s", randID), nil))
 				continue
 			}
 			for _, contestChallenge := range contestChallengeL {
@@ -649,7 +649,7 @@ func StopVictims(tx *gorm.DB, contestID uint, form dto.StopVictimsForm) model.Re
 		key := fmt.Sprint(id)
 		victim, exists := byID[id]
 		if !exists {
-			batch.Fail(key, "lookup", model.RetVal{Msg: i18n.Model.NotFound})
+			batch.Fail(key, "lookup", model.FailRetVal(i18n.Model.NotFound, "Victim", "id="+key, nil))
 			continue
 		}
 		if victim.Status == model.TerminatingVictimStatus || victim.Status == model.StoppedVictimStatus {

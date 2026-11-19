@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/i18n"
@@ -44,9 +46,10 @@ func (c *ChallengeFlagRepo) Delete(idL ...uint) model.RetVal {
 	if len(idL) == 0 {
 		return model.SuccessRetVal()
 	}
+	target := fmt.Sprintf("id=%v", idL)
 	if res := c.DB.Model(&model.ChallengeFlag{}).Where("id IN ?", idL).Delete(&model.ChallengeFlag{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete ChallengeFlag: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.ChallengeFlag.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to delete ChallengeFlag: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.ChallengeFlag.DeleteError, "ChallengeFlag", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }

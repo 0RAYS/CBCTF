@@ -28,7 +28,7 @@ func Recovery(ctx *gin.Context) {
 				"Stack":    string(debug.Stack()),
 			}).Error(panicErr)
 
-			resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": fmt.Sprint(err)}})
+			resp.AbortJSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Request", ctx.Request.URL.Path, panicErr))
 		}
 	}()
 	ctx.Next()

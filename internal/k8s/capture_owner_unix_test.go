@@ -7,7 +7,6 @@ import (
 	"syscall"
 )
 
-// captureDirOwner reports the owner of a file on unix like systems.
 func captureDirOwner(info os.FileInfo) (int, int, bool) {
 	stat, ok := info.Sys().(*syscall.Stat_t)
 	if !ok {

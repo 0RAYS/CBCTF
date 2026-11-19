@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 
 	"CBCTF/internal/db"
@@ -19,7 +21,7 @@ func CheckTeamVictimCount(ctx *gin.Context) {
 		return
 	}
 	if count >= contest.Victims {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Victim.Limited})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Victim.Limited, "Victim", fmt.Sprintf("team_id=%d,limit=%d", team.ID, contest.Victims), nil))
 		return
 	}
 	ctx.Next()

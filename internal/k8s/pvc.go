@@ -16,10 +16,10 @@ func GetPVC(ctx context.Context, name string) (*corev1.PersistentVolumeClaim, mo
 	pvc, err := kubeClient.CoreV1().PersistentVolumeClaims(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "PVC"}}
+			return nil, model.FailRetVal(i18n.K8S.NotFound, "PVC", name, nil)
 		}
-		log.Logger.Warningf("Failed to get pvc: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PVC", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to get PVC %s: %s", name, err)
+		return nil, model.FailRetVal(i18n.K8S.GetError, "PVC", name, err)
 	}
 	return pvc, model.SuccessRetVal()
 }

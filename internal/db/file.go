@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/i18n"
@@ -24,8 +26,9 @@ func (f *FileRepo) Create(file model.File) (model.File, model.RetVal) {
 		file.Path = records.Path
 	}
 	if res := f.DB.Model(&model.File{}).Create(&file); res.Error != nil {
-		log.Logger.Warningf("Failed to create File: %s", res.Error)
-		return model.File{}, model.RetVal{Msg: i18n.Model.File.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("hash=%s", file.Hash)
+		log.Logger.Warningf("Failed to create File: %s (target=%s)", res.Error, target)
+		return model.File{}, model.FailRetVal(i18n.Model.File.CreateError, "File", target, res.Error)
 	}
 	return file, model.SuccessRetVal()
 }
@@ -40,8 +43,9 @@ func (f *FileRepo) DeleteByRandID(randIDL ...string) model.RetVal {
 	}
 	var fileIDL []uint
 	if res := f.DB.Model(&model.File{}).Where("rand_id IN ?", randIDL).Pluck("id", &fileIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get Files by rand IDs %v: %s", randIDL, res.Error)
-		return model.RetVal{Msg: i18n.Model.File.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("rand_id=%v", randIDL)
+		log.Logger.Warningf("Failed to get Files by rand IDs %v: %s (target=%s)", randIDL, res.Error, target)
+		return model.FailRetVal(i18n.Model.File.DeleteError, "File", target, res.Error)
 	}
 	return f.Delete(fileIDL...)
 }

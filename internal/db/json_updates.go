@@ -9,10 +9,9 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// JSONUpdates applies a model field's declared serializer to map updates too.
-// GORM serializes struct writes, but Updates(map) binds raw values; slices would
-// otherwise expand into SQL tuples and embedded structs reach the driver raw.
-// A single adapter keeps all pools and all repositories on the model tags.
+// JSONUpdates applies a model field's declared serializer to map updates too:
+// GORM serializes struct writes but binds Updates(map) values raw, so slices
+// would expand into SQL tuples and embedded structs would reach the driver raw.
 type JSONUpdates struct{}
 
 func (JSONUpdates) Name() string { return "cbctf:json_updates" }
@@ -36,8 +35,8 @@ func serializeJSONUpdates(tx *gorm.DB) {
 		if included, exists := selected[field.DBName]; (exists && !included) || (!exists && restricted) {
 			continue
 		}
-		// Expressions are explicit SQL; driver-valuers include values already
-		// wrapped by GORM for struct writes. Never encode either a second time.
+		// Expressions are explicit SQL; driver-valuers already hold GORM's
+		// encoded value, so neither is encoded a second time.
 		if _, ok = value.(clause.Expression); ok {
 			continue
 		}

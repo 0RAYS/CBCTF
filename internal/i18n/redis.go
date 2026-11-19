@@ -1,13 +1,9 @@
 package i18n
 
 var Redis = struct {
-	// Key Error
-	SetError string
-	// Key Error
-	GetError string
-	// Key
-	NotFound string
-	// Key Error
+	SetError                 string
+	GetError                 string
+	NotFound                 string
 	DeleteError              string
 	InvalidScriptResult      string
 	InvalidScriptPort        string

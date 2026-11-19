@@ -53,7 +53,7 @@ func runtimeServiceAccount() string {
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, model.RetVal) {
 	affinity, err := imageFailureAffinity(ctx, append(containerImages(options.Containers), containerImages(options.InitContainers)...))
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.K8S.CreateError, "Pod", options.Name, err)
 	}
 	annotations := make(map[string]string)
 	maps.Copy(annotations, options.Annotations)
@@ -90,30 +90,29 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 	}
 	pod, err = kubeClient.CoreV1().Pods(globalNamespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create Pod: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to create Pod %s: %s", options.Name, err)
+		return nil, model.FailRetVal(i18n.K8S.CreateError, "Pod", options.Name, err)
 	}
 	if options.SubmitOnly {
 		return pod, model.SuccessRetVal()
 	}
 	ready, err := waitPodReady(ctx, pod)
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.K8S.PodRunError, Attr: map[string]any{
-			"Pod": pod.Name, "Phase": pod.Status.Phase, "Reason": err.Error(), "Error": err.Error(),
-		}}
+		return nil, model.FailRetVal(i18n.K8S.PodRunError, "Pod", pod.Name, err).WithAttrs(map[string]any{
+			"Pod": pod.Name, "Phase": pod.Status.Phase, "Reason": err.Error(),
+		})
 	}
 	return ready, model.SuccessRetVal()
 }
 
-// GetPod 依据 name 获取 Pod
 func GetPod(ctx context.Context, name string) (*corev1.Pod, model.RetVal) {
 	pod, err := kubeClient.CoreV1().Pods(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}}
+			return nil, model.FailRetVal(i18n.K8S.NotFound, "Pod", name, nil)
 		}
 		log.Logger.Warningf("Failed to get Pod %s: %s", name, err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.K8S.GetError, "Pod", name, err)
 	}
 	return pod, model.SuccessRetVal()
 }
@@ -121,7 +120,7 @@ func GetPod(ctx context.Context, name string) (*corev1.Pod, model.RetVal) {
 func ListPods(ctx context.Context, labels ...map[string]string) (*corev1.PodList, model.RetVal) {
 	c, err := cachedObjects(ctx, "pods")
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.K8S.GetError, "Pod", "", err)
 	}
 	selector := labelselector.Everything()
 	if len(labels) > 0 {
@@ -144,8 +143,8 @@ func listPodsDirect(ctx context.Context, labels ...map[string]string) (*corev1.P
 	}
 	podList, err := kubeClient.CoreV1().Pods(globalNamespace).List(ctx, options)
 	if err != nil {
-		log.Logger.Warningf("Failed to list Pods: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to list Pods (%s): %s", options.LabelSelector, err)
+		return nil, model.FailRetVal(i18n.K8S.GetError, "Pod", options.LabelSelector, err)
 	}
 	return podList, model.SuccessRetVal()
 }
@@ -163,18 +162,19 @@ func podLogOptions(containerName string, lines int64) *corev1.PodLogOptions {
 
 func GetPodLogs(ctx context.Context, podName, containerName string, lines int64) (string, model.RetVal) {
 	options := podLogOptions(containerName, lines)
+	target := fmt.Sprintf("%s/%s", podName, containerName)
 	podLogs, err := kubeClient.CoreV1().Pods(globalNamespace).GetLogs(podName, options).Stream(ctx)
 	if err != nil {
-		log.Logger.Warningf("Failed to get Pod Logs: %s", err)
-		return "", model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to get Pod Logs %s: %s", target, err)
+		return "", model.FailRetVal(i18n.K8S.GetError, "PodLog", target, err)
 	}
 	defer func(podLogs io.ReadCloser) {
 		_ = podLogs.Close()
 	}(podLogs)
 	buf, err := io.ReadAll(io.LimitReader(podLogs, MaxPodLogBytes))
 	if err != nil {
-		log.Logger.Warningf("Failed to read Pod Logs: %s", err)
-		return "", model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to read Pod Logs %s: %s", target, err)
+		return "", model.FailRetVal(i18n.K8S.GetError, "PodLog", target, err)
 	}
 	return string(buf), model.SuccessRetVal()
 }
@@ -182,19 +182,13 @@ func GetPodLogs(ctx context.Context, podName, containerName string, lines int64)
 // DeletePod checks the observed UID to avoid deleting a replacement Pod.
 func DeletePod(ctx context.Context, name string, uid types.UID) model.RetVal {
 	if name == "" || uid == "" {
-		return model.RetVal{
-			Msg: i18n.K8S.DeleteError,
-			Attr: map[string]any{
-				"Model": "Pod",
-				"Error": "refusing deletion without a Pod name and observed UID",
-			},
-		}
+		return model.FailRetVal(i18n.K8S.DeleteError, "Pod", name, errMissingPodIdentity)
 	}
 	options := metav1.DeleteOptions{Preconditions: &metav1.Preconditions{UID: &uid}}
 	err := kubeClient.CoreV1().Pods(globalNamespace).Delete(ctx, name, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Pod: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to delete Pod %s: %s", name, err)
+		return model.FailRetVal(i18n.K8S.DeleteError, "Pod", name, err)
 	}
 	return model.SuccessRetVal()
 }
@@ -206,13 +200,14 @@ func DeletePodCollection(ctx context.Context, labels map[string]string) model.Re
 	}
 	err := kubeClient.CoreV1().Pods(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Pod: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to delete Pods (%s): %s", options.LabelSelector, err)
+		return model.FailRetVal(i18n.K8S.DeleteError, "Pod", options.LabelSelector, err)
 	}
 	return model.SuccessRetVal()
 }
 
-// DeletePodAndWait Delete acceptance is not deletion completion (PVC mounts and exec may still be active).
+// DeletePodAndWait waits for the deletion to complete: acceptance is not
+// completion, PVC mounts and exec may still be active.
 func DeletePodAndWait(ctx context.Context, name string, uid types.UID) model.RetVal {
 	if ret := DeletePod(ctx, name, uid); !ret.OK {
 		return ret
@@ -229,7 +224,7 @@ func DeletePodAndWait(ctx context.Context, name string, uid types.UID) model.Ret
 		return false, err
 	})
 	if err != nil {
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
+		return model.FailRetVal(i18n.K8S.DeleteError, "Pod", name, err)
 	}
 	return model.SuccessRetVal()
 }

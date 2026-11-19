@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -71,14 +72,15 @@ func InitCronJobRepo(tx *gorm.DB) *CronJobRepo {
 func (c *CronJobRepo) InitCronJob() model.RetVal {
 	for _, cronJob := range model.CronJobs {
 		cronJob.DefaultSchedule = cronJob.Schedule
+		target := fmt.Sprintf("name=%s", cronJob.Name)
 		var existing model.CronJob
 		res := c.DB.Model(&model.CronJob{}).Where("name = ?", cronJob.Name).First(&existing)
 		if res.Error != nil {
 			if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
-				return model.RetVal{Msg: i18n.Model.CronJob.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+				return model.FailRetVal(i18n.Model.CronJob.GetError, "CronJob", target, res.Error)
 			}
 			if err := c.DB.Model(&model.CronJob{}).Create(&cronJob).Error; err != nil {
-				return model.RetVal{Msg: i18n.Model.CronJob.GetError, Attr: map[string]any{"Error": err.Error()}}
+				return model.FailRetVal(i18n.Model.CronJob.GetError, "CronJob", target, err)
 			}
 			continue
 		}
@@ -91,7 +93,7 @@ func (c *CronJobRepo) InitCronJob() model.RetVal {
 			updates["schedule"] = cronJob.Schedule
 		}
 		if err := c.DB.Model(&existing).Updates(updates).Error; err != nil {
-			return model.RetVal{Msg: i18n.Model.CronJob.GetError, Attr: map[string]any{"Error": err.Error()}}
+			return model.FailRetVal(i18n.Model.CronJob.GetError, "CronJob", target, err)
 		}
 	}
 	return model.SuccessRetVal()

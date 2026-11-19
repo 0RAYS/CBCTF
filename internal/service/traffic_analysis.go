@@ -37,11 +37,11 @@ func GetTrafficAnalysis(ctx context.Context, victim model.Victim) (TrafficAnalys
 	}
 	report, err := traffic.AnalyzeDir(ctx, victim.TrafficBasePath(), traffic.AnalysisOptions{KnownFlags: flags, InternalIPs: victim.TrafficInternalIPs()})
 	if err != nil {
-		return TrafficAnalysisResult{}, model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
+		return TrafficAnalysisResult{}, model.FailRetVal(i18n.Model.File.ReadPcapError, "Traffic", victim.TrafficBasePath(), err)
 	}
 	result, err := traffic.ReadPcapDir(ctx, victim.TrafficBasePath(), victim.TrafficProxyPorts())
 	if err != nil {
-		return TrafficAnalysisResult{}, model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
+		return TrafficAnalysisResult{}, model.FailRetVal(i18n.Model.File.ReadPcapError, "Traffic", victim.TrafficBasePath(), err)
 	}
 	accesses := traffic.CollectTrafficAccesses(result, victim.TrafficInternalIPs())
 	report.AddSourceIssues(result.SourceIssues...)

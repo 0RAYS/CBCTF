@@ -65,12 +65,12 @@ func Oauth(ctx *gin.Context) {
 	provider, ok := oauthProviderMap[uri]
 	oauthProviderMapLock.RUnlock()
 	if !ok {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "OAuthProvider", "provider="+uri, nil))
 		return
 	}
 	protocol, ok := oa.GetProtocol(provider.Protocol)
 	if !ok {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "OAuthProvider", "protocol="+provider.Protocol, nil))
 		return
 	}
 	loginURL, ret := protocol.LoginURL(ctx.Request.Context(), provider)
@@ -87,12 +87,12 @@ func OauthCallback(ctx *gin.Context) {
 	provider, ok := oauthProviderMap[uri]
 	oauthProviderMapLock.RUnlock()
 	if !ok {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "OAuthProvider", "provider="+uri, nil))
 		return
 	}
 	protocol, ok := oa.GetProtocol(provider.Protocol)
 	if !ok {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "OAuthProvider", "protocol="+provider.Protocol, nil))
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.OauthLoginEventType)
@@ -109,7 +109,7 @@ func OauthCallback(ctx *gin.Context) {
 	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Token", fmt.Sprintf("user_id=%d", user.ID), err))
 		return
 	}
 	ctx.Set("Self", user)
@@ -127,7 +127,7 @@ func OauthCallback(ctx *gin.Context) {
 func ExchangeOauthCode(ctx *gin.Context) {
 	code := ctx.Query("code")
 	if code == "" {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "OAuthCode", "", nil))
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.OauthLoginEventType)
@@ -138,7 +138,7 @@ func ExchangeOauthCode(ctx *gin.Context) {
 	}
 	claims, err := utils.ParseToken(tempToken, config.Env.Gin.JWT.Secret)
 	if err != nil {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
+		resp.JSON(ctx, model.FailRetVal(i18n.Response.Unauthorized, "OAuthToken", "", err))
 		return
 	}
 	user, ret := db.InitUserRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(claims.UserID)
@@ -149,7 +149,7 @@ func ExchangeOauthCode(ctx *gin.Context) {
 	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Token", fmt.Sprintf("user_id=%d", user.ID), err))
 		return
 	}
 	setAuthCookie(ctx, token)
