@@ -205,35 +205,20 @@ func TestValkeyPersistenceIsRetainedOnUninstall(t *testing.T) {
 	}
 }
 
-// The image pull secret selector needs the platform to list the existing
-// secrets of its own namespace, so the chart has to hand the name over and to
-// grant the matching permission.
-func TestImagePullSecretIsConfigurableAndListable(t *testing.T) {
-	documents := render(t, "cbctf.k8s.imagePullSecret=registry-key")
-	config := appConfig(t, documents)
-	if config["k8s"].(map[string]any)["image_pull_secret"] != "registry-key" {
-		t.Fatal("image pull secret does not reach the platform configuration")
-	}
-	found := false
+// Runtime workloads inherit the pull secrets of the default ServiceAccount, so
+// the platform itself must not read the secrets.
+func TestPlatformDoesNotReadPullSecrets(t *testing.T) {
+	documents := render(t)
 	for _, document := range documents {
 		if document["kind"] != "Role" {
 			continue
 		}
 		for _, raw := range document["rules"].([]any) {
 			rule := raw.(map[string]any)
-			if !slices.Contains(rule["resources"].([]any), "secrets") {
-				continue
-			}
-			if slices.Contains(rule["verbs"].([]any), "list") {
-				found = true
-			}
-			if slices.Contains(rule["verbs"].([]any), "get") || slices.Contains(rule["verbs"].([]any), "*") {
-				t.Fatalf("the secret permission is broader than listing: %v", rule["verbs"])
+			if slices.Contains(rule["resources"].([]any), "secrets") {
+				t.Fatalf("the platform still has a secret rule: %v", rule)
 			}
 		}
-	}
-	if !found {
-		t.Fatal("the platform cannot list the image pull secrets of its namespace")
 	}
 }
 

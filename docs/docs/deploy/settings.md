@@ -106,6 +106,8 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 
 抓包开关、worker 镜像和生成器池容量均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
 
+私有镜像仓库的拉取凭据不在后台配置：运行时 Pod 继承运行命名空间 `default` ServiceAccount 的 `imagePullSecrets`。
+
 预热、调度、缓存与回收机制见[工作负载调度](./workloads)。启用 FRP 时使用 ClusterIP，否则使用 NodePort。
 
 ## Helm 与配置文件的关系

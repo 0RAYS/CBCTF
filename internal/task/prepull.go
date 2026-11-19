@@ -10,17 +10,15 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 	corev1 "k8s.io/api/core/v1"
 
-	"CBCTF/internal/config"
 	"CBCTF/internal/k8s"
 )
 
 const prepullTaskType = "tasks:prepull"
 
 type PrepullPayload struct {
-	Images          []string
-	Nodes           []string
-	PullPolicy      string
-	ImagePullSecret string
+	Images     []string
+	Nodes      []string
+	PullPolicy string
 }
 
 func EnqueuePrepullTask(images []string) error {
@@ -43,10 +41,9 @@ func EnqueuePrepullTargets(images, nodes []string, pullPolicy string) error {
 	nodes = slices.Clone(nodes)
 	slices.Sort(nodes)
 	payload, err := msgpack.Marshal(PrepullPayload{
-		Images:          images,
-		Nodes:           slices.Compact(nodes),
-		PullPolicy:      pullPolicy,
-		ImagePullSecret: config.Env.K8S.ImagePullSecret,
+		Images:     images,
+		Nodes:      slices.Compact(nodes),
+		PullPolicy: pullPolicy,
 	})
 	if err != nil {
 		return err
@@ -69,7 +66,7 @@ func HandlePrepullTask(ctx context.Context, t *asynq.Task) error {
 	}
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
-	err := k8s.PrepullImages(ctx, payload.Images, payload.Nodes, payload.PullPolicy, payload.ImagePullSecret)
+	err := k8s.PrepullImages(ctx, payload.Images, payload.Nodes, payload.PullPolicy)
 	if _, ok := errors.AsType[*k8s.PartialPrepullError](err); ok {
 		return errors.Join(err, asynq.SkipRetry)
 	}

@@ -146,7 +146,7 @@ kubectl logs -n cbctf <victim-pod> -c capture
 排查方向：
 
 - 镜像仓库地址、tag、平台架构是否正确
-- 平台 Pod 的私有仓库检查 `imagePullSecrets` / `imageCredentials`；题目、生成器和预热 Pod 检查运行命名空间的 `default` ServiceAccount 凭据，二者不自动继承
+- 平台 Pod 的私有仓库检查 `imagePullSecrets` / `imageCredentials`；题目、生成器和预热 Pod 只继承运行命名空间 `default` ServiceAccount 的 `imagePullSecrets`，二者不自动继承
 - 节点是否可以访问镜像仓库
 - 是否达到镜像仓库限流
 

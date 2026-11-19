@@ -65,7 +65,7 @@ Everything the Valkey chart supports beyond the defaults is available, notably
 - Disable `postgres.enabled` / `valkey.enabled` and set the corresponding `externalHost` to use external services. Hostnames and IPs are used verbatim; credentials and ports remain under `auth` and `service.port`.
 - Disabling the bundled PostgreSQL's persistence uses `emptyDir`; `valkey.dataStorage.enabled: false` does the same for Valkey. Their data is lost on Pod replacement.
 - `persistence.existingClaim` must exist in the release namespace. The application and runtime workloads now use the same claim; deploy a matching backend image with this chart.
-- `imagePullSecrets` / `imageCredentials` apply to chart-managed application and PostgreSQL Pods. Valkey pulls from Docker Hub and reads its own `valkey.imagePullSecrets` (plus `valkey.global.*`), because it is rendered by the upstream chart. Runtime workload Pods use the namespace's default ServiceAccount, whose pull secrets must be configured separately.
+- `imagePullSecrets` / `imageCredentials` apply to chart-managed application and PostgreSQL Pods. Valkey pulls from Docker Hub and reads its own `valkey.imagePullSecrets` (plus `valkey.global.*`), because it is rendered by the upstream chart. Runtime workload Pods use the namespace's default ServiceAccount and inherit its pull secrets, so private registries only need the Secret on that ServiceAccount.
 - The removed `cbctf.log.level` / `cbctf.log.save` values had no effect on the current backend. Collect container output for persistent application logs.
 - Changing `postgres.auth.password` does not change the password inside an already initialized PostgreSQL data directory.
 

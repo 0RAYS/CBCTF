@@ -1,30 +1,12 @@
-import { useEffect, useState } from 'react';
 import { IconCloudComputing } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { ConfigSection } from '../fields/ConfigSection';
 import { ConfigField } from '../fields/ConfigField';
 import { FrpServerField } from '../fields/FrpServerField';
 import { Input } from '../../../../common';
-import { getImagePullSecrets } from '../../../../../api/admin/system';
 
 export function K8sConfigSection({ config, updateConfig }) {
   const { t } = useTranslation();
-  const [imagePullSecrets, setImagePullSecrets] = useState([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    getImagePullSecrets()
-      .then((response) => {
-        if (cancelled) {
-          return;
-        }
-        setImagePullSecrets(Array.isArray(response?.data) ? response.data : []);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <ConfigSection title={t('admin.system.sections.k8s')} icon={IconCloudComputing}>
@@ -85,22 +67,6 @@ export function K8sConfigSection({ config, updateConfig }) {
           })
         }
       />
-      <ConfigField
-        label={t('admin.system.labels.k8sImagePullSecret')}
-        type="select"
-        value={config.k8s.image_pull_secret || ''}
-        options={[
-          { value: '', label: t('common.none') },
-          ...imagePullSecrets.map((name) => ({ value: name, label: name })),
-        ]}
-        description={t('admin.system.hints.k8sImagePullSecret')}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.k8s.image_pull_secret = value;
-          })
-        }
-      />
-
       <div className="border-b border-neutral-300/20" />
 
       <div className="space-y-2">

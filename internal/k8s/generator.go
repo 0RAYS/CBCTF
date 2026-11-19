@@ -57,9 +57,8 @@ func StartGenerator(ctx context.Context, source model.GeneratorSource, generator
 		generator.ID, generator.Name, source.SourceID(), source.SourceImage(),
 	)
 	pod, ret = CreatePod(ctx, CreatePodOptions{
-		Name:              generator.Name,
-		Labels:            labels,
-		ImagePullSecret:   config.Env.K8S.ImagePullSecret,
+		Name:   generator.Name,
+		Labels: labels,
 		InitContainers: []corev1.Container{
 			{
 				Name:            "worker-install",
