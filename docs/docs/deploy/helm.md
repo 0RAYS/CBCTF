@@ -212,7 +212,6 @@ Chart 使用命名空间 Role 管理 Pod、Service、Job、NetworkPolicy、Confi
 | API group                | Resources                        | Verbs                                                        | 用途                    |
 |--------------------------|----------------------------------|--------------------------------------------------------------|-----------------------|
 | core                     | `pods`                           | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 创建靶机、生成器、FRPC Pod，并等待状态和清理 |
-| core                     | `pods/exec`                      | `create`                                                     | Pod 终端操作；附件 worker 不使用 Exec |
 | core                     | `pods/log`                       | `get`                                                        | 读取 Pod 日志             |
 | core                     | `services`                       | `create`, `list`, `delete`                                  | 创建 ClusterIP / NodePort 暴露 |
 | core                     | `configmaps`                     | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 题目文件配置与资源清理 |
