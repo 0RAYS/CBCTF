@@ -95,8 +95,7 @@ func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.R
 	return categories, model.SuccessRetVal()
 }
 
-// ListChallengesAvailable 返回题库题目列表。
-// 同一题库题目允许在同场比赛多次添加，因此这里不再排除已加入比赛的题目。
+// ListChallengesAvailable 返回题库题目列表，同一题库题目允许在同场比赛多次添加。
 func (c *ChallengeRepo) ListChallengesAvailable(
 	limit, offset int,
 	name, description, category string,
@@ -132,7 +131,7 @@ func (c *ChallengeRepo) ListChallengesAvailable(
 }
 
 // Delete 删除题库题目。
-// 比赛题目在加入时已深拷贝为独立副本，题库删除不会影响比赛题目及其解题记录。
+// 比赛题目是独立副本，题库删除不会影响比赛题目及其解题记录。
 func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 	if len(randIDL) == 0 {
 		return model.SuccessRetVal()

@@ -70,7 +70,7 @@ func ListChallengeViews(tx *gorm.DB, form dto.GetChallengesForm) ([]view.Challen
 }
 
 // ListAvailableChallenges 返回可供加入比赛的题库题目。
-// 同一题库题目允许在同场比赛多次添加，因此不再排除已加入比赛的题目。
+// 同一题库题目允许在同场比赛多次添加。
 func ListAvailableChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]view.SimpleChallengeView, int64, model.RetVal) {
 	challenges, count, ret := db.InitChallengeRepo(tx).ListChallengesAvailable(
 		form.Limit,

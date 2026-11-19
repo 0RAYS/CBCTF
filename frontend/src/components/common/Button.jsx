@@ -37,7 +37,7 @@ function Button({
 }) {
   const { t } = useTranslation();
 
-  // 按钮风格变体（已移除 hover glow, 改用 border/opacity 过渡）
+  // 按钮风格变体
   const variants = {
     default: 'bg-neutral-800/40 border-neutral-600/50 text-neutral-400 hover:border-neutral-400 hover:text-neutral-300',
     primary: 'border-geek-400 text-geek-400 hover:bg-geek-400/10 hover:border-geek-400/80',
@@ -71,7 +71,7 @@ function Button({
     return 'px-6';
   };
 
-  // 基础样式（含 focus-visible ring, 替代原先的 outline-none）
+  // 基础样式（含 focus-visible ring）
   const buttonClasses = `
     relative border rounded-md font-mono transition-colors
     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 focus-visible:ring-offset-1 focus-visible:ring-offset-black
@@ -84,7 +84,7 @@ function Button({
     ${className}
   `;
 
-  // 动画属性: 使用 opacity 替代 scale, 更克制
+  // 动画属性: 使用 opacity 过渡
   const motionProps =
     animate && !disabled && !loading
       ? {

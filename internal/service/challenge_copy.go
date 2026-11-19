@@ -15,10 +15,8 @@ import (
 )
 
 // CopyChallengeToContest 把题库题目深拷贝成比赛题目副本。
-//
-// 副本包含展示字段、靶机规格、生成器镜像、网络策略、flag（值与注入绑定）以及附件文件。
-// 比赛运行期只依赖副本，题库此后的任何改动都不会再影响已加入的比赛。
-// ChallengeID 仅用于溯源，不再参与运行期逻辑。
+// 副本包含展示字段、靶机规格、生成器镜像、网络策略、flag（值与注入绑定）以及附件文件，
+// 比赛运行期只依赖副本，ChallengeID 仅用于溯源。
 func CopyChallengeToContest(tx *gorm.DB, contest model.Contest, challenge model.Challenge) (model.ContestChallenge, model.RetVal) {
 	contestChallenge, ret := db.InitContestChallengeRepo(tx).Create(model.ContestChallenge{
 		ContestID:       contest.ID,

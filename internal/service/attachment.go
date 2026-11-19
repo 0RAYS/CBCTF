@@ -8,7 +8,7 @@ import (
 )
 
 // AttachmentPath 返回题目附件的路径。
-// 比赛内使用比赛题目副本：dynamic 题按队伍在该副本上的 flag 列表算缓存 key。
+// 比赛内使用比赛题目副本，dynamic 题按队伍在该副本上的 flag 列表算缓存 key。
 func AttachmentPath(tx *gorm.DB, source model.GeneratorSource, teamID uint) (string, model.RetVal) {
 	if source.SourceType() != model.DynamicChallengeType {
 		return source.SourceAttachmentPath(teamID), model.SuccessRetVal()

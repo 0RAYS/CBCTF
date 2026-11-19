@@ -10,10 +10,8 @@ import (
 )
 
 // GeneratorSource 生成器与附件所需的题目来源。
-//
 // 题库题目（Challenge）与比赛题目副本（ContestChallenge）都实现该接口，
-// 生成器与附件相关的代码只依赖它，从而在比赛内一律使用题目副本，
-// 比赛不再受题库后续改动影响。
+// 生成器与附件相关的代码只依赖它。
 type GeneratorSource interface {
 	// SourceID 来源标识：题库题目为题库 id，比赛题目副本为比赛题目 id
 	SourceID() uint
@@ -43,97 +41,70 @@ type GeneratorSource interface {
 	SourceTarget() GeneratorTarget
 }
 
-// SourceID 实现 GeneratorSource
 func (c Challenge) SourceID() uint { return c.ID }
 
-// SourceName 实现 GeneratorSource
 func (c Challenge) SourceName() string { return c.Name }
 
-// SourceType 实现 GeneratorSource
 func (c Challenge) SourceType() ChallengeType { return c.Type }
 
-// SourceImage 实现 GeneratorSource
 func (c Challenge) SourceImage() string { return c.GeneratorImage }
 
-// SourceDir 实现 GeneratorSource
 func (c Challenge) SourceDir() string { return c.BasicDir() }
 
-// SourceGeneratorPath 实现 GeneratorSource
 func (c Challenge) SourceGeneratorPath() string { return c.GeneratorPath() }
 
-// SourceAttachmentPath 实现 GeneratorSource
 func (c Challenge) SourceAttachmentPath(teamID uint) string { return c.AttachmentPath(teamID) }
 
-// SourceAttachmentCachePath 实现 GeneratorSource
 func (c Challenge) SourceAttachmentCachePath(teamID uint, flags []string) string {
 	return c.AttachmentCachePath(teamID, flags)
 }
 
-// SourceAttachmentCachePathForRevision 实现 GeneratorSource
 func (c Challenge) SourceAttachmentCachePathForRevision(teamID uint, flags []string, revision string) string {
 	return c.AttachmentCachePathForRevision(teamID, flags, revision)
 }
 
-// SourceChallengeID 实现 GeneratorSource
 func (c Challenge) SourceChallengeID() uint { return c.ID }
 
-// SourceContestChallengeID 实现 GeneratorSource
 func (c Challenge) SourceContestChallengeID() uint { return 0 }
 
-// SourceContestID 实现 GeneratorSource
 func (c Challenge) SourceContestID() uint { return 0 }
 
-// SourceTarget 实现 GeneratorSource
 func (c Challenge) SourceTarget() GeneratorTarget { return NewGeneratorTarget(c.ID) }
 
-// SourceID 实现 GeneratorSource
 func (c ContestChallenge) SourceID() uint { return c.ID }
 
-// SourceName 实现 GeneratorSource
 func (c ContestChallenge) SourceName() string { return c.Name }
 
-// SourceType 实现 GeneratorSource
 func (c ContestChallenge) SourceType() ChallengeType { return c.Type }
 
-// SourceImage 实现 GeneratorSource
 func (c ContestChallenge) SourceImage() string { return c.GeneratorImage }
 
-// SourceDir 实现 GeneratorSource
 func (c ContestChallenge) SourceDir() string { return c.BasicDir() }
 
-// SourceGeneratorPath 实现 GeneratorSource
 func (c ContestChallenge) SourceGeneratorPath() string { return c.GeneratorPath() }
 
-// SourceAttachmentPath 实现 GeneratorSource
 func (c ContestChallenge) SourceAttachmentPath(teamID uint) string { return c.AttachmentPath(teamID) }
 
-// SourceAttachmentCachePath 实现 GeneratorSource
 func (c ContestChallenge) SourceAttachmentCachePath(teamID uint, flags []string) string {
 	return c.AttachmentCachePath(teamID, flags)
 }
 
-// SourceAttachmentCachePathForRevision 实现 GeneratorSource
 func (c ContestChallenge) SourceAttachmentCachePathForRevision(teamID uint, flags []string, revision string) string {
 	return c.AttachmentCachePathForRevision(teamID, flags, revision)
 }
 
-// SourceChallengeID 实现 GeneratorSource
 func (c ContestChallenge) SourceChallengeID() uint { return c.ChallengeID }
 
-// SourceContestChallengeID 实现 GeneratorSource
 func (c ContestChallenge) SourceContestChallengeID() uint { return c.ID }
 
-// SourceContestID 实现 GeneratorSource
 func (c ContestChallenge) SourceContestID() uint { return c.ContestID }
 
-// SourceTarget 实现 GeneratorSource
 func (c ContestChallenge) SourceTarget() GeneratorTarget {
 	return NewContestGeneratorTarget(c.ContestID, c.ID)
 }
 
 // GeneratorTarget 生成器池的目标标识。
-// 比赛题目优先：比赛内题目自带副本，生成器池必须按比赛题目划分，
-// 否则同一题库题目在多场比赛加入时会互相顶掉。
+// 生成器池按比赛题目划分，否则同一题库题目在多场比赛加入时会互相顶掉。
 type GeneratorTarget struct {
 	ContestID          uint
 	ChallengeID        uint
@@ -151,9 +122,7 @@ func NewContestGeneratorTarget(contestID, contestChallengeID uint) GeneratorTarg
 }
 
 // GeneratorSourceSnapshot 生成器与附件任务的题目快照。
-//
-// 任务在队列中异步执行，无法再访问数据库，因此快照携带生成器所需的全部字段，
-// 并在任务执行期间保持与入队时一致的附件缓存路径。
+// 任务在队列中异步执行，无法再访问数据库，因此快照携带生成器所需的全部字段。
 type GeneratorSourceSnapshot struct {
 	ID                 uint          `msgpack:"id"`
 	ChallengeID        uint          `msgpack:"challenge_id"`
@@ -197,25 +166,18 @@ func NewContestChallengeSource(c ContestChallenge) GeneratorSourceSnapshot {
 	}
 }
 
-// SourceID 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceID() uint { return s.ID }
 
-// SourceName 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceName() string { return s.Name }
 
-// SourceType 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceType() ChallengeType { return s.Type }
 
-// SourceImage 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceImage() string { return s.Image }
 
-// SourceDir 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceDir() string { return s.Dir }
 
-// SourceGeneratorPath 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceGeneratorPath() string { return s.GeneratorFile }
 
-// SourceAttachmentPath 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceAttachmentPath(teamID uint) string {
 	if s.Type == DynamicChallengeType {
 		return filepath.Join(s.Dir, "attachments", fmt.Sprint(teamID)+".zip")
@@ -223,28 +185,22 @@ func (s GeneratorSourceSnapshot) SourceAttachmentPath(teamID uint) string {
 	return filepath.Join(s.Dir, AttachmentFileName)
 }
 
-// SourceAttachmentCachePath 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceAttachmentCachePath(teamID uint, flags []string) string {
 	return s.SourceAttachmentCachePathForRevision(teamID, flags, worker.SourceRevision(s.GeneratorFile))
 }
 
-// SourceAttachmentCachePathForRevision 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceAttachmentCachePathForRevision(teamID uint, flags []string, revision string) string {
 	data, _ := json.Marshal([]any{s.ID, teamID, s.UpdatedAt, s.Image, revision, flags})
 	hash := sha256.Sum256(data)
 	return filepath.Join(s.Dir, "cache", fmt.Sprintf("%d-%x.zip", teamID, hash))
 }
 
-// SourceChallengeID 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceChallengeID() uint { return s.ChallengeID }
 
-// SourceContestChallengeID 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceContestChallengeID() uint { return s.ContestChallengeID }
 
-// SourceContestID 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceContestID() uint { return s.ContestID }
 
-// SourceTarget 实现 GeneratorSource
 func (s GeneratorSourceSnapshot) SourceTarget() GeneratorTarget {
 	if s.ContestChallengeID > 0 {
 		return NewContestGeneratorTarget(s.ContestID, s.ContestChallengeID)
