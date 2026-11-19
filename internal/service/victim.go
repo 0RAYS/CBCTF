@@ -372,7 +372,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	if err != nil {
 		log.Logger.Warningf("Failed to enqueue start victim task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v", victim.ID, userID, teamID, challengeID, err)
 		if cleanupRet := db.InitVictimRepo(tx).Delete(victim.ID); !cleanupRet.OK {
-			log.Logger.Warningf("Failed to cleanup victim after enqueue failure: victim_id=%d reason=%s", victim.ID, cleanupRet.Msg)
+			log.Logger.Warningf("Failed to cleanup victim after enqueue failure: victim_id=%d reason=%v", victim.ID, cleanupRet)
 		}
 		return model.FailRetVal(i18n.Task.EnqueueError, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), err)
 	}

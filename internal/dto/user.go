@@ -25,7 +25,7 @@ type RegisterForm struct {
 
 func (f *RegisterForm) Validate(_ *gin.Context) model.RetVal {
 	if utils.CheckPassword(f.Password) < 2 {
-		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
+		return model.FailRetVal(i18n.Model.User.WeakPassword, "User", "password", nil)
 	}
 	return model.SuccessRetVal()
 }
@@ -54,7 +54,7 @@ type CreateUserForm struct {
 
 func (f *CreateUserForm) Validate(_ *gin.Context) model.RetVal {
 	if utils.CheckPassword(f.Password) < 2 {
-		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
+		return model.FailRetVal(i18n.Model.User.WeakPassword, "User", "password", nil)
 	}
 	return model.SuccessRetVal()
 }
@@ -78,7 +78,7 @@ type UpdateUserForm struct {
 func (f *UpdateUserForm) Validate(_ *gin.Context) model.RetVal {
 	if f.Password != nil {
 		if utils.CheckPassword(*f.Password) < 2 {
-			return model.RetVal{Msg: i18n.Model.User.WeakPassword}
+			return model.FailRetVal(i18n.Model.User.WeakPassword, "User", "password", nil)
 		}
 	}
 	return model.SuccessRetVal()
@@ -101,7 +101,7 @@ type ResetPasswordForm struct {
 
 func (f *ResetPasswordForm) Validate(_ *gin.Context) model.RetVal {
 	if utils.CheckPassword(f.Password) < 2 {
-		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
+		return model.FailRetVal(i18n.Model.User.WeakPassword, "User", "password", nil)
 	}
 	return model.SuccessRetVal()
 }
