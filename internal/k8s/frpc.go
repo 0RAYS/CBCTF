@@ -288,14 +288,10 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 }
 
 func GetAvailableFrpsPort(host string, portRange []int32, protocol string) (int32, model.RetVal) {
+	// The lock script already scans the whole range, so a failure means every
+	// port is taken and narrowing the range would not help.
 	port, ret := redis.LockFrpsPort(host, portRange, protocol)
 	if !ret.OK {
-		if err, ok := ret.Attr["Error"]; ok && err == nil {
-			portRange = slices.DeleteFunc(portRange, func(i int32) bool {
-				return i == port
-			})
-			return GetAvailableFrpsPort(host, portRange, protocol)
-		}
 		return 0, ret
 	}
 	return port, model.SuccessRetVal()

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/gin-gonic/gin"
@@ -23,7 +24,7 @@ func ContestStatus(statusL ...string) gin.HandlerFunc {
 			ctx.Next()
 			return
 		}
-		resp.AbortJSON(ctx, model.RetVal{Msg: contest.Status()})
+		resp.AbortJSON(ctx, model.FailRetVal(contest.Status(), "Contest", fmt.Sprintf("contest_id=%d", contest.ID), nil))
 		return
 	}
 }

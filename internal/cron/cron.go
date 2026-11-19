@@ -50,6 +50,20 @@ func (cronLogger) Error(err error, msg string, keysAndValues ...any) {
 	log.Logger.WithField("Values", keysAndValues).Warningf("%s: %s", msg, err)
 }
 
+// cronLogAttrs keeps the attributes the RetVal rendering does not print, so a
+// failed task logs the shared context once and its own attributes separately.
+func cronLogAttrs(attr map[string]any) map[string]any {
+	extra := make(map[string]any, len(attr))
+	for key, value := range attr {
+		switch key {
+		case model.AttrModel, model.AttrTarget, model.AttrError:
+			continue
+		}
+		extra[key] = value
+	}
+	return extra
+}
+
 func exec(name string, task func() model.RetVal) func() {
 	return func() {
 		start := time.Now()
@@ -61,7 +75,7 @@ func exec(name string, task func() model.RetVal) func() {
 			if marshalErr != nil {
 				details = []byte("unavailable")
 			}
-			log.Logger.Warningf("%s failed: %s attributes=%v details=%s, processing time: %s", name, result.Msg, result.Attr, details, time.Duration(duration*float64(time.Second)))
+			log.Logger.Warningf("%s failed: %v attributes=%v details=%s, processing time: %s", name, result, cronLogAttrs(result.Attr), details, time.Duration(duration*float64(time.Second)))
 		}
 		now := time.Now()
 		cronjob, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", name)

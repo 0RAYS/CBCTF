@@ -431,7 +431,7 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		}
 		ret := redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
 		if !ret.OK {
-			log.Logger.Warningf("Failed to release FRPS reservation: victim_id=%d host=%s port=%d protocol=%s reason=%s", victim.ID, endpoint.IP, endpoint.Port, endpoint.Protocol, ret.Msg)
+			log.Logger.Warningf("Failed to release FRPS reservation: victim_id=%d host=%s port=%d protocol=%s reason=%v", victim.ID, endpoint.IP, endpoint.Port, endpoint.Protocol, ret)
 		}
 		batch.Record(fmt.Sprintf("%s:%d/%s", endpoint.IP, endpoint.Port, endpoint.Protocol), "release_frps_port", ret)
 	}
@@ -439,7 +439,7 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	if result.OK {
 		log.Logger.Debugf("Deleted victim k8s resources: victim_id=%d", victim.ID)
 	} else {
-		log.Logger.Warningf("Victim k8s cleanup incomplete: victim_id=%d error=%s", victim.ID, result.Msg)
+		log.Logger.Warningf("Victim k8s cleanup incomplete: victim_id=%d error=%v", victim.ID, result)
 	}
 	return result
 }
