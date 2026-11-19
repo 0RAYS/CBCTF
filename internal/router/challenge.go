@@ -134,8 +134,7 @@ func DeleteChallenge(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"contest_challenge_count": usageCount}))
 }
 
-// GetChallengeUsages 返回引用了该题库题目的比赛题目实例。
-// 用于在修改或删除题库题目前提示其影响范围。
+// GetChallengeUsages 返回引用了该题库题目的比赛题目实例，用于在修改或删除题库题目前提示其影响范围。
 func GetChallengeUsages(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	usages, ret := service.ListChallengeUsages(db.DB.WithContext(ctx.Request.Context()), challenge)

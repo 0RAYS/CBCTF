@@ -16,7 +16,7 @@ import (
 // syncFrpsPortLocksTask 以数据库中的活跃靶机为准校准 FRPS 端口占用缓存。
 // pending 靶机可能已锁定端口但尚未写回 ExposedEndpoints，跳过本轮避免误释放。
 func syncFrpsPortLocksTask() model.RetVal {
-	// 系统配置发生改变时可能会导致存在 key 残留, 但问题不大
+	// 系统配置发生改变时可能会导致存在 key 残留
 	if !config.Env.K8S.Frp.On {
 		return model.SuccessRetVal()
 	}

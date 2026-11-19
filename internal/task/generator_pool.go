@@ -15,7 +15,7 @@ import (
 
 // EnsureGeneratorPool Pool admission is serialized across platform replicas; capacity is reserved
 // by waiting/pending records before a start task is enqueued.
-// 比赛题目按比赛题目 id 划分池，题库题目按题库 id 划分池，两者互不干扰。
+// 比赛题目与题库题目按各自的 id 划分池，互不干扰。
 func EnsureGeneratorPool(ctx context.Context, source model.GeneratorSourceSnapshot) error {
 	if source.Type != model.DynamicChallengeType || config.Env.K8S.GeneratorPoolSize <= 0 {
 		return nil

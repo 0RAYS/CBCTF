@@ -22,8 +22,7 @@ import (
 
 const genAttachmentTaskType = "tasks:attachment"
 
-// GenAttachmentPayload 附件生成任务的载荷。
-// 题目以快照形式携带：比赛内的附件由比赛题目副本生成，题库题目只在测试模式下生成。
+// GenAttachmentPayload 附件生成任务的载荷，题目以快照形式携带。
 type GenAttachmentPayload struct {
 	Flags  []string
 	Source model.GeneratorSourceSnapshot

@@ -41,8 +41,8 @@ func GeneratorLabels(generator model.Generator, tags ...map[string]string) map[s
 	return labels
 }
 
-// StartGenerator 创建生成器 Pod。
-// source 决定生成器镜像与挂载目录：比赛内使用比赛题目副本，测试模式使用题库题目。
+// StartGenerator 创建生成器 Pod，source 决定生成器镜像与挂载目录。
+// 比赛内使用比赛题目副本，测试模式使用题库题目。
 func StartGenerator(ctx context.Context, source model.GeneratorSource, generator model.Generator) (*corev1.Pod, model.RetVal) {
 	var (
 		pod    *corev1.Pod

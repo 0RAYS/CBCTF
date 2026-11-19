@@ -21,8 +21,7 @@ const (
 	stopGeneratorTaskType  = "tasks:generator:stop"
 )
 
-// StartGeneratorPayload 生成器启动任务的载荷。
-// 题目以快照形式携带：比赛内的生成器使用比赛题目副本，题库题目只在测试模式下使用。
+// StartGeneratorPayload 生成器启动任务的载荷，题目以快照形式携带。
 type StartGeneratorPayload struct {
 	Source    model.GeneratorSourceSnapshot
 	Generator model.Generator
