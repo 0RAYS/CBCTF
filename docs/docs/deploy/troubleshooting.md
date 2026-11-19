@@ -100,6 +100,7 @@ Valkey 用于缓存和 Asynq 任务队列，兼容 Redis 协议。连接失败�
 - VPC 模式是否安装 Kube-OVN/Multus，并配置节点标签
 - VM 模式是否安装 KubeVirt，service 是否配置 `x-kubevirt: true`、`mem_limit`、VPC 网络、静态 IP 和 MAC 地址
 - FRP 模式是否配置可用 FRPS、token 和端口池
+- 启用 FRP 但没有配置 FRPS 时，靶机按未启用 FRP 启动（NodePort 暴露），系统配置保持不变，系统日志中会有一条警告
 
 ## 抓包容器退出 / 没有 pcap
 
