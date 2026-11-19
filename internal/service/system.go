@@ -131,11 +131,6 @@ func validateK8sSettings(form dto.UpdateSettingForm) model.RetVal {
 			return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": strings.Join(errors, "; ")}}
 		}
 	}
-	if name := form.K8SPriorityClassName; name != nil && *name != "" {
-		if errors := validation.IsDNS1123Subdomain(*name); len(errors) > 0 {
-			return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": strings.Join(errors, "; ")}}
-		}
-	}
 	if name := form.K8SImagePullSecret; name != nil && *name != "" {
 		if errors := validation.IsDNS1123Subdomain(*name); len(errors) > 0 {
 			return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": strings.Join(errors, "; ")}}
@@ -200,7 +195,6 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.K8SNamespaceSettingKey:         form.K8SNamespace,
 		model.K8SCaptureImageSettingKey:      form.K8SCaptureImage,
 		model.K8SCaptureEnabledSettingKey:    form.K8SCaptureEnabled,
-		model.K8SPriorityClassSettingKey:     form.K8SPriorityClassName,
 		model.K8SWorkerImageSettingKey:       form.K8SWorkerImage,
 		model.K8SGeneratorPoolSizeSettingKey: form.K8SGeneratorPoolSize,
 		model.K8SImagePullSecretSettingKey:   form.K8SImagePullSecret,

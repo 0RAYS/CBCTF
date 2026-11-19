@@ -29,7 +29,6 @@ export function buildPayload(config) {
     k8s_namespace: config.k8s.namespace,
     k8s_capture: config.k8s.capture,
     k8s_capture_enabled: config.k8s.capture_enabled,
-    k8s_priority_class_name: config.k8s.priority_class_name,
     k8s_worker_image: config.k8s.worker_image,
     k8s_generator_pool_size: config.k8s.generator_pool_size,
     k8s_image_pull_secret: config.k8s.image_pull_secret,
