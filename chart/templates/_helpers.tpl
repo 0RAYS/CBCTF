@@ -61,8 +61,8 @@ ServiceAccount name
 {{- end }}
 
 {{/*
-ServiceAccount name of the runtime workloads (victims, generators, FRPC pods,
-image warmup jobs). They carry the pull secrets of the private registries.
+ServiceAccount of the runtime workloads; it carries the pull secrets of the
+private registries.
 */}}
 {{- define "cbctf.runtimeServiceAccountName" -}}
 {{- default (printf "%s-runtime" (include "cbctf.fullname" .)) .Values.cbctf.k8s.serviceAccount -}}
@@ -157,9 +157,8 @@ PostgreSQL service hostname
 {{- end }}
 
 {{/*
-Name of the Secret the chart creates from imageCredentials, empty when no
-credentials are configured. Partially configured credentials fail the render
-instead of silently leaving the workloads without credentials.
+Name of the Secret created from imageCredentials, empty when none are
+configured. Partial credentials fail the render.
 */}}
 {{- define "cbctf.registrySecretName" -}}
 {{- $credentials := .Values.imageCredentials | default dict -}}
@@ -175,8 +174,8 @@ instead of silently leaving the workloads without credentials.
 {{- end }}
 
 {{/*
-Pull secret list: the configured secrets plus the secret the chart creates
-from imageCredentials. Outputs the YAML list entries.
+Pull secret list: the configured secrets plus the one created from
+imageCredentials.
 */}}
 {{- define "cbctf.imagePullSecretList" -}}
 {{- $secrets := .Values.imagePullSecrets | default list -}}
@@ -189,9 +188,8 @@ from imageCredentials. Outputs the YAML list entries.
 {{- end }}
 
 {{/*
-Combined imagePullSecrets: merges .Values.imagePullSecrets with the auto-generated
-registry secret (when imageCredentials are provided). Outputs the full
-`imagePullSecrets:` block, or empty string if no secrets are configured.
+The `imagePullSecrets:` block for the pod specs, empty when no secrets are
+configured.
 */}}
 {{- define "cbctf.imagePullSecrets" -}}
 {{- with (include "cbctf.imagePullSecretList" .) }}
