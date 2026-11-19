@@ -25,7 +25,10 @@ function App() {
 
   return (
     <div className="relative h-screen w-screen">
-      <Router>
+      {/* useTransitions={false}: the router updates the location synchronously instead of
+          inside startTransition, so a navigation commits immediately and the route's
+          Suspense fallback is shown while the new page loads. */}
+      <Router useTransitions={false}>
         <BrandingHead />
         <AppRoutes />
       </Router>

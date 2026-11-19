@@ -9,6 +9,7 @@ import ContestChallenges from '../../../components/features/Admin/Contests/chall
 import ChallengePickerSession from '../../../components/features/Admin/Contests/challenges/ChallengePickerSession';
 import ChallengeEditorDialog from '../../../components/features/Admin/Contests/challenges/ChallengeEditorDialog';
 import { challengeQuery } from '../../../components/features/Admin/Contests/challenges/challengeData.js';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 function ContestChallengeManagement({ contestId }) {
   const { t } = useTranslation();
@@ -16,10 +17,24 @@ function ContestChallengeManagement({ contestId }) {
   const [totalCount, setTotalCount] = useState(0);
   const [categories, setCategories] = useState(DEFAULT_CHALLENGE_CATEGORIES);
   const [filters, setFilters] = useState({ page: 1, type: 'all', category: 'all', name: '' });
+  const [nameQuery, setNameQuery] = useState('');
   const [picker, setPicker] = useState(false);
   const [editing, setEditing] = useState(null);
   const [revision, setRevision] = useState(0);
+  const [loadedKey, setLoadedKey] = useState('');
   const refresh = () => setRevision((previous) => previous + 1);
+  // 搜索词防抖后才应用到查询条件，避免每次输入都发起请求
+  const debouncedName = useDebounce(nameQuery, 300);
+  // 筛选条件与已展示数据的条件不一致时才算加载中，刷新不会清空表格
+  const filterKey = `${filters.page}|${filters.type}|${filters.category}|${filters.name}`;
+  const loading = loadedKey !== filterKey;
+
+  useEffect(() => {
+    setFilters((previous) =>
+      previous.name === debouncedName ? previous : { ...previous, page: 1, name: debouncedName }
+    );
+  }, [debouncedName]);
+
   useEffect(() => {
     let cancelled = false;
     getContestChallengeCategories(contestId)
@@ -45,6 +60,9 @@ function ContestChallengeManagement({ contestId }) {
       .catch((error) => {
         if (!cancelled)
           toast.danger({ description: error.message || t('admin.contests.challenges.toast.fetchListFailed') });
+      })
+      .finally(() => {
+        if (!cancelled) setLoadedKey(filterKey);
       });
     return () => {
       cancelled = true;
@@ -73,14 +91,15 @@ function ContestChallengeManagement({ contestId }) {
         categories={categories}
         filterCategory={filters.category}
         filterType={filters.type}
-        nameQuery={filters.name}
+        nameQuery={nameQuery}
+        loading={loading}
         onPageChange={(page) => changeFilter('page', page)}
         onAddChallenge={() => setPicker(true)}
         onEditChallenge={setEditing}
         onDeleteChallenge={remove}
         onFilterTypeChange={(value) => changeFilter('type', value)}
         onFilterCategoryChange={(value) => changeFilter('category', value)}
-        onNameChange={(value) => changeFilter('name', value)}
+        onNameChange={setNameQuery}
       />
       {picker && (
         <ChallengePickerSession

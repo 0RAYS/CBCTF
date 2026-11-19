@@ -53,11 +53,18 @@ function ContestTeamsManagement({ id }) {
   const [nameQuery, setNameQuery] = useState('');
   const [descQuery, setDescQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [resolvedSearchSignature, setResolvedSearchSignature] = useState('');
   const [searchError, setSearchError] = useState(null);
+  const [loadedPage, setLoadedPage] = useState(0);
 
   const debouncedName = useDebounce(nameQuery, 300);
   const debouncedDesc = useDebounce(descQuery, 300);
+
+  // 搜索结果对应的查询签名，未匹配时说明这批结果还在加载
+  const searchSignature = `${debouncedName}|${debouncedDesc}`;
+  const searchLoading = searchSignature !== resolvedSearchSignature;
+  // 页码与已展示数据的页码不一致时才算加载中，刷新不会清空表格
+  const listLoading = loadedPage !== currentPage;
 
   const isSearchMode = !!(nameQuery.trim() || descQuery.trim()) && !searchError;
 
@@ -68,11 +75,10 @@ function ContestTeamsManagement({ id }) {
     if (!debouncedName.trim() && !debouncedDesc.trim()) {
       setSearchResults([]);
       setSearchError(null);
-      setSearchLoading(false);
+      setResolvedSearchSignature(searchSignature);
       return;
     }
     const doSearch = async () => {
-      setSearchLoading(true);
       setSearchError(null);
       try {
         const params = { limit: 10, offset: 0 };
@@ -92,7 +98,7 @@ function ContestTeamsManagement({ id }) {
           setSearchResults([]);
         }
       } finally {
-        if (!cancelled) setSearchLoading(false);
+        if (!cancelled) setResolvedSearchSignature(searchSignature);
       }
     };
     doSearch();
@@ -112,6 +118,8 @@ function ContestTeamsManagement({ id }) {
     } catch (error) {
       if (version === listRequest.current)
         toast.danger({ description: error.message || t('admin.contests.teams.toast.fetchFailed') });
+    } finally {
+      if (version === listRequest.current) setLoadedPage(currentPage);
     }
   };
 
@@ -282,6 +290,7 @@ function ContestTeamsManagement({ id }) {
         showModal={showModal}
         modalMode={modalMode}
         selectedTeam={selectedTeam}
+        loading={isSearchMode ? searchLoading : listLoading}
         onPageChange={setCurrentPage}
         onEditTeam={handleEditTeam}
         onDeleteTeam={handleDeleteTeam}

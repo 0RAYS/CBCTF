@@ -27,6 +27,7 @@ export default function useGeneratorSession(api, text) {
   const [batchResult, setBatchResult] = useState(null);
   const [startCounts, setStartCounts] = useState({});
   const sessionRef = useRef(null);
+  const loadedQueryRef = useRef(null);
 
   useEffect(() => {
     const session = { active: true, operation: null };
@@ -44,12 +45,14 @@ export default function useGeneratorSession(api, text) {
     let active = true;
     let requestId = 0;
     let inFlight = false;
+    const queryKey = `${currentPage}|${showDeleted}`;
     const fetchPage = async () => {
       // Polling must not supersede a slow request for this query.
       if (inFlight) return;
       inFlight = true;
       const request = ++requestId;
-      setLoading(true);
+      // Only a new query blanks the list; background polls update in place.
+      if (loadedQueryRef.current !== queryKey) setLoading(true);
       try {
         const response = await queryGenerators({
           limit: GENERATOR_PAGE_SIZE,
@@ -70,7 +73,10 @@ export default function useGeneratorSession(api, text) {
         reportFetchError();
       } finally {
         inFlight = false;
-        if (active && request === requestId) setLoading(false);
+        if (active && request === requestId) {
+          loadedQueryRef.current = queryKey;
+          setLoading(false);
+        }
       }
     };
     fetchPage();

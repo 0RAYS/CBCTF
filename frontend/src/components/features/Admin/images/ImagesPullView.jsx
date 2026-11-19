@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconRefresh, IconSearch } from '@tabler/icons-react';
 import { Button } from '../../../common';
+import Loading from '../../../common/Loading';
 import ImagePullSummary from './ImagePullSummary';
 import ImageTargetSelection from './ImageTargetSelection';
 import ManualImagePull from './ManualImagePull';
@@ -18,14 +19,7 @@ export default function ImagesPullView({ scope, loading, onRefresh, ...props }) 
   if (loading) {
     return (
       <div className="w-full mx-auto">
-        <div className="flex justify-center items-center h-64">
-          <div className="flex items-center gap-3 text-neutral-400">
-            <div className="animate-spin">
-              <IconRefresh size={20} />
-            </div>
-            <span className="font-mono">{t('common.loading')}</span>
-          </div>
-        </div>
+        <Loading />
       </div>
     );
   }

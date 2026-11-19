@@ -13,6 +13,7 @@ export default function SmtpManagement() {
   const [smtpConfigs, setSmtpConfigs] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('smtp');
   const [historyTarget, setHistoryTarget] = useState(null);
   const [testTarget, setTestTarget] = useState(null);
@@ -20,6 +21,7 @@ export default function SmtpManagement() {
   const pageSize = 20;
 
   const fetchSmtpConfigs = async () => {
+    setLoading(true);
     try {
       const response = await getSmtpList({ limit: pageSize, offset: (currentPage - 1) * pageSize });
       if (response.code === 200) {
@@ -28,6 +30,8 @@ export default function SmtpManagement() {
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.smtp.toast.fetchListFailed') });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,6 +61,7 @@ export default function SmtpManagement() {
           totalCount={totalCount}
           currentPage={currentPage}
           pageSize={pageSize}
+          loading={loading}
           onPageChange={setCurrentPage}
           onCreateSmtp={() => setDialog({ mode: 'create' })}
           onEditSmtp={edit}

@@ -17,6 +17,7 @@ function AdminLogs() {
   const [hasMore, setHasMore] = useState(true);
   const [failed, setFailed] = useState(false);
   const [level, setLevel] = useState('INFO');
+  const [loading, setLoading] = useState(true);
   const pageSize = 100;
   const containerRef = useRef(null);
   const sentinelRef = useRef(null);
@@ -31,6 +32,7 @@ function AdminLogs() {
       const scope = scopeRef.current;
       if (!scope || scope.level !== level || scope.failed || loadingRef.current) return;
       loadingRef.current = true;
+      setLoading(true);
       try {
         const res = await getSystemLogs({ limit: pageSize, offset: (nextPage - 1) * pageSize, level });
         if (scopeRef.current !== scope) return;
@@ -52,7 +54,10 @@ function AdminLogs() {
         scope.failed = true;
         setFailed(true);
       } finally {
-        if (scopeRef.current === scope) loadingRef.current = false;
+        if (scopeRef.current === scope) {
+          loadingRef.current = false;
+          setLoading(false);
+        }
       }
     },
     [level, t]
@@ -141,6 +146,7 @@ function AdminLogs() {
         <AnsiLog
           ref={containerRef}
           content={logs}
+          loading={loading && logs.length === 0}
           postProcess={injectClickableIps}
           allowedAttr={IP_ALLOWED_ATTR}
           onClick={handleLogActivation}

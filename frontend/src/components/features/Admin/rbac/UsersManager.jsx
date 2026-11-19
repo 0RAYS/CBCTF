@@ -75,7 +75,8 @@ function UsersManager() {
   const [emailQuery, setEmailQuery] = useState('');
   const [descQuery, setDescQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [resolvedSearchSignature, setResolvedSearchSignature] = useState('');
+  const [loadedPage, setLoadedPage] = useState(0);
 
   const debouncedName = useDebounce(nameQuery, 300);
   const debouncedEmail = useDebounce(emailQuery, 300);
@@ -83,15 +84,20 @@ function UsersManager() {
 
   const isSearchMode = !!(nameQuery.trim() || emailQuery.trim() || descQuery.trim());
 
+  // 搜索结果对应的查询签名，未匹配时说明这批结果还在加载
+  const searchSignature = `${debouncedName}|${debouncedEmail}|${debouncedDesc}`;
+  const searchLoading = searchSignature !== resolvedSearchSignature;
+  // 列表页码与已展示数据的页码不一致时才算加载中，刷新不会清空表格
+  const listLoading = loadedPage !== currentPage;
+
   useEffect(() => {
     let cancelled = false;
     if (!debouncedName.trim() && !debouncedEmail.trim() && !debouncedDesc.trim()) {
       setSearchResults([]);
-      setSearchLoading(false);
+      setResolvedSearchSignature(searchSignature);
       return;
     }
     const doSearch = async () => {
-      setSearchLoading(true);
       try {
         const params = { limit: 20, offset: 0 };
         if (debouncedName.trim()) params.name = debouncedName.trim();
@@ -107,7 +113,7 @@ function UsersManager() {
           setSearchResults([]);
         }
       } finally {
-        if (!cancelled) setSearchLoading(false);
+        if (!cancelled) setResolvedSearchSignature(searchSignature);
       }
     };
     doSearch();
@@ -129,6 +135,9 @@ function UsersManager() {
       })
       .catch((error) => {
         if (!cancelled) toast.danger({ description: error.message || t('admin.users.toast.fetchFailed') });
+      })
+      .finally(() => {
+        if (!cancelled) setLoadedPage(currentPage);
       });
     return () => {
       cancelled = true;
@@ -170,7 +179,7 @@ function UsersManager() {
         totalCount={displayTotalCount}
         currentPage={currentPage}
         pageSize={pageSize}
-        loading={false}
+        loading={isSearchMode ? searchLoading : listLoading}
         onPageChange={setCurrentPage}
         onCreateUser={openCreate}
         onEditUser={openEdit}
