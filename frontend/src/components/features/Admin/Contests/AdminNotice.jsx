@@ -1,15 +1,4 @@
-/**
- * 比赛公告管理组件
- * @param {Object} props
- * @param {Array} props.notices - 公告列表
- * @param {number} props.totalCount - 公告总数
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {Function} props.onPageChange - 页码改变回调
- * @param {Function} props.onCreateNotice - 创建公告回调
- * @param {Function} props.onUpdateNotice - 更新公告回调
- * @param {Function} props.onDeleteNotice - 删除公告回调
- */
+/** 比赛公告管理组件 */
 
 import { useState } from 'react';
 import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
@@ -166,7 +155,6 @@ function AdminNotice({
 
   return (
     <div className="w-full mx-auto">
-      {/* 头部 */}
       <div className="flex justify-end items-center mb-8">
         <Button variant="primary" size="sm" align="icon-left" icon={<IconPlus size={18} />} onClick={handleCreate}>
           {t('admin.contests.notices.actions.create')}
@@ -209,7 +197,6 @@ function AdminNotice({
         }
       />
 
-      {/* 模态框 */}
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}

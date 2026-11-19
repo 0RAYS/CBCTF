@@ -1,16 +1,4 @@
-/**
- * Chip — inline label badge
- *
- * variant="pill"  rounded-full, solid bg/text (categories, types)
- * variant="tag"   rounded,      border + bg-black/30 (flags, files, hints)
- *
- * size="md"  py-1  (default)
- * size="sm"  py-0.5 (compact, e.g. inline row badges)
- *
- * colorClass overrides the colour portion:
- *   pill default → 'bg-neutral-400/20 text-neutral-400'
- *   tag  default → 'border-neutral-300/30 text-neutral-300'
- */
+/** Chip — inline label badge; variant="pill" 是实底圆角, variant="tag" 是描边, colorClass 覆盖默认配色 */
 function Chip({ label, variant = 'pill', size = 'md', colorClass, className = '', title }) {
   const py = size === 'sm' ? 'py-0.5' : 'py-1';
 

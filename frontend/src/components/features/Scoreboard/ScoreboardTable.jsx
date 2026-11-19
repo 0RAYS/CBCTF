@@ -1,14 +1,3 @@
-/**
- * 通用表格式积分榜组件
- * @param {Object} props
- * @param {Array} props.teams - 队伍列表
- * @param {Array} props.challenges - 题目列表（按分类分组）
- * @param {number} props.totalCount - 总队伍数
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {Function} props.onPageChange - 页码变化处理函数
- */
-
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Card, Pagination, ScrollingText } from '../../common';
@@ -18,6 +7,7 @@ import { buildScoreboardColumns, indexTeamChallenges } from './scoreboardModel.j
 import useScoreColumnWidth from './useScoreColumnWidth';
 import TruncatedText from '../../common/TruncatedText';
 
+/** 通用表格式积分榜组件 */
 function ScoreboardTable({
   teams = [],
   challenges = [],
@@ -104,7 +94,6 @@ function ScoreboardTable({
   return (
     <div className="w-full min-w-0 space-y-6">
       {measurement}
-      {/* 表格容器 */}
       <Card
         variant="default"
         padding="none"
@@ -127,7 +116,6 @@ function ScoreboardTable({
             </colgroup>
             <thead>
               <tr className="bg-neutral-800/60">
-                {/* 固定列 */}
                 <th
                   scope="col"
                   className="sticky left-0 z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
@@ -160,7 +148,6 @@ function ScoreboardTable({
                   <TruncatedText>{t('common.scoreboard.headers.score')}</TruncatedText>
                 </th>
 
-                {/* 题目分类列 */}
                 {categoryEntries.map(([category, categoryIchallenges]) => (
                   <th
                     key={category}
@@ -177,7 +164,6 @@ function ScoreboardTable({
                 ))}
               </tr>
 
-              {/* 题目名称行 */}
               <tr className="bg-neutral-800/40 border-t border-neutral-600/40">
                 <th
                   className="sticky left-0 z-10 bg-neutral-800 p-2 border-r border-neutral-600/40"
@@ -230,7 +216,6 @@ function ScoreboardTable({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: teamIndex * 0.05 }}
                 >
-                  {/* 排名 */}
                   <td
                     className="sticky left-0 z-10 bg-neutral-800 p-3 text-center text-neutral-300 font-mono tabular-nums border-r border-neutral-600/40"
                     style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
@@ -238,7 +223,6 @@ function ScoreboardTable({
                     <TruncatedText>{(currentPage - 1) * pageSize + teamIndex + 1}</TruncatedText>
                   </td>
 
-                  {/* 队伍信息 */}
                   <td
                     className="z-10 bg-neutral-800 p-3 border-r border-neutral-600/40"
                     style={{
@@ -264,7 +248,6 @@ function ScoreboardTable({
                     </div>
                   </td>
 
-                  {/* 分数 */}
                   <td
                     className="z-10 bg-neutral-800 p-3 text-base text-center text-geek-400 font-mono tabular-nums whitespace-nowrap border-r border-neutral-600/40"
                     style={{
@@ -277,7 +260,6 @@ function ScoreboardTable({
                     <TruncatedText>{scoreValues[teamIndex]}</TruncatedText>
                   </td>
 
-                  {/* 题目状态 */}
                   {challengeColumns.map((challenge) => {
                     const solved = teamChallengeIndexes[teamIndex].get(challenge.id)?.solved > 0;
 
@@ -309,7 +291,6 @@ function ScoreboardTable({
         </div>
       </Card>
 
-      {/* 分页 */}
       <div className="mt-6 flex justify-center w-full overflow-x-auto">
         <Pagination
           current={currentPage}

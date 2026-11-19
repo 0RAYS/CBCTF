@@ -5,28 +5,7 @@ import { List } from '../../common';
 import { useTranslation } from 'react-i18next';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
 
-/**
- * 题目管理组件
- * @param {Object} props
- * @param {Array} props.challenges - 题目列表
- * @param {number} props.totalCount - 题目总数
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {Array} props.categories - 分类列表
- * @param {string} props.filterCategory - 当前选中分类
- * @param {string} props.filterType - 当前选中类型
- * @param {Function} props.onPageChange - 页码改变回调
- * @param {Function} props.onAddChallenge - 添加题目回调
- * @param {Function} props.onEditChallenge - 编辑题目回调
- * @param {Function} props.onDeleteChallenge - 删除题目回调
- * @param {Function} props.onUploadAttachment - 上传附件回调
- * @param {Function} props.onDownloadAttachment - 下载附件回调
- * @param {Function} props.onTestChallenge - 测试题目回调
- * @param {Function} props.onFilterTypeChange - 过滤类型改变回调
- * @param {Function} props.onFilterCategoryChange - 过滤分类改变回调
- * @param {boolean} props.searchLoading - 搜索加载状态
- * @param {boolean} props.isSearchMode - 是否处于搜索模式
- */
+/** 题目管理组件 */
 function AdminChallenge({
   challenges = [],
   totalCount = 0,
@@ -54,7 +33,6 @@ function AdminChallenge({
 }) {
   const { t } = useTranslation();
 
-  // Flag 展示
   const renderFlags = (flags) => {
     if (!flags || flags.length === 0)
       return <span className="text-neutral-500 font-mono text-sm">{t('common.none')}</span>;
@@ -165,7 +143,6 @@ function AdminChallenge({
         </Button>
       </div>
 
-      {/* 搜索框 */}
       <div className="mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -194,7 +171,6 @@ function AdminChallenge({
         </div>
       </div>
 
-      {/* 过滤器 */}
       <div className="mb-6 border-b border-neutral-700">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
@@ -245,7 +221,6 @@ function AdminChallenge({
         </div>
       </div>
 
-      {/* 题目列表 */}
       <List
         columns={columns}
         data={challenges}

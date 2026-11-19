@@ -106,7 +106,7 @@ export default function ChallengeEditorDialog({ contestId, challenge, onClose, o
     if (!busy.current) onClose();
   };
 
-  // 重置解题记录是破坏性操作，只能在这里显式触发
+  // 重置解题记录是破坏性操作，仅在此处显式触发
   const resetSolves = async () => {
     if (resetting) return;
     setResetting(true);

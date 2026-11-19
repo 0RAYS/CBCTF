@@ -44,14 +44,13 @@ function OAuthCallback() {
       setStatus('success');
       toast.success({ description: t('oauth.callback.toast.success') });
 
-      // 根据权限跳转（与 Login.jsx 保持一致）
+      // 跳转规则与 Login.jsx 保持一致
       const { hasAdminAccess } = store.getState().user;
       navigate(hasAdminAccess ? '/admin/dashboard' : '/games');
     } catch (error) {
       setStatus('error');
       toast.danger({ description: error.message || t('oauth.callback.toast.failed') });
 
-      // 延迟跳转到登录页面
       setTimeout(() => {
         navigate('/login');
       }, 2000);

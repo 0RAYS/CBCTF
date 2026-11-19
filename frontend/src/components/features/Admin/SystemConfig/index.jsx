@@ -5,11 +5,7 @@ import ConfirmModal from '../../../common/ConfirmModal';
 import { useSystemConfig } from './useSystemConfig';
 import { SystemConfigForm } from './SystemConfigForm';
 
-/**
- * SystemConfig - Main container component for system configuration
- * @param {Object} config - Initial config from parent
- * @param {Function} onConfigUpdated - Callback to re-fetch config from server after a successful update
- */
+/** Main container component for system configuration. */
 function SystemConfig({ config, onConfigUpdated }) {
   const { t } = useTranslation();
   const {

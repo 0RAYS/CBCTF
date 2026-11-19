@@ -3,19 +3,7 @@ import { EmptyState, List, Pagination, StatusTag } from '../../../common';
 import { IconEye, IconWebhook } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
-/**
- * Webhook历史记录展示组件
- * @param {Object} props
- * @param {Array} props.webhookHistory - Webhook历史记录列表数据
- * @param {number} props.totalCount - 总数量
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {boolean} props.loading - 是否加载中
- * @param {function} props.onPageChange - 页码改变回调
- * @param {function} props.onViewDetail - 查看详情回调
- * @param {function} props.onHistoryClick - 历史记录点击回调
- * @param {string} props.webhookName - 当前查看的Webhook名称（可选）
- */
+/** Webhook历史记录展示组件 */
 function AdminWebhookHistory({
   webhookHistory = [],
   totalCount = 0,
@@ -28,7 +16,6 @@ function AdminWebhookHistory({
   webhookName,
 }) {
   const { t, i18n } = useTranslation();
-  // 列定义
   const columns = [
     {
       key: 'id',
@@ -67,7 +54,6 @@ function AdminWebhookHistory({
     },
   ];
 
-  // 自定义单元格渲染
   const renderCell = (history, column) => {
     switch (column.key) {
       case 'id':
@@ -160,7 +146,6 @@ function AdminWebhookHistory({
           </div>
         )}
 
-        {/* 数据表格 */}
         <List
           data={webhookHistory}
           columns={columns}
@@ -179,7 +164,6 @@ function AdminWebhookHistory({
           emptyContent={<EmptyState title={t('admin.webhook.historyList.empty')} />}
         />
 
-        {/* 分页 */}
         {totalCount > pageSize && (
           <Pagination
             current={currentPage}

@@ -1,6 +1,5 @@
 import request from '../request';
 
-// 获取SMTP配置列表
 export const getSmtpList = (params = { limit: 20, offset: 0 }) => {
   return request({
     url: '/admin/smtp',
@@ -9,7 +8,6 @@ export const getSmtpList = (params = { limit: 20, offset: 0 }) => {
   });
 };
 
-// 创建SMTP配置
 export const createSmtp = (data) => {
   return request({
     url: '/admin/smtp',
@@ -18,7 +16,6 @@ export const createSmtp = (data) => {
   });
 };
 
-// 更新SMTP配置
 export const updateSmtp = (smtpId, data) => {
   return request({
     url: `/admin/smtp/${smtpId}`,
@@ -27,7 +24,6 @@ export const updateSmtp = (smtpId, data) => {
   });
 };
 
-// 删除SMTP配置
 export const deleteSmtp = (smtpId) => {
   return request({
     url: `/admin/smtp/${smtpId}`,
@@ -35,7 +31,6 @@ export const deleteSmtp = (smtpId) => {
   });
 };
 
-// 发送测试邮件
 export const testSmtp = (smtpId, data) => {
   return request({
     url: `/admin/smtp/${smtpId}/test`,

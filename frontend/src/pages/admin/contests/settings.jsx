@@ -7,7 +7,6 @@ function AdminContestSettings() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 重定向到主编辑页面
     navigate(`/admin/contests/${id}`);
   }, [id, navigate]);
 

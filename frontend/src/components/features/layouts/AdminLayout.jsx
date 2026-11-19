@@ -15,12 +15,10 @@ function AdminLayout() {
 
   const sections = useMemo(() => getAdminNavSections(t, routes), [t, routes]);
 
-  // Handle logo click
   const handleLogoClick = () => {
     navigate('/');
   };
 
-  // Handle picture click
   const handlePictureClick = () => {
     if (user.user) {
       navigate('/admin/settings');

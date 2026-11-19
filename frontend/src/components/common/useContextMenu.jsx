@@ -57,6 +57,7 @@ export default function useContextMenu(data, getActions, disabled = false) {
             press.current = {
               x,
               y,
+              // 触摸端长按 550ms 触发菜单
               timer: setTimeout(() => {
                 suppressClick.current = true;
                 open(element, item, x, y);

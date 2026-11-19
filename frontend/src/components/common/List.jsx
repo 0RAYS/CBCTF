@@ -9,25 +9,7 @@ import TruncatedText from './TruncatedText';
 const INTERACTIVE_SELECTOR =
   'button, a, input, select, textarea, label, [role="button"], [role="checkbox"], [contenteditable="true"], [data-row-interactive]';
 
-/**
- * 通用列表/表格组件
- * @param {Object} props
- * @param {Array} props.columns - 列定义, 格式: [{key: 'id', label: 'ID', width: '10%'}, ...]
- * @param {Array} props.data - 列表数据
- * @param {Function} props.renderCell - 自定义单元格渲染函数 (item, column, rowIndex, colIndex) => ReactNode
- * @param {Function} props.onRowClick - 行点击事件
- * @param {Function} props.getRowActions - (item) => [{ key, label, icon, onClick, disabled, danger, hidden, inline }]
- * @param {Object} props.actionsColumn - Optional { label, width } column for actions marked inline
- * @param {boolean} props.loading - 加载状态
- * @param {boolean} props.empty - 是否为空
- * @param {ReactNode|string} props.emptyContent - 空状态内容
- * @param {ReactNode} props.footer - 底部内容, 通常是分页
- * @param {Function} props.rowClassName - 自定义行类名函数 (item, index) => string
- * @param {'default'|'striped'|'bordered'} props.variant - 表格变体
- * @param {boolean} props.animate - 是否启用行动画
- * @param {string} props.className - 额外的自定义类名
- * @param {number|string} props.minWidth - Table minimum width; narrow screens scroll inside the table region
- */
+/** 通用列表/表格组件；minWidth 是表格最小宽度, 窄屏时表格区域内横向滚动 */
 function List({
   columns = [],
   data = [],
@@ -56,17 +38,14 @@ function List({
       ? columns.reduce((total, column) => total + parseFloat(column.width), 0)
       : 0;
 
-  // 默认的单元格渲染逻辑
   const defaultRenderCell = (item, column) => {
     const value = item[column.key];
     if (value === undefined || value === null) return '-';
     return String(value);
   };
 
-  // 使用传入的自定义渲染函数或默认渲染函数
   const cellRenderer = renderCell || defaultRenderCell;
 
-  // 表格变体样式
   const getRowVariantClass = (rowIndex) => {
     if (variant === 'striped') {
       return rowIndex % 2 === 0 ? 'bg-black/20' : '';
@@ -77,7 +56,6 @@ function List({
     return '';
   };
 
-  // 默认空状态内容
   const resolveEmptyContent = () => {
     if (typeof emptyContent === 'string') {
       return <EmptyState title={emptyContent} />;
@@ -91,10 +69,8 @@ function List({
   return (
     <div className={`min-w-0 ${className}`}>
       {contextMenu.menu}
-      {/* 表格区域 */}
       <div className="overflow-x-auto">
         <table className="w-full table-fixed" style={{ minWidth }}>
-          {/* 表头 */}
           <thead>
             <tr className="bg-black/40">
               {columns.map((column, index) => (
@@ -127,7 +103,6 @@ function List({
             </tr>
           </thead>
 
-          {/* 表格内容 */}
           <tbody>
             {loading ? (
               <tr>
@@ -142,7 +117,6 @@ function List({
                 </td>
               </tr>
             ) : (
-              // 数据行
               data.map((item, rowIndex) => {
                 const RowComponent = animate ? motion.tr : 'tr';
                 const rowMotionProps = animate
@@ -202,7 +176,6 @@ function List({
         </table>
       </div>
 
-      {/* 底部区域 */}
       {footer && <div className="p-4 border-t border-neutral-300/30 bg-black/20">{footer}</div>}
     </div>
   );

@@ -3,21 +3,7 @@ import { Button, List, Pagination, StatusTag } from '../../../common';
 import { IconEdit, IconHistory, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
-/**
- * Webhook配置管理展示组件
- * @param {Object} props
- * @param {Array} props.webhooks - Webhook配置列表数据
- * @param {number} props.totalCount - 总数量
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {boolean} props.loading - 是否加载中
- * @param {function} props.onPageChange - 页码改变回调
- * @param {function} props.onCreateWebhook - 创建Webhook配置回调
- * @param {function} props.onEditWebhook - 编辑Webhook配置回调
- * @param {function} props.onDeleteWebhook - 删除Webhook配置回调
- * @param {function} props.onViewHistory - 查看历史记录回调
- * @param {function} props.onWebhookClick - Webhook配置点击回调
- */
+/** Webhook配置管理展示组件 */
 function AdminWebhook({
   webhooks = [],
   totalCount = 0,
@@ -32,7 +18,6 @@ function AdminWebhook({
   onWebhookClick,
 }) {
   const { t, i18n } = useTranslation();
-  // 列定义
   const columns = [
     { key: 'id', label: t('admin.webhook.list.columns.id'), width: '2%' },
     { key: 'name', label: t('admin.webhook.list.columns.name'), width: '3%' },
@@ -64,7 +49,6 @@ function AdminWebhook({
     },
   ];
 
-  // 自定义单元格渲染
   const renderCell = (webhook, column) => {
     switch (column.key) {
       case 'id':
@@ -184,7 +168,6 @@ function AdminWebhook({
           </Button>
         </div>
 
-        {/* 数据表格 */}
         <List
           data={webhooks}
           columns={columns}
@@ -218,7 +201,6 @@ function AdminWebhook({
           emptyContent={t('admin.webhook.list.empty')}
         />
 
-        {/* 分页 */}
         {totalCount > pageSize && (
           <Pagination
             current={currentPage}

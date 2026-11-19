@@ -1,16 +1,8 @@
-/**
- * 积分榜总览统计组件
- * @param {Object} props
- * @param {number} props.totalTeams - 总队伍数
- * @param {number} props.totalSolves - 总解题数
- * @param {number} props.highestScore - 最高分数
- * @param {number} props.totalPlayers - 总人数
- */
-
 import { motion } from 'motion/react';
 import { Card } from '../../common';
 import { useTranslation } from 'react-i18next';
 
+/** 积分榜总览统计组件 */
 function ScoreboardStats({ totalTeams, totalSolves, highestScore, totalPlayers }) {
   const { t, i18n } = useTranslation();
 

@@ -15,7 +15,6 @@ function PermissionsManager() {
   // 页码与已展示数据的页码不一致时才算加载中
   const loading = loadedPage !== currentPage;
 
-  // Edit modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPermission, setSelectedPermission] = useState(null);
   const [editDescription, setEditDescription] = useState('');

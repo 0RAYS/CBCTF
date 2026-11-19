@@ -4,23 +4,7 @@ import { Button, Chip, Input, List, Pagination } from '../../../../common';
 import { useTranslation } from 'react-i18next';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../../config/challengeChips';
 
-/**
- * 赛事内部赛题管理组件
- * @param {Object} props
- * @param {Array} props.challenges - 赛题列表
- * @param {number} props.totalCount - 赛题总数
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {Array} props.categories - 分类列表
- * @param {string} props.filterCategory - 当前选中分类
- * @param {string} props.filterType - 当前选中类型
- * @param {Function} props.onPageChange - 页码改变回调
- * @param {Function} props.onAddChallenge - 添加赛题回调
- * @param {Function} props.onEditChallenge - 编辑赛题回调
- * @param {Function} props.onDeleteChallenge - 删除赛题回调
- * @param {Function} props.onFilterTypeChange - 过滤类型改变回调
- * @param {Function} props.onFilterCategoryChange - 过滤分类改变回调
- */
+/** 赛事内部赛题管理组件 */
 function AdminContestChallenges({
   challenges = [],
   totalCount = 0,
@@ -40,7 +24,6 @@ function AdminContestChallenges({
   onNameChange,
 }) {
   const { t } = useTranslation();
-  // 自定义标签渲染
   const renderTags = (tags) => {
     if (!tags || tags.length === 0)
       return <span className="text-neutral-500 font-mono text-sm">{t('common.none')}</span>;
@@ -61,7 +44,6 @@ function AdminContestChallenges({
     );
   };
 
-  // 提示信息渲染
   const renderHints = (hints) => {
     if (!hints || hints.length === 0)
       return <span className="text-neutral-500 font-mono text-sm">{t('common.none')}</span>;
@@ -192,7 +174,6 @@ function AdminContestChallenges({
         />
       </div>
 
-      {/* 过滤器 */}
       <div className="mb-6 border-b border-neutral-700">
         <div className="flex flex-wrap gap-4 justify-between items-center">
           <div className="flex items-center">
@@ -268,7 +249,6 @@ function AdminContestChallenges({
         </div>
       </div>
 
-      {/* 赛题列表 */}
       <List
         columns={columns}
         data={challenges}

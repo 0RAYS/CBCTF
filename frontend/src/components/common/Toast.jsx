@@ -93,18 +93,15 @@ const Toast = forwardRef(({ id, title, description, color = 'default', onClose, 
       layout
     >
       <div className="relative z-10 flex items-start space-x-3">
-        {/* 图标 */}
         <div className="flex-shrink-0 mt-0.5">
           <ToastIcon color={color} />
         </div>
 
-        {/* 内容 */}
         <div className="flex-1 min-w-0">
           {title && <h3 className={`font-medium text-sm [overflow-wrap:anywhere] ${config.title}`}>{title}</h3>}
           {description && <div className="mt-1 text-sm leading-relaxed [overflow-wrap:anywhere]">{description}</div>}
         </div>
 
-        {/* 关闭按钮 */}
         {hasCloseButton && (
           <button
             type="button"

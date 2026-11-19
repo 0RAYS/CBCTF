@@ -1,11 +1,7 @@
 /**
- * Admin sidebar navigation definitions.
- *
- * Each item has an optional `apiRoute` ("METHOD /path") that maps to the
- * backend RoutePermissions table.  When a user's accessible-routes list is
- * available the sidebar filters out items the user cannot reach.
- * Items without an `apiRoute` are always shown (e.g. Settings which uses
- * the /me endpoint the user already has access to).
+ * `apiRoute` ("METHOD /path") maps to the backend RoutePermissions table; when
+ * the accessible-routes list is available the sidebar hides unreachable items.
+ * Items without an `apiRoute` are always shown.
  */
 
 export const getAdminNavSections = (t, routes = null) => {

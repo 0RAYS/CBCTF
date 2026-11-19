@@ -1,14 +1,3 @@
-/**
- * 积分榜解题进度组件
- * @param {Object} props
- * @param {Array} props.solved - 各类型解题数据
- * @param {number} props.solved[].all - 该类型总题目数
- * @param {string} props.solved[].category - 题目类型
- * @param {number} props.solved[].solved - 该类型已解题数
- * @param {number} props.totalSolved - 总解题数
- * @param {string} props.totalLabel - 总计标签
- */
-
 import { motion } from 'motion/react';
 import TruncatedText from '../../common/TruncatedText';
 
@@ -20,6 +9,7 @@ const categoryColors = {
   MISC: 'bg-yellow-400',
 };
 
+/** 积分榜解题进度组件 */
 function ChallengeSolves({ solved = [], totalSolved = 0, totalLabel = 'TOTAL' }) {
   if (!Array.isArray(solved) || solved.length === 0) return null;
 

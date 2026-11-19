@@ -1,14 +1,6 @@
 import { Input, Select } from '../../../../common';
 
-/**
- * ConfigField - Generic field component for config forms
- * @param {string} label - Field label
- * @param {*} value - Field value
- * @param {Function} onChange - Change handler
- * @param {string} type - Field type: 'text', 'number', 'password', 'select', 'boolean'
- * @param {Array} options - Options for select type (array of {value, label} or strings)
- * @param {string} placeholder - Input placeholder
- */
+/** Generic field component for config forms. */
 export function ConfigField({
   label,
   value,

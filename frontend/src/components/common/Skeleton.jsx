@@ -1,10 +1,4 @@
-/**
- * Skeleton — loading placeholder with animated pulse.
- * Use to replace content while data is loading — prevents jarring blank-flash.
- *
- * @param {string} className - Tailwind classes for sizing/shape
- * @param {'line'|'rect'|'circle'} variant - Semantic shape shorthand
- */
+/** Skeleton — loading placeholder with animated pulse */
 function Skeleton({ className = '', variant = 'rect' }) {
   const base = 'animate-pulse bg-neutral-700/40 rounded';
 

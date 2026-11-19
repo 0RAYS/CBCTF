@@ -58,7 +58,6 @@ export function ansiToHtml(input) {
 
   const converted =
     text
-      // 将 ESC[...m 序列转换为 span
       .replace(sgrPattern, (match) => {
         const codes = match
           .slice(2) // remove ESC[
@@ -67,7 +66,6 @@ export function ansiToHtml(input) {
           .filter(Boolean)
           .map((n) => parseInt(n, 10));
 
-        // 重置
         if (codes.length === 0 || codes.includes(0)) {
           const closing = closeAll();
           openTags = [];
@@ -90,7 +88,6 @@ export function ansiToHtml(input) {
         openTags.push('span');
         return `<span style="${style}">`;
       })
-      // 移除其余不可见控制符
       .replace(ctrlPattern, '') + closeAll();
 
   // 用白色作为默认前景色, 子 span 的 color 会覆盖

@@ -14,7 +14,6 @@ function MainLayout() {
 
   const mainTabs = useMemo(() => [{ id: 'GAMES', label: t('nav.games') }], [t]);
 
-  // 根据路径设置激活状态
   const isGamesActive = location.pathname === '/games';
 
   const handleTabChange = () => {

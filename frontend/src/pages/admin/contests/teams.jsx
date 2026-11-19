@@ -48,7 +48,6 @@ function ContestTeamsManagement({ id }) {
     []
   );
 
-  // 搜索相关状态
   const searchRef = useRef(null);
   const [nameQuery, setNameQuery] = useState('');
   const [descQuery, setDescQuery] = useState('');
@@ -123,7 +122,6 @@ function ContestTeamsManagement({ id }) {
     }
   };
 
-  // 头像上传
   const fileInputRef = useRef(null);
   const [pictureUploadTeam, setPictureUploadTeam] = useState(null);
 
@@ -170,7 +168,6 @@ function ContestTeamsManagement({ id }) {
     }
   };
 
-  // 处理搜索输入变化
   const handleNameChange = (value) => {
     setNameQuery(value);
     setSearchError(null);

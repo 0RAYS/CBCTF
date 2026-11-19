@@ -1,21 +1,6 @@
 import { useId } from 'react';
 
-/**
- * 通用文本域组件
- * @param {Object} props
- * @param {string} props.value - 文本域值
- * @param {function} props.onChange - 值变化回调
- * @param {function} props.onBlur - 失焦回调
- * @param {string} props.placeholder - 占位文本
- * @param {boolean} props.disabled - 是否禁用
- * @param {string} props.error - 错误信息
- * @param {number} props.rows - 行数
- * @param {'none'|'vertical'|'horizontal'|'both'} props.resize - 调整大小方式
- * @param {boolean} props.fullWidth - 是否占满宽度
- * @param {string} props.className - 额外的自定义类名
- * @param {string} props.label - 关联标签文本
- * @param {string} props.id - 文本域 id（自动生成可省略）
- */
+/** 通用文本域组件 */
 function Textarea({
   value,
   onChange,
@@ -35,7 +20,6 @@ function Textarea({
   const id = externalId || generatedId;
   const errorId = `${id}-error`;
 
-  // 调整大小方式
   const resizeOptions = {
     none: 'resize-none',
     vertical: 'resize-y',
@@ -43,7 +27,6 @@ function Textarea({
     both: 'resize',
   };
 
-  // 基础样式
   const textareaClasses = `
     bg-black/20 border rounded-md px-4 py-2 text-neutral-50 placeholder-neutral-500
     focus:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 transition-all duration-200
@@ -58,14 +41,12 @@ function Textarea({
 
   return (
     <div className={`${fullWidth ? 'w-full' : 'inline-block'}`}>
-      {/* 关联标签 */}
       {label && (
         <label htmlFor={id} className="block text-sm text-neutral-300 mb-1">
           {label}
         </label>
       )}
 
-      {/* 文本域 */}
       <textarea
         id={id}
         value={value}
@@ -80,7 +61,6 @@ function Textarea({
         {...rest}
       />
 
-      {/* 错误信息 */}
       {error && (
         <div id={errorId} role="alert" className="mt-2 text-sm text-red-400">
           {error}

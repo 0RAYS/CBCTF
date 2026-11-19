@@ -28,7 +28,6 @@ function OAuthLogin() {
   }, []);
 
   const handleOAuthLogin = (loginUrl) => {
-    // 跳转到OAuth登录页面
     // eslint-disable-next-line react-hooks/immutability
     window.location.href = loginUrl;
   };
@@ -41,7 +40,6 @@ function OAuthLogin() {
     );
   }
 
-  // 如果没有可用的OAuth提供商, 不显示任何内容
   if (Object.keys(providers).length === 0) {
     return null;
   }
@@ -53,7 +51,6 @@ function OAuthLogin() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.2 }}
     >
-      {/* 分割线 */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-neutral-600"></div>
@@ -63,7 +60,6 @@ function OAuthLogin() {
         </div>
       </div>
 
-      {/* OAuth按钮 */}
       <div className="space-y-2">
         {Object.entries(providers).map(([providerName, provider]) => (
           <motion.button

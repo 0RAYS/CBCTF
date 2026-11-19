@@ -25,10 +25,8 @@ function AdminContestScoreboard(props) {
 }
 
 function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange }) {
-  // 视图状态
   const [viewMode, setViewMode] = useState(externalViewMode === 'table' ? 'table' : 'ranking');
 
-  // 排名视图状态
   const [teams, setTeams] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,7 +39,6 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
     totalPlayers: 0,
   });
 
-  // 表格视图状态
   const [tableTeams, setTableTeams] = useState([]);
   const [challenges, setChallenges] = useState([]);
   const [tableCurrentPage, setTableCurrentPage] = useState(1);
@@ -49,7 +46,6 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
   const [tableLoading, setTableLoading] = useState(false);
   const tablePageSize = 20;
 
-  // 时间线相关状态
   const [timelineData, setTimelineData] = useState(null);
   const [timelineLoading, setTimelineLoading] = useState(true);
   const [timelineError, setTimelineError] = useState(false);
@@ -58,12 +54,10 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
 
   const { openTeamDetail, renderTeamDetailDialog } = useTeamDetailDialog(parseInt(id));
 
-  // 处理视图模式变化
   const handleViewModeChange = (mode) => {
     const newMode = mode;
     setViewMode(newMode);
 
-    // 通知外部组件
     if (externalOnViewModeChange) {
       externalOnViewModeChange(newMode);
     }
@@ -87,13 +81,6 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
     };
   };
 
-  const rankTransform = (page, rankData) => {
-    return rankData.teams.map((v, index) => {
-      return teamTransform(page, v, index);
-    });
-  };
-
-  // 获取时间线数据
   const fetchTimelineData = async (isCurrent) => {
     setTimelineLoading(true);
     setTimelineError(false);
@@ -120,7 +107,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
         offset: (currentPage - 1) * pageSize,
       });
       if (isCurrent() && response.code === 200) {
-        setTeams(rankTransform(currentPage, response.data));
+        setTeams(response.data.teams.map((team, index) => teamTransform(currentPage, team, index)));
         setTotalCount(response.data.count);
       }
     } catch (error) {
@@ -200,7 +187,6 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
     };
   }, [id, timelineVersion]);
 
-  // 同步外部视图模式
   useEffect(() => {
     if (['ranking', 'table'].includes(externalViewMode) && externalViewMode !== viewMode) {
       setViewMode(externalViewMode);
@@ -223,11 +209,9 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
 
   return (
     <div className="w-full min-w-0 mx-auto space-y-4">
-      {/* 头部和视图切换 */}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-xl font-mono text-neutral-50">{t('nav.scoreboard')}</h1>
         <div className="flex flex-wrap items-center gap-3">
-          {/* 视图切换按钮 */}
           <div
             role="group"
             aria-label={t('nav.scoreboard')}
@@ -255,14 +239,12 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
             />
           </div>
 
-          {/* 导出按钮 */}
           <Button variant="outline" size="sm" onClick={handleExportScoreboard}>
             {t('admin.contests.scoreboard.export')}
           </Button>
         </div>
       </div>
 
-      {/* 视图内容 */}
       <ScoreboardStats {...stats} />
       <ScoreboardTimeline
         timelineData={timelineData || []}

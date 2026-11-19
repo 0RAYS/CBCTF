@@ -59,24 +59,19 @@ export function parseDateTimeString(str) {
   return null;
 }
 
-function getDaysInMonth(year, month) {
-  return new Date(year, month + 1, 0).getDate();
-}
-
 export function getCalendarGrid(year, month) {
   const firstDay = new Date(year, month, 1);
   // getDay() returns 0=Sun..6=Sat, convert to Mon=0..Sun=6
   let startDow = firstDay.getDay() - 1;
   if (startDow < 0) startDow = 6;
 
-  const daysInMonth = getDaysInMonth(year, month);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const prevMonth = month === 0 ? 11 : month - 1;
   const prevYear = month === 0 ? year - 1 : year;
-  const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
+  const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
 
   const grid = [];
 
-  // Previous month days
   for (let i = startDow - 1; i >= 0; i--) {
     grid.push({
       day: daysInPrevMonth - i,
@@ -86,7 +81,6 @@ export function getCalendarGrid(year, month) {
     });
   }
 
-  // Current month days
   for (let d = 1; d <= daysInMonth; d++) {
     grid.push({ day: d, month, year, isCurrentMonth: true });
   }
@@ -110,12 +104,4 @@ export function isSameDay(d1, d2) {
 export function isToday(cell) {
   const now = new Date();
   return cell.year === now.getFullYear() && cell.month === now.getMonth() && cell.day === now.getDate();
-}
-
-export function generateHourOptions() {
-  return Array.from({ length: 24 }, (_, i) => i);
-}
-
-export function generateMinuteOptions() {
-  return Array.from({ length: 60 }, (_, i) => i);
 }

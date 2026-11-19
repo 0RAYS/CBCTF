@@ -3,20 +3,7 @@ import { Button, List, Pagination, StatusTag } from '../../../common';
 import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
-/**
- * OAuth Provider管理展示组件
- * @param {Object} props
- * @param {Array} props.providers - OAuth Provider列表数据
- * @param {number} props.totalCount - 总数量
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {boolean} props.loading - 是否加载中
- * @param {function} props.onPageChange - 页码改变回调
- * @param {function} props.onCreateProvider - 创建Provider回调
- * @param {function} props.onEditProvider - 编辑Provider回调
- * @param {function} props.onDeleteProvider - 删除Provider回调
- * @param {function} props.onProviderClick - Provider点击回调
- */
+/** OAuth Provider管理展示组件 */
 function AdminOAuthProviders({
   providers = [],
   totalCount = 0,
@@ -32,7 +19,6 @@ function AdminOAuthProviders({
 }) {
   const { t } = useTranslation();
 
-  // 列定义
   const columns = [
     {
       key: 'picture',
@@ -62,7 +48,6 @@ function AdminOAuthProviders({
     },
   ];
 
-  // 自定义单元格渲染
   const renderCell = (provider, column) => {
     switch (column.key) {
       case 'picture':
@@ -150,7 +135,6 @@ function AdminOAuthProviders({
           </Button>
         </div>
 
-        {/* 数据表格 */}
         <List
           data={providers}
           columns={columns}
@@ -175,7 +159,6 @@ function AdminOAuthProviders({
           emptyContent={t('admin.oauthProviders.empty')}
         />
 
-        {/* 分页 */}
         {totalCount > pageSize && (
           <Pagination
             current={currentPage}

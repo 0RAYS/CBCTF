@@ -2,23 +2,7 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import Spinner from './Spinner';
 
-/**
- * 通用按钮组件
- * @param {Object} props
- * @param {React.ReactNode} props.children - 按钮内容
- * @param {React.ReactNode} props.icon - 按钮图标, 显示在文字左侧
- * @param {function} props.onClick - 点击事件回调
- * @param {string} props.variant - 按钮风格: 'default', 'primary', 'danger', 'outline', 'ghost'
- * @param {string} props.size - 按钮大小: 'sm', 'md', 'lg', 'action', 'icon'
- * @param {string} props.align - 内容对齐方式: 'center', 'left', 'right', 'icon-left'
- * @param {string} props.textColor - 文字颜色, 覆盖variant默认文字颜色
- * @param {boolean} props.fullWidth - 是否占满宽度
- * @param {boolean} props.disabled - 是否禁用
- * @param {boolean} props.loading - 是否加载中
- * @param {string} props.type - 按钮类型: 'button', 'submit', 'reset'
- * @param {string} props.className - 额外的自定义类名
- * @param {boolean} props.animate - 是否启用动画效果
- */
+/** 通用按钮组件 */
 function Button({
   children,
   icon,
@@ -37,7 +21,6 @@ function Button({
 }) {
   const { t } = useTranslation();
 
-  // 按钮风格变体
   const variants = {
     default: 'bg-neutral-800/40 border-neutral-600/50 text-neutral-400 hover:border-neutral-400 hover:text-neutral-300',
     primary: 'border-geek-400 text-geek-400 hover:bg-geek-400/10 hover:border-geek-400/80',
@@ -47,7 +30,6 @@ function Button({
     ghost: 'border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-white/5',
   };
 
-  // 按钮尺寸
   const sizes = {
     sm: 'h-[40px] text-sm',
     md: 'h-[42px] text-sm',
@@ -56,7 +38,6 @@ function Button({
     icon: 'w-[40px] h-[40px] p-0', // min 40px — dense admin UI compromise
   };
 
-  // 内容对齐方式
   const alignments = {
     center: 'justify-center',
     left: 'justify-start',
@@ -64,14 +45,12 @@ function Button({
     'icon-left': 'justify-start',
   };
 
-  // 内边距设置
   const getPadding = () => {
     if (size === 'icon') return '';
     if (align === 'icon-left') return 'px-4';
     return 'px-6';
   };
 
-  // 基础样式（含 focus-visible ring）
   const buttonClasses = `
     relative border rounded-md font-mono transition-colors
     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 focus-visible:ring-offset-1 focus-visible:ring-offset-black
@@ -84,7 +63,6 @@ function Button({
     ${className}
   `;
 
-  // 动画属性: 使用 opacity 过渡
   const motionProps =
     animate && !disabled && !loading
       ? {
@@ -94,10 +72,8 @@ function Button({
         }
       : {};
 
-  // 渲染按钮
   const ButtonComponent = animate ? motion.button : 'button';
 
-  // 渲染内容
   const renderContent = () => {
     if (loading) {
       return (
@@ -134,7 +110,6 @@ function Button({
       {...motionProps}
       {...rest}
     >
-      {/* 按钮内容 */}
       <span className="relative z-10 w-full">{renderContent()}</span>
     </ButtonComponent>
   );

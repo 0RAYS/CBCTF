@@ -30,7 +30,6 @@ const LANG_ATTR_MAP = {
   en: 'en',
 };
 
-// 初始化时立即设置正确的 lang 属性
 if (typeof window !== 'undefined') {
   const initialLang = getInitialLanguage();
   document.documentElement.lang = LANG_ATTR_MAP[initialLang] || initialLang;

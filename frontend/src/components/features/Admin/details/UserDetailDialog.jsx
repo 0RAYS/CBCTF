@@ -9,7 +9,6 @@ function AdminUserDetailDialog({ isOpen, onClose, user }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('admin.users.detail.title')} size="md">
       <div className="space-y-6">
-        {/* User header */}
         <div className="flex items-start gap-4">
           <Avatar
             src={user.picture}
@@ -31,7 +30,6 @@ function AdminUserDetailDialog({ isOpen, onClose, user }) {
           </div>
         </div>
 
-        {/* Info grid */}
         <div className="grid grid-cols-2 gap-4">
           <Card variant="default" padding="md">
             <div className="text-xs font-mono text-neutral-400 mb-1">{t('admin.users.detail.info.id')}</div>

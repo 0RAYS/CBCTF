@@ -12,7 +12,6 @@ const openDialogs = [];
 let savedBodyOverflow;
 let dialogOrder = 0;
 
-// 可聚焦元素选择器
 const FOCUSABLE_SELECTORS = [
   'a[href]',
   'button:not([disabled])',
@@ -22,17 +21,7 @@ const FOCUSABLE_SELECTORS = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(', ');
 
-/**
- * 统一模态框组件
- * @param {Object} props
- * @param {boolean} props.isOpen - 是否显示模态框
- * @param {function} props.onClose - 关闭模态框的回调函数
- * @param {string} props.title - 模态框标题
- * @param {React.ReactNode} props.children - 模态框内容
- * @param {React.ReactNode} props.footer - 模态框底部内容（default模式使用）
- * @param {'sm'|'md'|'lg'|'xl'|'2xl'} props.size - 模态框大小
- * @param {string} props.className - 额外的自定义类名
- */
+/** 统一模态框组件 */
 function Modal({
   isOpen,
   onClose,
@@ -110,7 +99,6 @@ function Modal({
     };
   }, [isOpen, portalContainer]);
 
-  // 根据size确定宽度
   const sizeClasses = {
     sm: 'max-w-[400px]',
     md: 'max-w-[600px]',
@@ -127,15 +115,12 @@ function Modal({
     : `flex max-h-[calc(100dvh-2rem)] flex-col border border-neutral-600/70 rounded-lg bg-neutral-900/95 shadow-2xl backdrop-blur-[8px] overflow-hidden ${className}`;
   const dialogBodyClassName = `min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain ${bodyClassName || 'p-4 sm:p-6'}`;
 
-  // Portal容器未就绪时不渲染
   if (!portalContainer) return null;
 
-  // Default模式: 完整的模态框
   return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center">
-          {/* 背景遮罩 */}
           <motion.div
             className="absolute inset-0 bg-neutral-900/70 backdrop-blur-sm"
             variants={backdropVariants}
@@ -145,7 +130,6 @@ function Modal({
             onClick={onClose}
           />
 
-          {/* 模态框主体 */}
           <motion.div
             ref={dialogRef}
             role="dialog"
@@ -177,7 +161,6 @@ function Modal({
                   </Button>
                 </div>
               ) : null}
-              {/* 头部 */}
               {showHeader ? (
                 <div className="shrink-0 p-4 sm:p-6 border-b border-neutral-600/50">
                   <div className="flex items-start justify-between gap-3">
@@ -202,10 +185,8 @@ function Modal({
                 </div>
               ) : null}
 
-              {/* 内容区域 */}
               <div className={dialogBodyClassName}>{children}</div>
 
-              {/* 底部 */}
               {footer && (
                 <div className="shrink-0 p-4 sm:p-6 border-t border-neutral-600/50 bg-neutral-800/40">
                   <div className="flex flex-wrap justify-end gap-3">{footer}</div>

@@ -1,8 +1,8 @@
 /**
- * Motion tokens for CBCTF
+ * Motion tokens
  *
- * T2: Component transitions        — quint-out, purposeful, ~220-280ms
- * T3: Micro-interactions           — quart-out, instant, ~100-150ms
+ * T2: Component transitions — quint-out, purposeful, ~220-280ms
+ * T3: Micro-interactions — quart-out, instant, ~100-150ms
  */
 
 /** quint-out: smooth, refined — use for modals, drawers, dropdowns, accordions */

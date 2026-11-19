@@ -1,8 +1,4 @@
-/**
- * Builds the system settings payload from nested draft to flat backend fields
- * @param {Object} config - Nested configuration object
- * @returns {Object} - Flat configuration payload
- */
+/** Builds the flat backend settings payload from the nested draft. */
 export function buildPayload(config) {
   return {
     host: config.host,

@@ -1,6 +1,5 @@
 import request from '../request';
 
-// 获取Webhook配置列表
 export const getWebhookList = (params = { limit: 20, offset: 0 }) => {
   return request({
     url: '/admin/webhook',
@@ -9,7 +8,6 @@ export const getWebhookList = (params = { limit: 20, offset: 0 }) => {
   });
 };
 
-// 创建Webhook配置
 export const createWebhook = (data) => {
   return request({
     url: '/admin/webhook',
@@ -18,7 +16,6 @@ export const createWebhook = (data) => {
   });
 };
 
-// 更新Webhook配置
 export const updateWebhook = (webhookId, data) => {
   return request({
     url: `/admin/webhook/${webhookId}`,
@@ -27,7 +24,6 @@ export const updateWebhook = (webhookId, data) => {
   });
 };
 
-// 删除Webhook配置
 export const deleteWebhook = (webhookId) => {
   return request({
     url: `/admin/webhook/${webhookId}`,
@@ -35,7 +31,6 @@ export const deleteWebhook = (webhookId) => {
   });
 };
 
-// 获取Webhook历史记录
 export const getAllWebhookHistory = (params = { limit: 20, offset: 0 }) => {
   return request({
     url: `/admin/webhook/history`,
@@ -44,7 +39,6 @@ export const getAllWebhookHistory = (params = { limit: 20, offset: 0 }) => {
   });
 };
 
-// 获取Webhook历史记录
 export const getWebhookHistory = (webhookID, params = { limit: 20, offset: 0 }) => {
   return request({
     url: `/admin/webhook/${webhookID}/history`,
@@ -53,7 +47,6 @@ export const getWebhookHistory = (webhookID, params = { limit: 20, offset: 0 }) 
   });
 };
 
-// 获取可用的事件列表
 export const getEvents = () => {
   return request({
     url: '/admin/webhook/events',

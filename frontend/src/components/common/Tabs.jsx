@@ -1,14 +1,4 @@
-/**
- * Tabs - simple tab navigation bar.
- * @param {Object} props
- * @param {Array<{key: string, label: import('react').ReactNode, disabled?: boolean}>} props.items
- * @param {string} props.value
- * @param {(key: string) => void} props.onChange
- * @param {'default'|'compact'} [props.variant='default']
- * @param {string} [props.wrapperClassName]
- * @param {string} [props.containerClassName]
- * @param {string} [props.buttonClassName]
- */
+/** Tabs - simple tab navigation bar. */
 function Tabs({
   items = [],
   value,

@@ -1,10 +1,7 @@
 import { Component } from 'react';
 import { withTranslation } from 'react-i18next';
 
-/**
- * React 错误边界组件
- * 捕获子组件渲染时抛出的未处理错误, 显示降级 UI
- */
+/** React 错误边界组件: 捕获子组件渲染时抛出的未处理错误, 显示降级 UI */
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);

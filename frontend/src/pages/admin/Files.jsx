@@ -27,7 +27,6 @@ function FilesManagement() {
         type: fileType,
       });
       if (response.code === 200) {
-        // 处理文件数据
         const processedFiles = response.data.files.map((file) => ({
           id: file.id,
           url: getFileUrl(file.id, file.type),
@@ -54,19 +53,16 @@ function FilesManagement() {
     fetchFiles();
   }, [currentPage, fileType]);
 
-  // 处理删除单个文件
   const handleDelete = (file) => {
     setSelectedFiles([file.id]);
     setIsModalOpen(true);
   };
 
-  // 处理批量删除
   const handleBatchDelete = (selectedIds) => {
     setSelectedFiles(selectedIds);
     setIsModalOpen(true);
   };
 
-  // 处理下载文件
   const handleDownload = async (file) => {
     try {
       const response = await downloadFile(file.id);
@@ -78,7 +74,6 @@ function FilesManagement() {
     }
   };
 
-  // 确认删除
   const handleConfirmDelete = async () => {
     try {
       const response = await batchDeleteFiles({

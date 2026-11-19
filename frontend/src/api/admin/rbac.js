@@ -1,7 +1,5 @@
 import request from '../request';
 
-// ========== Permissions ==========
-
 export const getPermissionList = (params = { limit: 50, offset: 0 }) => {
   return request({
     url: '/admin/permissions',
@@ -17,8 +15,6 @@ export const updatePermission = (permissionId, data) => {
     data,
   });
 };
-
-// ========== Roles ==========
 
 export const getRoleList = (params = { limit: 20, offset: 0 }) => {
   return request({
@@ -73,8 +69,6 @@ export const getRolePermissions = (roleId) => {
     method: 'GET',
   });
 };
-
-// ========== Groups ==========
 
 export const getGroupList = (params = { limit: 20, offset: 0 }) => {
   return request({

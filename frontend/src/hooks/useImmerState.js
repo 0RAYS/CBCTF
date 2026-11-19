@@ -1,15 +1,7 @@
 import { useCallback, useState } from 'react';
 import { produce } from 'immer';
 
-/**
- * useState-like hook that uses immer for immutable updates
- * @param {*} initialState - Initial state value
- * @returns {Array} - [state, updateState] tuple
- *
- * @example
- * const [state, updateState] = useImmerState({ count: 0 });
- * updateState(draft => { draft.count += 1; });
- */
+/** useState-like hook that applies immer draft updates. */
 export function useImmerState(initialState) {
   const [state, setState] = useState(initialState);
 

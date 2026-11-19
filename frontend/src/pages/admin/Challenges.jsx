@@ -49,7 +49,6 @@ function ChallengesManagement() {
   const pageSize = 20;
   const { t } = useTranslation();
 
-  // 处理 flags 字段的辅助函数
   const processFlags = (challenge) => {
     let flags;
     if (challenge.flags && Array.isArray(challenge.flags)) {
@@ -63,7 +62,6 @@ function ChallengesManagement() {
     };
   };
 
-  // 使用防抖搜索
   const [nameQuery, setNameQuery] = useState('');
   const [descQuery, setDescQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -76,7 +74,6 @@ function ChallengesManagement() {
   const searchSignature = `${debouncedName}|${debouncedDesc}|${selectedType}|${selectedCategory}`;
   const searchLoading = searchSignature !== resolvedSearchSignature;
 
-  // 搜索结果和模式
   const isSearchMode = !!(nameQuery.trim() || descQuery.trim());
 
   useEffect(() => {
@@ -126,7 +123,6 @@ function ChallengesManagement() {
       toast.danger({
         description: error.message || t('admin.challenge.toast.fetchCategoriesFailed'),
       });
-      // 出现异常时仍然设置默认分类
       setCategories(DEFAULT_CHALLENGE_CATEGORIES);
     }
   };
@@ -290,13 +286,10 @@ function ChallengesManagement() {
   };
 
   const handleChallengeChange = (updatedChallenge) => {
-    // 如果题目类型发生变化, 需要相应调整flags
     if (updatedChallenge.type !== editChallenge.type) {
       if (updatedChallenge.type === 'pods') {
-        // 切换到pods类型时清空flags
         updatedChallenge.flags = [];
       } else if (editChallenge.type === 'pods') {
-        // 从pods类型切换到其他类型时, 确保有默认flags
         updatedChallenge.flags = [{ id: 0, value: '' }];
       }
     }
@@ -305,7 +298,6 @@ function ChallengesManagement() {
   };
 
   const handleAddFlag = () => {
-    // pods类型不需要flags
     if (editChallenge.type === 'pods') return;
 
     setEditChallenge({
@@ -315,7 +307,6 @@ function ChallengesManagement() {
   };
 
   const handleRemoveFlag = (index) => {
-    // pods类型不需要flags
     if (editChallenge.type === 'pods') return;
 
     const newFlags = [...(editChallenge.flags || [])];
@@ -327,7 +318,6 @@ function ChallengesManagement() {
   };
 
   const handleFlagChange = (index, value) => {
-    // pods类型不需要flags
     if (editChallenge.type === 'pods') return;
 
     const newFlags = [...(editChallenge.flags || [])];
@@ -354,7 +344,6 @@ function ChallengesManagement() {
       let response;
 
       if (mode === 'delete') {
-        // 删除操作直接调用删除API
         response = await deleteChallenge(selectedChallenge.id);
       } else {
         const apiChallenge = buildChallengePayload(challenge, mode, initDockerCompose);
@@ -388,7 +377,6 @@ function ChallengesManagement() {
     }
   };
 
-  // 确定要显示的题目数据
   const displayChallenges = isSearchMode ? searchResults : challenges;
   const displayTotalCount = isSearchMode ? searchResults.length : totalCount;
 

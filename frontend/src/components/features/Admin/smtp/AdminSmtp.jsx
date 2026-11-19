@@ -3,21 +3,7 @@ import { Button, List, Pagination, StatusTag } from '../../../common';
 import { IconEdit, IconHistory, IconPlus, IconSend, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
-/**
- * SMTP配置管理展示组件
- * @param {Object} props
- * @param {Array} props.smtpConfigs - SMTP配置列表数据
- * @param {number} props.totalCount - 总数量
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {boolean} props.loading - 是否加载中
- * @param {function} props.onPageChange - 页码改变回调
- * @param {function} props.onCreateSmtp - 创建SMTP配置回调
- * @param {function} props.onEditSmtp - 编辑SMTP配置回调
- * @param {function} props.onDeleteSmtp - 删除SMTP配置回调
- * @param {function} props.onSmtpClick - SMTP配置点击回调
- * @param {function} props.onTestSmtp - 发送测试邮件回调
- */
+/** SMTP配置管理展示组件 */
 function AdminSmtp({
   smtpConfigs = [],
   totalCount = 0,
@@ -33,7 +19,6 @@ function AdminSmtp({
   onTestSmtp,
 }) {
   const { t, i18n } = useTranslation();
-  // 列定义
   const columns = [
     { key: 'id', label: t('admin.smtp.columns.id'), width: '2%' },
     { key: 'address', label: t('admin.smtp.columns.address'), width: '8%' },
@@ -44,7 +29,6 @@ function AdminSmtp({
     { key: 'failure', label: t('admin.smtp.columns.failure'), width: '5%' },
   ];
 
-  // 自定义单元格渲染
   const renderCell = (smtp, column) => {
     switch (column.key) {
       case 'id':
@@ -128,7 +112,6 @@ function AdminSmtp({
           </Button>
         </div>
 
-        {/* 数据表格 */}
         <List
           minWidth={1000}
           data={smtpConfigs}
@@ -170,7 +153,6 @@ function AdminSmtp({
           emptyContent={t('admin.smtp.empty')}
         />
 
-        {/* 分页 */}
         {totalCount > pageSize && (
           <Pagination
             current={currentPage}

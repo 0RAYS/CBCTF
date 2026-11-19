@@ -41,7 +41,6 @@ function VerifyEmail() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
       >
-        {/* 标题 */}
         <div className="relative flex justify-center mb-8">
           <div className="absolute -top-[3px] -right-[3px] w-[10px] h-[10px] border-t border-r border-neutral-300" />
           <div className="absolute -bottom-[3px] -left-[3px] w-[10px] h-[10px] border-b border-l border-neutral-300" />
@@ -49,7 +48,6 @@ function VerifyEmail() {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* token 无效 */}
           {tokenInvalid && (
             <motion.div
               key="invalid"
@@ -67,7 +65,6 @@ function VerifyEmail() {
             </motion.div>
           )}
 
-          {/* 激活成功 */}
           {!tokenInvalid && succeeded && (
             <motion.div
               key="success"
@@ -85,7 +82,6 @@ function VerifyEmail() {
             </motion.div>
           )}
 
-          {/* 确认激活 */}
           {!tokenInvalid && !succeeded && (
             <motion.div
               key="confirm"
@@ -94,7 +90,6 @@ function VerifyEmail() {
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              {/* 账号确认区域 */}
               <div className="rounded-md border border-neutral-600/60 bg-neutral-900/50 px-5 py-4 space-y-2">
                 <p className="text-neutral-400 text-xs font-mono uppercase tracking-widest">
                   {t('auth.verifyEmail.title')}

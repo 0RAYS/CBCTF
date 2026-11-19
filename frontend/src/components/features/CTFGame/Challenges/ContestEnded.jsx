@@ -9,7 +9,6 @@ function ContestEnded({ contestInfo, onViewScoreboard, onUploadWriteup, onViewCh
   return (
     <div className="w-full space-y-6">
       <Card variant="default" padding="lg" animate>
-        {/* 标题和图标 */}
         <div className="text-center space-y-4 mb-8">
           <motion.div
             className="w-16 h-16 mx-auto border-2 border-yellow-400 rounded-full
@@ -26,9 +25,7 @@ function ContestEnded({ contestInfo, onViewScoreboard, onUploadWriteup, onViewCh
           </h2>
         </div>
 
-        {/* 比赛信息 */}
         <div className="space-y-6">
-          {/* 比赛统计 */}
           <div className="grid grid-cols-3 gap-4">
             <motion.div
               className="p-4 border border-neutral-300/30 rounded-md text-center"
@@ -59,7 +56,6 @@ function ContestEnded({ contestInfo, onViewScoreboard, onUploadWriteup, onViewCh
             </motion.div>
           </div>
 
-          {/* 团队成绩 */}
           <motion.div
             className="p-6 border border-geek-400 rounded-md bg-geek-400/5"
             initial={{ opacity: 0 }}
@@ -84,7 +80,6 @@ function ContestEnded({ contestInfo, onViewScoreboard, onUploadWriteup, onViewCh
             </div>
           </motion.div>
 
-          {/* 操作按钮 */}
           <motion.div
             className="flex justify-center gap-4 pt-4"
             initial={{ opacity: 0 }}
@@ -101,7 +96,6 @@ function ContestEnded({ contestInfo, onViewScoreboard, onUploadWriteup, onViewCh
         </div>
       </Card>
 
-      {/* 题解上传区域 */}
       <WriteupUpload onUploadWriteup={onUploadWriteup} writeups={writeups} />
     </div>
   );

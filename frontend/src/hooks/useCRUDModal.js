@@ -1,20 +1,7 @@
 import { useCallback, useState } from 'react';
 import { toast } from '../utils/toast';
 
-/**
- * Hook for managing CRUD modal state and operations.
- *
- * @param {Object} options
- * @param {Object} options.defaultForm - Default form values for create mode
- * @param {Function} options.createApi - API function for create (receives form data)
- * @param {Function} options.updateApi - API function for update (receives id, form data)
- * @param {Function} options.deleteApi - API function for delete (receives id)
- * @param {Function} options.onSuccess - Callback after successful operation (e.g., refetch data)
- * @param {Function} [options.beforeCreate] - Transform form data before create API call
- * @param {Function} [options.beforeUpdate] - Transform form data before update API call
- * @param {Function} [options.itemToForm] - Convert item to edit form values
- * @param {Object} [options.messages] - Toast messages { createSuccess, createFailed, updateSuccess, updateFailed, deleteSuccess, deleteFailed }
- */
+/** Manages CRUD modal state and the create/edit/delete request flow. */
 export function useCRUDModal({
   defaultForm = {},
   createApi,

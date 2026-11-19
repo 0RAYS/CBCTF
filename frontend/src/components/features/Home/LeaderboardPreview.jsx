@@ -36,7 +36,6 @@ function LeaderboardPreview({ topUsers, isLoading }) {
           <p className="text-neutral-400 text-sm mt-2">{home.leaderboard.subtitle}</p>
         </motion.div>
 
-        {/* Leaderboard rows — header row for structure */}
         <motion.div
           className="min-w-0 border border-neutral-600/60 rounded-md overflow-x-auto"
           initial={{ opacity: 0, y: 16 }}
@@ -44,7 +43,6 @@ function LeaderboardPreview({ topUsers, isLoading }) {
           viewport={{ once: true }}
           transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.4 }}
         >
-          {/* Column header */}
           <div className={`${ROW_LAYOUT} py-2 border-b border-neutral-700/60 bg-neutral-800/40`}>
             <TruncatedText className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
               {t('common.scoreboard.headers.rank')}

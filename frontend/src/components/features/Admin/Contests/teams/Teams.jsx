@@ -1,35 +1,4 @@
-/**
- * 团队管理组件
- * @param {Object} props
- * @param {Array} props.teams - 团队列表
- * @param {number} props.totalCount - 团队总数
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {Array} props.teamMembers - 当前选中团队的成员列表
- * @param {Object} props.editForm - 编辑表单数据
- * @param {string} props.selectedUserId - 选中的用户ID（编辑弹窗中队长选择）
- * @param {string} props.kickUserId - 踢出操作选中的用户ID
- * @param {boolean} props.showModal - 是否显示模态框
- * @param {string} props.modalMode - 模态框模式
- * @param {Object} props.selectedTeam - 选中的团队
- * @param {Function} props.onPageChange - 页码改变回调
- * @param {Function} props.onEditTeam - 编辑团队回调
- * @param {Function} props.onDeleteTeam - 删除团队回调
- * @param {Function} props.onModalClose - 关闭模态框回调
- * @param {Function} props.onModalSubmit - 模态框提交回调
- * @param {Function} props.onFormChange - 表单改变回调
- * @param {Function} props.onUserSelect - 用户选择回调（队长）
- * @param {Function} props.onKickUserSelect - 踢出用户选择回调
- * @param {Function} props.onKickSubmit - 踢出成员提交回调
- * @param {string} props.searchQuery - 搜索查询
- * @param {Array} props.searchResults - 搜索结果
- * @param {boolean} props.searchLoading - 搜索加载状态
- * @param {Function} props.onSearchChange - 搜索输入变化回调
- * @param {Function} props.onSearchResultSelect - 搜索结果选择回调
- * @param {Function} props.onResetSearch - 重置搜索回调
- * @param {Object} props.searchRef - 搜索框ref
- * @param {boolean} props.isSearchMode - 是否处于搜索模式
- */
+/** 团队管理组件 */
 
 import { IconEdit, IconEye, IconSearch, IconTrash, IconUserMinus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
@@ -191,7 +160,6 @@ function AdminTeams({
       );
     }
 
-    // edit 模式：合并编辑表单 + 移除成员区块
     return (
       <div className="space-y-4 [&>div>label]:font-mono [&>div>label]:mb-2">
         <Input
@@ -239,7 +207,6 @@ function AdminTeams({
           />
         </div>
 
-        {/* 移除成员区块 */}
         <div className="border-t border-neutral-700 pt-4">
           <p className="text-sm font-mono text-neutral-400 mb-3">
             {t('admin.contests.teams.modal.kickPrompt', {
@@ -294,7 +261,6 @@ function AdminTeams({
     <div className="w-full mx-auto">
       <div className="mb-8" />
 
-      {/* 搜索框 */}
       <div className="mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div ref={searchRef} className="[&_label]:font-mono [&_label]:text-neutral-400 [&_label]:mb-2">
@@ -354,7 +320,6 @@ function AdminTeams({
         onRowClick={onViewDetail || onEditTeam}
       />
 
-      {/* 分页 - 只在非搜索模式下显示 */}
       {!isSearchMode && totalCount > pageSize && (
         <div className="mt-6">
           <Pagination
@@ -367,7 +332,6 @@ function AdminTeams({
         </div>
       )}
 
-      {/* 模态框 */}
       <Modal
         isOpen={showModal}
         onClose={onModalClose}

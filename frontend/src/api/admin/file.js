@@ -1,6 +1,5 @@
 import request from '../request';
 
-// 获取文件列表
 export function getFileList({ limit = 12, offset = 0, type }) {
   return request({
     url: '/admin/files',
@@ -13,7 +12,6 @@ export function getFileList({ limit = 12, offset = 0, type }) {
   });
 }
 
-// 批量删除文件
 export function batchDeleteFiles({ file_ids = [] }) {
   return request({
     url: '/admin/files',
@@ -24,7 +22,6 @@ export function batchDeleteFiles({ file_ids = [] }) {
   });
 }
 
-// 获取文件URL
 export function getFileUrl(fileId, type = 'file') {
   const baseUrl = request.defaults.baseURL;
   switch (type) {

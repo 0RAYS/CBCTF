@@ -7,7 +7,6 @@ export const getCaptcha = () => {
   });
 };
 
-// 用户登录
 export const login = (data) => {
   return request({
     url: '/login',
@@ -21,7 +20,6 @@ export const login = (data) => {
   });
 };
 
-// 用户注册
 export const register = (data) => {
   return request({
     url: '/register',
@@ -36,7 +34,6 @@ export const register = (data) => {
   });
 };
 
-// 验证邮箱（由前端携带一次性 token 发起 POST）
 export const verifyEmail = (data) => {
   return request({
     url: '/verify',
@@ -47,7 +44,6 @@ export const verifyEmail = (data) => {
   });
 };
 
-// 发送密码重置邮件
 export const forgotPassword = (data) => {
   return request({
     url: '/password/forgot',
@@ -60,7 +56,6 @@ export const forgotPassword = (data) => {
   });
 };
 
-// 重置密码（使用邮件链接中的 token）
 export const resetPassword = (data) => {
   return request({
     url: '/password/reset',

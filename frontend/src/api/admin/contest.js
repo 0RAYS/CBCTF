@@ -1,6 +1,5 @@
 import request from '../request';
 
-// 获取比赛列表
 export function getContestList({ limit = 6, offset = 0 }) {
   return request({
     url: '/admin/contests',
@@ -12,7 +11,6 @@ export function getContestList({ limit = 6, offset = 0 }) {
   });
 }
 
-// 创建比赛
 export function createContest(data) {
   return request({
     url: '/admin/contests',
@@ -21,7 +19,6 @@ export function createContest(data) {
   });
 }
 
-// 删除比赛
 export function deleteContest(contestId) {
   return request({
     url: `/admin/contests/${contestId}`,
@@ -29,7 +26,6 @@ export function deleteContest(contestId) {
   });
 }
 
-// 上传比赛封面
 export function updateContestPicture(contestId, file) {
   const formData = new FormData();
   formData.append('picture', file);
@@ -43,7 +39,6 @@ export function updateContestPicture(contestId, file) {
   });
 }
 
-// 获取比赛详情
 export function getContestInfo(contestId) {
   return request({
     url: `/admin/contests/${contestId}`,
@@ -51,7 +46,6 @@ export function getContestInfo(contestId) {
   });
 }
 
-// 获取比赛题目列表
 export function getContestChallenges(contestId, params = { limit: 20, offset: 0 }) {
   return request({
     url: `/admin/contests/${contestId}/challenges`,
@@ -60,7 +54,6 @@ export function getContestChallenges(contestId, params = { limit: 20, offset: 0 
   });
 }
 
-// 添加题目到比赛
 export function addContestChallenge(contestId, challenge_ids) {
   return request({
     url: `/admin/contests/${contestId}/challenges`,
@@ -72,7 +65,6 @@ export function addContestChallenge(contestId, challenge_ids) {
   });
 }
 
-// 更新比赛题目信息
 export function updateContestChallenge(contestId, challengeId, data) {
   return request({
     url: `/admin/contests/${contestId}/challenges/${challengeId}`,
@@ -81,7 +73,6 @@ export function updateContestChallenge(contestId, challengeId, data) {
   });
 }
 
-// 移出比赛题目
 export function removeContestChallenge(contestId, challengeId) {
   return request({
     url: `/admin/contests/${contestId}/challenges/${challengeId}`,
@@ -89,7 +80,6 @@ export function removeContestChallenge(contestId, challengeId) {
   });
 }
 
-// 重置比赛题目的解题记录
 export function resetContestChallengeSolves(contestId, challengeId) {
   return request({
     url: `/admin/contests/${contestId}/challenges/${challengeId}/reset-solves`,
@@ -97,7 +87,6 @@ export function resetContestChallengeSolves(contestId, challengeId) {
   });
 }
 
-// 更新比赛信息
 export function updateContestInfo(contestId, data) {
   return request({
     url: `/admin/contests/${contestId}`,
@@ -106,7 +95,6 @@ export function updateContestInfo(contestId, data) {
   });
 }
 
-// 获取比赛团队列表
 export function getContestTeams(contestId, params = { limit: 20, offset: 0 }) {
   return request({
     url: `/admin/contests/${contestId}/teams`,
@@ -115,7 +103,6 @@ export function getContestTeams(contestId, params = { limit: 20, offset: 0 }) {
   });
 }
 
-// 获取比赛单个团队信息
 export function getContestTeam(contestId, teamId) {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}`,
@@ -123,7 +110,6 @@ export function getContestTeam(contestId, teamId) {
   });
 }
 
-// 获取比赛排行榜
 export function getContestRank(contestId, params = { limit: 20, offset: 0 }, noLoading = false) {
   return request({
     url: `/admin/contests/${contestId}/rank`,
@@ -133,7 +119,6 @@ export function getContestRank(contestId, params = { limit: 20, offset: 0 }, noL
   });
 }
 
-// 更新队伍头像
 export function updateTeamPicture(contestId, teamId, file) {
   const formData = new FormData();
   formData.append('picture', file);
@@ -147,7 +132,6 @@ export function updateTeamPicture(contestId, teamId, file) {
   });
 }
 
-// 更新队伍信息
 export function updateTeamInfo(contestId, teamId, data) {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}`,
@@ -156,7 +140,6 @@ export function updateTeamInfo(contestId, teamId, data) {
   });
 }
 
-// 删除队伍
 export function deleteTeam(contestId, teamId) {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}`,
@@ -164,7 +147,6 @@ export function deleteTeam(contestId, teamId) {
   });
 }
 
-// 移出队伍成员
 export function kickTeamMember(contestId, teamId, userId) {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}/kick`,
@@ -182,7 +164,6 @@ export function getTeamMembers(contestID, teamID) {
   });
 }
 
-// 获取团队容器列表
 export const getTeamContainers = async (contestId, teamId, params) => {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}/victims`,
@@ -191,7 +172,6 @@ export const getTeamContainers = async (contestId, teamId, params) => {
   });
 };
 
-// 下载容器流量文件
 export function downloadContainerTraffic(contestId, teamId, containerId) {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}/victims/${containerId}/traffic/download`,
@@ -200,7 +180,6 @@ export function downloadContainerTraffic(contestId, teamId, containerId) {
   });
 }
 
-// 获取公告列表
 export const getContestNotices = (contestId, params = {}) => {
   return request({
     url: `/admin/contests/${contestId}/notices`,
@@ -209,7 +188,6 @@ export const getContestNotices = (contestId, params = {}) => {
   });
 };
 
-// 创建公告
 export const createContestNotice = (contestId, data) => {
   return request({
     url: `/admin/contests/${contestId}/notices`,
@@ -218,7 +196,6 @@ export const createContestNotice = (contestId, data) => {
   });
 };
 
-// 更新公告
 export const updateContestNotice = (contestId, noticeId, data) => {
   return request({
     url: `/admin/contests/${contestId}/notices/${noticeId}`,
@@ -227,7 +204,6 @@ export const updateContestNotice = (contestId, noticeId, data) => {
   });
 };
 
-// 删除公告
 export const deleteContestNotice = (contestId, noticeId) => {
   return request({
     url: `/admin/contests/${contestId}/notices/${noticeId}`,
@@ -235,7 +211,6 @@ export const deleteContestNotice = (contestId, noticeId) => {
   });
 };
 
-// 获取比赛团队提交列表
 export const getContestTeamSubmissions = (contestId, teamId, params) => {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}/submissions`,
@@ -244,7 +219,6 @@ export const getContestTeamSubmissions = (contestId, teamId, params) => {
   });
 };
 
-// 获取比赛团队题解列表
 export const getContestTeamWriteups = (contestId, teamId, params) => {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}/writeups`,
@@ -253,7 +227,6 @@ export const getContestTeamWriteups = (contestId, teamId, params) => {
   });
 };
 
-// 下载比赛团队题解
 export const downloadContestTeamWriteup = (contestId, teamId, writeupId) => {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}/writeups/${writeupId}`,
@@ -264,7 +237,6 @@ export const downloadContestTeamWriteup = (contestId, teamId, writeupId) => {
   });
 };
 
-// 批量导出比赛题解
 export const exportContestWriteups = (contestId) => {
   return request({
     url: `/admin/contests/${contestId}/writeups/export`,
@@ -273,7 +245,6 @@ export const exportContestWriteups = (contestId) => {
   });
 };
 
-// 获取比赛团队流量列表
 export const getContestTeamTraffic = (contestId, teamId, victimID, params, signal) => {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}/victims/${victimID}/traffic`,
@@ -285,7 +256,6 @@ export const getContestTeamTraffic = (contestId, teamId, victimID, params, signa
   });
 };
 
-// 获取预热镜像状态
 export const getContestPullImages = (contestId) => {
   return request({
     url: `/admin/contests/${contestId}/images`,
@@ -293,7 +263,6 @@ export const getContestPullImages = (contestId) => {
   });
 };
 
-// 执行预热镜像
 export const pullContestImages = (contestId, data) => {
   return request({
     url: `/admin/contests/${contestId}/images`,
@@ -303,7 +272,6 @@ export const pullContestImages = (contestId, data) => {
   });
 };
 
-// 手动触发镜像检测
 export const detectContestImages = (contestId) => {
   return request({
     url: `/admin/contests/${contestId}/images/detect`,
@@ -312,7 +280,6 @@ export const detectContestImages = (contestId) => {
   });
 };
 
-// 获取积分榜表格视图
 export const getContestScoreboard = (contestId, params = { limit: 20, offset: 0 }) => {
   return request({
     url: `/admin/contests/${contestId}/scoreboard`,
@@ -321,7 +288,6 @@ export const getContestScoreboard = (contestId, params = { limit: 20, offset: 0 
   });
 };
 
-// 获取比赛分数时间线
 export const getContestTimeline = (contestId) => {
   return request({
     url: `/admin/contests/${contestId}/timeline`,
@@ -329,7 +295,6 @@ export const getContestTimeline = (contestId) => {
   });
 };
 
-// 获取容器列表
 export const getContestVictims = (contestId, params = {}) => {
   return request({
     url: `/admin/contests/${contestId}/victims`,
@@ -338,7 +303,6 @@ export const getContestVictims = (contestId, params = {}) => {
   });
 };
 
-// 停止容器
 export const stopContestVictims = (contestId, victimIds) => {
   return request({
     url: `/admin/contests/${contestId}/victims`,
@@ -350,7 +314,6 @@ export const stopContestVictims = (contestId, victimIds) => {
   });
 };
 
-// 开启容器
 export const startContestVictims = (contestId, challenges, teamRatio, duration) => {
   return request({
     url: `/admin/contests/${contestId}/victims`,
@@ -364,7 +327,6 @@ export const startContestVictims = (contestId, challenges, teamRatio, duration) 
   });
 };
 
-// 获取比赛靶机 Pod 列表
 export const getContestVictimPods = (contestId, victimId, signal) => {
   return request({
     url: `/admin/contests/${contestId}/victims/${victimId}/pods`,
@@ -375,7 +337,6 @@ export const getContestVictimPods = (contestId, victimId, signal) => {
   });
 };
 
-// 获取比赛靶机 Pod 日志
 export const getContestVictimPodLogs = (contestId, victimId, podName, container, lines = 1000) => {
   return request({
     url: `/admin/contests/${contestId}/victims/${victimId}/pods/logs`,
@@ -384,7 +345,6 @@ export const getContestVictimPodLogs = (contestId, victimId, podName, container,
   });
 };
 
-// 获取比赛作弊事件列表
 export const getContestCheats = (contestId, params = { limit: 20, offset: 0 }) => {
   return request({
     url: `/admin/contests/${contestId}/cheats`,
@@ -393,7 +353,6 @@ export const getContestCheats = (contestId, params = { limit: 20, offset: 0 }) =
   });
 };
 
-// 获取比赛团队Flag列表
 export const getContestTeamFlags = (contestId, teamId) => {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}/flags`,
@@ -401,7 +360,6 @@ export const getContestTeamFlags = (contestId, teamId) => {
   });
 };
 
-// 更新作弊事件信息
 export const updateContestCheat = (contestId, cheatId, data) => {
   return request({
     url: `/admin/contests/${contestId}/cheats/${cheatId}`,
@@ -410,7 +368,6 @@ export const updateContestCheat = (contestId, cheatId, data) => {
   });
 };
 
-// 删除单个作弊事件
 export const deleteContestCheat = (contestId, cheatId) => {
   return request({
     url: `/admin/contests/${contestId}/cheats/${cheatId}`,
@@ -418,7 +375,6 @@ export const deleteContestCheat = (contestId, cheatId) => {
   });
 };
 
-// 删除比赛所有作弊事件
 export const deleteAllContestCheats = (contestId) => {
   return request({
     url: `/admin/contests/${contestId}/cheats`,
@@ -426,7 +382,6 @@ export const deleteAllContestCheats = (contestId) => {
   });
 };
 
-// 手动触发作弊检测
 export const checkContestCheats = (contestId) => {
   return request({
     url: `/admin/contests/${contestId}/cheats`,
@@ -435,7 +390,6 @@ export const checkContestCheats = (contestId) => {
   });
 };
 
-// IP 地理位置反查
 export const getIpInfo = (ip) => {
   return request({
     url: '/admin/ip',
@@ -444,7 +398,6 @@ export const getIpInfo = (ip) => {
   });
 };
 
-// 获取附件生成器列表
 export const getContestGenerators = (contestId, params = { limit: 20, offset: 0 }) => {
   return request({
     url: `/admin/contests/${contestId}/generators`,
@@ -453,7 +406,6 @@ export const getContestGenerators = (contestId, params = { limit: 20, offset: 0 
   });
 };
 
-// 启动附件生成器
 export const startContestGenerators = (contestId, challenges) => {
   return request({
     url: `/admin/contests/${contestId}/generators`,
@@ -463,7 +415,6 @@ export const startContestGenerators = (contestId, challenges) => {
   });
 };
 
-// 停止附件生成器
 export const stopContestGenerators = (contestId, generatorIds) => {
   return request({
     url: `/admin/contests/${contestId}/generators`,
@@ -473,7 +424,6 @@ export const stopContestGenerators = (contestId, generatorIds) => {
   });
 };
 
-// 获取附件生成器日志
 export const getContestGeneratorLogs = (contestId, generatorId, lines = 1000) => {
   return request({
     url: `/admin/contests/${contestId}/generators/${generatorId}/logs`,

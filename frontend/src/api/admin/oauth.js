@@ -1,6 +1,5 @@
 import request from '../request';
 
-// 获取OAuth Provider列表
 export const getOAuthProviderList = (params = { limit: 20, offset: 0 }) => {
   return request({
     url: '/admin/oauth',
@@ -9,7 +8,6 @@ export const getOAuthProviderList = (params = { limit: 20, offset: 0 }) => {
   });
 };
 
-// 创建OAuth Provider
 export const createOAuthProvider = (data) => {
   const { protocol, ...body } = data;
   return request({
@@ -20,7 +18,6 @@ export const createOAuthProvider = (data) => {
   });
 };
 
-// 更新OAuth Provider
 export const updateOAuthProvider = (providerId, data) => {
   const { protocol, ...body } = data;
   return request({
@@ -31,7 +28,6 @@ export const updateOAuthProvider = (providerId, data) => {
   });
 };
 
-// 删除OAuth Provider
 export const deleteOAuthProvider = (providerId) => {
   return request({
     url: `/admin/oauth/${providerId}`,
@@ -39,7 +35,6 @@ export const deleteOAuthProvider = (providerId) => {
   });
 };
 
-// 上传OAuth Provider Logo
 export const uploadOAuthPicture = (providerId, file) => {
   const formData = new FormData();
   formData.append('picture', file);

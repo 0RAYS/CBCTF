@@ -1,7 +1,5 @@
 import request from '../request';
 
-// 上传队伍头像
-// 请求参数: FormData, 包含picture字段
 export const uploadTeamPicture = (contestId, file) => {
   const formData = new FormData();
   formData.append('picture', file);
@@ -14,7 +12,7 @@ export const uploadTeamPicture = (contestId, file) => {
     },
   });
 };
-// 解散队伍
+
 export const deleteTeam = (contestId) => {
   return request({
     url: `/contests/${contestId}/teams/me`,
@@ -22,7 +20,6 @@ export const deleteTeam = (contestId) => {
   });
 };
 
-// 踢出队员
 export const kickTeamMember = (contestId, userId) => {
   return request({
     url: `/contests/${contestId}/teams/me/kick`,
@@ -33,7 +30,6 @@ export const kickTeamMember = (contestId, userId) => {
   });
 };
 
-// 获取比赛队伍信息
 export const getTeamInfo = (contestId, { noToast = false } = {}) => {
   return request({
     url: `/contests/${contestId}/teams/me`,
@@ -56,7 +52,6 @@ export const updateTeamCaptcha = (contestId) => {
   });
 };
 
-// 获取队伍成员列表
 export const getTeamMembers = (contestId) => {
   return request({
     url: `/contests/${contestId}/teams/me/users`,
@@ -64,7 +59,6 @@ export const getTeamMembers = (contestId) => {
   });
 };
 
-// 更新队伍信息
 export const updateTeamInfo = (contestId, data) => {
   return request({
     url: `/contests/${contestId}/teams/me`,
@@ -73,7 +67,6 @@ export const updateTeamInfo = (contestId, data) => {
   });
 };
 
-// 创建队伍
 export const createTeam = (contestId, data) => {
   return request({
     url: `/contests/${contestId}/teams/create`,
@@ -83,7 +76,6 @@ export const createTeam = (contestId, data) => {
   });
 };
 
-// 加入队伍
 export const joinTeam = (contestId, data) => {
   return request({
     url: `/contests/${contestId}/teams/join`,

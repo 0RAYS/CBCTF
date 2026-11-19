@@ -8,7 +8,6 @@ import DeleteConfirmation from '../../components/common/DeleteConfirmation';
 import { createContest, deleteContest, getContestList, updateContestPicture } from '../../api/admin/contest';
 import { useTranslation } from 'react-i18next';
 
-// 获取明天的日期时间
 const getTomorrowDateTime = () => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -60,7 +59,6 @@ function ContestsManagement() {
     fetchContests();
   }, [currentPage]);
 
-  // 创建比赛按钮点击
   const handleCreateClick = () => {
     setMode('create');
     setCreateForm({
@@ -75,25 +73,21 @@ function ContestsManagement() {
     setIsModalOpen(true);
   };
 
-  // 删除比赛按钮点击
   const handleDeleteClick = (contest) => {
     setMode('delete');
     setSelectedContest(contest);
     setIsModalOpen(true);
   };
 
-  // 比赛点击（进入详情）
   const handleContestClick = (contest) => {
     navigate(`/admin/contests/${contest.id}`);
   };
 
-  // 上传头像
   const handlePictureUpload = (contest) => {
     setSelectedContest(contest);
     fileInputRef.current?.click();
   };
 
-  // 处理文件上传变更
   const handlePictureChange = async (event) => {
     const file = event.target.files?.[0];
     event.target.value = '';
@@ -110,7 +104,6 @@ function ContestsManagement() {
     }
   };
 
-  // 提交表单（创建或删除）
   const handleSubmit = async () => {
     try {
       if (mode === 'create') {
@@ -142,7 +135,6 @@ function ContestsManagement() {
     }
   };
 
-  // 渲染模态框内容
   const renderModalContent = () => {
     if (mode === 'create') {
       return (
@@ -205,7 +197,6 @@ function ContestsManagement() {
     }
   };
 
-  // 渲染模态框底部按钮
   const renderModalFooter = () => {
     return <CRUDModalFooter mode={mode} onCancel={() => setIsModalOpen(false)} onSubmit={handleSubmit} />;
   };

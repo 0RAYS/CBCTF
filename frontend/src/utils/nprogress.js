@@ -21,10 +21,8 @@ const loadNProgress = async () => {
   return nprogressPromise;
 };
 
-// 计数器
 let requestCount = 0;
 
-// 开始加载
 export const startLoading = () => {
   requestCount++;
   if (requestCount === 1) {
@@ -36,7 +34,6 @@ export const startLoading = () => {
   }
 };
 
-// 结束加载
 export const finishLoading = () => {
   requestCount = Math.max(0, requestCount - 1);
   if (requestCount === 0) {
