@@ -14,8 +14,6 @@ CBCTF
 volumes
 *.conf
 *.db
-CLAUDE.md
-AGENTS.md
 !docs/AGENTS.md
 !frontend/AGENTS.md
 .gocache

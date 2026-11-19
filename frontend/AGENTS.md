@@ -23,6 +23,7 @@ Frontend is the embedded React app for CBCTF. Trust executable config over stale
 - ESLint disables hook rules (`rules-of-hooks`, `exhaustive-deps`, `set-state-in-effect`); do not rely on lint to catch invalid hook usage.
 - Prettier is enforced as ESLint warnings: single quotes, semicolons, trailing commas, width 120, `endOfLine: auto`.
 - Keep UI bilingual for `en` and `zh-CN`; check CJK text length and wrapping.
+- Keep comments minimal: one short line per exported function, no commented-out code, no pasted JSON request/response samples, and no narration of how the code changed over time.
 
 ## Structure
 
