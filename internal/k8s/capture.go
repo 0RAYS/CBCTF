@@ -3,6 +3,7 @@ package k8s
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -42,6 +43,13 @@ const (
 	// unprivileged user as well.
 	captureDropUID int64 = 65534
 	captureDropGID int64 = 65534
+
+	// captureInvokingUIDEnv and captureInvokingGIDEnv declare the user the
+	// capture binary treats as the one that invoked it. Since 1.7 the capture
+	// binary only accepts an output directory that belongs to root or to that
+	// user, so without the declaration it refuses to write the pcap.
+	captureInvokingUIDEnv = "SUDO_UID"
+	captureInvokingGIDEnv = "SUDO_GID"
 )
 
 // captureTrafficSubPath returns the victim traffic directory relative to the
@@ -54,10 +62,9 @@ func captureTrafficSubPath(victim model.Victim) string {
 // volume and hands it over to the unprivileged capture user.
 //
 // The container runtime creates the directory as root when the sidecar mounts
-// it, and root owns it with mode 0755, so the capture process cannot write
-// into it once it dropped its privileges. The platform creates the directory
-// before the victim pods are started and transfers the ownership to the
-// capture user.
+// it, so the capture process cannot write into it once it dropped its
+// privileges. The owner has to be the user the sidecar declares as the
+// invoking user (see captureInvokingUIDEnv).
 func prepareCaptureTrafficDir(victim model.Victim) error {
 	path := victim.TrafficBasePath()
 	if err := os.MkdirAll(path, 0o755); err != nil {
@@ -88,6 +95,9 @@ func prepareCaptureTrafficDir(victim model.Victim) error {
 // let the capture binary drop its own root privileges after the capture is
 // initialized, CAP_SETPCAP lets it remove the capabilities from its bounding
 // set.
+//
+// The container also declares the unprivileged capture user as the invoking
+// user, see captureInvokingUIDEnv.
 func captureContainer(victim model.Victim, pcapName string) corev1.Container {
 	args := []string{"-i", "any"}
 	geoIPAvailable := false
@@ -102,6 +112,18 @@ func captureContainer(victim model.Victim, pcapName string) corev1.Container {
 		Image:           config.Env.K8S.CaptureImage,
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		Command:         append([]string{captureBinaryPath}, args...),
+		Env: []corev1.EnvVar{
+			// The capture binary validates the owner of the traffic directory
+			// against the user it drops its privileges to.
+			{
+				Name:  captureInvokingUIDEnv,
+				Value: strconv.FormatInt(captureDropUID, 10),
+			},
+			{
+				Name:  captureInvokingGIDEnv,
+				Value: strconv.FormatInt(captureDropGID, 10),
+			},
+		},
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      nfsVolumeName,

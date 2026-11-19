@@ -551,8 +551,8 @@ NFS 目录结构：
 ```
 K8s Pod (victim)
 ├── Container: capture     # sidecar，平台自动添加
-│   └── VolumeMount: /root/mnt → NFS:{config.Env.Path}/traffics/victim-{id}/
-│       # 写入 pod-{podName}.pcap
+│   └── VolumeMount: /mnt → NFS:{config.Env.Path}/traffics/victim-{id}/
+│       # 写入 pod-{podName}.pcap 与 pod-{podName}.pcap.connections.jsonl
 ├── Container: web         # 业务容器（来自 docker-compose）
 ├── Container: db          # 业务容器（来自 docker-compose）
 └── ...
