@@ -184,7 +184,7 @@ func (t *TeamFlagRepo) GetSolvedContestFlags(teamIDL ...uint) ([]SolvedContestFl
 }
 
 // CountSolvedForChallenge 统计队伍在比赛题目上已解出的生效 flag 数量。
-// 归档（active = false）的 flag 不再参与"是否解出"的判定，但其历史得分仍保留在 team_flags 中。
+// 归档（active = false）的 flag 不计入，但历史得分仍保留在 team_flags 中。
 func (t *TeamFlagRepo) CountSolvedForChallenge(teamID uint, contestChallengeID uint) (int64, model.RetVal) {
 	var count int64
 	res := t.DB.Model(&model.TeamFlag{}).

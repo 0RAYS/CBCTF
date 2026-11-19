@@ -24,8 +24,7 @@ type Generator struct {
 	ChallengeID   uint      `gorm:"index" json:"challenge_id"`
 	ChallengeName string    `json:"challenge_name"`
 	Challenge     Challenge `json:"-"`
-	// ContestChallengeID 比赛题目。生成器池按比赛题目划分，
-	// 同一题库题目在多场比赛加入时各自持有独立副本。
+	// ContestChallengeID 比赛题目 id，同一题库题目在多场比赛加入时各自持有独立副本。
 	ContestChallengeID sql.Null[uint]   `gorm:"index" json:"contest_challenge_id"`
 	ContestChallenge   ContestChallenge `json:"-"`
 	ContestID          sql.Null[uint]   `gorm:"index" json:"contest_id"`

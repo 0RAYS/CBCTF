@@ -21,7 +21,7 @@ import (
 )
 
 // resolveGeneratorSource 按 rand_id 解析生成器来源。
-// 比赛内使用比赛题目副本，题库题目只在全局管理页与测试模式下使用。
+// 比赛内使用比赛题目副本，题库题目只在测试模式下使用。
 func resolveGeneratorSource(tx *gorm.DB, contestID uint, randID string) (model.GeneratorSourceSnapshot, model.RetVal) {
 	if contestID > 0 {
 		contestChallenge, ret := db.InitContestChallengeRepo(tx).GetByRandID(randID, db.GetOptions{

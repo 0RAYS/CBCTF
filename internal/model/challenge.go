@@ -58,7 +58,7 @@ func (c Challenge) AttachmentCachePathForRevision(teamID uint, flags []string, r
 	return filepath.Join(c.BasicDir(), "cache", fmt.Sprintf("%d-%x.zip", teamID, hash))
 }
 
-// DataPath 返回数据根目录。配置尚未初始化时返回空字符串，避免测试环境空指针。
+// DataPath 返回数据根目录。配置尚未初始化时返回空字符串。
 func DataPath() string {
 	if config.Env == nil {
 		return ""
@@ -99,8 +99,8 @@ type NetworkPolicy struct {
 type NetworkPolicies []NetworkPolicy
 
 // DeepCopy 返回网络策略的深拷贝。
-// NetworkPolicy 内含 []*netv1.IPBlock 指针，浅拷贝会让题库与比赛共享同一批块对象；
-// 而 Value() 序列化时会就地裁剪这些块，共享指针会造成跨副本的意外修改。
+// NetworkPolicy 内含 []*netv1.IPBlock 指针，Value() 序列化时会就地裁剪这些块，
+// 共享指针会造成跨副本的意外修改。
 func (n NetworkPolicies) DeepCopy() NetworkPolicies {
 	if n == nil {
 		return nil

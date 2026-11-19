@@ -12,7 +12,7 @@ import (
 
 // ContestChallenge 比赛中的题目副本。
 // 题目加入比赛时会把题库题目深拷贝一份到这里，此后题库的改动不再影响已加入的比赛。
-// ChallengeID 仅用于溯源，运行期不再依赖题库行。
+// ChallengeID 仅用于溯源。
 // BelongsTo Contest
 // BelongsTo Challenge
 // HasMany ContestFlag

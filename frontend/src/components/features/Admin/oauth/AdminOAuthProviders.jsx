@@ -115,33 +115,6 @@ function AdminOAuthProviders({
           </div>
         );
 
-      // case 'auth_url':
-      //   return (
-      //     <div className="max-w-12 truncate" title={provider.auth_url}>
-      //       <span className="text-neutral-300 text-sm">
-      //         {provider.auth_url.replace('http://', '').replace('https://', '')}
-      //       </span>
-      //     </div>
-      //   );
-      //
-      // case 'token_url':
-      //   return (
-      //     <div className="max-w-12 truncate" title={provider.token_url}>
-      //       <span className="text-neutral-300 text-sm">
-      //         {provider.token_url.replace('http://', '').replace('https://', '')}
-      //       </span>
-      //     </div>
-      //   );
-      //
-      // case 'user_info_url':
-      //   return (
-      //     <div className="max-w-12 truncate" title={provider.user_info_url}>
-      //       <span className="text-neutral-300 text-sm">
-      //         {provider.user_info_url.replace('http://', '').replace('https://', '')}
-      //       </span>
-      //     </div>
-      //   );
-
       case 'callback_url': {
         const url = provider.callback_url || '';
         return (

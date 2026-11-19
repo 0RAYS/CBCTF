@@ -23,7 +23,7 @@ const FOCUSABLE_SELECTORS = [
 ].join(', ');
 
 /**
- * 统一模态框组件（合并ConfirmModal和AdminModal）
+ * 统一模态框组件
  * @param {Object} props
  * @param {boolean} props.isOpen - 是否显示模态框
  * @param {function} props.onClose - 关闭模态框的回调函数

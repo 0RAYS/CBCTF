@@ -22,13 +22,8 @@ type challengeFlagMatch struct {
 }
 
 // matchChallengeFlags 把 compose 派生出的 flag 与题库现有 flag 对齐。
-//
-// 对齐规则：
-//   - 值与绑定完全一致：直接复用，flag id 不变
-//   - 绑定一致但值变化：原地更新值，flag id 不变（附件缓存 key 因此保持稳定）
-//   - 其余：新建 flag
-//
-// 返回值与派生 flag 一一对应，removed 是已消失、需要软删除的题库 flag id。
+// 值与绑定完全一致时复用现有 flag，绑定一致但值变化时原地更新值（保留 flag id），
+// 其余新建。removed 是已消失、需要软删除的题库 flag id。
 func matchChallengeFlags(existing []model.ChallengeFlag, derived []model.ChallengeFlag) ([]challengeFlagMatch, []uint) {
 	matches := make([]challengeFlagMatch, len(derived))
 	for i, flag := range derived {
@@ -73,9 +68,6 @@ func matchChallengeFlags(existing []model.ChallengeFlag, derived []model.Challen
 }
 
 // ReconcileChallengeFlags 用 compose 派生出的 flag 集合与题库现有 flag 对齐。
-//
-// 比赛题目在加入时即持有 flag 副本，因此题库侧的增删改不会再影响任何比赛的解题记录，
-// 这里不再需要"删了重建"。
 func ReconcileChallengeFlags(tx *gorm.DB, challenge model.Challenge, derived []model.ChallengeFlag) model.RetVal {
 	repo := db.InitChallengeFlagRepo(tx)
 	matches, removed := matchChallengeFlags(challenge.ChallengeFlags, derived)

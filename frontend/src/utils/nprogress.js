@@ -47,9 +47,3 @@ export const finishLoading = () => {
     });
   }
 };
-
-// 强制结束加载
-// export const forceFinishLoading = () => {
-//   requestCount = 0;
-//   NProgress.done(true);
-// };

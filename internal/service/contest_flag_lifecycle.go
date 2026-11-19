@@ -10,14 +10,8 @@ import (
 	"CBCTF/internal/model"
 )
 
-// UpdateContestFlag 修改比赛题目的 flag。
-//
-// 语义：默认保留已解出队伍的解题记录。
-//   - 只改计分参数：直接生效，不影响任何解题记录
-//   - 改 flag 模板：代次 +1，未解出队伍的 team_flags 按新模板重新渲染；
-//     已解出队伍保留原有的 team_flags 与 submissions，分数不变，也不会被重复计分
-//
-// 清空解题记录是破坏性操作，只能通过 ResetContestChallengeSolves 显式执行。
+// UpdateContestFlag 修改比赛题目的 flag，默认保留已解出队伍的解题记录。
+// 改 flag 模板时代次 +1，未解出队伍的 team_flags 按新模板重新渲染。
 func UpdateContestFlag(tx *gorm.DB, contest model.Contest, contestFlag model.ContestFlag, form dto.UpdateContestFlagForm) model.RetVal {
 	currentScore := contestFlag.CurrentScore
 	if form.Score != nil && *form.Score < currentScore {
@@ -42,8 +36,7 @@ func UpdateContestFlag(tx *gorm.DB, contest model.Contest, contestFlag model.Con
 	return RerenderTeamFlagValues(tx, contest, contestFlag.ID, *form.Value)
 }
 
-// RerenderTeamFlagValues 按新的 flag 模板重新渲染未解出队伍手里的答案。
-// 已解出的队伍保留原值与解题记录。
+// RerenderTeamFlagValues 按新的 flag 模板重新渲染未解出队伍手里的答案，已解出的队伍保留原值。
 func RerenderTeamFlagValues(tx *gorm.DB, contest model.Contest, contestFlagID uint, template string) model.RetVal {
 	teamFlags, _, ret := db.InitTeamFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_flag_id": contestFlagID},
@@ -71,8 +64,6 @@ func RerenderTeamFlagValues(tx *gorm.DB, contest model.Contest, contestFlagID ui
 }
 
 // ResetContestChallengeSolves 清空某比赛题目的解题记录并重算分数与排名。
-//
-// 这是唯一允许清空成绩的入口：改题库题目、改比赛 flag 都不会清空解题记录。
 func ResetContestChallengeSolves(tx *gorm.DB, contest model.Contest, contestChallenge model.ContestChallenge) model.RetVal {
 	var clearedTeams, clearedSubmissions int
 	ret := db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
