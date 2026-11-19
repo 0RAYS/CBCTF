@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strconv"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -80,6 +81,30 @@ func TestCaptureContainerRunsOutsideRootAndKeepsCapabilities(t *testing.T) {
 	}
 }
 
+func TestCaptureContainerDeclaresTheCaptureUser(t *testing.T) {
+	previousConfig := config.Env
+	path := t.TempDir()
+	config.Env = &config.Config{Path: path}
+	t.Cleanup(func() { config.Env = previousConfig })
+
+	capture := captureContainer(model.Victim{ID: 7}, "pod-victim-7.pcap")
+	declared := make(map[string]string, len(capture.Env))
+	for _, env := range capture.Env {
+		declared[env.Name] = env.Value
+	}
+	// The capture binary only writes its pcap into a directory that belongs
+	// to root or to the invoking user.
+	want := map[string]string{
+		captureInvokingUIDEnv: strconv.FormatInt(captureDropUID, 10),
+		captureInvokingGIDEnv: strconv.FormatInt(captureDropGID, 10),
+	}
+	for name, value := range want {
+		if declared[name] != value {
+			t.Fatalf("%s = %q, want %q", name, declared[name], value)
+		}
+	}
+}
+
 func TestCaptureContainerMountsGeoIPDatabaseOutsideRoot(t *testing.T) {
 	previousConfig := config.Env
 	path := t.TempDir()
@@ -141,5 +166,18 @@ func TestPrepareCaptureTrafficDirHandsDirectoryToCaptureUser(t *testing.T) {
 	if uid != int(captureDropUID) || gid != int(captureDropGID) {
 		t.Fatalf("the traffic directory must belong to the capture user %d:%d, got %d:%d",
 			captureDropUID, captureDropGID, uid, gid)
+	}
+	// The owner and the declared invoking user must not drift apart.
+	capture := captureContainer(victim, "pod-victim-3.pcap")
+	declared := make(map[string]string, len(capture.Env))
+	for _, env := range capture.Env {
+		declared[env.Name] = env.Value
+	}
+	value, err := strconv.Atoi(declared[captureInvokingUIDEnv])
+	if err != nil {
+		t.Fatalf("the capture container must declare %s, got %q", captureInvokingUIDEnv, declared[captureInvokingUIDEnv])
+	}
+	if uid != value {
+		t.Fatalf("the traffic directory owner %d must match the declared capture user %d", uid, value)
 	}
 }
