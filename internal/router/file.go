@@ -51,8 +51,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 		file := middleware.GetFile(ctx)
 		if _, err := os.Stat(string(file.Path)); err != nil {
 			if os.IsNotExist(err) {
-				// 保留数据库记录
-				//db.InitFileRepo(db.DB).Delete(file.ID)
+				// 文件不存在时保留数据库记录
 				resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
 				return
 			}

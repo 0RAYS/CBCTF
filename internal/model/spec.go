@@ -189,8 +189,7 @@ type NodePortEndpoint struct {
 }
 
 // DeepCopy 返回 ChallengeTemplate 的深拷贝。
-// 题目加入比赛后需要持有一份独立副本，模板内含多层 slice / map，
-// 浅拷贝会让题库与比赛共享底层数组，改动一侧会污染另一侧。
+// 模板内含多层 slice / map，浅拷贝会让题库与比赛共享底层数组，改动一侧会污染另一侧。
 func (t ChallengeTemplate) DeepCopy() ChallengeTemplate {
 	if t.Pods == nil {
 		return ChallengeTemplate{}

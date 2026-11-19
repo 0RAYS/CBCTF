@@ -10,7 +10,7 @@ const INTERACTIVE_SELECTOR =
   'button, a, input, select, textarea, label, [role="button"], [role="checkbox"], [contenteditable="true"], [data-row-interactive]';
 
 /**
- * 通用列表/表格组件（扩展自AdminList）
+ * 通用列表/表格组件
  * @param {Object} props
  * @param {Array} props.columns - 列定义, 格式: [{key: 'id', label: 'ID', width: '10%'}, ...]
  * @param {Array} props.data - 列表数据

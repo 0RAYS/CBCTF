@@ -39,8 +39,7 @@ func (c *ChallengeFlagRepo) DeleteByChallengeID(challengeIDL ...uint) model.RetV
 }
 
 // Delete 只删除题库侧的 flag。
-// 比赛题目自加入时即持有 flag 副本，题库 flag 仅用于溯源，
-// 因此删除题库 flag 不再级联删除比赛侧的 contest_flags / team_flags / submissions。
+// 比赛题目自加入时即持有 flag 副本，删除题库 flag 不会级联删除比赛侧的 contest_flags / team_flags / submissions。
 func (c *ChallengeFlagRepo) Delete(idL ...uint) model.RetVal {
 	if len(idL) == 0 {
 		return model.SuccessRetVal()

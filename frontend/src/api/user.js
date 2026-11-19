@@ -18,11 +18,6 @@ export const getAccessibleRoutes = () => {
 
 // 更新密码
 export const updatePassword = (data) => {
-  // 请求示例数据:
-  // {
-  //   "oldPassword": "X9fkCj2njAbEZZj",
-  //   "newPassword": "d7o8u7xamLpcdnn"
-  // }
   return request({
     url: '/me/password',
     method: 'PUT',
@@ -32,12 +27,6 @@ export const updatePassword = (data) => {
 
 // 更新用户信息
 export const updateUserInfo = (data) => {
-  // 请求示例数据:
-  // {
-  //   "name": "test",
-  //   "email": "0rays@0rays.club",
-  //   "description": "test",
-  // }
   return request({
     url: '/me',
     method: 'PUT',
@@ -56,10 +45,6 @@ export const activateEmail = (data) => {
 
 // 删除账户
 export const deleteAccount = (data) => {
-  // 请求示例数据:
-  // {
-  //   "password": "e2573SdNsA0n3f4"
-  // }
   return request({
     url: '/me',
     method: 'DELETE',

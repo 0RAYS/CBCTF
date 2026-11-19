@@ -9,9 +9,7 @@ import (
 )
 
 // ListChallengeUsages 返回引用了指定题库题目的比赛题目实例。
-//
-// 比赛题目在加入时已深拷贝为独立副本，题库的改动不会影响已加入的比赛，
-// 因此这里只是提示影响范围，不阻断题库题目的修改与删除。
+// 比赛题目是独立副本，这里只提示影响范围，不阻断题库题目的修改与删除。
 func ListChallengeUsages(tx *gorm.DB, challenge model.Challenge) ([]view.ChallengeUsageView, model.RetVal) {
 	usages, ret := db.InitChallengeRepo(tx).ListContestChallengeUsages(challenge.ID)
 	if !ret.OK {

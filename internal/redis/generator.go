@@ -163,7 +163,7 @@ func generatorSetKey(contestID uint, contestValid bool, challengeID uint) string
 }
 
 // generatorTargetSetKey 返回生成器池的集合键。
-// 比赛题目优先使用独立的命名空间，避免与题库题目的池互相干扰。
+// 比赛题目使用独立命名空间，避免与题库题目的池互相干扰。
 func generatorTargetSetKey(target model.GeneratorTarget) string {
 	if target.ContestChallengeID > 0 {
 		return fmt.Sprintf(generatorContestChallengeKey, target.ContestID, target.ContestChallengeID)

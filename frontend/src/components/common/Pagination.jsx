@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
- * 统一分页组件（合并AdminPagination和CTFGame Pagination）
+ * 统一分页组件
  * @param {Object} props
  * @param {number} props.current - 当前页码（1-indexed）
  * @param {number} props.total - 总页数

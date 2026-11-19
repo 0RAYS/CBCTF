@@ -278,8 +278,7 @@ func SetTeamWriteupFile(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// SetAttachmentFile 准备题目附件。
-// 比赛内使用比赛题目副本的附件，测试模式使用题库题目的附件。
+// SetAttachmentFile 准备题目附件，比赛内使用比赛题目副本的附件，测试模式使用题库题目的附件。
 func SetAttachmentFile(test bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var source model.GeneratorSource

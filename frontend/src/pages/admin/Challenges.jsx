@@ -31,7 +31,7 @@ function ChallengesManagement() {
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [mode, setMode] = useState('add'); // 'add' | 'edit' | 'delete'
   const [selectedChallenge, setSelectedChallenge] = useState(null);
-  // 删除题库题目之前先查清引用范围，比赛题目是独立副本，删除题库不影响比赛
+  // 删除题库题目之前先查清引用范围
   const [deleteUsages, setDeleteUsages] = useState([]);
   const [editChallenge, setEditChallenge] = useState({
     name: '',
@@ -53,8 +53,6 @@ function ChallengesManagement() {
     let flags;
     if (challenge.flags && Array.isArray(challenge.flags)) {
       flags = challenge.flags;
-    } else if (challenge.flag) {
-      flags = [challenge.flag];
     } else {
       flags = [''];
     }

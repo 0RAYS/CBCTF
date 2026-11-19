@@ -57,8 +57,7 @@ type victimFlagSpec struct {
 	HasTeam   bool
 }
 
-// victimSpecSource 靶机规格来源。
-// 比赛内一律使用比赛题目副本，题库题目只在管理员测试模式下使用。
+// victimSpecSource 靶机规格来源，比赛内一律使用比赛题目副本，题库题目只在管理员测试模式下使用。
 type victimSpecSource struct {
 	Template         model.ChallengeTemplate
 	NetworkPolicies  model.NetworkPolicies
@@ -280,8 +279,7 @@ func buildPodRecords(victim model.Victim) []model.Pod {
 }
 
 // StartVictim 启动靶机。
-// contestChallengeID 大于 0 时使用比赛题目副本（规格与 flag 均来自副本）；
-// 为 0 时是管理员对题库题目的测试模式，直接使用题库题目。
+// contestChallengeID 大于 0 时使用比赛题目副本，为 0 时是管理员对题库题目的测试模式。
 func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID, challengeID uint, durationL ...time.Duration) model.RetVal {
 	var victim model.Victim
 	victimRepo := db.InitVictimRepo(tx)

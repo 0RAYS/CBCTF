@@ -125,7 +125,6 @@ func DeleteContestChallenge(ctx *gin.Context) {
 }
 
 // ResetContestChallengeSolves 清空该比赛题目的解题记录并重算分数与排名。
-// 这是唯一会清空成绩的操作，改题库题目或改 flag 都不会清空解题记录。
 func ResetContestChallengeSolves(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ResetContestChallengeSolvesEventType)
 	ret := service.ResetContestChallengeSolves(
