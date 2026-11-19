@@ -217,6 +217,7 @@ test('extracted business models/parsers/serializers stay isolated from runtime l
     'components/features/Admin/traffic/trafficAnalysisModel.js',
     'components/features/Admin/victims/victimPayload.js',
     'components/features/Admin/webhook/payload.js',
+    'utils/address.js',
   ].map((file) => `src/${file}`));
   const violations = [];
   for (const file of pureModules) {

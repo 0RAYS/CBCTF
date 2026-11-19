@@ -3,6 +3,7 @@ import { Button, Modal } from '../../../common';
 import MarkdownContent from '../../../common/MarkdownContent';
 import { IconPaperclip } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { copyableAddress } from '../../../../utils/address';
 import { normalizeInstanceStatus } from './models/challengeViewModel';
 import FlagForm from './display/FlagForm';
 import Hints from './display/Hints';
@@ -110,7 +111,7 @@ function ChallengeModal({
   const handleCopyIP = async (ip) => {
     const session = sessionRef.current;
     try {
-      await navigator.clipboard.writeText(ip);
+      await navigator.clipboard.writeText(copyableAddress(ip));
       if (sessionRef.current !== session) return;
       setIsCopied((previous) => ({ ...previous, [ip]: true }));
       clearTimeout(copyTimeoutsRef.current.get(ip));
