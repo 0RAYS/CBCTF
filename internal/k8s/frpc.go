@@ -269,12 +269,11 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				volumes = append(volumes, nfsVolume)
 			}
 			options := CreatePodOptions{
-				SubmitOnly:        true,
-				Name:              name,
-				Labels:            labels,
-				Containers:        containers,
-				Volumes:           volumes,
-				ImagePullSecret:   config.Env.K8S.ImagePullSecret,
+				SubmitOnly: true,
+				Name:       name,
+				Labels:     labels,
+				Containers: containers,
+				Volumes:    volumes,
 			}
 			p, ret := CreatePod(ctx, options)
 			if !ret.OK {

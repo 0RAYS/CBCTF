@@ -199,13 +199,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			}
 
 			pOptions := CreatePodOptions{
-				SubmitOnly:        true,
-				Name:              pod.Name,
-				Labels:            podLabels,
-				Networks:          networks,
-				Containers:        containers,
-				Volumes:           volumes,
-				ImagePullSecret:   config.Env.K8S.ImagePullSecret,
+				SubmitOnly: true,
+				Name:       pod.Name,
+				Labels:     podLabels,
+				Networks:   networks,
+				Containers: containers,
+				Volumes:    volumes,
 			}
 
 			p, ret := CreatePod(ctx, pOptions)

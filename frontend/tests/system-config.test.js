@@ -10,17 +10,15 @@ test('system config payload covers every backend editable field', () => {
   assert.deepEqual(Object.keys(buildPayload(normalizeConfig({}))).sort(), fields.sort());
 });
 
-test('workload settings round-trip false, zero and an explicitly cleared pull secret', () => {
+test('workload settings round-trip false and zero', () => {
   for (const source of [
     {
       k8s_capture_enabled: true,
-      k8s_image_pull_secret: 'registry.example/credentials',
       k8s_worker_image: 'registry.example/worker:v3',
       k8s_generator_pool_size: 4,
     },
     {
       k8s_capture_enabled: false,
-      k8s_image_pull_secret: '',
       k8s_worker_image: 'ghcr.io/0rays/cbctf-worker:latest',
       k8s_generator_pool_size: 0,
     },

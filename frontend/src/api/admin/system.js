@@ -17,14 +17,6 @@ export const getSystemConfig = () => {
   });
 };
 
-// 获取平台命名空间中已有的镜像拉取 Secret
-export const getImagePullSecrets = () => {
-  return request({
-    url: '/admin/system/image-pull-secrets',
-    method: 'GET',
-  });
-};
-
 // 更新系统配置
 export const updateSystemConfig = (data) => {
   return request({

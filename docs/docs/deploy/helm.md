@@ -189,7 +189,7 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 
 - 平台挂载 `/app/data`，默认 PVC 为 `{namespace}-shared-volume`。`persistence.existingClaim` 可以指定同命名空间已有 PVC，Chart 同时写入后端 `k8s.shared_volume_claim`，使生成器和抓包容器使用同一卷。
 - `persistence.enabled: false` 仅使平台数据使用临时卷，不会为运行时 Pod 创建共享 PVC；这不适用于需要动态附件或抓包的部署。
-- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台和 PostgreSQL Pod。Valkey 由官方 Chart 渲染，从 Docker Hub 拉取 `valkey/valkey`，私有镜像仓库请使用 `valkey.image.registry` 与 `valkey.imagePullSecrets`。后端创建的题目、生成器、FRPC 和预热 Job 不会继承应用 Pod 的凭据；这些 Pod 使用运行命名空间的 `default` ServiceAccount，可将所需 Secret 配置到该 ServiceAccount。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
+- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台和 PostgreSQL Pod。Valkey 由官方 Chart 渲染，从 Docker Hub 拉取 `valkey/valkey`，私有镜像仓库请使用 `valkey.image.registry` 与 `valkey.imagePullSecrets`。后端创建的题目、生成器、FRPC 和预热 Job 不会继承应用 Pod 的凭据；这些 Pod 继承运行命名空间 `default` ServiceAccount 的 `imagePullSecrets`，私有仓库只需把 Secret 配置到该 ServiceAccount。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
 - Chart 的 `nodeSelector`、`tolerations`、`affinity`、`resources` 作用于平台 Pod，不等于题目调度和资源配置；题目资源来自 Compose。
 
 ## Kubernetes 靶机配置

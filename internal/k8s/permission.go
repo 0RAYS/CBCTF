@@ -44,8 +44,6 @@ func buildPermissionChecks() []permissionCheck {
 		{Resource: "configmaps", Verb: "deletecollection", Namespace: ns},
 		// Core: PersistentVolumeClaims
 		{Resource: "persistentvolumeclaims", Verb: "get", Namespace: ns},
-		// Core: Secrets (镜像拉取 Secret)
-		{Resource: "secrets", Verb: "list", Namespace: ns},
 		// Core: Namespaces (集群级别)
 		{Resource: "namespaces", Verb: "get", Name: ns},
 		// Core: Nodes (集群级别)

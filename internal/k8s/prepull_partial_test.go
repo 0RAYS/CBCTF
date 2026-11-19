@@ -27,7 +27,7 @@ func TestWarmupJobFailureDoesNotSuppressOtherNodes(t *testing.T) {
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	err := PrepullImages(ctx, []string{"alpine:latest"}, nil, string(corev1.PullAlways), "")
+	err := PrepullImages(ctx, []string{"alpine:latest"}, nil, string(corev1.PullAlways))
 	if err == nil || created != 2 || !strings.Contains(err.Error(), "worker-a") || !strings.Contains(err.Error(), "worker-b") {
 		t.Fatalf("independent warmup targets lost: creates=%d error=%v", created, err)
 	}

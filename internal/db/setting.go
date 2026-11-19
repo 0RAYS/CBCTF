@@ -112,7 +112,6 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.K8SCaptureEnabledSettingKey, Value: model.SettingValue{V: config.Env.K8S.CaptureEnabled}},
 		{Key: model.K8SWorkerImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.WorkerImage}},
 		{Key: model.K8SGeneratorPoolSizeSettingKey, Value: model.SettingValue{V: config.Env.K8S.GeneratorPoolSize}},
-		{Key: model.K8SImagePullSecretSettingKey, Value: model.SettingValue{V: config.Env.K8S.ImagePullSecret}},
 		{Key: model.K8SFrpOnSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.On}},
 		{Key: model.K8SFrpFrpcImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.FrpcImage}},
 		{Key: model.K8SFrpNginxImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.NginxImage}},
@@ -231,9 +230,6 @@ func (s *SettingRepo) readSettingsInto(next *config.Config) model.RetVal {
 		return ret
 	}
 	if next.K8S.GeneratorPoolSize, ret = GetValue[int](s, model.K8SGeneratorPoolSizeSettingKey); !ret.OK {
-		return ret
-	}
-	if next.K8S.ImagePullSecret, ret = GetValue[string](s, model.K8SImagePullSecretSettingKey); !ret.OK {
 		return ret
 	}
 	if next.K8S.Frp.On, ret = GetValue[bool](s, model.K8SFrpOnSettingKey); !ret.OK {

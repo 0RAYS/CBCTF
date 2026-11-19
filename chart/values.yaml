@@ -160,8 +160,6 @@ cbctf:
     captureEnabled: true
     workerImage: "ghcr.io/0rays/cbctf-worker:latest"
     generatorPoolSize: 2
-    # Existing image pull secret in the release namespace, empty disables it
-    imagePullSecret: ""
     frp:
       "on": false
       frpc: "ghcr.io/fatedier/frpc:v0.69.0"

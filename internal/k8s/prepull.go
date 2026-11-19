@@ -83,10 +83,7 @@ func excludedNodeAffinity(excluded []string) *corev1.Affinity {
 // PrepullImages submits all nodes before observing completion, so a slow node
 // does not delay warming other nodes. ImageID, not command exit status, proves
 // a successful pull (VM/distroless images need not contain echo or a shell).
-//
-// imagePullSecret names an existing image pull secret of the platform
-// namespace, an empty name pulls the images without credentials.
-func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPolicy string, imagePullSecret string) error {
+func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPolicy string) error {
 	if pullPolicy == string(corev1.PullNever) || len(images) == 0 {
 		return nil
 	}
@@ -102,17 +99,6 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 	}
 	if len(nodes) == 0 {
 		return fmt.Errorf("no schedulable nodes for image warmup")
-	}
-	// A missing secret would fail every warmup job with a confusing image
-	// pull error, so the warmup reports it upfront.
-	if secret := imagePullSecret; secret != "" {
-		exists, secretRet := HasImagePullSecret(ctx, secret)
-		if !secretRet.OK {
-			return resourceError(secretRet)
-		}
-		if !exists {
-			return fmt.Errorf("image pull secret %s does not exist in namespace %s", secret, globalNamespace)
-		}
 	}
 	for _, name := range selectedNodes {
 		if !slices.ContainsFunc(nodes, func(n *corev1.Node) bool { return n.Name == name }) {
@@ -185,12 +171,11 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 			}
 			chunk := missing[i:min(i+5, len(missing))]
 			_, ret = CreateJob(ctx, CreateJobOptions{
-				Name:            "prepull-" + utils.RandHexStr(20),
-				Labels:          selector,
-				Images:          chunk,
-				PullPolicy:      pullPolicy,
-				SelectedNode:    node.Name,
-				ImagePullSecret: imagePullSecret,
+				Name:         "prepull-" + utils.RandHexStr(20),
+				Labels:       selector,
+				Images:       chunk,
+				PullPolicy:   pullPolicy,
+				SelectedNode: node.Name,
 			})
 			if !ret.OK {
 				failures = append(failures, fmt.Errorf("create warmup job node=%s images=%v: %w", node.Name, chunk, resourceError(ret)))

@@ -74,7 +74,7 @@ func TestPrepullPoliciesCompareEachTargetNodeInventory(t *testing.T) {
 			})
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancel()
-			err := PrepullImages(ctx, tc.images, []string{"target"}, tc.policy, "")
+			err := PrepullImages(ctx, tc.images, []string{"target"}, tc.policy)
 			if len(tc.wantPull) == 0 && err != nil {
 				t.Fatal(err)
 			}
