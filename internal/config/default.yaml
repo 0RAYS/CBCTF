@@ -76,6 +76,8 @@ k8s:
   capture_enabled: true
   worker_image: ghcr.io/0rays/cbctf-worker:latest
   generator_pool_size: 2
+  # ServiceAccount of the runtime workloads, empty uses the namespace default one
+  service_account: ""
   frp:
     on: false
     # Docker image

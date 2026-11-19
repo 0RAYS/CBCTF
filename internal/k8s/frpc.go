@@ -269,11 +269,12 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				volumes = append(volumes, nfsVolume)
 			}
 			options := CreatePodOptions{
-				SubmitOnly: true,
-				Name:       name,
-				Labels:     labels,
-				Containers: containers,
-				Volumes:    volumes,
+				SubmitOnly:         true,
+				Name:               name,
+				Labels:             labels,
+				Containers:         containers,
+				Volumes:            volumes,
+				ServiceAccountName: runtimeServiceAccount(),
 			}
 			p, ret := CreatePod(ctx, options)
 			if !ret.OK {

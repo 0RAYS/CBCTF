@@ -15,11 +15,12 @@ import (
 )
 
 type CreateJobOptions struct {
-	Name         string
-	Labels       map[string]string
-	Images       []string
-	PullPolicy   string
-	SelectedNode string
+	Name               string
+	Labels             map[string]string
+	Images             []string
+	PullPolicy         string
+	SelectedNode       string
+	ServiceAccountName string
 }
 
 func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, model.RetVal) {
@@ -68,6 +69,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 					EnableServiceLinks:           new(false),
 					Affinity:                     affinity,
 					Containers:                   containers,
+					ServiceAccountName:           options.ServiceAccountName,
 					RestartPolicy:                corev1.RestartPolicyNever,
 				},
 			},

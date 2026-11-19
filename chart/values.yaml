@@ -12,9 +12,9 @@ image:
 timezone: "Asia/Shanghai"
 
 imagePullSecrets: []
-# Inline registry credentials — the chart creates a docker registry Secret automatically
-# and appends it to imagePullSecrets on chart-managed application/database pods.
-# Runtime challenge pods use the namespace's default ServiceAccount instead.
+# Inline registry credentials — the chart creates a docker registry Secret
+# automatically and appends it to imagePullSecrets on chart-managed
+# application/database pods and on the runtime ServiceAccount.
 imageCredentials:
   registry: ""   # e.g. ghcr.io
   username: ""
@@ -160,6 +160,9 @@ cbctf:
     captureEnabled: true
     workerImage: "ghcr.io/0rays/cbctf-worker:latest"
     generatorPoolSize: 2
+    # ServiceAccount of the runtime workloads, it carries the pull secrets of
+    # the private registries. Empty uses {fullname}-runtime.
+    serviceAccount: ""
     frp:
       "on": false
       frpc: "ghcr.io/fatedier/frpc:v0.69.0"

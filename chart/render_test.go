@@ -54,6 +54,47 @@ func render(t *testing.T, overrides ...string) []map[string]any {
 	}
 }
 
+// renderFailure renders the chart and returns the error output, so a test can
+// assert that a broken configuration stops the render.
+func renderFailure(t *testing.T, overrides ...string) string {
+	t.Helper()
+	helm := os.Getenv("HELM_BIN")
+	if helm == "" {
+		var err error
+		helm, err = exec.LookPath("helm")
+		if err != nil {
+			t.Skip("helm is required; set HELM_BIN or add helm to PATH")
+		}
+	}
+	args := []string{"template", "ctf", ".", "--namespace", releaseNamespace}
+	for _, override := range overrides {
+		args = append(args, "--set", override)
+	}
+	output, err := exec.Command(helm, args...).CombinedOutput()
+	if err == nil {
+		t.Fatalf("the render succeeded, expected a failure:\n%s", output)
+	}
+	if strings.Contains(string(output), "missing in charts/ directory") {
+		t.Skip("chart dependencies are not vendored; run `helm dependency build chart/`")
+	}
+	return string(output)
+}
+
+// documentByKind returns the document of the given kind and name.
+func documentByKind(t *testing.T, documents []map[string]any, kind, name string) map[string]any {
+	t.Helper()
+	for _, document := range documents {
+		if document["kind"] != kind {
+			continue
+		}
+		if document["metadata"].(map[string]any)["name"] == name {
+			return document
+		}
+	}
+	t.Fatalf("no %s named %s was rendered", kind, name)
+	return nil
+}
+
 func appConfig(t *testing.T, documents []map[string]any) map[string]any {
 	t.Helper()
 	for _, document := range documents {
@@ -255,6 +296,52 @@ func TestEmptyPolicyListsRemainLists(t *testing.T) {
 		if !ok || len(list) != 0 {
 			t.Fatalf("%s must be an explicit empty list, got %#v", key, gin[key])
 		}
+	}
+}
+
+func TestImageCredentialsReachTheRuntimeWorkloads(t *testing.T) {
+	documents := render(t,
+		"imageCredentials.registry=registry.example.com",
+		"imageCredentials.username=ci",
+		"imageCredentials.password=s3cret",
+	)
+	secret := documentByKind(t, documents, "Secret", "ctf-cbctf-registry")
+	if secret["type"] != "kubernetes.io/dockerconfigjson" {
+		t.Fatalf("registry secret type: %v", secret["type"])
+	}
+	serviceAccount := documentByKind(t, documents, "ServiceAccount", "ctf-cbctf-runtime")
+	if serviceAccount["automountServiceAccountToken"] != false {
+		t.Fatal("runtime ServiceAccount mounts a token")
+	}
+	secrets, ok := serviceAccount["imagePullSecrets"].([]any)
+	if !ok || len(secrets) != 1 || secrets[0].(map[string]any)["name"] != "ctf-cbctf-registry" {
+		t.Fatalf("runtime ServiceAccount pull secrets: %v", serviceAccount["imagePullSecrets"])
+	}
+	config := appConfig(t, documents)
+	if config["k8s"].(map[string]any)["service_account"] != "ctf-cbctf-runtime" {
+		t.Fatalf("runtime service account is not configured: %v", config["k8s"])
+	}
+}
+
+func TestRuntimeServiceAccountWithoutCredentials(t *testing.T) {
+	documents := render(t)
+	serviceAccount := documentByKind(t, documents, "ServiceAccount", "ctf-cbctf-runtime")
+	if _, ok := serviceAccount["imagePullSecrets"]; ok {
+		t.Fatal("runtime ServiceAccount has pull secrets without configured credentials")
+	}
+	config := appConfig(t, documents)
+	if config["k8s"].(map[string]any)["service_account"] != "ctf-cbctf-runtime" {
+		t.Fatalf("runtime service account is not configured: %v", config["k8s"])
+	}
+}
+
+func TestPartialImageCredentialsFailTheRender(t *testing.T) {
+	output := renderFailure(t,
+		"imageCredentials.registry=registry.example.com",
+		"imageCredentials.username=ci",
+	)
+	if !strings.Contains(output, "imageCredentials requires registry, username and password") {
+		t.Fatalf("unexpected render failure: %s", output)
 	}
 }
 

@@ -57,8 +57,9 @@ func StartGenerator(ctx context.Context, source model.GeneratorSource, generator
 		generator.ID, generator.Name, source.SourceID(), source.SourceImage(),
 	)
 	pod, ret = CreatePod(ctx, CreatePodOptions{
-		Name:   generator.Name,
-		Labels: labels,
+		Name:               generator.Name,
+		Labels:             labels,
+		ServiceAccountName: runtimeServiceAccount(),
 		InitContainers: []corev1.Container{
 			{
 				Name:            "worker-install",

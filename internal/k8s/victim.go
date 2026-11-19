@@ -199,12 +199,13 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			}
 
 			pOptions := CreatePodOptions{
-				SubmitOnly: true,
-				Name:       pod.Name,
-				Labels:     podLabels,
-				Networks:   networks,
-				Containers: containers,
-				Volumes:    volumes,
+				SubmitOnly:         true,
+				Name:               pod.Name,
+				Labels:             podLabels,
+				Networks:           networks,
+				Containers:         containers,
+				Volumes:            volumes,
+				ServiceAccountName: runtimeServiceAccount(),
 			}
 
 			p, ret := CreatePod(ctx, pOptions)

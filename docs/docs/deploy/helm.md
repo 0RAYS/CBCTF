@@ -71,8 +71,8 @@ helm uninstall cbctf -n cbctf
 |-----------------------------|-----------------------------|-----------------------|
 | `image.repository`          | 应用镜像仓库                      | `ghcr.io/0rays/cbctf` |
 | `image.tag`                 | 应用镜像标签                      | `latest`              |
-| `imagePullSecrets`          | 私有镜像拉取 Secret               | `[{name: regcred}]`   |
-| `imageCredentials.*`        | Chart 自动创建镜像仓库 Secret 的内联凭据 | `registry: ghcr.io`   |
+| `imagePullSecrets`          | 私有镜像拉取 Secret，作用于平台、PostgreSQL 与运行时 Pod | `[{name: regcred}]`   |
+| `imageCredentials.*`        | Chart 自动创建镜像仓库 Secret 的内联凭据，三项缺一即报错 | `registry: ghcr.io`   |
 | `timezone`                  | 容器时区                        | `Asia/Shanghai`       |
 | `service.type`              | Service 类型                  | `ClusterIP`           |
 | `service.port`              | Service 端口                  | `8000`                |
@@ -189,7 +189,7 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 
 - 平台挂载 `/app/data`，默认 PVC 为 `{namespace}-shared-volume`。`persistence.existingClaim` 可以指定同命名空间已有 PVC，Chart 同时写入后端 `k8s.shared_volume_claim`，使生成器和抓包容器使用同一卷。
 - `persistence.enabled: false` 仅使平台数据使用临时卷，不会为运行时 Pod 创建共享 PVC；这不适用于需要动态附件或抓包的部署。
-- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台和 PostgreSQL Pod。Valkey 由官方 Chart 渲染，从 Docker Hub 拉取 `valkey/valkey`，私有镜像仓库请使用 `valkey.image.registry` 与 `valkey.imagePullSecrets`。后端创建的题目、生成器、FRPC 和预热 Job 不会继承应用 Pod 的凭据；这些 Pod 继承运行命名空间 `default` ServiceAccount 的 `imagePullSecrets`，私有仓库只需把 Secret 配置到该 ServiceAccount。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
+- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台和 PostgreSQL Pod，同时写入运行时 ServiceAccount（默认 `{release}-cbctf-runtime`），因此后端创建的题目、生成器、FRPC 和预热 Job 也能用同一份凭据拉取私有镜像。`imageCredentials` 三项缺一即渲染失败。Valkey 由官方 Chart 渲染，从 Docker Hub 拉取 `valkey/valkey`，私有镜像仓库请使用 `valkey.image.registry` 与 `valkey.imagePullSecrets`（可填 Chart 创建的 `{release}-cbctf-registry`）。运行时 ServiceAccount 只存在于 release 命名空间，运行命名空间必须与之一致。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
 - Chart 的 `nodeSelector`、`tolerations`、`affinity`、`resources` 作用于平台 Pod，不等于题目调度和资源配置；题目资源来自 Compose。
 
 ## Kubernetes 靶机配置
@@ -201,6 +201,7 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 | `cbctf.k8s.captureEnabled` | 是否开启抓包容器 | `true` |
 | `cbctf.k8s.workerImage` | 独立 worker 镜像地址，与主程序版本分开配置 | `ghcr.io/0rays/cbctf-worker:latest` |
 | `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量 | `2` |
+| `cbctf.k8s.serviceAccount` | 运行时工作负载使用的 ServiceAccount，留空用 `{release}-cbctf-runtime` | `cbctf-runtime` |
 | `cbctf.k8s.frp.on`      | 是否启用 FRP 端口暴露         | `false`                           |
 | `cbctf.k8s.frp.frpc`    | FRP client 镜像         | `ghcr.io/fatedier/frpc:v0.69.0`   |
 | `cbctf.k8s.frp.nginx`   | FRP 转发辅助 Nginx 镜像     | `nginx:latest`                    |

@@ -165,6 +165,33 @@ func TestImagePullJobHasBoundedLifetimeAndNoCredentials(t *testing.T) {
 	}
 }
 
+func TestWorkloadsUseTheConfiguredServiceAccount(t *testing.T) {
+	useFakePods(t)
+	pod, ret := CreatePod(context.Background(), CreatePodOptions{
+		Name:               "victim-test",
+		SubmitOnly:         true,
+		ServiceAccountName: "cbctf-runtime",
+	})
+	if !ret.OK {
+		t.Fatal(ret)
+	}
+	if pod.Spec.ServiceAccountName != "cbctf-runtime" {
+		t.Fatalf("pod service account: %q", pod.Spec.ServiceAccountName)
+	}
+	job, ret := CreateJob(context.Background(), CreateJobOptions{
+		Name:               "pull-test",
+		Images:             []string{"test-image"},
+		PullPolicy:         "Always",
+		ServiceAccountName: "cbctf-runtime",
+	})
+	if !ret.OK {
+		t.Fatal(ret)
+	}
+	if job.Spec.Template.Spec.ServiceAccountName != "cbctf-runtime" {
+		t.Fatalf("job service account: %q", job.Spec.Template.Spec.ServiceAccountName)
+	}
+}
+
 func TestClientConfigurationSharesRateLimiter(t *testing.T) {
 	config := &rest.Config{}
 	configureClientRateLimit(config)

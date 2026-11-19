@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 
+	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -29,14 +30,24 @@ type Network struct {
 }
 
 type CreatePodOptions struct {
-	SubmitOnly     bool
-	Name           string
-	Labels         map[string]string
-	Annotations    map[string]string
-	Networks       []Network
-	Containers     []corev1.Container
-	InitContainers []corev1.Container
-	Volumes        []corev1.Volume
+	SubmitOnly         bool
+	Name               string
+	Labels             map[string]string
+	Annotations        map[string]string
+	Networks           []Network
+	Containers         []corev1.Container
+	InitContainers     []corev1.Container
+	Volumes            []corev1.Volume
+	ServiceAccountName string
+}
+
+// runtimeServiceAccount is the ServiceAccount of the runtime workloads. It is
+// empty when the platform runs with the ServiceAccount of the namespace.
+func runtimeServiceAccount() string {
+	if config.Env == nil {
+		return ""
+	}
+	return config.Env.K8S.ServiceAccount
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, model.RetVal) {
@@ -72,6 +83,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 			Containers:                    options.Containers,
 			InitContainers:                options.InitContainers,
 			Volumes:                       options.Volumes,
+			ServiceAccountName:            options.ServiceAccountName,
 			TerminationGracePeriodSeconds: new(int64(3)),
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
