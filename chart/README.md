@@ -82,14 +82,13 @@ The application runs a startup SelfSubjectAccessReview check and exits if requir
 release namespace**. The ClusterRole/ClusterRoleBinding retain only namespace GET
 (restricted to the release namespace), node discovery, self-access reviews and
 Kube-OVN cluster-scoped resources. No wildcard permissions are used. The backend's
-self-check uses separate resource/subresource fields for `pods/exec` and `pods/log`.
+self-check uses separate resource/subresource fields for `pods/log`.
 
 The combined runtime permissions are:
 
 | API group | Resources | Verbs |
 | --- | --- | --- |
 | core | `pods` | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` |
-| core | `pods/exec` | `create` |
 | core | `pods/log` | `get` |
 | core | `services` | `create`, `list`, `delete` |
 | core | `configmaps` | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` |
