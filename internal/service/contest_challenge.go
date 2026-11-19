@@ -39,7 +39,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 				return ret
 			}
 			contestChallenge, ret = db.InitContestChallengeRepo(tx2).GetByID(contestChallenge.ID, db.GetOptions{
-				Preloads: map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
+				Preloads: map[string]db.GetOptions{"ContestFlags": {}},
 			})
 			if !ret.OK {
 				return ret
@@ -79,8 +79,7 @@ func ListContestChallengeImages(tx *gorm.DB, contest model.Contest) ([]string, m
 	return slices.Compact(images), model.SuccessRetVal()
 }
 
-// buildSourceFileName 返回附件的展示文件名。
-// 比赛题目副本与题库题目各自登记自己的附件记录。
+// buildSourceFileName 返回附件的展示文件名，比赛题目副本与题库题目各自登记自己的附件记录。
 func buildSourceFileName(tx *gorm.DB, source model.GeneratorSource, teamID uint) string {
 	path, ret := AttachmentPath(tx, source, teamID)
 	if !ret.OK {
@@ -170,7 +169,7 @@ func ListContestChallengeViews(tx *gorm.DB, contest model.Contest, team model.Te
 func ListAdminContestChallenges(tx *gorm.DB, contest model.Contest, form dto.GetAllContestChallengesForm) ([]model.ContestChallenge, int64, model.RetVal) {
 	options := db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
+		Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
 		Search:     make(map[string]string),
 	}
 	if form.Name != "" {
