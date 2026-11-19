@@ -435,14 +435,14 @@ func Init() *gin.Engine {
 			adminContestImages := adminContest.Group("/images")
 			{
 				adminContestImages.GET("", GetContestChallengeImage)
-				adminContestImages.POST("", middleware.RateLimit("warmup_images", 1, time.Minute), PullImages)
-				adminContestImages.POST("/detect", middleware.RateLimit("detect_images", 1, time.Minute), DetectContestChallengeImages)
+				adminContestImages.POST("", middleware.RateLimit("warmup_images", 5, time.Minute), PullImages)
+				adminContestImages.POST("/detect", middleware.RateLimit("detect_images", 5, time.Minute), DetectContestChallengeImages)
 			}
 
 			adminContestVictims := adminContest.Group("/victims")
 			{
 				adminContestVictims.GET("", GetVictims)
-				adminContestVictims.POST("", middleware.RateLimit("warmup_victims", 1, time.Minute), StartVictims)
+				adminContestVictims.POST("", middleware.RateLimit("warmup_victims", 5, time.Minute), StartVictims)
 				adminContestVictims.DELETE("", StopVictims)
 				adminContestVictim := adminContestVictims.Group("/:victimID", middleware.SetVictim)
 				{
@@ -454,7 +454,7 @@ func Init() *gin.Engine {
 			adminContestGenerator := adminContest.Group("/generators")
 			{
 				adminContestGenerator.GET("", GetGenerators)
-				adminContestGenerator.POST("", middleware.RateLimit("warmup_generators", 1, time.Minute), StartGenerator)
+				adminContestGenerator.POST("", middleware.RateLimit("warmup_generators", 5, time.Minute), StartGenerator)
 				adminContestGenerator.DELETE("", StopGenerator)
 				adminContestGenerator.GET("/:generatorID/logs", middleware.SetGenerator, GetGeneratorLogs)
 				adminContestGenerator.GET("/:generatorID/status", middleware.SetGenerator, GetGeneratorStatus)
