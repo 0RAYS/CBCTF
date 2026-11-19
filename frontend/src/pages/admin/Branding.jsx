@@ -186,28 +186,28 @@ function BrandingSettings() {
                 label={t('admin.branding.labels.siteName')}
                 value={branding.site_name}
                 placeholderZh="CBCTF"
-                placeholderEn="DEEP DIVE CTF"
+                placeholderEn="CBCTF"
                 onChange={(language, value) => updateLocalizedField(['site_name'], language, value)}
               />
               <LocalizedField
                 label={t('admin.branding.labels.adminName')}
                 value={branding.admin_name}
-                placeholderZh="管理台"
-                placeholderEn="DEEP DIVE Admin"
+                placeholderZh="Admin"
+                placeholderEn="Admin"
                 onChange={(language, value) => updateLocalizedField(['admin_name'], language, value)}
               />
               <LocalizedField
                 label={t('admin.branding.labels.browserTitle')}
                 value={branding.browser_title}
                 placeholderZh="CBCTF"
-                placeholderEn="DEEP DIVE CTF"
+                placeholderEn="CBCTF"
                 onChange={(language, value) => updateLocalizedField(['browser_title'], language, value)}
               />
               <LocalizedField
                 label={t('admin.branding.labels.browserDescription')}
                 value={branding.browser_description}
-                placeholderZh="CBCTF 网络安全竞赛平台"
-                placeholderEn="DEEP DIVE CTF competition platform"
+                placeholderZh="CBCTF competition platform"
+                placeholderEn="CBCTF competition platform"
                 multiline
                 rows={3}
                 onChange={(language, value) => updateLocalizedField(['browser_description'], language, value)}
@@ -263,7 +263,7 @@ function BrandingSettings() {
                 label={t('admin.branding.labels.homeLogoAlt')}
                 value={branding.home_logo_alt}
                 placeholderZh="CBCTF 首页 Logo"
-                placeholderEn="DEEP DIVE CTF home logo"
+                placeholderEn="CBCTF home logo"
                 onChange={(language, value) => updateLocalizedField(['home_logo_alt'], language, value)}
               />
             </div>
@@ -282,7 +282,7 @@ function BrandingSettings() {
           <LocalizedField
             label={t('admin.branding.labels.heroTitleHighlight')}
             value={branding.home.hero.title_highlight}
-            placeholderZh="网络安全"
+            placeholderZh="Cyber Security"
             placeholderEn="Cyber Security"
             onChange={(language, value) => updateLocalizedField(['home', 'hero', 'title_highlight'], language, value)}
           />

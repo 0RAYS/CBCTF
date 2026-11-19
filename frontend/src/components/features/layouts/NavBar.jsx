@@ -9,7 +9,7 @@ function NavBar({
   tabs = [],
   activeTab,
   onTabChange,
-  logo = 'DEEP DIVE',
+  logo = 'CBCTF',
   pictureSrc = '',
   userName = '',
   className = '',

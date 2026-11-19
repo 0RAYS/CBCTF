@@ -1,7 +1,7 @@
 {
   "branding": {
     "main": "CBCTF",
-    "admin": "DEEP DIVE Admin"
+    "admin": "Admin"
   },
   "common": {
     "notices": {
