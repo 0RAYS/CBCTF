@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import Loading from '../../../components/common/Loading';
 
 function AdminContestSettings() {
   const { id } = useParams();
@@ -10,7 +11,7 @@ function AdminContestSettings() {
     navigate(`/admin/contests/${id}`);
   }, [id, navigate]);
 
-  return null;
+  return <Loading />;
 }
 
 export default AdminContestSettings;

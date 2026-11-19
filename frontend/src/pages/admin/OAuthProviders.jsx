@@ -11,10 +11,12 @@ export default function OAuthProvidersManagement() {
   const [providers, setProviders] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [dialog, setDialog] = useState(null);
   const pageSize = 20;
 
   const fetchProviders = async () => {
+    setLoading(true);
     try {
       const response = await getOAuthProviderList({ limit: pageSize, offset: (currentPage - 1) * pageSize });
       if (response.code === 200) {
@@ -23,6 +25,8 @@ export default function OAuthProvidersManagement() {
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.oauthProviders.toast.fetchFailed') });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,6 +43,7 @@ export default function OAuthProvidersManagement() {
         totalCount={totalCount}
         currentPage={currentPage}
         pageSize={pageSize}
+        loading={loading}
         onPageChange={setCurrentPage}
         onCreateProvider={() => setDialog({ mode: 'create' })}
         onEditProvider={edit}

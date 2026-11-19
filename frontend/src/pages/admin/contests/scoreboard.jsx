@@ -32,6 +32,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
   const [teams, setTeams] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [rankingLoading, setRankingLoading] = useState(true);
   const pageSize = 20;
   const [stats, setStats] = useState({
     totalTeams: 0,
@@ -45,6 +46,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
   const [challenges, setChallenges] = useState([]);
   const [tableCurrentPage, setTableCurrentPage] = useState(1);
   const [tableTotalCount, setTableTotalCount] = useState(0);
+  const [tableLoading, setTableLoading] = useState(false);
   const tablePageSize = 20;
 
   // 时间线相关状态
@@ -124,6 +126,8 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
     } catch (error) {
       if (isCurrent())
         toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
+    } finally {
+      if (isCurrent()) setRankingLoading(false);
     }
   };
 
@@ -145,6 +149,8 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
     } catch (error) {
       if (isCurrent())
         toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchScoreboardFailed') });
+    } finally {
+      if (isCurrent()) setTableLoading(false);
     }
   };
 
@@ -174,8 +180,10 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
     let ignore = false;
     const isCurrent = () => !ignore;
     if (viewMode === 'ranking') {
+      setRankingLoading(true);
       fetchRankings(isCurrent);
     } else if (viewMode === 'table') {
+      setTableLoading(true);
       fetchScoreboardTable(isCurrent);
     }
     return () => {
@@ -268,6 +276,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
           currentPage={currentPage}
           pageSize={pageSize}
           totalCount={totalCount}
+          loading={rankingLoading}
           onPageChange={setCurrentPage}
           onRowClick={handleRowClick}
         />
@@ -278,6 +287,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
           totalCount={tableTotalCount}
           currentPage={tableCurrentPage}
           pageSize={tablePageSize}
+          loading={tableLoading}
           onPageChange={setTableCurrentPage}
         />
       )}

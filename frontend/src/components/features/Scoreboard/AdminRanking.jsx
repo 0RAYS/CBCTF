@@ -19,7 +19,15 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from '../../common';
 import ScoreboardRanking from './ScoreboardRanking.jsx';
 
-function AdminRanking({ teams = [], currentPage = 1, pageSize = 6, totalCount = 0, onPageChange, onRowClick }) {
+function AdminRanking({
+  teams = [],
+  currentPage = 1,
+  pageSize = 6,
+  totalCount = 0,
+  onPageChange,
+  onRowClick,
+  loading,
+}) {
   const { t, i18n } = useTranslation();
 
   return (
@@ -35,6 +43,7 @@ function AdminRanking({ teams = [], currentPage = 1, pageSize = 6, totalCount = 
         total: t('common.scoreboard.total'),
       }}
       emptyMessage={t('common.noData')}
+      loading={loading}
       onRowClick={onRowClick}
       footer={
         totalCount > pageSize ? (

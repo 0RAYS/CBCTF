@@ -11,6 +11,7 @@ function FilesManagement() {
   const [files, setFiles] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [fileType, setFileType] = useState('file');
@@ -18,6 +19,7 @@ function FilesManagement() {
   const { t } = useTranslation();
 
   const fetchFiles = async () => {
+    setLoading(true);
     try {
       const response = await getFileList({
         limit: pageSize,
@@ -43,6 +45,8 @@ function FilesManagement() {
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.files.toast.fetchFailed') });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,6 +102,7 @@ function FilesManagement() {
         currentPage={currentPage}
         pageSize={pageSize}
         fileType={fileType}
+        loading={loading}
         onPageChange={setCurrentPage}
         onTypeChange={setFileType}
         onDelete={handleDelete}

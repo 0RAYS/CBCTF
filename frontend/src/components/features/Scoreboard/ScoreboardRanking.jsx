@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
 import { Avatar, Card, EmptyState } from '../../common';
+import Loading from '../../common/Loading';
 import ChallengeSolves from './ChallengeSolves';
 import useScoreColumnWidth from './useScoreColumnWidth';
 import TruncatedText from '../../common/TruncatedText';
@@ -14,7 +15,15 @@ const DEFAULT_LABELS = {
   total: 'TOTAL',
 };
 
-function ScoreboardRanking({ teams = [], labels = {}, locale = 'en-US', emptyMessage, footer = null, onRowClick }) {
+function ScoreboardRanking({
+  teams = [],
+  labels = {},
+  locale = 'en-US',
+  emptyMessage,
+  footer = null,
+  onRowClick,
+  loading = false,
+}) {
   const resolvedLabels = { ...DEFAULT_LABELS, ...labels };
   const resolvedEmptyMessage = emptyMessage || 'No data';
   const scoreValues = useMemo(
@@ -57,7 +66,11 @@ function ScoreboardRanking({ teams = [], labels = {}, locale = 'en-US', emptyMes
             </div>
 
             <div className="overflow-hidden">
-              {teams.length === 0 ? (
+              {loading ? (
+                <div className="py-10">
+                  <Loading compact />
+                </div>
+              ) : teams.length === 0 ? (
                 <div className="py-10">
                   <EmptyState title={resolvedEmptyMessage} />
                 </div>

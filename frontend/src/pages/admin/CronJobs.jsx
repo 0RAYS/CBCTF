@@ -65,7 +65,7 @@ function CronJobs() {
   const [cronJobs, setCronJobs] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCronJob, setSelectedCronJob] = useState(null);
   const [form, setForm] = useState(DEFAULT_FORM);

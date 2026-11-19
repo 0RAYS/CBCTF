@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Card, EmptyState, Pagination } from '../../../common';
+import Loading from '../../../common/Loading';
 import { formatDateTime, formatPayload, PAGE_SIZE, taskRowKey, taskTimestamp } from './taskModel';
 import TruncatedText from '../../../common/TruncatedText';
 
@@ -28,7 +29,7 @@ function StatusBadge({ value }) {
   );
 }
 
-export default function TaskTable({ mode, rows, totalCount, currentPage, onPageChange }) {
+export default function TaskTable({ mode, rows, totalCount, currentPage, onPageChange, loading = false }) {
   const { t, i18n } = useTranslation();
   const columns = [
     'taskId',
@@ -43,7 +44,9 @@ export default function TaskTable({ mode, rows, totalCount, currentPage, onPageC
 
   return (
     <Card padding="none" className="overflow-hidden">
-      {rows.length === 0 ? (
+      {loading ? (
+        <Loading compact />
+      ) : rows.length === 0 ? (
         <EmptyState title={t(`admin.tasks.${mode}.empty`)} className="py-20" />
       ) : (
         <div className="overflow-x-auto">

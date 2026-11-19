@@ -21,6 +21,7 @@ function AdminNotice({
   totalCount = 0,
   currentPage = 1,
   pageSize = 20,
+  loading = false,
   onPageChange,
   onCreateNotice,
   onUpdateNotice,
@@ -192,7 +193,8 @@ function AdminNotice({
             onClick: () => handleDelete(notice),
           },
         ]}
-        empty={notices.length === 0}
+        loading={loading}
+        empty={!loading && notices.length === 0}
         emptyContent={t('common.noData')}
         footer={
           totalCount > pageSize ? (

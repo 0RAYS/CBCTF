@@ -24,6 +24,7 @@ function ChallengesManagement() {
   const [challenges, setChallenges] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState('all');
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -66,10 +67,14 @@ function ChallengesManagement() {
   const [nameQuery, setNameQuery] = useState('');
   const [descQuery, setDescQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [resolvedSearchSignature, setResolvedSearchSignature] = useState('');
 
   const debouncedName = useDebounce(nameQuery, 300);
   const debouncedDesc = useDebounce(descQuery, 300);
+
+  // 搜索结果对应的查询签名，未匹配时说明这批结果还在加载
+  const searchSignature = `${debouncedName}|${debouncedDesc}|${selectedType}|${selectedCategory}`;
+  const searchLoading = searchSignature !== resolvedSearchSignature;
 
   // 搜索结果和模式
   const isSearchMode = !!(nameQuery.trim() || descQuery.trim());
@@ -78,10 +83,10 @@ function ChallengesManagement() {
     let cancelled = false;
     if (!debouncedName.trim() && !debouncedDesc.trim()) {
       setSearchResults([]);
+      setResolvedSearchSignature(searchSignature);
       return;
     }
     const doSearch = async () => {
-      setSearchLoading(true);
       try {
         const params = { limit: 10, offset: 0 };
         if (debouncedName.trim()) params.name = debouncedName.trim();
@@ -100,7 +105,7 @@ function ChallengesManagement() {
           setSearchResults([]);
         }
       } finally {
-        if (!cancelled) setSearchLoading(false);
+        if (!cancelled) setResolvedSearchSignature(searchSignature);
       }
     };
     doSearch();
@@ -127,6 +132,7 @@ function ChallengesManagement() {
   };
 
   const fetchChallenges = async () => {
+    setLoading(true);
     try {
       const params = {
         limit: pageSize,
@@ -155,6 +161,8 @@ function ChallengesManagement() {
       toast.danger({
         description: error.message || t('admin.challenge.toast.fetchListFailed'),
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -394,6 +402,7 @@ function ChallengesManagement() {
         categories={categories}
         filterCategory={selectedCategory}
         filterType={selectedType}
+        loading={isSearchMode ? searchLoading : loading}
         onPageChange={setCurrentPage}
         onAddChallenge={handleAddChallenge}
         onEditChallenge={handleEditChallenge}

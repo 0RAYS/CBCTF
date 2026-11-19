@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from '../../utils/toast';
 import SystemConfig from '../../components/features/Admin/SystemConfig';
+import Loading from '../../components/common/Loading';
 import { getSystemConfig } from '../../api/admin/system';
 import { useTranslation } from 'react-i18next';
 
@@ -24,7 +25,7 @@ function SystemSettings() {
   }, []);
 
   if (!config) {
-    return <></>;
+    return <Loading />;
   }
 
   return <SystemConfig config={config} onConfigUpdated={fetchConfig} />;

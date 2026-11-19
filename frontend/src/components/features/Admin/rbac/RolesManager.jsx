@@ -17,8 +17,11 @@ export default function RolesManager() {
   const [currentPage, setCurrentPage] = useState(1);
   const [permissionRole, setPermissionRole] = useState(null);
   const [revision, setRevision] = useState(0);
+  const [loadedPage, setLoadedPage] = useState(0);
   const pageSize = 20;
   const refreshRoles = () => setRevision((value) => value + 1);
+  // 页码与已展示数据的页码不一致时才算加载中，刷新不会清空表格
+  const loading = loadedPage !== currentPage;
 
   useEffect(() => {
     let cancelled = false;
@@ -33,6 +36,9 @@ export default function RolesManager() {
       })
       .catch((error) => {
         if (!cancelled) toast.danger({ description: error.message || t('admin.rbac.roles.toast.fetchFailed') });
+      })
+      .finally(() => {
+        if (!cancelled) setLoadedPage(currentPage);
       });
     return () => {
       cancelled = true;
@@ -60,6 +66,7 @@ export default function RolesManager() {
         totalCount={totalCount}
         currentPage={currentPage}
         pageSize={pageSize}
+        loading={loading}
         onPageChange={setCurrentPage}
         onCreateRole={modal.openCreate}
         onEditRole={modal.openEdit}
