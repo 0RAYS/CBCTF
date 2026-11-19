@@ -9,9 +9,14 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
+# The chart release owns this group. It must not share a group with the docs
+# deployment: GitHub cancels the waiting request of a group when a higher
+# priority one arrives, so a shared group ended the release with "Canceling
+# since a higher priority waiting request for pages exists".
 concurrency:
-  group: "pages"
+  group: "helm-chart-release-${{ github.ref }}"
   cancel-in-progress: false
 
 jobs:
@@ -40,6 +45,24 @@ jobs:
           helm repo add valkey https://valkey.io/valkey-helm/
           helm repo update
           helm dependency build chart/
+
+      # The chart index and the documentation site share the gh-pages branch.
+      # Publishing the index from a branch state that predates the documentation
+      # deployment would drop the new site, so the release waits for a running
+      # documentation deployment to finish.
+      - name: Wait for the documentation deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for _ in $(seq 1 30); do
+            running=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "Deploy Docs" --branch "$GITHUB_REF_NAME" --limit 10 --json status --jq '[.[] | select(.status == "in_progress" or .status == "queued")] | length' 2>/dev/null || true)
+            if [ -z "${running:-0}" ] || [ "${running:-0}" -eq 0 ]; then
+              exit 0
+            fi
+            echo "waiting for the documentation deployment ($running running)"
+            sleep 10
+          done
+          echo "the documentation deployment is still running, publishing anyway"
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
