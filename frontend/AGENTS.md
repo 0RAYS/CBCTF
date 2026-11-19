@@ -34,3 +34,9 @@ Frontend is the embedded React app for CBCTF. Trust executable config over stale
 - Tests enforce a 500-line limit for each source JS/JSX file and exact-case import resolution. Split by responsibility rather than moving a large page into a large hook. New pure modules must be added to the reviewed architecture-test dependency set.
 - Preserve independent request scope, query and selection generations. Polling must not supersede an in-flight request for the same query, and cleanup must invalidate late responses.
 - Use the real toast service contract in tests: `toast.danger({ description })`, not a fabricated `toast.error` method or a string argument.
+
+## Functions And Structure
+
+- Do not wrap a single expression in a helper that only restates it; inline the expression at the call site.
+- Keep the call chain short: the behavior should be reachable in one or two hops, not through a chain of one-line helpers.
+- A helper earns its place when it names a domain concept, removes duplication, or isolates logic worth testing.

@@ -27,7 +27,7 @@ CBCTF is a Kubernetes-native CTF platform, not a challenge repo: Go/Gin backend 
 - If the config file is missing, startup writes defaults with mode `0600` and exits so the operator can edit and restart.
 - Environment overrides use Viper prefix `CBCTF_` with dots mapped to underscores, e.g. `CBCTF_GIN_PORT`.
 - Do not commit local runtime material: root `config.yaml`, `admin.yaml`, `docker-compose.yaml`, `build.sh`, `data/`, `logs/`, `uploads/`, and `frontend/dist/*` are gitignored.
-- Root `AGENTS.md` is gitignored; subdirectory `AGENTS.md` files apply only inside their directories if present.
+- Root `AGENTS.md` applies to the whole repository; subdirectory `AGENTS.md` files apply only inside their directories.
 
 ## Frontend
 
@@ -50,6 +50,12 @@ CBCTF is a Kubernetes-native CTF platform, not a challenge repo: Go/Gin backend 
 - No boilerplate doc comments on interface implementations (e.g. `// SourceID 实现 GeneratorSource`). Document the interface once, then let the compiler speak.
 - Keep the long English explanations of non-obvious mechanics (Kubernetes capability requirements, kubelet image-list truncation, cache-key derivation, traffic-analysis invariants). Those are the comments worth reading.
 - Frontend API wrappers (`frontend/src/api`) get one short line per function; do not duplicate response shapes there.
+
+## Functions And Structure
+
+- Do not wrap a single expression in a function that only restates it; inline the expression at the call site.
+- Keep the call chain short: the behavior should be reachable in one or two hops, not through a chain of one-line helpers.
+- A helper earns its place when it names a domain concept, removes duplication, or isolates logic worth testing.
 
 ## Docs
 
