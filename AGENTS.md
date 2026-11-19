@@ -56,6 +56,8 @@ CBCTF is a Kubernetes-native CTF platform, not a challenge repo: Go/Gin backend 
 - Do not wrap a single expression in a function that only restates it; inline the expression at the call site.
 - Keep the call chain short: the behavior should be reachable in one or two hops, not through a chain of one-line helpers.
 - A helper earns its place when it names a domain concept, removes duplication, or isolates logic worth testing.
+- Do not add a `OldFunctionWithNewValue` variant when only the returned data changed. If the old function is fully replaced by the new one, change the old function in place instead of introducing a second name.
+- Chained builder methods (`WithX`) are the exception: they exist to configure a value, so keep them.
 
 ## Docs
 
