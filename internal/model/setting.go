@@ -35,7 +35,6 @@ const (
 	K8SNamespaceSettingKey         = "k8s.namespace"
 	K8SCaptureImageSettingKey      = "k8s.capture"
 	K8SCaptureEnabledSettingKey    = "k8s.capture_enabled"
-	K8SPriorityClassSettingKey     = "k8s.priority_class_name"
 	K8SWorkerImageSettingKey       = "k8s.worker_image"
 	K8SGeneratorPoolSizeSettingKey = "k8s.generator_pool_size"
 	K8SImagePullSecretSettingKey   = "k8s.image_pull_secret"

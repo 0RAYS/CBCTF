@@ -199,7 +199,6 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 | `serviceAccount.create` | 是否创建应用 ServiceAccount | `true`                            |
 | `cbctf.k8s.capture`     | 流量捕获镜像                | `ghcr.io/domcyrus/rustnet:latest` |
 | `cbctf.k8s.captureEnabled` | 是否开启抓包容器 | `true` |
-| `cbctf.k8s.priorityClassName` | 普通 Pod 的已有 PriorityClass，当前不应用到 VM | `""` |
 | `cbctf.k8s.workerImage` | 独立 worker 镜像地址，与主程序版本分开配置 | `ghcr.io/0rays/cbctf-worker:latest` |
 | `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量 | `2` |
 | `cbctf.k8s.frp.on`      | 是否启用 FRP 端口暴露         | `false`                           |

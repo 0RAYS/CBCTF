@@ -80,7 +80,6 @@ type Config struct {
 		SharedVolumeClaim string `mapstructure:"shared_volume_claim" json:"shared_volume_claim"`
 		CaptureImage      string `mapstructure:"capture" json:"capture"`
 		CaptureEnabled    bool   `mapstructure:"capture_enabled" json:"capture_enabled"`
-		PriorityClassName string `mapstructure:"priority_class_name" json:"priority_class_name"`
 		WorkerImage       string `mapstructure:"worker_image" json:"worker_image"`
 		GeneratorPoolSize int    `mapstructure:"generator_pool_size" json:"generator_pool_size"`
 		ImagePullSecret  string `mapstructure:"image_pull_secret" json:"image_pull_secret"`
