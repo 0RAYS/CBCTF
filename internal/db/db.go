@@ -86,12 +86,6 @@ func Init() {
 		log.Logger.Warningf("Failed to ensure pg_trgm extension: %s", err)
 	}
 
-	// 比赛题目副本的迁移必须先于 AutoMigrate：
-	// rand_id 的唯一索引要求公开 id 已经回填，旧行也需要补齐副本字段。
-	if ret := MigrateContestChallengeCopies(DB); !ret.OK {
-		log.Logger.Fatalf("Failed to migrate contest challenge copies: %s %v", ret.Msg, ret.Attr)
-	}
-
 	err := DB.AutoMigrate(
 		&model.Branding{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Victim{}, &model.Pod{},
 		&model.Contest{}, &model.ContestChallenge{}, &model.ContestFlag{}, &model.CronJob{}, &model.Email{},
