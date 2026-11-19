@@ -22,7 +22,6 @@ const AnsiLog = forwardRef(function AnsiLog(
 ) {
   const innerRef = useRef(null);
 
-  // 外部 ref 始终指向内部滚动容器，无论渲染的是加载态还是内容
   useImperativeHandle(ref, () => innerRef.current);
 
   const isEmpty = !content || (Array.isArray(content) && content.length === 0);

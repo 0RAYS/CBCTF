@@ -20,7 +20,7 @@ export default function useVictimList(scope) {
   const request = useRef(0);
   const inFlight = useRef(null);
   const pageSize = 20;
-  // 查询条件与已展示数据的条件不一致时才算加载中，后台轮询不会清空列表
+  // 后台轮询不会清空列表
   const queryKey = `${scope.contestId}|${currentPage}|${showDeleted}|${JSON.stringify(filters)}`;
   const loading = loadedQuery !== queryKey;
 
@@ -55,7 +55,7 @@ export default function useVictimList(scope) {
   useEffect(() => {
     if (refreshInterval <= 0) return;
     return startVisiblePolling(() => {
-      // Only polling skips busy queries; manual refresh still supersedes them.
+      // Only polling skips busy queries; manual refresh supersedes them.
       if (inFlight.current === null) refreshLatest();
     }, refreshInterval * 1000);
   }, [refreshInterval]);

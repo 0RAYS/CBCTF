@@ -23,9 +23,9 @@ function ContestChallengeManagement({ contestId }) {
   const [revision, setRevision] = useState(0);
   const [loadedKey, setLoadedKey] = useState('');
   const refresh = () => setRevision((previous) => previous + 1);
-  // 搜索词防抖后才应用到查询条件，避免每次输入都发起请求
+  // 避免每次输入都发起请求
   const debouncedName = useDebounce(nameQuery, 300);
-  // 筛选条件与已展示数据的条件不一致时才算加载中，刷新不会清空表格
+  // 刷新不会清空表格
   const filterKey = `${filters.page}|${filters.type}|${filters.category}|${filters.name}`;
   const loading = loadedKey !== filterKey;
 

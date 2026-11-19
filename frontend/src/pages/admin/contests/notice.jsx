@@ -19,7 +19,7 @@ function AdminContestNotices() {
   const requestRef = useRef(0);
   const pageSize = 20;
   const { t } = useTranslation();
-  // 页码与已展示数据的页码不一致时才算加载中，刷新不会清空表格
+  // 刷新不会清空表格
   const loading = loadedPage !== currentPage;
 
   const fetchNotices = async () => {

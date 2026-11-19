@@ -49,7 +49,6 @@ export function ansiToHtml(input) {
   const text = escapeHtml(input);
 
   let openTags = [];
-  const closeAll = () => (openTags.length ? '</span>'.repeat(openTags.length) : '');
 
   // 通过字符串拼接构造匹配 ESC 的正则, 避免源码中直接出现控制字符
   const ESC = String.fromCharCode(27);
@@ -67,7 +66,7 @@ export function ansiToHtml(input) {
           .map((n) => parseInt(n, 10));
 
         if (codes.length === 0 || codes.includes(0)) {
-          const closing = closeAll();
+          const closing = openTags.length ? '</span>'.repeat(openTags.length) : '';
           openTags = [];
           return closing;
         }
@@ -88,8 +87,8 @@ export function ansiToHtml(input) {
         openTags.push('span');
         return `<span style="${style}">`;
       })
-      .replace(ctrlPattern, '') + closeAll();
+      .replace(ctrlPattern, '') + (openTags.length ? '</span>'.repeat(openTags.length) : '');
 
-  // 用白色作为默认前景色, 子 span 的 color 会覆盖
+  // 用白色作为默认前景色
   return `<span style="color:#ffffff">${converted}</span>`;
 }

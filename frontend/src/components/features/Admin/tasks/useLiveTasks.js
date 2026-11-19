@@ -20,9 +20,9 @@ export default function useLiveTasks(active) {
   const [refreshInterval, setRefreshInterval] = useState(10);
   const [revision, refresh] = useReducer((value) => value + 1, 0);
   const pending = useRef(false);
-  // 搜索词防抖后才发起请求，输入过程中不打断已有结果
+  // 输入过程中不打断已有结果
   const requestQuery = useDebounce(query, 300);
-  // 查询条件与已展示数据的条件不一致时才算加载中，轮询刷新不会清空表格
+  // 轮询刷新不会清空表格
   const loading = active && loadedQuery !== requestQuery;
   const reportError = useEffectEvent((error) => {
     toast.danger({ description: error.message || t('admin.tasks.toast.fetchLiveFailed') });

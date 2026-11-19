@@ -1,5 +1,4 @@
-// The address list shows "name: protocol://ip:port"; only the ip:port part is
-// worth pasting into a client.
+// Returns the "ip:port" part of an address entry.
 export function copyableAddress(target) {
   const value = typeof target === 'string' ? target.trim() : '';
   if (!value) return '';

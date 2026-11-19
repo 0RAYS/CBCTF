@@ -14,10 +14,9 @@ export default function useScoreColumnWidth({
 
   useLayoutEffect(() => {
     const element = measureRef.current;
-    const measure = () => setContentWidth(Math.ceil(element.getBoundingClientRect().width));
-    measure();
+    setContentWidth(Math.ceil(element.getBoundingClientRect().width));
     if (typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(measure);
+    const observer = new ResizeObserver(() => setContentWidth(Math.ceil(element.getBoundingClientRect().width)));
     observer.observe(element);
     return () => observer.disconnect();
   }, [scores, label, scoreClassName, maxWidth, padding]);

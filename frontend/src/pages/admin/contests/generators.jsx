@@ -20,6 +20,6 @@ export default function ContestGenerators() {
     logs: (id, lines) => getContestGeneratorLogs(contestId, id, lines),
   };
 
-  // A contest change owns a new query, operation, and dialog session.
+  // key 随 contestId 变化重新挂载 GeneratorManagement
   return <GeneratorManagement key={contestId} api={api} />;
 }

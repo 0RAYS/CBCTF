@@ -19,7 +19,7 @@ function Select({
   const id = externalId || generatedId;
   const errorId = `${id}-error`;
 
-  // 尺寸样式类（使用index.css中的预定义类）
+  // 预定义类定义在 index.css 中
   const sizeClasses = {
     sm: 'select-custom-sm',
     md: 'select-custom-md',

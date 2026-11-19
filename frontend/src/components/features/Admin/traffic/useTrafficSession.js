@@ -30,7 +30,6 @@ export default function useTrafficSession({ isOpen, container, contestId, teamId
     setFetchError(false);
     setSelectionVersion((current) => current + 1);
     return () => {
-      // Invalidate both request lanes on close, scope change, and unmount.
       scope.active = false;
       scope.frameController?.abort();
       scope.universeController?.abort();

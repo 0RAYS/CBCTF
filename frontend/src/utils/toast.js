@@ -1,9 +1,8 @@
 let handler = null;
 
-// Queue for toasts dispatched before ToastProvider mounts
+// Toasts dispatched before the provider mounts
 const pendingQueue = [];
 
-// Called by ToastProvider on mount
 export const registerToastHandler = (addToast) => {
   handler = addToast;
   while (pendingQueue.length > 0) {
@@ -11,7 +10,6 @@ export const registerToastHandler = (addToast) => {
   }
 };
 
-// Called by ToastProvider on unmount
 export const unregisterToastHandler = () => {
   handler = null;
 };

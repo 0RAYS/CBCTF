@@ -10,7 +10,7 @@ const ReactECharts = lazy(() => import('../../components/common/EChart'));
 
 function Dashboard() {
   const [status, setStatus] = useState(null);
-  // 仅首次加载展示缓冲动画，后台轮询直接就地更新数据
+  // loading 仅覆盖首次请求，轮询只更新 status
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
 

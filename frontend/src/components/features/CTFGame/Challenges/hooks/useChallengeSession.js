@@ -184,7 +184,7 @@ export default function useChallengeSession(contestId, { updateChallenge, onSolv
     try {
       const response = await submitFlag(contestId, challengeId, { flag: value });
       if (!isCurrent()) return { success: false };
-      // Incorrect flags still refresh attempts without remounting the input.
+      // Incorrect flags refresh attempts without remounting the input.
       void refreshChallengeStatus(challengeId, selection);
       if (response.code === 200) {
         onSolved();

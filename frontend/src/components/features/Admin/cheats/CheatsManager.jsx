@@ -55,7 +55,6 @@ export default function CheatsManager({ contestId }) {
     };
   }, [contestId, page, filterType, filterReasonType, revision, t]);
 
-  const refresh = () => setRevision((value) => value + 1);
   const closeDialog = () => setDialog(null);
   const openAction = (action, cheat = null) => setDialog({ action, cheat });
   const filterRows = [
@@ -174,7 +173,7 @@ export default function CheatsManager({ contestId }) {
           contestId={contestId}
           cheat={dialog.cheat}
           onClose={closeDialog}
-          onSaved={refresh}
+          onSaved={() => setRevision((value) => value + 1)}
         />
       )}
       {['delete', 'deleteAll', 'check'].includes(dialog?.action) && (
@@ -186,7 +185,7 @@ export default function CheatsManager({ contestId }) {
           onClose={closeDialog}
           onCompleted={(batch) => {
             if (batch) setScanResult(batch);
-            refresh();
+            setRevision((value) => value + 1);
           }}
         />
       )}

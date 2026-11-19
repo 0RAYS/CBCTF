@@ -11,7 +11,7 @@ export const EASE_T2 = [0.22, 1, 0.36, 1];
 /** quart-out: snappy, responsive — use for hover, tap, toggle, small state changes */
 export const EASE_T3 = [0.25, 1, 0.5, 1];
 
-/** Transition durations in seconds */
+/** Durations in seconds */
 const DUR = {
   fast: 0.18, // 180ms — icon swap, chip state change
   mid: 0.25, // 250ms — component transition (modal, dropdown)

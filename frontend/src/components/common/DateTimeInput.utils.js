@@ -61,7 +61,7 @@ export function parseDateTimeString(str) {
 
 export function getCalendarGrid(year, month) {
   const firstDay = new Date(year, month, 1);
-  // getDay() returns 0=Sun..6=Sat, convert to Mon=0..Sun=6
+  // getDay(): 0=Sun..6=Sat → Mon=0..Sun=6
   let startDow = firstDay.getDay() - 1;
   if (startDow < 0) startDow = 6;
 
@@ -85,7 +85,7 @@ export function getCalendarGrid(year, month) {
     grid.push({ day: d, month, year, isCurrentMonth: true });
   }
 
-  // Next month days to fill 42 cells
+  // Fill the remaining cells with next-month days
   const nextMonth = month === 11 ? 0 : month + 1;
   const nextYear = month === 11 ? year + 1 : year;
   let nextDay = 1;

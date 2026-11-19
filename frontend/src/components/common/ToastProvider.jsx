@@ -36,7 +36,6 @@ const ToastProvider = ({ children, position = 'top-right', maxToasts = 5 }) => {
     [maxToasts, removeToast]
   );
 
-  // Register handler for the singleton toast module
   useEffect(() => {
     registerToastHandler(addToast);
     return () => unregisterToastHandler();

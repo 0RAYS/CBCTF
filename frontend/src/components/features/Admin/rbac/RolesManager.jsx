@@ -19,8 +19,7 @@ export default function RolesManager() {
   const [revision, setRevision] = useState(0);
   const [loadedPage, setLoadedPage] = useState(0);
   const pageSize = 20;
-  const refreshRoles = () => setRevision((value) => value + 1);
-  // 页码与已展示数据的页码不一致时才算加载中，刷新不会清空表格
+  // 刷新不会清空表格
   const loading = loadedPage !== currentPage;
 
   useEffect(() => {
@@ -50,7 +49,7 @@ export default function RolesManager() {
     createApi: createRole,
     updateApi: updateRole,
     deleteApi: deleteRole,
-    onSuccess: refreshRoles,
+    onSuccess: () => setRevision((value) => value + 1),
     itemToForm: (role) => ({ name: role.name, description: role.description || '' }),
     messages: Object.fromEntries(
       ['createSuccess', 'createFailed', 'updateSuccess', 'updateFailed', 'deleteSuccess', 'deleteFailed'].map((key) => [

@@ -43,7 +43,7 @@ export const restartSystem = () => {
   });
 };
 
-// 返回带 ANSI 颜色的日志文本数组，支持 limit / offset / level 分页参数
+// 返回带 ANSI 颜色的日志文本数组
 export const getSystemLogs = (params = { limit: 100, offset: 0 }) => {
   return request({
     url: '/admin/logs',
