@@ -39,8 +39,13 @@ func TestPermissionChecksUseScopedSubresources(t *testing.T) {
 			}
 		}
 	}
-	if !found["exec"] || !found["log"] {
+	if !found["log"] {
 		t.Fatal("missing pod subresource checks")
+	}
+	// Pod exec was removed together with internal/k8s/exec.go: attachments run in the
+	// standalone worker image and capture runs as a sidecar, so nothing execs into pods.
+	if found["exec"] {
+		t.Fatal("unused pods/exec permission check")
 	}
 }
 
