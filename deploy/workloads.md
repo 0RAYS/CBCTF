@@ -35,7 +35,6 @@
 - 在题目模板中填写 CPU、内存限制，调度时也会预留相同资源；未指定时默认预留 `100m` CPU 和 `64Mi` 内存。
 - 抓包、FRPC、nginx 辅助容器各预留 `10m` CPU 和 `32Mi` 内存，上限为 `500m` / `256Mi`，规划容量时需一并计入。
 - `k8s.capture_enabled: false` 关闭新实例的抓包。已有实例保持原设置。
-- `k8s.priority_class_name` 可指定集群中已有的 PriorityClass，适用于普通 Pod，不应用到 VM。
 - `x-volumes` 适合小型配置和 Flag 文件；大型文件请放入镜像或题目附件。
 
 ## 网络暴露
@@ -93,7 +92,6 @@ image:
 cbctf:
   k8s:
     captureEnabled: false
-    priorityClassName: ""
     workerImage: ghcr.io/0rays/cbctf-worker:your-worker-tag
     generatorPoolSize: 4
   asynq:
@@ -103,6 +101,6 @@ cbctf:
       attachment: 32
 ```
 
-Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、Pod PriorityClass、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
+Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
 
 开赛前建议按预计并发启动一批测试实例，检查镜像拉取、附件耗时和资源占用，再确定池容量与队列并发。

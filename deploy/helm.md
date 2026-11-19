@@ -186,30 +186,28 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 
 - 平台挂载 `/app/data`，默认 PVC 为 `{namespace}-shared-volume`。`persistence.existingClaim` 可以指定同命名空间已有 PVC，Chart 同时写入后端 `k8s.shared_volume_claim`，使生成器和抓包容器使用同一卷。
 - `persistence.enabled: false` 仅使平台数据使用临时卷，不会为运行时 Pod 创建共享 PVC；这不适用于需要动态附件或抓包的部署。
-- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台和 PostgreSQL Pod。Valkey 由官方 Chart 渲染，从 Docker Hub 拉取 `valkey/valkey`，私有镜像仓库请使用 `valkey.image.registry` 与 `valkey.imagePullSecrets`。后端创建的题目、生成器、FRPC 和预热 Job 不会继承应用 Pod 的凭据；这些 Pod 使用运行命名空间的 `default` ServiceAccount，可将所需 Secret 配置到该 ServiceAccount。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
+- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台和 PostgreSQL Pod。Valkey 由官方 Chart 渲染，从 Docker Hub 拉取 `valkey/valkey`，私有镜像仓库请使用 `valkey.image.registry` 与 `valkey.imagePullSecrets`。后端创建的题目、生成器、FRPC 和预热 Job 不会继承应用 Pod 的凭据；这些 Pod 继承运行命名空间 `default` ServiceAccount 的 `imagePullSecrets`，私有仓库只需把 Secret 配置到该 ServiceAccount。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
 - Chart 的 `nodeSelector`、`tolerations`、`affinity`、`resources` 作用于平台 Pod，不等于题目调度和资源配置；题目资源来自 Compose。
 
 ## Kubernetes 靶机配置
 
-| 配置项                           | 说明                                 | 示例                                  |
-| ----------------------------- | ---------------------------------- | ----------------------------------- |
-| `serviceAccount.create`       | 是否创建应用 ServiceAccount              | `true`                              |
-| `cbctf.k8s.capture`           | 流量捕获镜像                             | `ghcr.io/domcyrus/rustnet:latest`   |
-| `cbctf.k8s.captureEnabled`    | 是否开启抓包容器                           | `true`                              |
-| `cbctf.k8s.priorityClassName` | 普通 Pod 的已有 PriorityClass，当前不应用到 VM | `""`                                |
-| `cbctf.k8s.workerImage`       | 独立 worker 镜像地址，与主程序版本分开配置          | `ghcr.io/0rays/cbctf-worker:latest` |
-| `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量                    | `2`                                 |
-| `cbctf.k8s.frp.on`            | 是否启用 FRP 端口暴露                      | `false`                             |
-| `cbctf.k8s.frp.frpc`          | FRP client 镜像                      | `ghcr.io/fatedier/frpc:v0.69.0`     |
-| `cbctf.k8s.frp.nginx`         | FRP 转发辅助 Nginx 镜像                  | `nginx:latest`                      |
-| `cbctf.k8s.frp.frps`          | FRPS 服务端、token 和端口池                | `host: frps.example.com`            |
+| 配置项                           | 说明                        | 示例                                  |
+| ----------------------------- | ------------------------- | ----------------------------------- |
+| `serviceAccount.create`       | 是否创建应用 ServiceAccount     | `true`                              |
+| `cbctf.k8s.capture`           | 流量捕获镜像                    | `ghcr.io/domcyrus/rustnet:latest`   |
+| `cbctf.k8s.captureEnabled`    | 是否开启抓包容器                  | `true`                              |
+| `cbctf.k8s.workerImage`       | 独立 worker 镜像地址，与主程序版本分开配置 | `ghcr.io/0rays/cbctf-worker:latest` |
+| `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量           | `2`                                 |
+| `cbctf.k8s.frp.on`            | 是否启用 FRP 端口暴露             | `false`                             |
+| `cbctf.k8s.frp.frpc`          | FRP client 镜像             | `ghcr.io/fatedier/frpc:v0.69.0`     |
+| `cbctf.k8s.frp.nginx`         | FRP 转发辅助 Nginx 镜像         | `nginx:latest`                      |
+| `cbctf.k8s.frp.frps`          | FRPS 服务端、token 和端口池       | `host: frps.example.com`            |
 
 Chart 使用命名空间 Role 管理 Pod、Service、Job、NetworkPolicy、ConfigMap、Multus NAD 和 VM，使用 ClusterRole 管理节点读取及 Kube-OVN 集群级资源。Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
 
 | API group              | Resources                        | Verbs                                                          | 用途                           |
 | ---------------------- | -------------------------------- | -------------------------------------------------------------- | ---------------------------- |
 | core                   | `pods`                           | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 创建靶机、生成器、FRPC Pod，并等待状态和清理   |
-| core                   | `pods/exec`                      | `create`                                                       | Pod 终端操作；附件 worker 不使用 Exec  |
 | core                   | `pods/log`                       | `get`                                                          | 读取 Pod 日志                    |
 | core                   | `services`                       | `create`, `list`, `delete`                                     | 创建 ClusterIP / NodePort 暴露   |
 | core                   | `configmaps`                     | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 题目文件配置与资源清理                  |
