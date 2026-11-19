@@ -60,6 +60,15 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 		"Creating victim k8s resources: victim_id=%d team_id=%d challenge_id=%d pods=%d vpc=%t frp=%t",
 		victim.ID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods), victim.Spec.NetworkPlan.Name != "", config.Env.K8S.Frp.On,
 	)
+	// FRP without a frps server falls back to the plain exposure path, the
+	// system setting stays untouched.
+	if victim.Spec.FrpEnabled && len(config.Env.K8S.Frp.Frps) == 0 {
+		log.Logger.Warningf(
+			"FRP is enabled but no frps server is configured, starting victim %d without FRP exposure",
+			victim.ID,
+		)
+		victim.Spec.FrpEnabled = false
+	}
 	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag})
 	victim.Resources.UIDs = make(map[string]string)
 	if config.Env.K8S.CaptureEnabled {
