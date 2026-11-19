@@ -200,7 +200,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 
 			pOptions := CreatePodOptions{
 				SubmitOnly:        true,
-				PriorityClassName: config.Env.K8S.PriorityClassName,
 				Name:              pod.Name,
 				Labels:            podLabels,
 				Networks:          networks,

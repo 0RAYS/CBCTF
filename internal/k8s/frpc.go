@@ -270,7 +270,6 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			}
 			options := CreatePodOptions{
 				SubmitOnly:        true,
-				PriorityClassName: config.Env.K8S.PriorityClassName,
 				Name:              name,
 				Labels:            labels,
 				Containers:        containers,

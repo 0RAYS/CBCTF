@@ -57,7 +57,6 @@ func StartGenerator(ctx context.Context, source model.GeneratorSource, generator
 		generator.ID, generator.Name, source.SourceID(), source.SourceImage(),
 	)
 	pod, ret = CreatePod(ctx, CreatePodOptions{
-		PriorityClassName: config.Env.K8S.PriorityClassName,
 		Name:              generator.Name,
 		Labels:            labels,
 		ImagePullSecret:   config.Env.K8S.ImagePullSecret,

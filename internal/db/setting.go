@@ -110,7 +110,6 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.K8SNamespaceSettingKey, Value: model.SettingValue{V: config.Env.K8S.Namespace}},
 		{Key: model.K8SCaptureImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.CaptureImage}},
 		{Key: model.K8SCaptureEnabledSettingKey, Value: model.SettingValue{V: config.Env.K8S.CaptureEnabled}},
-		{Key: model.K8SPriorityClassSettingKey, Value: model.SettingValue{V: config.Env.K8S.PriorityClassName}},
 		{Key: model.K8SWorkerImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.WorkerImage}},
 		{Key: model.K8SGeneratorPoolSizeSettingKey, Value: model.SettingValue{V: config.Env.K8S.GeneratorPoolSize}},
 		{Key: model.K8SImagePullSecretSettingKey, Value: model.SettingValue{V: config.Env.K8S.ImagePullSecret}},
@@ -226,9 +225,6 @@ func (s *SettingRepo) readSettingsInto(next *config.Config) model.RetVal {
 		return ret
 	}
 	if next.K8S.CaptureEnabled, ret = GetValue[bool](s, model.K8SCaptureEnabledSettingKey); !ret.OK {
-		return ret
-	}
-	if next.K8S.PriorityClassName, ret = GetValue[string](s, model.K8SPriorityClassSettingKey); !ret.OK {
 		return ret
 	}
 	if next.K8S.WorkerImage, ret = GetValue[string](s, model.K8SWorkerImageSettingKey); !ret.OK {

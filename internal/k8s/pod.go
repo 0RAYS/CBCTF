@@ -30,7 +30,6 @@ type Network struct {
 
 type CreatePodOptions struct {
 	SubmitOnly        bool
-	PriorityClassName string
 	Name              string
 	Labels            map[string]string
 	Annotations       map[string]string
@@ -72,7 +71,6 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 		Labels:          options.Labels,
 		Annotations:     annotations,
 		Spec: corev1.PodSpec{
-			PriorityClassName:             options.PriorityClassName,
 			Affinity:                      affinity,
 			EnableServiceLinks:            new(false),
 			AutomountServiceAccountToken:  new(false),
