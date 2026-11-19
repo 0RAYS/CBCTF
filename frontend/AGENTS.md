@@ -37,8 +37,8 @@ Frontend is the embedded React app for CBCTF. Trust executable config over stale
 
 ## Functions And Structure
 
-- Do not wrap a single expression in a helper that only restates it; inline the expression at the call site.
-- Keep the call chain short: the behavior should be reachable in one or two hops, not through a chain of one-line helpers.
-- A helper earns its place when it names a domain concept, removes duplication, or isolates logic worth testing.
-- Do not add a `OldFunctionWithNewValue` variant when only the returned data changed. If the old function is fully replaced by the new one, change the old function in place instead of introducing a second name.
-- Chained builder methods (`WithX`) are the exception: they exist to configure a value, so keep them.
+- Keep the call graph shallow: a reader should reach the behavior of a code path in one or two hops, not through a chain of single-expression wrappers.
+- Write an expression where it is used instead of wrapping it in a helper that only restates it.
+- When the data a function returns grows, extend that function. A second function whose name encodes the new data splits one operation into two implementations that drift apart.
+- Chainable configurators that build a value (`WithX`) are exempt: they belong to the construction API of that value.
+- A helper is justified when it names a domain concept, removes duplication, or isolates logic worth testing.
