@@ -25,6 +25,7 @@ function AdminFiles({
   currentPage = 1,
   pageSize = 12,
   fileType = 'file',
+  loading = false,
   onPageChange,
   onTypeChange,
   onDelete,
@@ -258,7 +259,8 @@ function AdminFiles({
               onClick: () => onDelete?.(file),
             },
           ]}
-          empty={files.length === 0}
+          loading={loading}
+          empty={!loading && files.length === 0}
           emptyContent={t('admin.files.empty')}
         />
 

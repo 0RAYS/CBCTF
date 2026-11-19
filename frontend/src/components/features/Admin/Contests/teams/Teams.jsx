@@ -61,6 +61,7 @@ function AdminTeams({
   showModal = false,
   modalMode = 'edit',
   selectedTeam = null,
+  loading = false,
   onPageChange,
   onEditTeam,
   onDeleteTeam,
@@ -347,7 +348,8 @@ function AdminTeams({
             onClick: () => onDeleteTeam(team),
           },
         ]}
-        empty={displayTeams.length === 0}
+        loading={loading}
+        empty={!loading && displayTeams.length === 0}
         emptyContent={emptyContent}
         onRowClick={onViewDetail || onEditTeam}
       />

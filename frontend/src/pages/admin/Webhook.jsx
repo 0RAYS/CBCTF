@@ -12,12 +12,14 @@ export default function WebhookManagement() {
   const [webhooks, setWebhooks] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('webhook');
   const [historyTarget, setHistoryTarget] = useState(null);
   const [dialog, setDialog] = useState(null);
   const pageSize = 20;
 
   const fetchWebhooks = async () => {
+    setLoading(true);
     try {
       const response = await getWebhookList({ limit: pageSize, offset: (currentPage - 1) * pageSize });
       if (response.code === 200) {
@@ -26,6 +28,8 @@ export default function WebhookManagement() {
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.webhook.toast.fetchListFailed') });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,6 +59,7 @@ export default function WebhookManagement() {
           totalCount={totalCount}
           currentPage={currentPage}
           pageSize={pageSize}
+          loading={loading}
           onPageChange={setCurrentPage}
           onCreateWebhook={() => setDialog({ mode: 'create' })}
           onEditWebhook={edit}

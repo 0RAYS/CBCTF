@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useEffectEvent, useState } from 'react';
 import { getSystemStatus } from '../../api/admin/system';
 import AdminDashboard from '../../components/features/Admin/AdminDashboard';
+import Loading from '../../components/common/Loading';
 import { toast } from '../../utils/toast.js';
 import { useTranslation } from 'react-i18next';
 import { startVisiblePolling } from '../../utils/visiblePolling.js';
@@ -9,6 +10,8 @@ const ReactECharts = lazy(() => import('../../components/common/EChart'));
 
 function Dashboard() {
   const [status, setStatus] = useState(null);
+  // 仅首次加载展示缓冲动画，后台轮询直接就地更新数据
+  const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
 
   const reportError = useEffectEvent((error) => {
@@ -28,6 +31,7 @@ function Dashboard() {
         if (active) reportError(error);
       } finally {
         pending = false;
+        if (active) setLoading(false);
       }
     };
     fetchSystemStatus();
@@ -137,6 +141,10 @@ function Dashboard() {
       ],
     };
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="p-4">

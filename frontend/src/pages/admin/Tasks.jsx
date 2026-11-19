@@ -33,6 +33,7 @@ export default function TasksPage() {
       <TaskTable
         mode={tab}
         rows={state.rows}
+        loading={state.loading}
         totalCount={state.totalCount}
         currentPage={state.query.page}
         onPageChange={(page) => state.dispatch({ type: 'page', page })}

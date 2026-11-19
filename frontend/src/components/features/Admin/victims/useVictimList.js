@@ -16,9 +16,13 @@ export default function useVictimList(scope) {
   const [selectedContainers, setSelectedContainers] = useState([]);
   const [showDeleted, setShowDeleted] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(10);
+  const [loadedQuery, setLoadedQuery] = useState(null);
   const request = useRef(0);
   const inFlight = useRef(null);
   const pageSize = 20;
+  // 查询条件与已展示数据的条件不一致时才算加载中，后台轮询不会清空列表
+  const queryKey = `${scope.contestId}|${currentPage}|${showDeleted}|${JSON.stringify(filters)}`;
+  const loading = loadedQuery !== queryKey;
 
   const refresh = async () => {
     const session = ++request.current;
@@ -35,6 +39,7 @@ export default function useVictimList(scope) {
       }
     } finally {
       if (inFlight.current === session) inFlight.current = null;
+      if (session === request.current) setLoadedQuery(queryKey);
     }
   };
   const refreshLatest = useEffectEvent(refresh);
@@ -64,6 +69,7 @@ export default function useVictimList(scope) {
     filters,
     selectedContainers,
     showDeleted,
+    loading,
     refreshInterval,
     setRefreshInterval,
     refresh,
