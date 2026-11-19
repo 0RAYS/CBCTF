@@ -25,6 +25,9 @@
 - 每个 Flag 分别设置内容、计分方式、初始分值、最低分值和衰减参数。
 - 单独保存的 Flag 会立即生效，关闭或取消题目编辑不会撤销。「保存更改」可一并保存尚未保存的 Flag 和题目信息。
 - 加入时的计分初值为静态分 `1000`、最低分 `100`、衰减参数 `100`，应按比赛规则主动设置。
+- 比赛题目是加入时从题库深拷贝的副本，题库的后续修改不会影响本比赛；同一个题库题目可以在同一比赛多次添加。
+- 修改 Flag 模板会保留已解出队伍的解题记录与得分，未解出的队伍自动获得新答案。
+- 「重置本题解题记录」会清空本题所有队伍的解题记录与对应提交，并重算分数与排名，执行前需二次确认。
 
 详见[题目管理](/admin/challenges.md)和[计分系统](/guide/features/scoring.md)。
 
@@ -57,6 +60,6 @@
 
 ## 主要权限
 
-比赛管理使用 `admin:contest:*`；比赛题目使用 `admin:contest_challenge:*`，Flag 使用 `admin:contest_challenge_flag:*`。比赛范围的镜像、靶机、生成器分别使用 `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`，不要与全局权限混淆。
+比赛管理使用 `admin:contest:*`；比赛题目使用 `admin:contest_challenge:*`，Flag 使用 `admin:contest_challenge_flag:*`。比赛范围的镜像、靶机、生成器分别使用 `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`，不要与全局权限混淆。节点镜像检测使用 `admin:image:detect`，比赛范围的镜像检测使用 `admin:contest_image:detect`。
 
 题解列表/下载使用 `admin:team_writeup:list/read`，整场导出使用 `admin:contest_writeup:export`。完整权限名称可在后台「权限」页查看。

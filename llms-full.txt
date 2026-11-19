@@ -654,30 +654,28 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 
 - 平台挂载 `/app/data`，默认 PVC 为 `{namespace}-shared-volume`。`persistence.existingClaim` 可以指定同命名空间已有 PVC，Chart 同时写入后端 `k8s.shared_volume_claim`，使生成器和抓包容器使用同一卷。
 - `persistence.enabled: false` 仅使平台数据使用临时卷，不会为运行时 Pod 创建共享 PVC；这不适用于需要动态附件或抓包的部署。
-- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台和 PostgreSQL Pod。Valkey 由官方 Chart 渲染，从 Docker Hub 拉取 `valkey/valkey`，私有镜像仓库请使用 `valkey.image.registry` 与 `valkey.imagePullSecrets`。后端创建的题目、生成器、FRPC 和预热 Job 不会继承应用 Pod 的凭据；这些 Pod 使用运行命名空间的 `default` ServiceAccount，可将所需 Secret 配置到该 ServiceAccount。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
+- `imagePullSecrets` 与 `imageCredentials` 用于 Chart 管理的平台和 PostgreSQL Pod。Valkey 由官方 Chart 渲染，从 Docker Hub 拉取 `valkey/valkey`，私有镜像仓库请使用 `valkey.image.registry` 与 `valkey.imagePullSecrets`。后端创建的题目、生成器、FRPC 和预热 Job 不会继承应用 Pod 的凭据；这些 Pod 继承运行命名空间 `default` ServiceAccount 的 `imagePullSecrets`，私有仓库只需把 Secret 配置到该 ServiceAccount。VM 的 containerDisk 私有镜像还需按 KubeVirt 的拉取凭据机制单独验证。
 - Chart 的 `nodeSelector`、`tolerations`、`affinity`、`resources` 作用于平台 Pod，不等于题目调度和资源配置；题目资源来自 Compose。
 
 ## Kubernetes 靶机配置
 
-| 配置项                           | 说明                                 | 示例                                  |
-| ----------------------------- | ---------------------------------- | ----------------------------------- |
-| `serviceAccount.create`       | 是否创建应用 ServiceAccount              | `true`                              |
-| `cbctf.k8s.capture`           | 流量捕获镜像                             | `ghcr.io/domcyrus/rustnet:latest`   |
-| `cbctf.k8s.captureEnabled`    | 是否开启抓包容器                           | `true`                              |
-| `cbctf.k8s.priorityClassName` | 普通 Pod 的已有 PriorityClass，当前不应用到 VM | `""`                                |
-| `cbctf.k8s.workerImage`       | 独立 worker 镜像地址，与主程序版本分开配置          | `ghcr.io/0rays/cbctf-worker:latest` |
-| `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量                    | `2`                                 |
-| `cbctf.k8s.frp.on`            | 是否启用 FRP 端口暴露                      | `false`                             |
-| `cbctf.k8s.frp.frpc`          | FRP client 镜像                      | `ghcr.io/fatedier/frpc:v0.69.0`     |
-| `cbctf.k8s.frp.nginx`         | FRP 转发辅助 Nginx 镜像                  | `nginx:latest`                      |
-| `cbctf.k8s.frp.frps`          | FRPS 服务端、token 和端口池                | `host: frps.example.com`            |
+| 配置项                           | 说明                        | 示例                                  |
+| ----------------------------- | ------------------------- | ----------------------------------- |
+| `serviceAccount.create`       | 是否创建应用 ServiceAccount     | `true`                              |
+| `cbctf.k8s.capture`           | 流量捕获镜像                    | `ghcr.io/domcyrus/rustnet:latest`   |
+| `cbctf.k8s.captureEnabled`    | 是否开启抓包容器                  | `true`                              |
+| `cbctf.k8s.workerImage`       | 独立 worker 镜像地址，与主程序版本分开配置 | `ghcr.io/0rays/cbctf-worker:latest` |
+| `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量           | `2`                                 |
+| `cbctf.k8s.frp.on`            | 是否启用 FRP 端口暴露             | `false`                             |
+| `cbctf.k8s.frp.frpc`          | FRP client 镜像             | `ghcr.io/fatedier/frpc:v0.69.0`     |
+| `cbctf.k8s.frp.nginx`         | FRP 转发辅助 Nginx 镜像         | `nginx:latest`                      |
+| `cbctf.k8s.frp.frps`          | FRPS 服务端、token 和端口池       | `host: frps.example.com`            |
 
 Chart 使用命名空间 Role 管理 Pod、Service、Job、NetworkPolicy、ConfigMap、Multus NAD 和 VM，使用 ClusterRole 管理节点读取及 Kube-OVN 集群级资源。Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
 
 | API group              | Resources                        | Verbs                                                          | 用途                           |
 | ---------------------- | -------------------------------- | -------------------------------------------------------------- | ---------------------------- |
 | core                   | `pods`                           | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 创建靶机、生成器、FRPC Pod，并等待状态和清理   |
-| core                   | `pods/exec`                      | `create`                                                       | Pod 终端操作；附件 worker 不使用 Exec  |
 | core                   | `pods/log`                       | `get`                                                          | 读取 Pod 日志                    |
 | core                   | `services`                       | `create`, `list`, `delete`                                     | 创建 ClusterIP / NodePort 暴露   |
 | core                   | `configmaps`                     | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` | 题目文件配置与资源清理                  |
@@ -877,21 +875,22 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 
 ## Kubernetes 配置
 
-| 配置项                       | 说明                                   | 示例                                  |
-| ------------------------- | ------------------------------------ | ----------------------------------- |
-| `k8s.namespace`           | 靶机、生成器等资源所在命名空间                      | `cbctf`                             |
-| `k8s.shared_volume_claim` | 平台和运行时工作负载共用的 PVC；部署参数，后台不修改         | `cbctf-data`                        |
-| `k8s.capture`             | 流量捕获 sidecar 镜像                      | `ghcr.io/domcyrus/rustnet:latest`   |
-| `k8s.capture_enabled`     | 是否创建抓包容器及相关挂载                        | `true`                              |
-| `k8s.priority_class_name` | 普通 Pod 使用的已有 PriorityClass，当前不应用到 VM | `""`                                |
-| `k8s.worker_image`        | 含 `/app/worker` 的独立 worker 镜像        | `ghcr.io/0rays/cbctf-worker:latest` |
-| `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量            | `2`                                 |
-| `k8s.frp.on`              | 是否启用 FRP 暴露靶机端口                      | `false`                             |
-| `k8s.frp.frpc`            | FRP client 镜像                        | `ghcr.io/fatedier/frpc:v0.69.0`     |
-| `k8s.frp.nginx`           | FRP 辅助 Nginx 镜像                      | `nginx:latest`                      |
-| `k8s.frp.frps`            | FRPS 地址、端口、token、端口池                 | `host: frps.example.com`            |
+| 配置项                       | 说明                            | 示例                                  |
+| ------------------------- | ----------------------------- | ----------------------------------- |
+| `k8s.namespace`           | 靶机、生成器等资源所在命名空间               | `cbctf`                             |
+| `k8s.shared_volume_claim` | 平台和运行时工作负载共用的 PVC；部署参数，后台不修改  | `cbctf-data`                        |
+| `k8s.capture`             | 流量捕获 sidecar 镜像               | `ghcr.io/domcyrus/rustnet:latest`   |
+| `k8s.capture_enabled`     | 是否创建抓包容器及相关挂载                 | `true`                              |
+| `k8s.worker_image`        | 含 `/app/worker` 的独立 worker 镜像 | `ghcr.io/0rays/cbctf-worker:latest` |
+| `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量     | `2`                                 |
+| `k8s.frp.on`              | 是否启用 FRP 暴露靶机端口               | `false`                             |
+| `k8s.frp.frpc`            | FRP client 镜像                 | `ghcr.io/fatedier/frpc:v0.69.0`     |
+| `k8s.frp.nginx`           | FRP 辅助 Nginx 镜像               | `nginx:latest`                      |
+| `k8s.frp.frps`            | FRPS 地址、端口、token、端口池          | `host: frps.example.com`            |
 
-抓包开关、Pod PriorityClass、worker 镜像和生成器池容量均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
+抓包开关、worker 镜像和生成器池容量均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
+
+私有镜像仓库的拉取凭据不在后台配置：运行时 Pod 继承运行命名空间 `default` ServiceAccount 的 `imagePullSecrets`。
 
 预热、调度、缓存与回收机制见[工作负载调度](/deploy/workloads.md)。启用 FRP 时使用 ClusterIP，否则使用 NodePort。
 
@@ -976,7 +975,6 @@ url: /deploy/workloads.md
 - 在题目模板中填写 CPU、内存限制，调度时也会预留相同资源；未指定时默认预留 `100m` CPU 和 `64Mi` 内存。
 - 抓包、FRPC、nginx 辅助容器各预留 `10m` CPU 和 `32Mi` 内存，上限为 `500m` / `256Mi`，规划容量时需一并计入。
 - `k8s.capture_enabled: false` 关闭新实例的抓包。已有实例保持原设置。
-- `k8s.priority_class_name` 可指定集群中已有的 PriorityClass，适用于普通 Pod，不应用到 VM。
 - `x-volumes` 适合小型配置和 Flag 文件；大型文件请放入镜像或题目附件。
 
 ## 网络暴露
@@ -1034,7 +1032,6 @@ image:
 cbctf:
   k8s:
     captureEnabled: false
-    priorityClassName: ""
     workerImage: ghcr.io/0rays/cbctf-worker:your-worker-tag
     generatorPoolSize: 4
   asynq:
@@ -1044,7 +1041,7 @@ cbctf:
       attachment: 32
 ```
 
-Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、Pod PriorityClass、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
+Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
 
 开赛前建议按预计并发启动一批测试实例，检查镜像拉取、附件耗时和资源占用，再确定池容量与队列并发。
 
@@ -1240,6 +1237,22 @@ Valkey 用于缓存和 Asynq 任务队列，兼容 Redis 协议。连接失败�
 - VM 模式是否安装 KubeVirt，service 是否配置 `x-kubevirt: true`、`mem_limit`、VPC 网络、静态 IP 和 MAC 地址
 - FRP 模式是否配置可用 FRPS、token 和端口池
 
+## 抓包容器退出 / 没有 pcap
+
+抓包容器（`capture`）异常退出时，靶机通常会被判定启动失败并回收。先看容器日志：
+
+```bash
+kubectl logs -n cbctf <victim-pod> -c capture
+```
+
+常见报错与处理：
+
+- `failed to prepare runtime outputs` 且提示 `output directory is owned or writable by an untrusted user`：抓包镜像为 rustnet 1.7 及以上版本，它在打开 pcap 前会校验输出路径上每个目录的属主，只接受 root 或「调用者」属主的目录。平台已通过 `SUDO_UID`/`SUDO_GID` 声明降权身份，若仍报错，检查该镜像是否为 1.7 之前的老版本或被改过的镜像。
+- `interactive mode requires a terminal`：抓包容器缺少终端。平台已为抓包容器开启 `stdin` 与 `tty`，若镜像版本较老不支持该组合，请升级镜像。
+- 流量目录里没有 `pod-*.pcap`：确认共享卷可写、抓包容器未被 OOMKilled，以及抓包镜像中的二进制路径仍为 `/usr/local/bin/rustnet`。
+
+镜像版本要求：平台已验证 rustnet 1.3–1.7。抓包镜像通过「系统管理」中的 `k8s.capture` 设置修改，该设置保存在数据库中，优先于配置文件与 Chart 的取值。
+
 ## KubeVirt VM 启动失败
 
 排查方向：
@@ -1269,7 +1282,7 @@ Valkey 用于缓存和 Asynq 任务队列，兼容 Redis 协议。连接失败�
 排查方向：
 
 - 镜像仓库地址、tag、平台架构是否正确
-- 平台 Pod 的私有仓库检查 `imagePullSecrets` / `imageCredentials`；题目、生成器和预热 Pod 检查运行命名空间的 `default` ServiceAccount 凭据，二者不自动继承
+- 平台 Pod 的私有仓库检查 `imagePullSecrets` / `imageCredentials`；题目、生成器和预热 Pod 只继承运行命名空间 `default` ServiceAccount 的 `imagePullSecrets`，二者不自动继承
 - 节点是否可以访问镜像仓库
 - 是否达到镜像仓库限流
 
@@ -2424,19 +2437,19 @@ url: /admin/rbac.md
 
 以下 `*` 只是说明一组权限，不是可提交的通配符：
 
-| 场景        | 主要权限                                                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| 个人信息与邮箱验证 | `self:read`、`self:update`、`self:activate`                                                                                |
-| 参赛        | `user:contest:*`、`user:team:*`、`user:notice:list`                                                                        |
-| 解题与题解     | `user:challenge:*`、`user:victim:control`、`user:writeup:*`                                                                |
-| 题库与测试     | `admin:challenge:*`                                                                                                      |
-| 比赛与比赛题目   | `admin:contest:*`、`admin:contest_challenge:*`、`admin:contest_challenge_flag:*`                                           |
-| 队伍与题解     | `admin:team:*`、`admin:team_writeup:list/read`、`admin:contest_writeup:export`                                             |
-| 全局资源      | `admin:image:pull`、`admin:victim:control`、`admin:generator:control`、`admin:traffic:read`                                 |
-| 比赛资源      | `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`、`admin:contest_traffic:read` |
-| SMTP      | `admin:smtp:*`，其中发测试邮件为 `admin:smtp:test`                                                                                |
-| 定时任务      | `admin:cronjob:list`、`admin:cronjob:update`                                                                              |
-| 系统配置      | `admin:system:read/update/restart`                                                                                       |
+| 场景        | 主要权限                                                                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 个人信息与邮箱验证 | `self:read`、`self:update`、`self:activate`                                                                                                             |
+| 参赛        | `user:contest:*`、`user:team:*`、`user:notice:list`                                                                                                     |
+| 解题与题解     | `user:challenge:*`、`user:victim:control`、`user:writeup:*`                                                                                             |
+| 题库与测试     | `admin:challenge:*`                                                                                                                                   |
+| 比赛与比赛题目   | `admin:contest:*`、`admin:contest_challenge:*`、`admin:contest_challenge_flag:*`                                                                        |
+| 队伍与题解     | `admin:team:*`、`admin:team_writeup:list/read`、`admin:contest_writeup:export`                                                                          |
+| 全局资源      | `admin:image:pull`、`admin:image:detect`、`admin:victim:control`、`admin:generator:control`、`admin:traffic:read`                                         |
+| 比赛资源      | `admin:contest_image:pull`、`admin:contest_image:detect`、`admin:contest_victim:control`、`admin:contest_generator:control`、`admin:contest_traffic:read` |
+| SMTP      | `admin:smtp:*`，其中发测试邮件为 `admin:smtp:test`                                                                                                             |
+| 定时任务      | `admin:cronjob:list`、`admin:cronjob:update`                                                                                                           |
+| 系统配置      | `admin:system:read/update/restart`                                                                                                                    |
 
 完整权限名称和用途可在后台「权限」页查看。登录用户需保留 `self:read`，用于读取个人信息和正常使用平台。
 
@@ -2506,9 +2519,11 @@ url: /admin/challenges.md
 
 ## 题库与比赛题目
 
-全局题库保存题目模板、附件、生成器镜像、Compose 和原始 Flag。添加到比赛后，可以单独调整该场比赛中的名称、描述、提示、标签、可见性、提交次数和计分。
+全局题库保存题目模板、附件、生成器镜像、Compose 和原始 Flag。添加到比赛时，平台会把题目**深拷贝**一份到比赛：展示字段、靶机规格、生成器镜像、网络策略、Flag 模板与注入绑定、附件文件都成为比赛独占的副本。此后题库怎么改都不会影响已加入的比赛，比赛也可以单独调整名称、描述、提示、标签、可见性、提交次数和计分。
 
-附件和运行模板由引用该题目的比赛共用，修改前请确认影响范围。比赛 Flag 需要在比赛内单独检查和维护；修改模板后，应重新测试 Flag 注入和服务访问。
+删除题库题目不会删除比赛题目，也不会影响比赛成绩。删除前弹窗会列出引用该题的比赛题目，确认影响范围即可。
+
+比赛 Flag 需要在比赛内单独检查和维护；修改模板后，应重新测试 Flag 注入和服务访问。
 
 ## 创建题目
 
@@ -2553,6 +2568,10 @@ url: /admin/challenges.md
 | 提交次数  | 每队提交次数上限，`0` 不限制      |
 
 每个 Flag 可独立选择计分方式，并设置初始分值、最低分值和衰减参数。使用分数曲线预览检查效果，详见[计分系统](/guide/features/scoring.md)。
+
+比赛题目的 Flag 是题库 Flag 的副本，与题库解耦：修改题库 Flag 或删除题库题目都不会影响比赛。修改比赛 Flag 模板时，已解出的队伍保留解题记录与得分，未解出的队伍会自动拿到按新模板渲染的答案，Flag 列表会显示当前代次。
+
+「重置本题解题记录」是唯一的破坏性操作：它清空本题所有队伍的解题记录与对应提交，并重算队伍分数与排名，操作前需要二次确认。
 
 ## 网络策略
 
@@ -2609,6 +2628,9 @@ url: /admin/contests.md
 - 每个 Flag 分别设置内容、计分方式、初始分值、最低分值和衰减参数。
 - 单独保存的 Flag 会立即生效，关闭或取消题目编辑不会撤销。「保存更改」可一并保存尚未保存的 Flag 和题目信息。
 - 加入时的计分初值为静态分 `1000`、最低分 `100`、衰减参数 `100`，应按比赛规则主动设置。
+- 比赛题目是加入时从题库深拷贝的副本，题库的后续修改不会影响本比赛；同一个题库题目可以在同一比赛多次添加。
+- 修改 Flag 模板会保留已解出队伍的解题记录与得分，未解出的队伍自动获得新答案。
+- 「重置本题解题记录」会清空本题所有队伍的解题记录与对应提交，并重算分数与排名，执行前需二次确认。
 
 详见[题目管理](/admin/challenges.md)和[计分系统](/guide/features/scoring.md)。
 
@@ -2641,7 +2663,7 @@ url: /admin/contests.md
 
 ## 主要权限
 
-比赛管理使用 `admin:contest:*`；比赛题目使用 `admin:contest_challenge:*`，Flag 使用 `admin:contest_challenge_flag:*`。比赛范围的镜像、靶机、生成器分别使用 `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`，不要与全局权限混淆。
+比赛管理使用 `admin:contest:*`；比赛题目使用 `admin:contest_challenge:*`，Flag 使用 `admin:contest_challenge_flag:*`。比赛范围的镜像、靶机、生成器分别使用 `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`，不要与全局权限混淆。节点镜像检测使用 `admin:image:detect`，比赛范围的镜像检测使用 `admin:contest_image:detect`。
 
 题解列表/下载使用 `admin:team_writeup:list/read`，整场导出使用 `admin:contest_writeup:export`。完整权限名称可在后台「权限」页查看。
 

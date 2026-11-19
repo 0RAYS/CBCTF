@@ -39,18 +39,18 @@
 
 以下 `*` 只是说明一组权限，不是可提交的通配符：
 
-| 场景        | 主要权限                                                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| 个人信息与邮箱验证 | `self:read`、`self:update`、`self:activate`                                                                                |
-| 参赛        | `user:contest:*`、`user:team:*`、`user:notice:list`                                                                        |
-| 解题与题解     | `user:challenge:*`、`user:victim:control`、`user:writeup:*`                                                                |
-| 题库与测试     | `admin:challenge:*`                                                                                                      |
-| 比赛与比赛题目   | `admin:contest:*`、`admin:contest_challenge:*`、`admin:contest_challenge_flag:*`                                           |
-| 队伍与题解     | `admin:team:*`、`admin:team_writeup:list/read`、`admin:contest_writeup:export`                                             |
-| 全局资源      | `admin:image:pull`、`admin:victim:control`、`admin:generator:control`、`admin:traffic:read`                                 |
-| 比赛资源      | `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`、`admin:contest_traffic:read` |
-| SMTP      | `admin:smtp:*`，其中发测试邮件为 `admin:smtp:test`                                                                                |
-| 定时任务      | `admin:cronjob:list`、`admin:cronjob:update`                                                                              |
-| 系统配置      | `admin:system:read/update/restart`                                                                                       |
+| 场景        | 主要权限                                                                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 个人信息与邮箱验证 | `self:read`、`self:update`、`self:activate`                                                                                                             |
+| 参赛        | `user:contest:*`、`user:team:*`、`user:notice:list`                                                                                                     |
+| 解题与题解     | `user:challenge:*`、`user:victim:control`、`user:writeup:*`                                                                                             |
+| 题库与测试     | `admin:challenge:*`                                                                                                                                   |
+| 比赛与比赛题目   | `admin:contest:*`、`admin:contest_challenge:*`、`admin:contest_challenge_flag:*`                                                                        |
+| 队伍与题解     | `admin:team:*`、`admin:team_writeup:list/read`、`admin:contest_writeup:export`                                                                          |
+| 全局资源      | `admin:image:pull`、`admin:image:detect`、`admin:victim:control`、`admin:generator:control`、`admin:traffic:read`                                         |
+| 比赛资源      | `admin:contest_image:pull`、`admin:contest_image:detect`、`admin:contest_victim:control`、`admin:contest_generator:control`、`admin:contest_traffic:read` |
+| SMTP      | `admin:smtp:*`，其中发测试邮件为 `admin:smtp:test`                                                                                                             |
+| 定时任务      | `admin:cronjob:list`、`admin:cronjob:update`                                                                                                           |
+| 系统配置      | `admin:system:read/update/restart`                                                                                                                    |
 
 完整权限名称和用途可在后台「权限」页查看。登录用户需保留 `self:read`，用于读取个人信息和正常使用平台。
