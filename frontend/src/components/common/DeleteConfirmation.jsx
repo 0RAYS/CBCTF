@@ -1,10 +1,4 @@
-/**
- * Standard delete confirmation UI used in CRUD modals.
- * @param {Object} props
- * @param {string} props.message - Main confirmation message
- * @param {string} [props.warning] - Warning text shown below message in red
- * @param {string} [props.itemName] - Name of the item being deleted (shown bold)
- */
+/** Standard delete confirmation UI used in CRUD modals. */
 function DeleteConfirmation({ message, warning, itemName }) {
   return (
     <div className="text-center py-4">

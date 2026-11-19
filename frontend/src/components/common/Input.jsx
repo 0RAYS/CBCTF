@@ -1,23 +1,6 @@
 import { useId } from 'react';
 
-/**
- * 通用输入框组件
- * @param {Object} props
- * @param {'text'|'email'|'password'|'number'|'search'} props.type - 输入框类型
- * @param {string} props.value - 输入框值
- * @param {function} props.onChange - 值变化回调
- * @param {function} props.onBlur - 失焦回调
- * @param {string} props.placeholder - 占位文本
- * @param {boolean} props.disabled - 是否禁用
- * @param {string} props.error - 错误信息
- * @param {React.ReactNode} props.icon - 左侧图标
- * @param {React.ReactNode} props.iconRight - 右侧图标
- * @param {'sm'|'md'|'lg'} props.size - 输入框大小
- * @param {boolean} props.fullWidth - 是否占满宽度
- * @param {string} props.className - 额外的自定义类名
- * @param {string} props.label - 关联标签文本
- * @param {string} props.id - 输入框 id（自动生成可省略）
- */
+/** 通用输入框组件 */
 function Input({
   type = 'text',
   value,
@@ -39,14 +22,12 @@ function Input({
   const id = externalId || generatedId;
   const errorId = `${id}-error`;
 
-  // 尺寸变体
   const sizes = {
     sm: 'h-8 text-sm',
     md: 'h-10',
     lg: 'h-12 text-base',
   };
 
-  // 计算左右padding
   const getPadding = () => {
     const base = size === 'sm' ? 'px-3' : 'px-4';
     if (icon && iconRight) return 'pl-10 pr-10';
@@ -55,7 +36,6 @@ function Input({
     return base;
   };
 
-  // 基础样式
   const inputClasses = `
     min-w-0 bg-neutral-800/60 border rounded-md text-neutral-50 placeholder-neutral-400 font-mono
     focus:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 transition-all duration-200
@@ -72,7 +52,6 @@ function Input({
 
   return (
     <div className={`relative min-w-0 ${fullWidth ? 'w-full' : 'inline-block'}`}>
-      {/* 关联标签 */}
       {label && (
         <label htmlFor={id} className="block text-sm text-neutral-300 mb-1">
           {label}
@@ -80,14 +59,12 @@ function Input({
       )}
 
       <div className="relative">
-        {/* 左侧图标 */}
         {icon && (
           <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 pointer-events-none">
             {icon}
           </div>
         )}
 
-        {/* 输入框 */}
         <input
           id={id}
           type={type}
@@ -102,13 +79,11 @@ function Input({
           {...rest}
         />
 
-        {/* 右侧图标 */}
         {iconRight && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400">{iconRight}</div>
         )}
       </div>
 
-      {/* 错误信息 */}
       {error && (
         <div id={errorId} role="alert" className="mt-2 text-sm text-red-400">
           {error}

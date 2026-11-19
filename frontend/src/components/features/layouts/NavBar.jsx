@@ -57,9 +57,7 @@ function NavBar({
       <div
         className={`fixed top-0 left-0 w-full h-[80px] flex items-center justify-between gap-3 px-3 sm:px-6 lg:px-8 bg-neutral-900/70 backdrop-blur-[4px] border-b border-neutral-700/60 z-40 ${className}`}
       >
-        {/* 左侧区域包装 */}
         <div className="flex min-w-0 flex-1 items-center">
-          {/* Logo区域 */}
           <div className="relative min-w-0 w-44 sm:w-52 max-w-full">
             <Button
               variant="outline"
@@ -73,7 +71,6 @@ function NavBar({
             >
               <span className="block truncate">{logo}</span>
             </Button>
-            {/* Logo装饰角 */}
             <div className="absolute -top-[3px] -right-[3px] w-[10px] h-[10px] border-t border-r border-neutral-300" />
             <div className="absolute -bottom-[3px] -left-[3px] w-[10px] h-[10px] border-b border-l border-neutral-300" />
           </div>
@@ -95,7 +92,6 @@ function NavBar({
           </nav>
         </div>
 
-        {/* 右侧语言切换与头像区域 */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <LanguageSwitcher size="md" />
           <button
@@ -110,12 +106,10 @@ function NavBar({
             <div className="w-[45px] h-[45px] border border-neutral-300 rounded-md overflow-hidden transition-colors duration-200 hover:border-neutral-100 cursor-pointer">
               <Avatar src={pictureSrc} name={userName} size={45} shape="rounded" />
             </div>
-            {/* 装饰角 */}
             <div className="absolute -top-[2px] -right-[2px] w-[8px] h-[8px] border-t border-r border-neutral-300 group-hover:border-neutral-100 rounded-tr-none"></div>
             <div className="absolute -bottom-[2px] -left-[2px] w-[8px] h-[8px] border-b border-l border-neutral-300 group-hover:border-neutral-100 rounded-bl-none"></div>
           </button>
 
-          {/* Collapsed navigation trigger. */}
           {tabs.length > 0 && (
             <button
               type="button"
@@ -160,7 +154,6 @@ function NavBar({
         </div>
       </div>
 
-      {/* 移动端导航菜单 */}
       <AnimatePresence>
         {mobileMenuOpen && tabs.length > 0 && (
           <>

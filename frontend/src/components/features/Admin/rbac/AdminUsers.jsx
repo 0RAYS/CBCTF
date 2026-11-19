@@ -2,22 +2,7 @@ import { Avatar, Button, Input, List, Pagination, Spinner, StatusTag } from '../
 import { IconEdit, IconEye, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
-/**
- * 用户管理展示组件
- * @param {Object} props
- * @param {Array} props.users - 用户列表数据
- * @param {number} props.totalCount - 总用户数量
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {boolean} props.loading - 是否加载中
- * @param {function} props.onPageChange - 页码改变回调
- * @param {function} props.onCreateUser - 创建用户回调
- * @param {function} props.onEditUser - 编辑用户回调
- * @param {function} props.onDeleteUser - 删除用户回调
- * @param {function} props.onPictureUpload - 上传头像回调
- * @param {boolean} props.searchLoading - 搜索加载状态
- * @param {boolean} props.isSearchMode - 是否处于搜索模式
- */
+/** 用户管理展示组件 */
 function AdminUsers({
   users = [],
   totalCount = 0,
@@ -41,7 +26,6 @@ function AdminUsers({
 }) {
   const { t } = useTranslation();
 
-  // 列定义
   const columns = [
     { key: 'picture', label: t('admin.users.columns.picture'), width: '3%' },
     { key: 'name', label: t('admin.users.columns.name'), width: '10%' },
@@ -51,7 +35,6 @@ function AdminUsers({
     { key: 'teams', label: t('admin.users.columns.teams'), width: '5%' },
   ];
 
-  // 自定义单元格渲染
   const renderCell = (user, column) => {
     switch (column.key) {
       case 'picture':
@@ -97,7 +80,6 @@ function AdminUsers({
     }
   };
 
-  // 分页组件
   const paginationComponent = totalCount > pageSize && !isSearchMode && (
     <Pagination
       total={Math.ceil(totalCount / pageSize)}
@@ -117,7 +99,6 @@ function AdminUsers({
         </Button>
       </div>
 
-      {/* 搜索框 */}
       <div className="mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>

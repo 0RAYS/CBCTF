@@ -12,7 +12,6 @@ import Button from '../../components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_CONTEST_IMAGE, getContestStatus, getContestTimeRange } from '../../config/contest';
 
-// 转换比赛数据为组件需要的格式
 const transformContestData = (contests) => {
   return contests.map((contest) => {
     const { startTime, endTime } = getContestTimeRange(contest.start, contest.duration);

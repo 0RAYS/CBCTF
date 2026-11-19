@@ -8,11 +8,7 @@ import TruncatedText from '../../common/TruncatedText';
 
 const ReactECharts = lazy(() => import('../../common/EChart'));
 
-/**
- * 分数时间线图表组件
- * @param {Object} props
- * @param {Array} props.timelineData - 时间线数据
- */
+/** 分数时间线图表组件 */
 function ScoreboardTimeline({ timelineData = [], loading = false, error = false, onRetry }) {
   const { t, i18n } = useTranslation();
   const [hiddenTeams, setHiddenTeams] = useState(() => new Set());
@@ -21,7 +17,6 @@ function ScoreboardTimeline({ timelineData = [], loading = false, error = false,
   const chartData = useMemo(() => buildTimelineChartData(model, hiddenTeams), [model, hiddenTeams]);
   const chartOption = buildTimelineOption(model.timePoints, chartData, i18n.language || 'en-US');
 
-  // 切换队伍显示
   const toggleTeam = (teamId) => {
     setHiddenTeams((prev) => {
       const next = new Set(prev);
@@ -34,7 +29,6 @@ function ScoreboardTimeline({ timelineData = [], loading = false, error = false,
   return (
     <Card variant="default" padding="sm" className="min-w-0">
       <h2 className="mb-2 text-xs font-mono text-neutral-300">{t('game.scoreboard.timeline.title')}</h2>
-      {/* 队伍选择器 */}
       {!loading && !error && model.teams.length > 0 && (
         <div
           className="flex max-h-20 flex-wrap gap-1.5 overflow-y-auto mb-2"
@@ -62,7 +56,6 @@ function ScoreboardTimeline({ timelineData = [], loading = false, error = false,
         </div>
       )}
 
-      {/* 图表 */}
       <div className="h-44 sm:h-56">
         {loading || error || model.teams.length === 0 ? (
           <div

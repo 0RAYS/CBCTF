@@ -1,14 +1,7 @@
 import 'react';
 
-/**
- * 状态标签组件
- * @param {Object} props
- * @param {'success'|'warning'|'error'|'info'|'default'} props.type - 标签类型
- * @param {string} props.text - 标签文本
- * @param {string} props.className - 额外的自定义类名
- */
+/** 状态标签组件 */
 function StatusTag({ type = 'default', text, className = '' }) {
-  // 标签类型样式
   const types = {
     success: 'bg-green-400/20 text-green-400',
     warning: 'bg-yellow-400/20 text-yellow-400',

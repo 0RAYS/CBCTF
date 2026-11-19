@@ -7,12 +7,10 @@ let toastIdCounter = 0;
 const ToastProvider = ({ children, position = 'top-right', maxToasts = 5 }) => {
   const [toasts, setToasts] = useState([]);
 
-  // 移除toast
   const removeToast = useCallback((id) => {
     setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
   }, []);
 
-  // 添加toast
   const addToast = useCallback(
     ({ title, description, color = 'default', timeout = 3000, hasCloseButton = true }) => {
       const id = `toast-${++toastIdCounter}`;
@@ -27,7 +25,6 @@ const ToastProvider = ({ children, position = 'top-right', maxToasts = 5 }) => {
         return [{ id, title, description, color, timeout, hasCloseButton }, ...existing];
       });
 
-      // 设置自动关闭
       if (timeout > 0) {
         setTimeout(() => {
           removeToast(id);

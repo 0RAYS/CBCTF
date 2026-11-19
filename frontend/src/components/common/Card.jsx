@@ -1,17 +1,7 @@
 import { motion } from 'motion/react';
 
-/**
- * 通用卡片容器组件
- * @param {Object} props
- * @param {React.ReactNode} props.children - 卡片内容
- * @param {'default'|'bordered'|'glass'|'dark'} props.variant - 卡片风格
- * @param {'none'|'sm'|'md'|'lg'} props.padding - 内边距大小
- * @param {string} props.className - 额外的自定义类名
- * @param {boolean} props.animate - 是否启用动画效果
- * @param {function} props.onClick - 点击事件回调
- */
+/** 通用卡片容器组件 */
 function Card({ children, variant = 'default', padding = 'md', className = '', animate = false, onClick, ...rest }) {
-  // 卡片风格变体
   const variants = {
     default: 'bg-neutral-800/80 border border-neutral-600/60 rounded-md',
     bordered: 'bg-neutral-800/60 border border-neutral-600 rounded-md',
@@ -19,7 +9,6 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
     dark: 'bg-neutral-900 border border-neutral-300/20 rounded-md',
   };
 
-  // 内边距
   const paddings = {
     none: '',
     sm: 'p-2',
@@ -27,7 +16,6 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
     lg: 'p-6',
   };
 
-  // 基础样式
   const cardClasses = `
     ${variants[variant] || variants.default}
     ${paddings[padding] ?? paddings.md}
@@ -37,7 +25,6 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
     .trim()
     .replace(/\s+/g, ' ');
 
-  // 动画属性: clickable 卡片使用 opacity 过渡
   const motionProps =
     animate && !onClick
       ? {
@@ -53,7 +40,6 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
           }
         : {};
 
-  // 渲染卡片
   const CardComponent = animate ? motion.div : 'div';
 
   return (

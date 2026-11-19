@@ -5,8 +5,6 @@ import { useTranslation } from 'react-i18next';
 import {
   DAY_HEADERS,
   formatToDateTimeLocal,
-  generateHourOptions,
-  generateMinuteOptions,
   getCalendarGrid,
   isSameDay,
   isToday,
@@ -281,7 +279,6 @@ function DateTimeInput({
             transition={{ duration: 0.15 }}
             className="absolute z-50 mt-1 w-[320px] bg-neutral-900 border border-neutral-600 rounded-md shadow-lg overflow-hidden"
           >
-            {/* Month navigation */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-700">
               <button
                 type="button"
@@ -302,7 +299,6 @@ function DateTimeInput({
               </button>
             </div>
 
-            {/* Day headers */}
             <div className="grid grid-cols-7 px-3 pt-2">
               {DAY_HEADERS.map((d) => (
                 <div key={d} className="text-center text-xs text-neutral-500 py-1">
@@ -311,7 +307,6 @@ function DateTimeInput({
               ))}
             </div>
 
-            {/* Calendar grid */}
             <div className="grid grid-cols-7 px-3 pb-2">
               {calendarGrid.map((cell, i) => {
                 const cellDate = new Date(cell.year, cell.month, cell.day);
@@ -339,17 +334,14 @@ function DateTimeInput({
               })}
             </div>
 
-            {/* Divider */}
             <div className="border-t border-neutral-700 mx-3" />
 
-            {/* Time selection */}
             <div className="px-3 py-2">
               <div className="text-xs text-neutral-500 mb-1">{t('common.dateTimeInput.time')}</div>
               <div className="flex items-center gap-1">
-                {/* Hours */}
                 <div ref={hourListRef} className="flex-1 max-h-[120px] overflow-y-auto scrollbar-thin">
                   <div className="grid grid-cols-4 gap-0.5">
-                    {generateHourOptions().map((h) => (
+                    {Array.from({ length: 24 }, (_, i) => i).map((h) => (
                       <button
                         key={h}
                         type="button"
@@ -372,10 +364,9 @@ function DateTimeInput({
 
                 <span className="text-neutral-500 text-lg font-mono">:</span>
 
-                {/* Minutes */}
                 <div ref={minuteListRef} className="flex-1 max-h-[120px] overflow-y-auto scrollbar-thin">
                   <div className="grid grid-cols-4 gap-0.5">
-                    {generateMinuteOptions().map((m) => (
+                    {Array.from({ length: 60 }, (_, i) => i).map((m) => (
                       <button
                         key={m}
                         type="button"
@@ -398,7 +389,6 @@ function DateTimeInput({
               </div>
             </div>
 
-            {/* Footer */}
             <div className="flex items-center justify-between px-3 py-2 border-t border-neutral-700">
               <button
                 type="button"

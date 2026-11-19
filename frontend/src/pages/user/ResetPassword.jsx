@@ -30,7 +30,7 @@ function ResetPassword() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 表单提交 —— 由前端主动发起 POST，用户只需填写新密码
+  // 前端携带 token 主动发起 POST
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -57,7 +57,6 @@ function ResetPassword() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
       >
-        {/* 标题 */}
         <div className="relative flex justify-center mb-8">
           <div className="absolute -top-[3px] -right-[3px] w-[10px] h-[10px] border-t border-r border-neutral-300" />
           <div className="absolute -bottom-[3px] -left-[3px] w-[10px] h-[10px] border-b border-l border-neutral-300" />
@@ -65,7 +64,6 @@ function ResetPassword() {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* token 无效 */}
           {tokenInvalid && (
             <motion.div
               key="invalid"
@@ -83,7 +81,6 @@ function ResetPassword() {
             </motion.div>
           )}
 
-          {/* 重置成功 */}
           {!tokenInvalid && succeeded && (
             <motion.div
               key="success"
@@ -99,7 +96,6 @@ function ResetPassword() {
             </motion.div>
           )}
 
-          {/* 密码输入表单 */}
           {!tokenInvalid && !succeeded && (
             <motion.form
               key="form"

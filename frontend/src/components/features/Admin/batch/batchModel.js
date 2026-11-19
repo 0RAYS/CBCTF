@@ -1,7 +1,6 @@
 const batchStates = new Set(['success', 'partial', 'failed', 'cancelled']);
 
-// These are the two current API contracts: direct batch data, or the contest
-// import envelope's explicitly selected `batch` field.
+// Two API contracts: direct batch data, or the contest import envelope's selected `batch` field.
 export function getBatchResult(response, nested = false) {
   const batch = nested ? response?.data?.batch : response?.data;
   return batch && batchStates.has(batch.status) && Array.isArray(batch.items) ? batch : null;

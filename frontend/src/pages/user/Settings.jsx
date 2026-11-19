@@ -13,7 +13,6 @@ function Settings() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  // 处理更新基本信息
   const handleUpdate = async (data) => {
     try {
       const response = await updateUserInfo(data);
@@ -25,7 +24,6 @@ function Settings() {
     }
   };
 
-  // 处理密码修改
   const handlePasswordChange = async (data) => {
     try {
       const payload = { new: data.newPassword, old: data.currentPassword };
@@ -42,7 +40,6 @@ function Settings() {
     }
   };
 
-  // 处理邮箱验证
   const handleEmailVerify = async () => {
     try {
       await activateEmail();
@@ -51,7 +48,6 @@ function Settings() {
     }
   };
 
-  // 处理账户删除
   const handleDeleteAccount = async (password) => {
     try {
       const response = await deleteAccount({ password });
@@ -64,7 +60,6 @@ function Settings() {
     }
   };
 
-  // 处理头像更新
   const handlePictureChange = async (file) => {
     try {
       await uploadPicture(file);

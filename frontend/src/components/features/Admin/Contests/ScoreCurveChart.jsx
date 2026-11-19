@@ -5,13 +5,7 @@ const ReactECharts = lazy(() => import('../../../common/EChart'));
 
 /**
  * 分数曲线预览图表（支持拖拽控制点调整 decay）
- *
- * 控制点设计:
- * - Static:  无控制点（水平线, 无 decay）
- * - Linear:  一个控制点在曲线中段 ── 沿曲线拖动改变 decay（下降速率）
- * - Exponential: 一个控制点在曲线中段 ── 自由拖动, 根据拖到的 (x,y) 反算 decay
- *
- * score 和 minScore 仅通过输入框调整, 不通过拖拽
+ * Static 无控制点；Linear 沿曲线拖动改变下降速率；Exponential 自由拖动并由 (x, y) 反算 decay；score 与 minScore 仅通过输入框调整
  */
 function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 100, onChange }) {
   const { t } = useTranslation();
@@ -46,7 +40,6 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
     return Math.trunc(calc * 100) / 100;
   }, []);
 
-  // X 轴范围
   const maxSolvers = useMemo(() => {
     let m;
     if (scoreType === 0) {
@@ -61,7 +54,6 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
     return m;
   }, [scoreType, score, decay, minScore]);
 
-  // 曲线数据点
   const lineData = useMemo(() => {
     const step = maxSolvers <= 100 ? 1 : Math.ceil(maxSolvers / 100);
     const data = [];
@@ -74,7 +66,6 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
     return data;
   }, [scoreType, score, decay, minScore, maxSolvers, calcScore]);
 
-  // 坐标转换
   const pixelToData = useCallback((px, py) => {
     const inst = chartRef.current?.getEchartsInstance();
     if (!inst) return null;
@@ -87,7 +78,6 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
     return inst.convertToPixel({ gridIndex: 0 }, [dx, dy]);
   }, []);
 
-  // 拖拽回调: 根据拖到的 (x, y) 反算 decay
   const onHandleDrag = useCallback(
     (e) => {
       const pos = pixelToData(e.offsetX, e.offsetY);
@@ -118,7 +108,7 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
     [pixelToData, onChange]
   );
 
-  // 控制点位置: 放在曲线中段（score 与 minScore 的中点对应的 solvers 处）
+  // 控制点落在 score 与 minScore 中点对应的 solvers 处
   const handleDataPos = useMemo(() => {
     if (scoreType === 0) return null;
     const midY = (score + minScore) / 2;
@@ -141,7 +131,6 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
     }
   }, [scoreType, score, decay, minScore, calcScore]);
 
-  // 构建 graphic 控制点
   const buildGraphicElements = useCallback(() => {
     if (!onChange || !handleDataPos) return [];
 
@@ -263,7 +252,6 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
     };
   }, [scoreType, lineData, maxSolvers, curveLabels, t]);
 
-  // 图表就绪后设置 graphic
   const onChartReady = useCallback(
     (instance) => {
       setTimeout(() => {
@@ -276,13 +264,12 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
     [buildGraphicElements]
   );
 
-  // props 变化时同步控制点位置
   useEffect(() => {
     const inst = chartRef.current?.getEchartsInstance();
     if (!inst || !onChange) return;
     const timer = setTimeout(() => {
       const elements = buildGraphicElements();
-      // 用 replaceMerge 确保旧控制点被清除（scoreType 切到 static 时 elements 为空）
+      // replaceMerge 会清除旧控制点（scoreType 切到 static 时 elements 为空）
       inst.setOption({ graphic: elements }, { replaceMerge: ['graphic'] });
     }, 60);
     return () => clearTimeout(timer);

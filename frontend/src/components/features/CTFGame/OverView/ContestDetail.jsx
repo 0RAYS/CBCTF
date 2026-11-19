@@ -4,26 +4,7 @@ import { useState } from 'react';
 import { Button, Card } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
 
-/**
- * @param {Object} contest - 比赛详情对象
- * @param handleJoinContest
- * @param {string} contest.title - 比赛标题 (例: "CTF Winter Challenge 2024")
- * @param {string} contest.description - 比赛描述 (例: "Join our winter themed CTF challenge...")
- * @param {string} contest.image - 比赛背景图片URL (例: "/images/winter-ctf.jpg")
- * @param {string} contest.status - 比赛状态 ("upcoming" | "active" | "ended")
- * @param {string} contest.startTime - 开始时间 (例: "2024-01-01T00:00:00Z")
- * @param {string} contest.endTime - 结束时间 (例: "2024-01-07T23:59:59Z")
- * @param {number} contest.participants - 参与人数 (例: 256)
- * @param {Array<string>} contest.rules - 比赛规则列表 (例: ["No sharing of flags...", "Maximum team size is 4..."])
- * @param {Array<Object>} contest.prizes - 奖励列表
- * @param {string} contest.prizes[].amount - 奖金数额 (例: "$1000")
- * @param {string} contest.prizes[].description - 奖励描述 (例: "First place prize includes...")
- * @param {Array<Object>} contest.timeline - 时间线
- * @param {string} contest.timeline[].date - 日期 (例: "2025-02-16T15:00:00+08:00")
- * @param {string} contest.timeline[].title - 事件标题 (例: "Registration Opens")
- * @param {string} contest.timeline[].description - 事件描述 (例: "Team registration begins...")
- */
-
+/** 比赛详情组件 */
 function ContestDetail({ contest, handleJoinContest }) {
   const [hoveredPrize, setHoveredPrize] = useState(null);
   const [hoveredTimeline, setHoveredTimeline] = useState(null);
@@ -33,14 +14,12 @@ function ContestDetail({ contest, handleJoinContest }) {
 
   return (
     <div className="contest-container mx-auto space-y-6 [overflow-wrap:anywhere]">
-      {/* 头部信息区域 - 移除悬停效果 */}
       <motion.div
         className="relative w-full min-h-[250px] md:min-h-[300px] border border-neutral-600 rounded-md overflow-hidden bg-black/30"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {/* 背景图片 */}
         <div
           className="absolute inset-0 opacity-30"
           style={{
@@ -50,7 +29,6 @@ function ContestDetail({ contest, handleJoinContest }) {
           }}
         />
 
-        {/* 内容 */}
         <div className="relative min-w-0 p-4 md:p-8 flex flex-col gap-8">
           <div>
             <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4">
@@ -92,7 +70,6 @@ function ContestDetail({ contest, handleJoinContest }) {
               </div>
             </div>
 
-            {/* 使用Button组件重构 */}
             <Button
               variant="primary"
               size="lg"
@@ -106,9 +83,7 @@ function ContestDetail({ contest, handleJoinContest }) {
         </div>
       </motion.div>
 
-      {/* 详细信息区域 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 比赛规则 - 添加规则项悬停效果 */}
         <Card className="min-w-0 col-span-1 lg:col-span-2" variant="default" padding="lg">
           <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">
             {t('game.detail.labels.contestRules')}
@@ -126,7 +101,6 @@ function ContestDetail({ contest, handleJoinContest }) {
           </div>
         </Card>
 
-        {/* 奖励信息 - 添加奖项悬停效果 */}
         <Card variant="default" padding="lg" className="min-w-0">
           <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">{t('game.detail.labels.prizes')}</h2>
           <div className="space-y-6">
@@ -177,12 +151,10 @@ function ContestDetail({ contest, handleJoinContest }) {
         </Card>
       </div>
 
-      {/* 时间线 - 简化动画效果 */}
       <Card variant="default" padding="lg">
         <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">{t('game.detail.labels.timeline')}</h2>
         <div className="overflow-x-auto">
           <div className="relative flex flex-col md:flex-row items-stretch gap-6 md:gap-8 md:min-w-max">
-            {/* 连接线 */}
             <div className="hidden md:block absolute top-[30px] left-0 right-0 h-[2px] bg-neutral-300/20" />
 
             {contest.timeline?.map((item, index) => (

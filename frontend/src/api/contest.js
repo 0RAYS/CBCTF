@@ -1,6 +1,5 @@
 import request from './request';
 
-// 获取竞赛列表
 export const getContestList = () => {
   return request({
     url: '/contests',
@@ -8,7 +7,6 @@ export const getContestList = () => {
   });
 };
 
-// 获取比赛详情
 export const getContestInfo = (contestId) => {
   return request({
     url: `/contests/${contestId}`,
@@ -16,7 +14,6 @@ export const getContestInfo = (contestId) => {
   });
 };
 
-// 获取比赛排行榜
 export const getContestRank = (contestId, limit = 3, offset = 0) => {
   return request({
     url: `/contests/${contestId}/rank`,
@@ -28,7 +25,6 @@ export const getContestRank = (contestId, limit = 3, offset = 0) => {
   });
 };
 
-// 获取比赛积分榜表格视图
 export const getContestScoreboard = (contestId, params = { limit: 20, offset: 0 }) => {
   return request({
     url: `/contests/${contestId}/scoreboard`,
@@ -37,7 +33,6 @@ export const getContestScoreboard = (contestId, params = { limit: 20, offset: 0 
   });
 };
 
-// 获取比赛分数时间线
 export const getContestTimeline = (contestId) => {
   return request({
     url: `/contests/${contestId}/timeline`,

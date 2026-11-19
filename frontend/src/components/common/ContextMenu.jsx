@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
-/** Shared, viewport-bound menu. Actions: { key, label, icon, onClick, disabled, danger, hidden }. */
+/** Shared, viewport-bound menu. Each action: { key, label, icon, onClick, disabled, danger, hidden }. */
 export default function ContextMenu({ position, actions, onClose }) {
   const { t } = useTranslation();
   const menuRef = useRef(null);

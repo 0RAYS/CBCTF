@@ -5,12 +5,7 @@ import { buildPayload } from './configPayloadBuilder';
 import { restartSystem, updateSystemConfig, uploadGeoCityDB } from '../../../../api/admin/system';
 import { toast } from '../../../../utils/toast';
 
-/**
- * Hook for managing system configuration
- * @param {Object} initialConfig - Initial config from parent component
- * @param {Function} t - Translation function
- * @returns {Object} - Config state and methods
- */
+/** Hook for managing system configuration. */
 export function useSystemConfig(initialConfig, t) {
   const [config, updateConfig] = useImmerState(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -18,7 +13,6 @@ export function useSystemConfig(initialConfig, t) {
   const [isRestarting, setIsRestarting] = useState(false);
   const [error, setError] = useState(null);
 
-  // Normalize and set config when initialConfig changes
   useEffect(() => {
     if (initialConfig) {
       const normalized = normalizeConfig(initialConfig);
@@ -26,7 +20,6 @@ export function useSystemConfig(initialConfig, t) {
     }
   }, [initialConfig, updateConfig]);
 
-  // Update config on server
   const handleUpdateConfig = useCallback(
     async (configToUpdate) => {
       if (!configToUpdate) {

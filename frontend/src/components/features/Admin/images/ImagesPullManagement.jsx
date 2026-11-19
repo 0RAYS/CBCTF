@@ -79,8 +79,7 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages, dete
     };
   }, [revision]);
 
-  // The detection runs in the background, so the page waits for the new result
-  // instead of loading one on every visit.
+  // Detection runs in the background, so the page waits for the new result instead of loading on every visit.
   useEffect(() => {
     if (!detecting) return undefined;
     let cancelled = false;

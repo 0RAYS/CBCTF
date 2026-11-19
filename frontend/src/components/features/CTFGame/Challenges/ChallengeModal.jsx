@@ -65,7 +65,7 @@ function ChallengeModal({
     };
   }, [challenge, isOpen, isRunning, timeLeft]);
 
-  // Keep synchronous guards and loading in one owner: reset and submit exclude each other.
+  // One pending set guards every action, so reset and submit exclude each other.
   const handleAsyncAction = async (actionType, action) => {
     const pending = pendingRef.current;
     if (pending.has(actionType) || (actionType === 'resetting' && pending.has('submitting'))) return;

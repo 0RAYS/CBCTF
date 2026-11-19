@@ -16,7 +16,6 @@ function finishRequestLoading() {
   loadNProgress().then(({ finishLoading }) => finishLoading());
 }
 
-// 创建 Axios 实例
 const request = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   withCredentials: true,
@@ -25,10 +24,8 @@ const request = axios.create({
   },
 });
 
-// 正在进行的请求数量
 let requestCount = 0;
 
-// 更新全局loading状态
 const updateGlobalLoading = (count) => {
   requestCount = Math.max(0, count);
   // 使用动态导入避免循环依赖
@@ -39,10 +36,8 @@ const updateGlobalLoading = (count) => {
   });
 };
 
-// 请求拦截器
 request.interceptors.request.use(
   async (config) => {
-    // 如果没有设置 noLoading 标识, 则执行全局 loading 逻辑
     if (!config.noLoading) {
       loadNProgress().then(({ startLoading }) => startLoading());
       updateGlobalLoading(requestCount + 1);
@@ -51,23 +46,19 @@ request.interceptors.request.use(
     return config;
   },
   (error) => {
-    // 请求错误时减少计数
     finishRequestLoading();
     updateGlobalLoading(requestCount - 1);
     return Promise.reject(error);
   }
 );
 
-// 响应拦截器
 request.interceptors.response.use(
   async (response) => {
-    // 如果没有设置 noLoading 标识, 则执行全局 loading 逻辑
     const { config } = response;
     if (!config.noLoading) {
       finishRequestLoading();
       updateGlobalLoading(requestCount - 1);
     }
-    // 处理文件下载
     if (response.data instanceof Blob && response.headers?.['file'] === 'true') {
       return response;
     }
@@ -87,7 +78,6 @@ request.interceptors.response.use(
       data = parsed.data;
     }
 
-    // 处理业务错误
     if (code !== 200 && !config.noToast) {
       toast.warning({
         description: msg,
@@ -104,13 +94,11 @@ request.interceptors.response.use(
     return { code, msg, data };
   },
   async (error) => {
-    // 减少请求计数
     if (!error.config?.noLoading) {
       finishRequestLoading();
       updateGlobalLoading(requestCount - 1);
     }
 
-    // 处理错误响应
     let errorMessage;
     if (error.response) {
       const { status, data } = error.response;

@@ -7,19 +7,12 @@ const initialState = {
   token: null,
   isAuthenticated: false,
   loading: true,
-  initialized: false, // true once userInfo + routes have both been fetched on startup
+  initialized: false, // true once userInfo and routes have both been fetched
   error: null,
   routes: [],
   hasAdminAccess: false,
   hasUserAccess: false,
 };
-
-function deriveAccess(routes) {
-  return {
-    hasAdminAccess: routes.some((r) => r.startsWith('GET /admin/')),
-    hasUserAccess: routes.some((r) => r.includes('/contests/:contestID')),
-  };
-}
 
 const userSlice = createSlice({
   name: 'user',
@@ -31,9 +24,8 @@ const userSlice = createSlice({
     },
     setRoutes: (state, action) => {
       state.routes = action.payload;
-      const { hasAdminAccess, hasUserAccess } = deriveAccess(action.payload);
-      state.hasAdminAccess = hasAdminAccess;
-      state.hasUserAccess = hasUserAccess;
+      state.hasAdminAccess = action.payload.some((r) => r.startsWith('GET /admin/'));
+      state.hasUserAccess = action.payload.some((r) => r.includes('/contests/:contestID'));
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
@@ -61,9 +53,6 @@ const userSlice = createSlice({
 
 export const { setUser, setRoutes, setLoading, setError, logout, clearError, setInitialized } = userSlice.actions;
 
-/**
- * 获取用户信息
- */
 export const fetchUserInfo = () => async (dispatch) => {
   dispatch(setLoading(true));
 
@@ -85,9 +74,7 @@ export const fetchUserInfo = () => async (dispatch) => {
   }
 };
 
-/**
- * 获取当前用户可访问的 API 路由列表, 存入 store 并派生访问标志
- */
+/** 获取当前用户可访问的 API 路由列表, 存入 store 并派生访问标志 */
 export const fetchAccessibleRoutes = () => async (dispatch) => {
   try {
     const response = await getAccessibleRoutes();
@@ -99,9 +86,6 @@ export const fetchAccessibleRoutes = () => async (dispatch) => {
   }
 };
 
-/**
- * 登出用户
- */
 export const logoutUser = () => (dispatch) => {
   import('../api/request').then(({ default: request }) => {
     request({ url: '/logout', method: 'DELETE', noLoading: true }).catch(() => {});

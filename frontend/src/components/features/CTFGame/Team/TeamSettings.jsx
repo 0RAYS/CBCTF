@@ -33,7 +33,6 @@ function TeamSettings({
 
   return (
     <div className="contest-container mx-auto space-y-6">
-      {/* 队伍信息卡片 */}
       <Card variant="default" padding="md" animate>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div className="flex min-w-0 items-center gap-4">
@@ -72,7 +71,6 @@ function TeamSettings({
           </div>
         </div>
 
-        {/* 队伍描述 */}
         <div className="mb-6">
           <div className="text-neutral-400 text-sm mb-2">{t('game.team.settings.description')}</div>
           <div className="p-3 bg-neutral-900 rounded-md">
@@ -82,7 +80,6 @@ function TeamSettings({
           </div>
         </div>
 
-        {/* 邀请码部分 */}
         <InvitationCode
           code={team.inviteCode}
           isLeader={isLeader}
@@ -91,7 +88,6 @@ function TeamSettings({
         />
       </Card>
 
-      {/* 成员列表 */}
       <MembersCard leader={team.leader} members={team.members} isLeader={isLeader} onKickMember={setShowKickModal} />
 
       {isLeader && (
@@ -108,7 +104,6 @@ function TeamSettings({
         </div>
       )}
 
-      {/* 编辑模态框 */}
       {showEditModal && (
         <EditTeamModal
           isOpen={showEditModal}
@@ -121,7 +116,6 @@ function TeamSettings({
         />
       )}
 
-      {/* 踢出确认模态框 */}
       <ConfirmModal
         isOpen={!!showKickModal}
         onClose={() => setShowKickModal(null)}
@@ -135,7 +129,6 @@ function TeamSettings({
         type="danger"
       />
 
-      {/* 解散确认模态框 */}
       <ConfirmModal
         isOpen={showDisbandModal}
         onClose={() => setShowDisbandModal(false)}

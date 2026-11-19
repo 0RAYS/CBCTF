@@ -44,18 +44,6 @@ function BaseLayout({
             />
           </>
         )}
-        {/* <Squares
-          speed={0.03}
-          hoverFillColor="#434343"
-          borderColor="#606060"
-          direction="down"
-          gradientConfig={{
-            enabled: true,
-            innerColor: 'rgba(0, 0, 0, 0)',
-            outerColor: '#060606',
-            opacity: 0.8,
-          }}
-        /> */}
       </div>
       <div className="relative z-50">
         <NavBar
@@ -70,7 +58,6 @@ function BaseLayout({
         />
       </div>
 
-      {/* 内容区域 */}
       <main id="main-content" className="w-full min-w-0 flex-1 pt-[104px] pb-8 px-4 md:px-8 relative z-1">
         {children}
       </main>

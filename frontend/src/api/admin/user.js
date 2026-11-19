@@ -1,6 +1,5 @@
 import request from '../request';
 
-// 获取用户列表
 export const getUserList = (params = { limit: 20, offset: 0 }) => {
   return request({
     url: '/admin/users',
@@ -9,7 +8,6 @@ export const getUserList = (params = { limit: 20, offset: 0 }) => {
   });
 };
 
-// 获取用户详情
 export const getUserInfo = (userId) => {
   return request({
     url: `/admin/users/${userId}`,
@@ -17,7 +15,6 @@ export const getUserInfo = (userId) => {
   });
 };
 
-// 创建用户
 export const createUser = (data) => {
   return request({
     url: '/admin/users',
@@ -26,7 +23,6 @@ export const createUser = (data) => {
   });
 };
 
-// 更新用户信息
 export const updateUser = (userId, data) => {
   return request({
     url: `/admin/users/${userId}`,
@@ -35,7 +31,6 @@ export const updateUser = (userId, data) => {
   });
 };
 
-// 删除用户
 export const deleteUser = (userId) => {
   return request({
     url: `/admin/users/${userId}`,
@@ -43,7 +38,6 @@ export const deleteUser = (userId) => {
   });
 };
 
-// 更新用户头像
 export const updateUserPicture = (userId, file) => {
   const formData = new FormData();
   formData.append('picture', file);

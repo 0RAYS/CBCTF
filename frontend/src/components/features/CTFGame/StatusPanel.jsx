@@ -1,35 +1,10 @@
-/**
- * 比赛状态面板组件
- * @param {Object} props
- * @param {Object} props.contestStatus - 比赛状态信息
- * @param {string} props.contestStatus.status - 比赛状态 ("upcoming" | "active" | "ended")
- * @param {string} props.contestStatus.startTime - 开始时间 (ISO格式)
- * @param {string} props.contestStatus.endTime - 结束时间 (ISO格式)
- * @param {Object} props.contestStatus.team - 当前队伍信息
- * @param {number} props.contestStatus.team.score - 队伍分数
- * @param {number} props.contestStatus.team.rank - 队伍排名
- * @param {number} props.contestStatus.team.solved - 已解题数
- * @param {number} props.contestStatus.totalChallenges - 总题目数
- * @example
- * const contestStatus = {
- *   status: "active",
- *   startTime: "2024-03-15T10:00:00Z",
- *   endTime: "2024-03-16T10:00:00Z",
- *   team: {
- *     score: 2450,
- *     rank: 12,
- *     solved: 12
- *   },
- *   totalChallenges: 30
- * }
- */
-
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import InfoCard from './InfoCard';
 import NotificationCard from './NotificationCard';
 import { useTranslation } from 'react-i18next';
 
+/** 比赛状态面板组件 */
 function StatusPanel({ contestStatus, notifications, onStatusExpired }) {
   const { t, i18n } = useTranslation();
   const [remainingSeconds, setRemainingSeconds] = useState(0);
@@ -56,10 +31,8 @@ function StatusPanel({ contestStatus, notifications, onStatusExpired }) {
       return true;
     };
 
-    // 首次立即更新
     updateRemainingTime();
 
-    // 使用setInterval每秒更新一次
     intervalId = setInterval(() => {
       updateRemainingTime();
     }, 1000);
@@ -69,7 +42,6 @@ function StatusPanel({ contestStatus, notifications, onStatusExpired }) {
     };
   }, [contestStatus.status, contestStatus.startTime, contestStatus.endTime]);
 
-  // 格式化显示
   const formatTime = (seconds) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -77,7 +49,6 @@ function StatusPanel({ contestStatus, notifications, onStatusExpired }) {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
-  // 即将开始的状态
   if (contestStatus.status === 'upcoming') {
     return (
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 [overflow-wrap:anywhere] [&>div]:min-w-0">
@@ -113,7 +84,6 @@ function StatusPanel({ contestStatus, notifications, onStatusExpired }) {
     return <></>;
   }
 
-  // 比赛进行中的状态
   return (
     <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 [overflow-wrap:anywhere] [&>div]:min-w-0">
       <motion.div

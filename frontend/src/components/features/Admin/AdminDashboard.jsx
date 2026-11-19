@@ -1,22 +1,4 @@
-/**
- * 管理员仪表盘组件
- * @param {Object} props
- * @param {Object} props.status - 系统状态数据
- * @param {string} props.status.ip - 服务器IP
- * @param {number} props.status.users - 用户数量
- * @param {number} props.status.contests - 赛事数量
- * @param {number} props.status.challenges - 题目数量
- * @param {number} props.status.requests - 请求数量
- * @param {number} props.status.duration - 平均响应时间(ms)
- * @param {number} props.status.sent - 下行流量(bytes)
- * @param {number} props.status.recv - 上行流量(bytes)
- * @param {number} props.status.io - 总流量(bytes)
- * @param {number} props.status.cache - 缓存总量
- * @param {number} props.status.victims - 靶机数量
- * @param {number} props.status.submissions - 提交次数
- * @param {React.ReactNode} props.chartContent - 图表内容
- * @param {React.ReactNode} props.extraContent - 额外内容, 如表格等
- */
+/** 管理员仪表盘组件 */
 
 import { motion } from 'motion/react';
 import { Card, StatCard } from '../../common';
@@ -49,10 +31,8 @@ function AdminDashboard({ status, chartContent, extraContent }) {
           </p>
         ) : null}
 
-        {/* 图表区域 - 由外部传入 */}
         {chartContent && <div className="mb-5 border border-neutral-600 rounded-md bg-neutral-900">{chartContent}</div>}
 
-        {/* 状态卡片网格 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <StatCard title={t('admin.dashboard.cards.requestIp')} value={status?.ip ?? t('common.notAvailable')} />
           <StatCard title={t('admin.dashboard.cards.users')} value={status?.users ?? t('common.notAvailable')} />
@@ -78,7 +58,6 @@ function AdminDashboard({ status, chartContent, extraContent }) {
         </div>
       </motion.div>
 
-      {/* 额外内容区域 - 由外部传入 */}
       {extraContent && (
         <Card variant="default" padding="md" animate>
           {extraContent}

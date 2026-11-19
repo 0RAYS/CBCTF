@@ -65,7 +65,6 @@ function ChallengeTypes() {
           <p className="text-neutral-400 text-sm mt-2 max-w-[60ch]">{home.challengeTypes.subtitle}</p>
         </motion.div>
 
-        {/* Type cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {types.map((type, index) => (
             <motion.div

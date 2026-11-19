@@ -5,20 +5,7 @@ import { Button, Pagination } from '../../../components/common';
 import { List } from '../../common';
 import { useTranslation } from 'react-i18next';
 
-/**
- * 管理后台文件管理组件
- * @param {Object} props
- * @param {Array} props.files - 文件列表
- * @param {number} props.totalCount - 总文件数量
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {string} props.fileType - 文件类型
- * @param {function} props.onPageChange - 页码改变回调
- * @param {function} props.onTypeChange - 文件类型改变回调
- * @param {function} props.onDelete - 删除文件回调
- * @param {function} props.onBatchDelete - 批量删除回调
- * @param {function} props.onDownload - 下载文件回调
- */
+/** 管理后台文件管理组件 */
 function AdminFiles({
   files = [],
   totalCount = 0,
@@ -35,7 +22,6 @@ function AdminFiles({
   const { t, i18n } = useTranslation();
   const [selectedFiles, setSelectedFiles] = useState([]);
 
-  // 文件类型选项
   const fileTypeOptions = [
     { value: 'file', label: t('admin.files.types.file'), icon: IconFile },
     {
@@ -51,7 +37,6 @@ function AdminFiles({
     },
   ];
 
-  // 格式化文件大小
   const formatSize = (bytes) => {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -60,23 +45,19 @@ function AdminFiles({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // 获取文件图标
   const getFileIcon = (type) => {
     const option = fileTypeOptions.find((opt) => opt.value === type);
     return option ? option.icon : IconFile;
   };
 
-  // 处理选择文件
   const handleSelectFile = (fileId) => {
     setSelectedFiles((prev) => (prev.includes(fileId) ? prev.filter((id) => id !== fileId) : [...prev, fileId]));
   };
 
-  // 处理全选
   const handleSelectAll = () => {
     setSelectedFiles((prev) => (prev.length === files.length ? [] : files.map((file) => file.id)));
   };
 
-  // 处理类型切换
   const handleTypeChange = (newType) => {
     onTypeChange?.(newType);
     onPageChange(1);

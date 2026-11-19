@@ -1,7 +1,6 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
-// One request at a time; refresh never supersedes an in-flight request for this
-// resource. Cleanup aborts the transport and invalidates late responses.
+// One request at a time; refresh never supersedes an in-flight request. Cleanup aborts and invalidates late responses.
 export default function useWorkloadStatus(resourceId, load) {
   const [state, setState] = useState({
     pods: [],

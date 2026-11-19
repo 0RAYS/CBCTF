@@ -1,7 +1,4 @@
-/**
- * Normalizes system configuration from backend to nested structure
- * Handles both flat keys and nested objects for DB-managed runtime settings.
- */
+/** Normalizes flat or nested backend settings into the nested shape the form edits. */
 
 const fallback = (value, defaultValue) => (value !== undefined && value !== null ? value : defaultValue);
 

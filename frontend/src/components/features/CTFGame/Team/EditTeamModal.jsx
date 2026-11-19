@@ -1,17 +1,9 @@
-/**
- * 编辑队伍模态框
- * @param {Object} props
- * @param {boolean} props.isOpen - 是否显示
- * @param {Function} props.onClose - 关闭回调
- * @param {Object} props.team - 队伍信息
- * @param {Function} props.onSave - 保存回调
- */
-
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../common';
 import Modal from '../../../common/Modal';
 
+/** 编辑队伍模态框 */
 function EditTeamModal({ isOpen, onClose, team, onSave }) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
@@ -28,7 +20,6 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('game.team.editModal.title')} size="md" showCloseButton={false}>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 队伍名称 */}
         <div>
           <label className="block text-neutral-400 text-sm mb-2">{t('game.team.editModal.teamName')}</label>
           <input
@@ -41,7 +32,6 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
           />
         </div>
 
-        {/* 队伍描述 */}
         <div>
           <label className="block text-neutral-400 text-sm mb-2">{t('game.team.editModal.description')}</label>
           <textarea
@@ -54,7 +44,6 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
           />
         </div>
 
-        {/* 转让队长 */}
         <div>
           <label className="block text-neutral-400 text-sm mb-2">{t('game.team.editModal.transferLeadership')}</label>
           <select

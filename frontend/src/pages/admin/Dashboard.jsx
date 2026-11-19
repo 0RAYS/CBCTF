@@ -42,7 +42,6 @@ function Dashboard() {
     };
   }, []);
 
-  // 生成 ECharts 配置
   const getChartOption = () => {
     if (!status?.metrics) return {};
 

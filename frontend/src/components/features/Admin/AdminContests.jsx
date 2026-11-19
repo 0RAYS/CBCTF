@@ -4,19 +4,7 @@ import { Button, Pagination } from '../../../components/common';
 import { List, StatusTag } from '../../common';
 import { useTranslation } from 'react-i18next';
 
-/**
- * 比赛管理展示组件
- * @param {Object} props
- * @param {Array} props.contests - 比赛列表数据
- * @param {number} props.totalCount - 总比赛数量
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {function} props.onPageChange - 页码改变回调
- * @param {function} props.onCreateContest - 创建比赛回调
- * @param {function} props.onDeleteContest - 删除比赛回调
- * @param {function} props.onContestClick - 比赛点击回调
- * @param {function} props.onPictureUpload - 上传头像回调
- */
+/** 比赛管理展示组件 */
 function AdminContests({
   contests = [],
   totalCount = 0,
@@ -32,7 +20,6 @@ function AdminContests({
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'zh-CN' ? 'zh-CN' : 'en-US';
 
-  // 获取比赛状态
   const getContestStatus = (startTime, duration) => {
     const now = new Date().getTime() / 1000;
     const start = new Date(startTime).getTime() / 1000;
@@ -49,7 +36,6 @@ function AdminContests({
     return { type: 'default', text: t('admin.contests.status.ended') };
   };
 
-  // 格式化日期时间
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString(locale, {
@@ -61,7 +47,6 @@ function AdminContests({
     });
   };
 
-  // 格式化时长
   const formatDuration = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     return t('utils.time.units.hour', { count: hours });

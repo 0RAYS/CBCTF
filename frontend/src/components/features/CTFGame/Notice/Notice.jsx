@@ -1,17 +1,3 @@
-/**
- * 公告页面组件
- * @param {Object} props
- * @param {Array} props.notices - 公告列表
- * @example
- * const notices = [{
- *   id: 1,
- *   title: "Challenge 'Web Injection' Updated",
- *   content: "We've updated the challenge description...",
- *   type: "update",
- *   timestamp: "2024-03-15 14:30:22"
- * }]
- */
-
 import { motion } from 'motion/react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +14,7 @@ const typeIcons = {
   normal: '📢',
 };
 
+/** 公告页面组件 */
 function Notice({ notices }) {
   const [expandedId, setExpandedId] = useState(null);
   const id = useId();
@@ -40,9 +27,7 @@ function Notice({ notices }) {
 
   return (
     <div className="contest-container mx-auto">
-      {/* 整体容器 */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        {/* 标题栏 */}
         <div className="flex items-center justify-end mb-6">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
@@ -56,7 +41,6 @@ function Notice({ notices }) {
           </div>
         </div>
 
-        {/* 公告列表 */}
         <div className="space-y-4">
           {notices.map((notice) => (
             <motion.article

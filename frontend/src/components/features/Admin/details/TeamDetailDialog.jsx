@@ -13,10 +13,8 @@ function AdminTeamDetailDialog({
   team,
   activeTab = 'info',
   onTabChange,
-  // info tab
   members = [],
   membersLoading = false,
-  // submissions/writeups/containers tab data
   detailSubmissions = [],
   detailSubmissionCount = 0,
   detailSubmissionPage = 1,
@@ -31,7 +29,6 @@ function AdminTeamDetailDialog({
   onDetailDownloadTraffic,
   onDetailDownloadWriteup,
   onViewTrafficGraph,
-  // flags tab data
   detailFlags = [],
   detailFlagsLoading = false,
   canViewTraffic = true,
@@ -59,7 +56,6 @@ function AdminTeamDetailDialog({
 
   const renderInfoTab = () => (
     <div className="space-y-6">
-      {/* Team header */}
       <div className="flex items-start gap-4">
         <Avatar src={team.picture} name={team.name} size="lg" className="border border-neutral-300/30" />
         <div className="min-w-0 flex-1">
@@ -82,7 +78,6 @@ function AdminTeamDetailDialog({
         </div>
       </div>
 
-      {/* Info grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card variant="default" padding="md">
           <div className="text-xs font-mono text-neutral-400 mb-1">{t('admin.contests.teams.detail.info.score')}</div>
@@ -114,7 +109,6 @@ function AdminTeamDetailDialog({
         </Card>
       </div>
 
-      {/* Members table */}
       <div>
         <h4 className="text-sm font-mono text-neutral-400 mb-3">{t('admin.contests.teams.detail.info.members')}</h4>
         {membersLoading ? (
@@ -211,7 +205,6 @@ function AdminTeamDetailDialog({
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} title={t('admin.contests.teams.detail.title')} size="2xl">
-        {/* Tab bar */}
         <div className="mb-6 border-b border-neutral-700">
           <div className="flex flex-wrap gap-3 sm:gap-8">
             {TABS.filter((tab) => canViewTraffic || tab !== 'containers').map((tab) => (
@@ -235,7 +228,6 @@ function AdminTeamDetailDialog({
           </div>
         </div>
 
-        {/* Tab content */}
         {activeTab === 'info' ? renderInfoTab() : renderDataTab()}
       </Modal>
 

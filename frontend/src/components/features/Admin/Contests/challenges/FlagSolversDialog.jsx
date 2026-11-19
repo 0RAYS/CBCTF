@@ -48,7 +48,6 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
         size="lg"
         title={t('admin.contests.challengeModal.solversModal.title', { index: flagIndex + 1 })}
       >
-        {/* Body */}
         <div className="p-4 max-h-[60vh] overflow-auto">
           {loading ? (
             <p className="text-center text-sm font-mono text-neutral-400 py-8">{t('common.loading')}</p>

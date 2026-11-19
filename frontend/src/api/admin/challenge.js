@@ -1,6 +1,5 @@
 import request from '../request';
 
-// 获取题目分类
 export const getChallengeCategories = (type) => {
   return request({
     url: '/admin/challenges/categories',
@@ -24,7 +23,6 @@ export const getContestChallengeCategories = (contestId) => {
   });
 };
 
-// 获取题目列表
 export const getChallengeList = (params = { limit: 20, offset: 0 }) => {
   return request({
     url: '/admin/challenges',
@@ -33,7 +31,6 @@ export const getChallengeList = (params = { limit: 20, offset: 0 }) => {
   });
 };
 
-// 获取题目详情
 export const getChallenge = (challengeId) => {
   return request({
     url: `/admin/challenges/${challengeId}`,
@@ -41,7 +38,6 @@ export const getChallenge = (challengeId) => {
   });
 };
 
-// 获取题库题目被哪些比赛引用
 export const getChallengeUsages = (challengeId) => {
   return request({
     url: `/admin/challenges/${challengeId}/usages`,
@@ -50,7 +46,6 @@ export const getChallengeUsages = (challengeId) => {
   });
 };
 
-// 创建题目
 export const createChallenge = (data) => {
   return request({
     url: '/admin/challenges',
@@ -59,7 +54,6 @@ export const createChallenge = (data) => {
   });
 };
 
-// 更新题目
 export const updateChallenge = (challengeId, data) => {
   return request({
     url: `/admin/challenges/${challengeId}`,
@@ -68,7 +62,6 @@ export const updateChallenge = (challengeId, data) => {
   });
 };
 
-// 删除题目
 export const deleteChallenge = (challengeId) => {
   return request({
     url: `/admin/challenges/${challengeId}`,
@@ -76,7 +69,6 @@ export const deleteChallenge = (challengeId) => {
   });
 };
 
-// 上传题目附件
 export const uploadChallengeFile = (challengeId, file) => {
   const formData = new FormData();
   formData.append('file', file);
@@ -90,7 +82,6 @@ export const uploadChallengeFile = (challengeId, file) => {
   });
 };
 
-// 下载题目文件
 export const downloadChallengeFile = (challengeId) => {
   return request({
     url: `/admin/challenges/${challengeId}/download`,
@@ -99,7 +90,6 @@ export const downloadChallengeFile = (challengeId) => {
   });
 };
 
-// 获取题目flag列表
 export const getChallengeFlags = (contestID, challengeID) => {
   return request({
     url: `/admin/contests/${contestID}/challenges/${challengeID}/flags`,
@@ -107,7 +97,6 @@ export const getChallengeFlags = (contestID, challengeID) => {
   });
 };
 
-// 更新题目flag
 export const updateChallengeFlag = (contestID, challengeID, flagID, data) => {
   return request({
     url: `/admin/contests/${contestID}/challenges/${challengeID}/flags/${flagID}`,
@@ -116,7 +105,6 @@ export const updateChallengeFlag = (contestID, challengeID, flagID, data) => {
   });
 };
 
-// 获取题目测试状态
 export const getTestChallengeStatus = (challengeId) => {
   return request({
     url: `/admin/challenges/${challengeId}/test`,
@@ -124,7 +112,6 @@ export const getTestChallengeStatus = (challengeId) => {
   });
 };
 
-// 下载测试附件
 export const downloadTestAttachment = (challengeId) => {
   return request({
     url: `/admin/challenges/${challengeId}/test/attachment`,
@@ -133,7 +120,6 @@ export const downloadTestAttachment = (challengeId) => {
   });
 };
 
-// 启动测试靶机
 export const startTestVictim = (challengeId) => {
   return request({
     url: `/admin/challenges/${challengeId}/test/start`,
@@ -141,7 +127,6 @@ export const startTestVictim = (challengeId) => {
   });
 };
 
-// 停止测试靶机
 export const stopTestVictim = (challengeId) => {
   return request({
     url: `/admin/challenges/${challengeId}/test/stop`,
@@ -149,7 +134,6 @@ export const stopTestVictim = (challengeId) => {
   });
 };
 
-// 获取flag解题队伍列表
 export const getFlagSolvers = (contestId, challengeId, flagId) => {
   return request({
     url: `/admin/contests/${contestId}/challenges/${challengeId}/flags/${flagId}/solvers`,

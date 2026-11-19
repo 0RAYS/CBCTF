@@ -6,24 +6,7 @@ import Checkbox from '../../../../common/Checkbox';
 import BatchResultPanel from '../../batch/BatchResultPanel.jsx';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../../config/challengeChips';
 
-/**
- * 赛事赛题选择弹窗组件
- * @param {Object} props
- * @param {boolean} props.isOpen - 是否显示弹窗
- * @param {Array} props.challenges - 赛题库列表
- * @param {Array} props.selectedChallenges - 已选中的赛题
- * @param {Array} props.categories - 分类列表
- * @param {number} props.totalCount - 赛题总数
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {Function} props.onClose - 关闭弹窗回调
- * @param {Function} props.onSearch - 搜索赛题回调
- * @param {Function} props.onSelect - 选择赛题回调
- * @param {Function} props.onConfirm - 确认选择回调
- * @param {Function} props.onPageChange - 页码变更回调
- * @param {Function} props.onFilterCategoryChange - 过滤分类改变回调
- * @param {Function} props.onFilterTypeChange - 过滤类型改变回调
- */
+/** 赛事赛题选择弹窗组件 */
 function AdminContestChallengeSelector({
   isOpen = false,
   challenges = [],
@@ -51,11 +34,8 @@ function AdminContestChallengeSelector({
 }) {
   const { t } = useTranslation();
 
-  // 统一输入框样式
   const inputBaseClass =
     'w-full bg-black/20 border border-neutral-300/30 rounded-md p-3 text-neutral-50 font-mono focus:border-geek-400 focus:outline-none transition-colors duration-200';
-
-  // 分类标签 / 类型标签由 Chip 组件统一渲染
 
   if (!isOpen) return null;
 
@@ -82,7 +62,6 @@ function AdminContestChallengeSelector({
       }
     >
       <BatchResultPanel result={batchResult} error={error} />
-      {/* 搜索和过滤 */}
       <div className="p-4 border-b border-neutral-700">
         <div className="flex flex-col sm:flex-row gap-4 mb-3">
           <div className="flex-1 relative">
@@ -137,7 +116,6 @@ function AdminContestChallengeSelector({
         </div>
       </div>
 
-      {/* 赛题列表 */}
       <div className="flex-1 overflow-y-auto p-4">
         {loading ? (
           <div className="flex justify-center p-8">
@@ -199,7 +177,6 @@ function AdminContestChallengeSelector({
           </div>
         )}
 
-        {/* 分页 */}
         {totalCount > pageSize && (
           <div className="mt-6">
             <Pagination

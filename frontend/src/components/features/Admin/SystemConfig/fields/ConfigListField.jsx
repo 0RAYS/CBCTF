@@ -2,15 +2,7 @@ import { IconPlus, IconX } from '@tabler/icons-react';
 import { Button, Input } from '../../../../common';
 import { useTranslation } from 'react-i18next';
 
-/**
- * ConfigListField - Generic list field component with add/remove capabilities
- * @param {string} label - Field label
- * @param {Array} items - Array of items
- * @param {Function} onAdd - Handler for adding new item
- * @param {Function} onUpdate - Handler for updating item (index, value)
- * @param {Function} onRemove - Handler for removing item (index)
- * @param {Function} renderItem - Optional custom renderer for items (item, index) => ReactNode
- */
+/** Generic list field component with add/remove capabilities. */
 export function ConfigListField({ label, items = [], onAdd, onUpdate, onRemove, renderItem }) {
   const { t } = useTranslation();
 

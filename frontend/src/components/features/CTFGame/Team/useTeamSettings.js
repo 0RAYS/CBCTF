@@ -11,7 +11,7 @@ import { toast } from '../../../../utils/toast';
 import { loadTeamSettings } from './loader';
 import { teamUpdatePayload, unchangedTeamFields } from './model';
 
-// The page keys this hook's owner by contest and user, isolating drafts and pending work.
+// A scope token per contest isolates pending work and drops late responses.
 export default function useTeamSettings(contestId, navigate) {
   const { t } = useTranslation();
   const [team, setTeam] = useState(null);

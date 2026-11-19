@@ -3,19 +3,7 @@ import { EmptyState, List, Pagination, StatusTag } from '../../../common';
 import { IconEye, IconMail } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
-/**
- * 邮件发送历史记录展示组件
- * @param {Object} props
- * @param {Array} props.emailHistory - 邮件历史记录列表数据
- * @param {number} props.totalCount - 总数量
- * @param {number} props.currentPage - 当前页码
- * @param {number} props.pageSize - 每页显示数量
- * @param {boolean} props.loading - 是否加载中
- * @param {function} props.onPageChange - 页码改变回调
- * @param {function} props.onViewEmail - 查看邮件详情回调
- * @param {function} props.onEmailClick - 邮件点击回调
- * @param {string} props.smtpAddress - 当前查看的SMTP地址（可选）
- */
+/** 邮件发送历史记录展示组件 */
 function AdminEmailHistory({
   emailHistory = [],
   totalCount = 0,
@@ -28,7 +16,6 @@ function AdminEmailHistory({
   smtpAddress,
 }) {
   const { t, i18n } = useTranslation();
-  // 列定义
   const columns = [
     { key: 'id', label: t('admin.smtp.history.columns.id'), width: '5%' },
     { key: 'from', label: t('admin.smtp.history.columns.from'), width: '15%' },
@@ -46,7 +33,6 @@ function AdminEmailHistory({
     { key: 'time', label: t('admin.smtp.history.columns.time'), width: '15%' },
   ];
 
-  // 自定义单元格渲染
   const renderCell = (email, column) => {
     switch (column.key) {
       case 'id':
@@ -120,7 +106,6 @@ function AdminEmailHistory({
           </div>
         )}
 
-        {/* 数据表格 */}
         <List
           data={emailHistory}
           columns={columns}
@@ -139,7 +124,6 @@ function AdminEmailHistory({
           emptyContent={<EmptyState title={t('admin.smtp.history.empty')} />}
         />
 
-        {/* 分页 */}
         {totalCount > pageSize && (
           <Pagination
             current={currentPage}

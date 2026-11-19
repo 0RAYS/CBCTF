@@ -40,13 +40,11 @@ function ContestCountdown({ startTime, joined, onJoin }) {
   return (
     <Card variant="default" padding="lg" animate>
       <div className="flex flex-col items-center justify-center space-y-8">
-        {/* Title */}
         <div className="text-center">
           <h2 className="text-2xl text-neutral-50 font-mono mb-2">{t('game.countdown.title')}</h2>
           <p className="text-neutral-400">{t('game.countdown.subtitle')}</p>
         </div>
 
-        {/* Countdown digits */}
         <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
           {units.map((item, index) => (
             <div key={index} className="flex flex-col items-center">
@@ -62,7 +60,6 @@ function ContestCountdown({ startTime, joined, onJoin }) {
           ))}
         </div>
 
-        {/* Join status */}
         <div className="flex flex-col items-center">
           {joined ? (
             <div
@@ -78,7 +75,6 @@ function ContestCountdown({ startTime, joined, onJoin }) {
           )}
         </div>
 
-        {/* While-you-wait tips */}
         <div className="w-full border-t border-neutral-600 pt-6">
           <p className="text-xs uppercase tracking-widest text-neutral-400 mb-4 text-center">
             {t('game.countdown.tipTitle')}

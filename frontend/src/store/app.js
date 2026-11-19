@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   loading: {
     global: false,
-    effects: {}, // 用于存储具体操作的loading状态
+    effects: {},
   },
   error: {
     message: null,
@@ -34,9 +34,5 @@ const appSlice = createSlice({
 });
 
 export const { setGlobalLoading, setEffectLoading, setError, clearError } = appSlice.actions;
-
-// 选择器
-export const selectEffectLoading = (effect) => (state) => state.app.loading.effects[effect];
-export const selectError = (state) => state.app.error;
 
 export default appSlice.reducer;

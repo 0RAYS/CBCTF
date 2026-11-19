@@ -1,9 +1,4 @@
-/**
- * ConfigSection - Wrapper component for configuration sections
- * @param {string} title - Section title
- * @param {Component} icon - Icon component from @tabler/icons-react
- * @param {ReactNode} children - Section content
- */
+/** Wrapper component for configuration sections. */
 export function ConfigSection({ title, icon: Icon, children }) {
   return (
     <div className="space-y-2">

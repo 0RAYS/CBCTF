@@ -1,6 +1,5 @@
 import request from '../request';
 
-// 获取系统状态
 export const getSystemStatus = (noLoading = false) => {
   return request({
     url: '/admin/system/status',
@@ -9,7 +8,6 @@ export const getSystemStatus = (noLoading = false) => {
   });
 };
 
-// 获取系统配置
 export const getSystemConfig = () => {
   return request({
     url: '/admin/system/config',
@@ -17,7 +15,6 @@ export const getSystemConfig = () => {
   });
 };
 
-// 更新系统配置
 export const updateSystemConfig = (data) => {
   return request({
     url: '/admin/system/config',
@@ -46,8 +43,7 @@ export const restartSystem = () => {
   });
 };
 
-// 获取系统运行日志（带颜色的ANSI文本数组）
-// 支持分页参数: limit, offset, level
+// 返回带 ANSI 颜色的日志文本数组，支持 limit / offset / level 分页参数
 export const getSystemLogs = (params = { limit: 100, offset: 0 }) => {
   return request({
     url: '/admin/logs',

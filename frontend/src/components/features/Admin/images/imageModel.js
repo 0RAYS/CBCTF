@@ -65,8 +65,7 @@ export const IMAGE_STATE_PRESENT = 'present';
 export const IMAGE_STATE_MISSING = 'missing';
 export const IMAGE_STATE_UNVERIFIED = 'unverified';
 
-// A node holds an image only when the last detection proved it. Everything
-// else is either proven absent or still unverified.
+// A node holds an image only when the last detection proved it; the rest is proven absent or unverified.
 export function imageState(node, image) {
   if (node.images.includes(image)) return IMAGE_STATE_PRESENT;
   if (node.missing.includes(image)) return IMAGE_STATE_MISSING;

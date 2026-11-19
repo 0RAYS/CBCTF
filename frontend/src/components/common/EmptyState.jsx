@@ -1,14 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-/**
- * EmptyState — zero-data placeholder
- * @param {ReactNode} icon         Custom icon (defaults to inbox slot SVG)
- * @param {string}    title        Primary message
- * @param {string}    description  Secondary explanation
- * @param {string}    hint         Short next-action hint (e.g. "Click + Add to create one")
- * @param {ReactNode} action       CTA button or link
- * @param {string}    className    Extra Tailwind classes
- */
+/** EmptyState — zero-data placeholder */
 function EmptyState({ icon, title, description, hint, action, className = '' }) {
   const { t } = useTranslation();
   const resolvedTitle = title ?? t('common.noData');

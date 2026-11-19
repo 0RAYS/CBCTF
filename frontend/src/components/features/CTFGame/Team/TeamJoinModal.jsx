@@ -16,14 +16,12 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
     };
   }, [isOpen]);
 
-  // 创建队伍表单
   const [createForm, setCreateForm] = useState({
     teamName: '',
     description: '',
     contestCode: '',
   });
 
-  // 加入队伍表单
   const [joinForm, setJoinForm] = useState({
     teamName: '',
     teamCode: '',
