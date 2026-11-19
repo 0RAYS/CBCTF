@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: "pages"
+  group: "docs-deploy-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
