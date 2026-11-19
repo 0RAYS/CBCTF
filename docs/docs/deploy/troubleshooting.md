@@ -101,6 +101,22 @@ Valkey 用于缓存和 Asynq 任务队列，兼容 Redis 协议。连接失败�
 - VM 模式是否安装 KubeVirt，service 是否配置 `x-kubevirt: true`、`mem_limit`、VPC 网络、静态 IP 和 MAC 地址
 - FRP 模式是否配置可用 FRPS、token 和端口池
 
+## 抓包容器退出 / 没有 pcap
+
+抓包容器（`capture`）异常退出时，靶机通常会被判定启动失败并回收。先看容器日志：
+
+```bash
+kubectl logs -n cbctf <victim-pod> -c capture
+```
+
+常见报错与处理：
+
+- `failed to prepare runtime outputs` 且提示 `output directory is owned or writable by an untrusted user`：抓包镜像为 rustnet 1.7 及以上版本，它在打开 pcap 前会校验输出路径上每个目录的属主，只接受 root 或「调用者」属主的目录。平台已通过 `SUDO_UID`/`SUDO_GID` 声明降权身份，若仍报错，检查该镜像是否为 1.7 之前的老版本或被改过的镜像。
+- `interactive mode requires a terminal`：抓包容器缺少终端。平台已为抓包容器开启 `stdin` 与 `tty`，若镜像版本较老不支持该组合，请升级镜像。
+- 流量目录里没有 `pod-*.pcap`：确认共享卷可写、抓包容器未被 OOMKilled，以及抓包镜像中的二进制路径仍为 `/usr/local/bin/rustnet`。
+
+镜像版本要求：平台已验证 rustnet 1.3–1.7。抓包镜像通过「系统管理」中的 `k8s.capture` 设置修改，该设置保存在数据库中，优先于配置文件与 Chart 的取值。
+
 ## KubeVirt VM 启动失败
 
 排查方向：
