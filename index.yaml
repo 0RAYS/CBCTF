@@ -3,6 +3,31 @@ entries:
   cbctf:
   - apiVersion: v2
     appVersion: latest
+    created: "2026-11-19T14:19:29.104022078Z"
+    dependencies:
+    - condition: valkey.enabled
+      name: valkey
+      repository: https://valkey.io/valkey-helm/
+      version: 0.12.0
+    description: A Kubernetes-native CTF competition platform
+    digest: a21c5e914859b8204cd7fbe4ded356bcecf6389d3295aa1075f95ab4d6203015
+    home: https://github.com/0RAYS/CBCTF
+    keywords:
+    - ctf
+    - cybersecurity
+    - competition
+    - 0RAYS
+    maintainers:
+    - name: JBNRZ
+    name: cbctf
+    sources:
+    - https://github.com/0RAYS/CBCTF
+    type: application
+    urls:
+    - https://github.com/0RAYS/CBCTF/releases/download/cbctf-0.0.36/cbctf-0.0.36.tgz
+    version: 0.0.36
+  - apiVersion: v2
+    appVersion: latest
     created: "2026-11-18T15:33:14.727600954Z"
     dependencies:
     - condition: valkey.enabled
@@ -276,4 +301,4 @@ entries:
     urls:
     - https://github.com/0RAYS/CBCTF/releases/download/cbctf-0.0.15/cbctf-0.0.15.tgz
     version: 0.0.15
-generated: "2026-11-18T15:33:14.727698357Z"
+generated: "2026-11-19T14:19:29.10413021Z"
