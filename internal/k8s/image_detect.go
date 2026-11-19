@@ -126,11 +126,12 @@ func DetectNodeImages(ctx context.Context, images []string, nodes []*corev1.Node
 		for i := 0; i < len(unresolved); i += detectionChunkSize {
 			chunk := unresolved[i:min(i+detectionChunkSize, len(unresolved))]
 			_, ret := CreateJob(ctx, CreateJobOptions{
-				Name:         "detect-" + utils.RandHexStr(20),
-				Labels:       map[string]string{detectLabel: batch},
-				Images:       chunk,
-				PullPolicy:   string(corev1.PullNever),
-				SelectedNode: node.Name,
+				Name:               "detect-" + utils.RandHexStr(20),
+				Labels:             map[string]string{detectLabel: batch},
+				Images:             chunk,
+				PullPolicy:         string(corev1.PullNever),
+				SelectedNode:       node.Name,
+				ServiceAccountName: runtimeServiceAccount(),
 			})
 			if !ret.OK {
 				// A failed probe leaves its images unverified instead of

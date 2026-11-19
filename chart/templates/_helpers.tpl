@@ -61,6 +61,14 @@ ServiceAccount name
 {{- end }}
 
 {{/*
+ServiceAccount name of the runtime workloads (victims, generators, FRPC pods,
+image warmup jobs). They carry the pull secrets of the private registries.
+*/}}
+{{- define "cbctf.runtimeServiceAccountName" -}}
+{{- default (printf "%s-runtime" (include "cbctf.fullname" .)) .Values.cbctf.k8s.serviceAccount -}}
+{{- end }}
+
+{{/*
 PostgreSQL fullname
 */}}
 {{- define "cbctf.postgres.fullname" -}}
@@ -149,19 +157,46 @@ PostgreSQL service hostname
 {{- end }}
 
 {{/*
+Name of the Secret the chart creates from imageCredentials, empty when no
+credentials are configured. Partially configured credentials fail the render
+instead of silently leaving the workloads without credentials.
+*/}}
+{{- define "cbctf.registrySecretName" -}}
+{{- $credentials := .Values.imageCredentials | default dict -}}
+{{- $registry := $credentials.registry | default "" -}}
+{{- $username := $credentials.username | default "" -}}
+{{- $password := $credentials.password | default "" -}}
+{{- if or $registry $username $password -}}
+  {{- if not (and $registry $username $password) -}}
+    {{- fail "imageCredentials requires registry, username and password" -}}
+  {{- end -}}
+  {{- printf "%s-registry" (include "cbctf.fullname" .) -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Pull secret list: the configured secrets plus the secret the chart creates
+from imageCredentials. Outputs the YAML list entries.
+*/}}
+{{- define "cbctf.imagePullSecretList" -}}
+{{- $secrets := .Values.imagePullSecrets | default list -}}
+{{- with (include "cbctf.registrySecretName" .) -}}
+  {{- $secrets = append $secrets (dict "name" .) -}}
+{{- end -}}
+{{- if $secrets -}}
+{{- toYaml $secrets | trim -}}
+{{- end -}}
+{{- end }}
+
+{{/*
 Combined imagePullSecrets: merges .Values.imagePullSecrets with the auto-generated
 registry secret (when imageCredentials are provided). Outputs the full
 `imagePullSecrets:` block, or empty string if no secrets are configured.
 */}}
 {{- define "cbctf.imagePullSecrets" -}}
-{{- $secrets := .Values.imagePullSecrets | default list -}}
-{{- with .Values.imageCredentials -}}
-  {{- if and .registry .username .password -}}
-    {{- $secrets = append $secrets (dict "name" (printf "%s-registry" (include "cbctf.fullname" $))) -}}
-  {{- end -}}
-{{- end -}}
-{{- if $secrets -}}
+{{- with (include "cbctf.imagePullSecretList" .) }}
 imagePullSecrets:
-  {{- toYaml $secrets | nindent 2 }}
+{{- . | nindent 2 }}
 {{- end -}}
 {{- end }}
+

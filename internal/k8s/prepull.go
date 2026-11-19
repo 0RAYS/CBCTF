@@ -171,11 +171,12 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 			}
 			chunk := missing[i:min(i+5, len(missing))]
 			_, ret = CreateJob(ctx, CreateJobOptions{
-				Name:         "prepull-" + utils.RandHexStr(20),
-				Labels:       selector,
-				Images:       chunk,
-				PullPolicy:   pullPolicy,
-				SelectedNode: node.Name,
+				Name:               "prepull-" + utils.RandHexStr(20),
+				Labels:             selector,
+				Images:             chunk,
+				PullPolicy:         pullPolicy,
+				SelectedNode:       node.Name,
+				ServiceAccountName: runtimeServiceAccount(),
 			})
 			if !ret.OK {
 				failures = append(failures, fmt.Errorf("create warmup job node=%s images=%v: %w", node.Name, chunk, resourceError(ret)))

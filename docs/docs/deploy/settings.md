@@ -106,7 +106,7 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 
 抓包开关、worker 镜像和生成器池容量均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
 
-私有镜像仓库的拉取凭据不在后台配置：运行时 Pod 继承运行命名空间 `default` ServiceAccount 的 `imagePullSecrets`。
+私有镜像仓库的拉取凭据不在后台配置：运行时 Pod 使用 Helm 写入的 `k8s.service_account` ServiceAccount，它带着 Chart 的 `imagePullSecrets` 与 `imageCredentials`。
 
 预热、调度、缓存与回收机制见[工作负载调度](./workloads)。启用 FRP 时使用 ClusterIP，否则使用 NodePort。
 
@@ -119,6 +119,7 @@ Helm 会把以下值渲染进 ConfigMap：
 | `postgres.auth.password`     | 数据库密码    |
 | `valkey.auth.aclUsers.default.password` | 内置 Valkey 密码 |
 | `valkey.password`           | 外部 Valkey 或使用 `usersExistingSecret` 时的密码 |
+| `cbctf.k8s.serviceAccount`  | 运行时工作负载使用的 ServiceAccount |
 
 上述值保存在应用配置 ConfigMap 中，请妥善限制其访问权限。镜像仓库拉取凭据另由 Secret 管理。
 

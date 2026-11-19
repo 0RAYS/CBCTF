@@ -82,6 +82,7 @@ type Config struct {
 		CaptureEnabled    bool   `mapstructure:"capture_enabled" json:"capture_enabled"`
 		WorkerImage       string `mapstructure:"worker_image" json:"worker_image"`
 		GeneratorPoolSize int    `mapstructure:"generator_pool_size" json:"generator_pool_size"`
+		ServiceAccount    string `mapstructure:"service_account" json:"service_account"`
 		Frp               struct {
 			On         bool         `mapstructure:"on" json:"on"`
 			FrpcImage  string       `mapstructure:"frpc" json:"frpc"`
