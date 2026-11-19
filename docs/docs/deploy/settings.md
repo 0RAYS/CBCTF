@@ -97,7 +97,6 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 | `k8s.shared_volume_claim` | 平台和运行时工作负载共用的 PVC；部署参数，后台不修改 | `cbctf-data` |
 | `k8s.capture`   | 流量捕获 sidecar 镜像                             | `ghcr.io/domcyrus/rustnet:latest` |
 | `k8s.capture_enabled` | 是否创建抓包容器及相关挂载 | `true` |
-| `k8s.priority_class_name` | 普通 Pod 使用的已有 PriorityClass，当前不应用到 VM | `""` |
 | `k8s.worker_image` | 含 `/app/worker` 的独立 worker 镜像 | `ghcr.io/0rays/cbctf-worker:latest` |
 | `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量 | `2` |
 | `k8s.frp.on`    | 是否启用 FRP 暴露靶机端口                             | `false`                           |
@@ -105,7 +104,7 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 | `k8s.frp.nginx` | FRP 辅助 Nginx 镜像                             | `nginx:latest`                    |
 | `k8s.frp.frps`  | FRPS 地址、端口、token、端口池                        | `host: frps.example.com`          |
 
-抓包开关、Pod PriorityClass、worker 镜像和生成器池容量均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
+抓包开关、worker 镜像和生成器池容量均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
 
 预热、调度、缓存与回收机制见[工作负载调度](./workloads)。启用 FRP 时使用 ClusterIP，否则使用 NodePort。
 

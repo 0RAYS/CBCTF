@@ -63,16 +63,6 @@ export function K8sConfigSection({ config, updateConfig }) {
         }
       />
       <ConfigField
-        label={t('admin.system.labels.k8sPriorityClassName')}
-        value={config.k8s.priority_class_name}
-        description={t('admin.system.hints.k8sPriorityClassName')}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.k8s.priority_class_name = value;
-          })
-        }
-      />
-      <ConfigField
         label={t('admin.system.labels.k8sWorkerImage')}
         value={config.k8s.worker_image}
         description={t('admin.system.hints.k8sWorkerImage')}

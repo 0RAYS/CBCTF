@@ -74,7 +74,6 @@ k8s:
   # Docker image
   capture: ghcr.io/domcyrus/rustnet:latest
   capture_enabled: true
-  priority_class_name: ""
   worker_image: ghcr.io/0rays/cbctf-worker:latest
   generator_pool_size: 2
   # Existing image pull secret in the platform namespace, empty disables it
