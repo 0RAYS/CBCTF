@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { IconCheck, IconClipboard, IconLoader2 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../../common/Button';
+import { copyableAddress } from '../../../../../utils/address';
 import { isInstanceTransitioning, normalizeInstanceStatus } from './testSession';
 
 const formatTimeLeft = (seconds) => {
@@ -29,7 +30,7 @@ export default function TestInstancePanel({ testStatus, loading, timeLeft, start
     const session = lifetime.current;
     if (!session?.active) return;
     try {
-      await navigator.clipboard.writeText(target);
+      await navigator.clipboard.writeText(copyableAddress(target));
       if (!session.active) return;
       clearTimeout(session.timers.get(target));
       setCopied((prev) => ({ ...prev, [target]: true }));
