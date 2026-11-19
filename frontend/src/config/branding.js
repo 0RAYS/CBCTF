@@ -4,8 +4,8 @@ export const DEFAULT_BRANDING = {
   admin_name: { zh_cn: 'DASHBOARD', en: 'DASHBOARD' },
   browser_title: { zh_cn: 'CBCTF', en: 'CBCTF' },
   browser_description: {
-    zh_cn: 'DEEP DIVE CTF competition platform',
-    en: 'DEEP DIVE CTF competition platform',
+    zh_cn: 'CBCTF competition platform',
+    en: 'CBCTF competition platform',
   },
   footer_copyright: { zh_cn: '© 2026 CBCTF', en: '© 2026 CBCTF' },
   footer_icp_number: '陕ICP备2025076339号-1',

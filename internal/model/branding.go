@@ -64,71 +64,71 @@ func DefaultBranding() Branding {
 		Code: DefaultBrandingCode,
 		SiteName: LocalizedText{
 			ZhCN: "CBCTF",
-			En:   "DEEP DIVE CTF",
+			En:   "CBCTF",
 		},
 		AdminName: LocalizedText{
-			ZhCN: "CBCTF管理台",
-			En:   "DEEP DIVE Admin",
+			ZhCN: "CBCTF",
+			En:   "CBCTF",
 		},
 		BrowserTitle: LocalizedText{
 			ZhCN: "CBCTF",
-			En:   "DEEP DIVE CTF",
+			En:   "CBCTF",
 		},
 		BrowserDescription: LocalizedText{
-			ZhCN: "CBCTF 网络安全竞赛平台",
-			En:   "DEEP DIVE CTF competition platform",
+			ZhCN: "CBCTF competition platform",
+			En:   "CBCTF competition platform",
 		},
 		FooterCopyright: LocalizedText{
 			ZhCN: "© 2026 CBCTF",
 			En:   "© 2026 CBCTF",
 		},
-		FooterICPNumber:    "陕ICP备2025076339号-1",
+		FooterICPNumber:    "浙ICP备12028388号-2",
 		FooterICPLink:      "https://beian.miit.gov.cn/",
 		FooterContactEmail: "support@0rays.club",
 		FooterGithubURL:    "https://github.com/0RAYS/CBCTF",
 		HomeLogo:           FileURL(fmt.Sprintf("%s/platform/logo.png", config.Env.Host)),
 		HomeLogoAlt: LocalizedText{
-			ZhCN: "CBCTF 首页 Logo",
-			En:   "DEEP DIVE CTF home logo",
+			ZhCN: "CBCTF Logo",
+			En:   "CBCTF logo",
 		},
 		Home: BrandingHomeContent{
 			Hero: BrandingHeroContent{
 				TitlePrefix: LocalizedText{
-					ZhCN: "深入探索",
+					ZhCN: "Dive Deep into the",
 					En:   "Dive Deep into the",
 				},
 				TitleHighlight: LocalizedText{
-					ZhCN: "网络安全",
+					ZhCN: "Cyber Security",
 					En:   "Cyber Security",
 				},
 				TitleSuffix: LocalizedText{
-					ZhCN: "挑战",
+					ZhCN: "Challenge",
 					En:   "Challenge",
 				},
 				Subtitle: LocalizedText{
-					ZhCN: "加入CBCTF 社区, 在真实场景中对抗、练习与成长",
+					ZhCN: "Join the elite community of hackers, compete in real-world challenges, and master the art of cybersecurity through hands-on experience.",
 					En:   "Join the elite community of hackers, compete in real-world challenges, and master the art of cybersecurity through hands-on experience.",
 				},
 				PrimaryAction: LocalizedText{
-					ZhCN: "立即参赛",
+					ZhCN: "START HACKING",
 					En:   "START HACKING",
 				},
 				SecondaryAction: LocalizedText{
-					ZhCN: "了解更多",
+					ZhCN: "LEARN MORE",
 					En:   "LEARN MORE",
 				},
 			},
 			ChallengeTypes: BrandingSectionContent{
 				TitlePrefix: LocalizedText{
-					ZhCN: "掌握",
+					ZhCN: "Master All Aspects of",
 					En:   "Master All Aspects of",
 				},
 				TitleHighlight: LocalizedText{
-					ZhCN: "网络安全",
+					ZhCN: "Cyber Security",
 					En:   "Cyber Security",
 				},
 				Subtitle: LocalizedText{
-					ZhCN: "从 Web 渗透到二进制分析, 覆盖网络安全核心方向",
+					ZhCN: "From web exploitation to binary analysis, our challenges cover every major domain of cybersecurity",
 					En:   "From web exploitation to binary analysis, our challenges cover every major domain of cybersecurity",
 				},
 			},

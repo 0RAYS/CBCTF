@@ -14,15 +14,15 @@ export function useBranding() {
     resolve,
     siteName: resolve(branding.site_name, t('branding.main')),
     adminName: resolve(branding.admin_name, t('branding.admin')),
-    browserTitle: resolve(branding.browser_title, 'DEEP DIVE CTF'),
-    browserDescription: resolve(branding.browser_description, 'DEEP DIVE CTF competition platform'),
+    browserTitle: resolve(branding.browser_title, 'CBCTF'),
+    browserDescription: resolve(branding.browser_description, 'CBCTF competition platform'),
     footerCopyright: resolve(branding.footer_copyright, t('footer.copyright')),
     footerICPNumber: branding.footer_icp_number,
     footerICPLink: branding.footer_icp_link,
     footerContactEmail: branding.footer_contact_email,
     footerGithubURL: branding.footer_github_url,
     homeLogo: branding.home_logo || DEFAULT_BRANDING.home_logo,
-    homeLogoAlt: resolve(branding.home_logo_alt, 'DEEP DIVE CTF'),
+    homeLogoAlt: resolve(branding.home_logo_alt, 'CBCTF'),
     home: {
       hero: {
         titlePrefix: resolve(branding.home?.hero?.title_prefix, t('home.hero.titlePrefix')),
