@@ -59,10 +59,10 @@ function ContestTeamsManagement({ id }) {
   const debouncedName = useDebounce(nameQuery, 300);
   const debouncedDesc = useDebounce(descQuery, 300);
 
-  // 搜索结果对应的查询签名，未匹配时说明这批结果还在加载
+  // 未匹配时说明这批结果还在加载
   const searchSignature = `${debouncedName}|${debouncedDesc}`;
   const searchLoading = searchSignature !== resolvedSearchSignature;
-  // 页码与已展示数据的页码不一致时才算加载中，刷新不会清空表格
+  // 刷新不会清空表格
   const listLoading = loadedPage !== currentPage;
 
   const isSearchMode = !!(nameQuery.trim() || descQuery.trim()) && !searchError;

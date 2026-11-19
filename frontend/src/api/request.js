@@ -152,7 +152,7 @@ request.interceptors.response.use(
       errorMessage = error.message;
     }
 
-    // Forms with inline errors own their feedback instead of showing a duplicate overlay.
+    // Forms with inline errors own their feedback.
     if (!error.config?.noToast) {
       toast.warning({
         description: errorMessage,

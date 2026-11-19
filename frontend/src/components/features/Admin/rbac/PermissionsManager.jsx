@@ -12,7 +12,6 @@ function PermissionsManager() {
   const [loadedPage, setLoadedPage] = useState(0);
   const pageSize = 50;
   const { t } = useTranslation();
-  // 页码与已展示数据的页码不一致时才算加载中
   const loading = loadedPage !== currentPage;
 
   const [isModalOpen, setIsModalOpen] = useState(false);

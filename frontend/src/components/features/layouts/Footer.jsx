@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { REPO_URL } from '../../../config/footer';
 
-// AdminShellLayout still reserves space for a fixed footer.
+// AdminShellLayout reserves space for a fixed footer.
 function Footer({ copyright, icp, links, fixed = true }) {
   const { t } = useTranslation();
 

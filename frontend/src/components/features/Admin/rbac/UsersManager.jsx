@@ -22,8 +22,6 @@ function UsersManager() {
   const pictureUserRef = useRef(null);
   const { openUserDetail, renderUserDetailDialog } = useUserDetailDialog();
 
-  const refreshUsers = () => setRevision((value) => value + 1);
-
   const defaultForm = {
     name: '',
     email: '',
@@ -50,7 +48,7 @@ function UsersManager() {
     createApi: createUser,
     updateApi: updateUser,
     deleteApi: deleteUser,
-    onSuccess: refreshUsers,
+    onSuccess: () => setRevision((value) => value + 1),
     itemToForm: (user) => ({
       name: user.name,
       email: user.email,
@@ -84,10 +82,10 @@ function UsersManager() {
 
   const isSearchMode = !!(nameQuery.trim() || emailQuery.trim() || descQuery.trim());
 
-  // 搜索结果对应的查询签名，未匹配时说明这批结果还在加载
+  // 未匹配时说明这批结果还在加载
   const searchSignature = `${debouncedName}|${debouncedEmail}|${debouncedDesc}`;
   const searchLoading = searchSignature !== resolvedSearchSignature;
-  // 列表页码与已展示数据的页码不一致时才算加载中，刷新不会清空表格
+  // 刷新不会清空表格
   const listLoading = loadedPage !== currentPage;
 
   useEffect(() => {
@@ -158,7 +156,7 @@ function UsersManager() {
       const response = await updateUserPicture(pictureUserRef.current.id, file);
       if (response.code === 200) {
         toast.success({ description: t('admin.users.toast.pictureUpdated') });
-        refreshUsers();
+        setRevision((value) => value + 1);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.users.toast.pictureUpdateFailed') });

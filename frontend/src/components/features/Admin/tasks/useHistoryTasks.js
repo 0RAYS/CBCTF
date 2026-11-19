@@ -11,9 +11,9 @@ export default function useHistoryTasks(active) {
   const [data, setData] = useState(() => normalizeTaskPayload());
   const [loadedQuery, setLoadedQuery] = useState(null);
   const [revision, refresh] = useReducer((value) => value + 1, 0);
-  // 搜索词防抖后才发起请求，输入过程中不打断已有结果
+  // 输入过程中不打断已有结果
   const requestQuery = useDebounce(query, 300);
-  // 查询条件与已展示数据的条件不一致时才算加载中，刷新不会清空表格
+  // 刷新不会清空表格
   const loading = active && loadedQuery !== requestQuery;
   const reportError = useEffectEvent((error) => {
     toast.danger({ description: error.message || t('admin.tasks.toast.fetchHistoryFailed') });

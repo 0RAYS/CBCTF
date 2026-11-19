@@ -20,8 +20,7 @@ export default function GroupsManager() {
   const [revision, setRevision] = useState(0);
   const [loadedPage, setLoadedPage] = useState(0);
   const pageSize = 20;
-  const refreshGroups = () => setRevision((value) => value + 1);
-  // 页码与已展示数据的页码不一致时才算加载中，刷新不会清空表格
+  // 刷新不会清空表格
   const loading = loadedPage !== currentPage;
 
   useEffect(() => {
@@ -64,7 +63,7 @@ export default function GroupsManager() {
     createApi: createGroup,
     updateApi: updateGroup,
     deleteApi: deleteGroup,
-    onSuccess: refreshGroups,
+    onSuccess: () => setRevision((value) => value + 1),
     itemToForm: (group) => ({ name: group.name, description: group.description || '', role_id: group.role_id || '' }),
     messages: Object.fromEntries(
       ['createSuccess', 'createFailed', 'updateSuccess', 'updateFailed', 'deleteSuccess', 'deleteFailed'].map((key) => [
@@ -110,7 +109,7 @@ export default function GroupsManager() {
           key={memberGroup.id}
           group={memberGroup}
           onClose={() => setMemberGroup(null)}
-          onChanged={refreshGroups}
+          onChanged={() => setRevision((value) => value + 1)}
         />
       )}
     </>

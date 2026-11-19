@@ -29,7 +29,6 @@ function ContestScoreboard({ contestId }) {
   const tablePageSize = 20;
   const [tableData, setTableData] = useState({ page: null, teams: [], challenges: [], count: 0 });
   const [rankingLoading, setRankingLoading] = useState(true);
-  // 表格页码与已缓存数据的页码不一致时才算加载中
   const tableLoading = viewMode === 'table' && tableData.page !== tableCurrentPage;
   // null distinguishes an unfetched timeline from a successfully fetched empty result.
   const [timelineData, setTimelineData] = useState(null);

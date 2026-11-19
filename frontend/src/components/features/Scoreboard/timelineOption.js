@@ -16,7 +16,6 @@ export function timelineTeamColor(index) {
 }
 
 export function buildTimelineOption(timePoints, chartData, locale = 'en-US') {
-  const formatScore = (value) => value.toLocaleString();
   return {
     grid: {
       left: '3%',
@@ -35,7 +34,7 @@ export function buildTimelineOption(timePoints, chartData, locale = 'en-US') {
         color: '#fff',
         fontSize: 12,
       },
-      valueFormatter: formatScore,
+      valueFormatter: (value) => value.toLocaleString(),
     },
     xAxis: {
       type: 'category',
@@ -61,7 +60,7 @@ export function buildTimelineOption(timePoints, chartData, locale = 'en-US') {
       axisLabel: {
         color: '#9CA3AF',
         fontSize: 12,
-        formatter: formatScore,
+        formatter: (value) => value.toLocaleString(),
       },
       splitLine: { lineStyle: { color: '#374151', type: 'dashed' } },
     },
