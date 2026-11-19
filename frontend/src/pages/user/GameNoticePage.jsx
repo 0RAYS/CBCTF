@@ -4,6 +4,7 @@ import { getContestNotices } from '../../api/contest';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../../components/common';
+import Loading from '../../components/common/Loading';
 
 function GameNoticePage() {
   const { contestId } = useParams();
@@ -54,9 +55,11 @@ function GameNoticePage() {
                 {t('common.retry', { defaultValue: 'Retry' })}
               </Button>
             </>
+          ) : status === 'loading' ? (
+            <Loading compact />
           ) : (
             <p role="status" className="text-neutral-400">
-              {status === 'loading' ? t('common.loading') : t('common.noData')}
+              {t('common.noData')}
             </p>
           )}
         </Card>

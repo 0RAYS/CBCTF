@@ -22,6 +22,7 @@ function AdminContests({
   totalCount = 0,
   currentPage = 1,
   pageSize = 6,
+  loading = false,
   onPageChange,
   onCreateContest,
   onDeleteContest,
@@ -175,7 +176,8 @@ function AdminContests({
             },
           ]}
           onRowClick={onContestClick}
-          empty={contests.length === 0}
+          loading={loading}
+          empty={!loading && contests.length === 0}
           emptyContent={t('admin.contests.empty')}
         />
 

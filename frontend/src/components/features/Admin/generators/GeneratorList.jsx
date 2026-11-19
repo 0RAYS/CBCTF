@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { IconFileText } from '@tabler/icons-react';
 import { Card, EmptyState } from '../../../common';
+import Loading from '../../../common/Loading';
 import useContextMenu from '../../../common/useContextMenu';
 import RowActions from '../../../common/RowActions';
 import { isGeneratorStoppable } from './generatorUtils.js';
@@ -51,7 +52,7 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
     <Card>
       {contextMenu.menu}
       {loading ? (
-        <div className="flex justify-center py-12 text-neutral-400 text-sm">{t('common.loading')}</div>
+        <Loading compact />
       ) : generators.length === 0 ? (
         <EmptyState title={text('noGenerators')} description={text('noGeneratorsDesc')} />
       ) : (

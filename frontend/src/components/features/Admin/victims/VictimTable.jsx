@@ -2,6 +2,7 @@ import { IconBan, IconDownload, IconFileText, IconGraph, IconRefresh, IconTable,
 import { motion } from 'motion/react';
 import { Button, Card, EmptyState, Pagination } from '../../../common';
 import AutoRefreshControl from '../../../common/AutoRefreshControl';
+import Loading from '../../../common/Loading';
 import useContextMenu from '../../../common/useContextMenu';
 import RowActions from '../../../common/RowActions';
 import TruncatedText from '../../../common/TruncatedText';
@@ -18,6 +19,7 @@ export function VictimTable({
   showDeleted,
   currentPage,
   pageSize,
+  loading = false,
   onRefreshIntervalChange,
   onRefresh,
   onToggleShowDeleted,
@@ -131,7 +133,13 @@ export function VictimTable({
               </tr>
             </thead>
             <tbody>
-              {containers.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={contestId ? 10 : 11}>
+                    <Loading compact />
+                  </td>
+                </tr>
+              ) : containers.length === 0 ? (
                 <tr>
                   <td colSpan={contestId ? 10 : 11}>
                     <EmptyState title={t(`${translationKey}.table.empty`)} />

@@ -29,6 +29,7 @@ function AdminContestChallenges({
   categories = [],
   filterCategory = 'all',
   filterType = 'all',
+  loading = false,
   onPageChange,
   onAddChallenge,
   onEditChallenge,
@@ -288,7 +289,8 @@ function AdminContestChallenges({
             onClick: () => onDeleteChallenge(challenge),
           },
         ]}
-        empty={challenges.length === 0}
+        loading={loading}
+        empty={!loading && challenges.length === 0}
         emptyContent={t('common.noData')}
         footer={
           totalCount > pageSize ? (

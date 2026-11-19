@@ -35,6 +35,7 @@ function AdminChallenge({
   categories = [],
   filterCategory = 'all',
   filterType = 'all',
+  loading = false,
   onPageChange,
   onAddChallenge,
   onEditChallenge,
@@ -273,7 +274,8 @@ function AdminChallenge({
             onClick: () => onDeleteChallenge(challenge),
           },
         ]}
-        empty={challenges.length === 0}
+        loading={loading}
+        empty={!loading && challenges.length === 0}
         emptyContent={
           isSearchMode ? (
             <div className="flex flex-col items-center justify-center space-y-2">

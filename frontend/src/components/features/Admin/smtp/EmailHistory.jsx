@@ -11,10 +11,12 @@ export default function EmailHistory({ target }) {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(true);
   const pageSize = 20;
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
     const params = { limit: pageSize, offset: (currentPage - 1) * pageSize };
     const request = target ? getEmailHistory(target.id, params) : getAllEmailHistory(params);
     request
@@ -26,6 +28,9 @@ export default function EmailHistory({ target }) {
       })
       .catch((error) => {
         if (active) toast.danger({ description: error.message || t('admin.smtp.toast.fetchHistoryFailed') });
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
     return () => {
       active = false;
@@ -39,6 +44,7 @@ export default function EmailHistory({ target }) {
         totalCount={totalCount}
         currentPage={currentPage}
         pageSize={pageSize}
+        loading={loading}
         onPageChange={setCurrentPage}
         onViewEmail={setSelected}
         onEmailClick={setSelected}

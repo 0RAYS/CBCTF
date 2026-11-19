@@ -18,8 +18,11 @@ export default function GroupsManager() {
   const [roles, setRoles] = useState([]);
   const [memberGroup, setMemberGroup] = useState(null);
   const [revision, setRevision] = useState(0);
+  const [loadedPage, setLoadedPage] = useState(0);
   const pageSize = 20;
   const refreshGroups = () => setRevision((value) => value + 1);
+  // 页码与已展示数据的页码不一致时才算加载中，刷新不会清空表格
+  const loading = loadedPage !== currentPage;
 
   useEffect(() => {
     let cancelled = false;
@@ -34,6 +37,9 @@ export default function GroupsManager() {
       })
       .catch((error) => {
         if (!cancelled) toast.danger({ description: error.message || t('admin.rbac.groups.toast.fetchFailed') });
+      })
+      .finally(() => {
+        if (!cancelled) setLoadedPage(currentPage);
       });
     return () => {
       cancelled = true;
@@ -75,6 +81,7 @@ export default function GroupsManager() {
         totalCount={totalCount}
         currentPage={currentPage}
         pageSize={pageSize}
+        loading={loading}
         onPageChange={setCurrentPage}
         onCreateGroup={modal.openCreate}
         onEditGroup={modal.openEdit}

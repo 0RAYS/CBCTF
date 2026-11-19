@@ -19,6 +19,7 @@ function ContestsManagement() {
   const [contests, setContests] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mode, setMode] = useState('create'); // 'create' | 'delete'
   const [selectedContest, setSelectedContest] = useState(null);
@@ -38,6 +39,7 @@ function ContestsManagement() {
   const { t } = useTranslation();
 
   const fetchContests = async () => {
+    setLoading(true);
     try {
       const response = await getContestList({
         limit: pageSize,
@@ -49,6 +51,8 @@ function ContestsManagement() {
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.toast.fetchFailed') });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -213,6 +217,7 @@ function ContestsManagement() {
         totalCount={totalCount}
         currentPage={currentPage}
         pageSize={pageSize}
+        loading={loading}
         onPageChange={setCurrentPage}
         onCreateContest={handleCreateClick}
         onDeleteContest={handleDeleteClick}

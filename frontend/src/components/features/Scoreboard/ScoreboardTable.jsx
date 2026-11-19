@@ -12,6 +12,7 @@
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Card, Pagination, ScrollingText } from '../../common';
+import Loading from '../../common/Loading';
 import { useTranslation } from 'react-i18next';
 import { buildScoreboardColumns, indexTeamChallenges } from './scoreboardModel.js';
 import useScoreColumnWidth from './useScoreColumnWidth';
@@ -24,6 +25,7 @@ function ScoreboardTable({
   currentPage = 1,
   pageSize = 20,
   onPageChange,
+  loading = false,
 }) {
   const { t } = useTranslation();
   const containerRef = useRef(null);
@@ -87,6 +89,17 @@ function ScoreboardTable({
   // On narrow screens, let team/score scroll so pinned columns cannot cover every challenge.
   const detailPosition =
     stickyWidths.rankWidth + teamWidth + scoreWidth + 80 <= stickyWidths.containerWidth ? 'sticky' : 'static';
+
+  if (loading) {
+    return (
+      <div className="w-full min-w-0 space-y-6">
+        {measurement}
+        <Card variant="default" padding="none" className="overflow-hidden">
+          <Loading compact />
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-w-0 space-y-6">

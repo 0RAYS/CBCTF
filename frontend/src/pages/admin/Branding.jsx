@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { motion } from 'motion/react';
 import { Button, Card, Input, Textarea } from '../../components/common';
+import Loading from '../../components/common/Loading';
 import { getAdminBranding, updateAdminBranding, uploadBrandingLogo } from '../../api/admin/branding';
 import { toast } from '../../utils/toast';
 import { useImmerState } from '../../hooks/useImmerState';
@@ -121,7 +122,7 @@ function BrandingSettings() {
   };
 
   if (loading || !branding) {
-    return <div className="p-4 text-neutral-400">{t('common.loading')}</div>;
+    return <Loading />;
   }
 
   return (

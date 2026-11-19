@@ -6,6 +6,7 @@ import { store } from '../store';
 import { toast } from '../utils/toast';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { Spinner } from '../components/common';
 import { exchangeOauthCode } from '../api/oauth';
 
 function OAuthCallback() {
@@ -66,7 +67,7 @@ function OAuthCallback() {
       case 'processing':
         return (
           <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-geek-400"></div>
+            <Spinner size="lg" border="md" />
             <p className="text-neutral-300 text-lg">{t('oauth.callback.processing.title')}</p>
             <p className="text-neutral-400 text-sm">{t('oauth.callback.processing.subtitle')}</p>
           </div>

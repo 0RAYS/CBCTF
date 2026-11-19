@@ -28,6 +28,9 @@ function ContestScoreboard({ contestId }) {
   const [tableCurrentPage, setTableCurrentPage] = useState(1);
   const tablePageSize = 20;
   const [tableData, setTableData] = useState({ page: null, teams: [], challenges: [], count: 0 });
+  const [rankingLoading, setRankingLoading] = useState(true);
+  // 表格页码与已缓存数据的页码不一致时才算加载中
+  const tableLoading = viewMode === 'table' && tableData.page !== tableCurrentPage;
   // null distinguishes an unfetched timeline from a successfully fetched empty result.
   const [timelineData, setTimelineData] = useState(null);
   const [timelineLoading, setTimelineLoading] = useState(true);
@@ -44,6 +47,7 @@ function ContestScoreboard({ contestId }) {
     const teamTransform = (teamData, index = 0) =>
       toRankingTeam(teamData, index, currentPage, pageSize, i18n.language || 'en-US');
 
+    setRankingLoading(true);
     Promise.all([
       getContestRank(contestId, pageSize, (currentPage - 1) * pageSize),
       getTeamInfo(contestId),
@@ -67,6 +71,9 @@ function ContestScoreboard({ contestId }) {
       })
       .catch((error) => {
         if (!ignore) toast.danger({ description: error.message || t('game.scoreboard.toast.fetchFailed') });
+      })
+      .finally(() => {
+        if (!ignore) setRankingLoading(false);
       });
     return () => {
       ignore = true;
@@ -163,11 +170,13 @@ function ContestScoreboard({ contestId }) {
           totalCount={tableData.count}
           currentPage={tableCurrentPage}
           pageSize={tablePageSize}
+          loading={tableLoading}
           onPageChange={setTableCurrentPage}
         />
       ) : (
         <ScoreboardRanking
           teams={scoreboardData.teams}
+          loading={rankingLoading}
           locale={i18n.language || 'en-US'}
           labels={{
             rank: t('common.scoreboard.headers.rank'),

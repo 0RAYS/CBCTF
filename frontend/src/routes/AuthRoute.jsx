@@ -1,15 +1,13 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Loading from '../components/common/Loading';
-import { useTranslation } from 'react-i18next';
 
 export const UserRoute = ({ children, requiresAuth = true }) => {
   const { isAuthenticated, hasUserAccess, initialized } = useSelector((state) => state.user);
   const location = useLocation();
-  const { t } = useTranslation();
 
   if (!initialized) {
-    return <div className="flex items-center justify-center h-screen">{t('common.loading')}</div>;
+    return <Loading />;
   }
 
   if (requiresAuth && !isAuthenticated) {

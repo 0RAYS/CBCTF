@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from '../../../utils/toast';
 import { getContestInfo, updateContestInfo, updateContestPicture } from '../../../api/admin/contest';
 import ContestEditor from '../../../components/features/Admin/Contests/editor/ContestEditor';
+import Loading from '../../../components/common/Loading';
 import {
   contestUpdatePayload,
   createContestDraft,
@@ -14,14 +15,19 @@ export default function AdminContestDetail() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [loaded, setLoaded] = useState(null);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     getContestInfo(Number(id))
       .then((response) => {
         if (!cancelled && response.code === 200) setLoaded({ id, draft: createContestDraft(response.data) });
       })
       .catch((error) => {
         if (!cancelled) toast.danger({ description: error.message || t('admin.contests.editor.toast.fetchFailed') });
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
     return () => {
       cancelled = true;
@@ -47,6 +53,10 @@ export default function AdminContestDetail() {
       toast.danger({ description: error.message || t('admin.contests.editor.toast.updateFailed') });
     }
   };
+  if (loading) {
+    return <Loading />;
+  }
+
   return loaded?.id === id ? (
     <ContestEditor
       key={id}

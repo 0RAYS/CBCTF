@@ -9,8 +9,11 @@ function PermissionsManager() {
   const [permissions, setPermissions] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loadedPage, setLoadedPage] = useState(0);
   const pageSize = 50;
   const { t } = useTranslation();
+  // 页码与已展示数据的页码不一致时才算加载中
+  const loading = loadedPage !== currentPage;
 
   // Edit modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,6 +33,9 @@ function PermissionsManager() {
       })
       .catch((error) => {
         toast.danger({ description: error.message || t('admin.rbac.permissions.toast.fetchFailed') });
+      })
+      .finally(() => {
+        setLoadedPage(currentPage);
       });
   }
 
@@ -65,7 +71,7 @@ function PermissionsManager() {
         totalCount={totalCount}
         currentPage={currentPage}
         pageSize={pageSize}
-        loading={false}
+        loading={loading}
         onPageChange={setCurrentPage}
         onEditPermission={handleEditPermission}
       />
