@@ -6,13 +6,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// HashPassword 生成密码hash
 func HashPassword(password string) string {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(hashedPassword)
 }
 
-// CompareHashAndPassword 验证密码
 func CompareHashAndPassword(hash string, password string) bool {
 	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) != nil {
 		return false
@@ -20,7 +18,6 @@ func CompareHashAndPassword(hash string, password string) bool {
 	return true
 }
 
-// CheckPassword 检查密码强度
 func CheckPassword(password string) uint {
 	var t, u, l, d, s uint
 

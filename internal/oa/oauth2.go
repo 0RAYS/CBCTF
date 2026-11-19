@@ -71,18 +71,18 @@ func (o *oauth2Protocol) Exchange(ctx *gin.Context, provider model.Oauth) (map[s
 	tok, err := oauthConfig.Exchange(requestCtx, form.Code, oauth2.VerifierOption(verifier))
 	if err != nil {
 		log.Logger.Warningf("Failed to get token for provider %s: %s", provider.Provider, err)
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Common.UnknownError, "OAuthProvider", provider.Provider, err)
 	}
 	client := oauthConfig.Client(requestCtx, tok)
 	client.Timeout = time.Second * 10
 	request, err := http.NewRequestWithContext(requestCtx, http.MethodGet, provider.UserInfoURL, nil)
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Common.UnknownError, "OAuthProvider", provider.Provider, err)
 	}
 	response, err := client.Do(request)
 	if err != nil {
 		log.Logger.Warningf("Failed to get User info by provider %s: %s", provider.Provider, err)
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Common.UnknownError, "OAuthProvider", provider.Provider, err)
 	}
 	defer func(Body io.ReadCloser) {
 		if err = Body.Close(); err != nil {
@@ -94,11 +94,11 @@ func (o *oauth2Protocol) Exchange(ctx *gin.Context, provider model.Oauth) (map[s
 		body, _ := io.ReadAll(io.LimitReader(response.Body, 4096))
 		err = fmt.Errorf("unexpected status %d: %s", response.StatusCode, strings.TrimSpace(string(body)))
 		log.Logger.Warningf("Failed to get User info by provider %s: %s", provider.Provider, err)
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Common.UnknownError, "OAuthProvider", provider.Provider, err)
 	}
 	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
 		log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Common.UnknownError, "OAuthProvider", provider.Provider, err)
 	}
 	if err = ApplyUserInfoCallback(requestCtx, provider, client, result); err != nil {
 		log.Logger.Warningf("Failed to apply oauth callback for provider %s: %s", provider.Provider, err)

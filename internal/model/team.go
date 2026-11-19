@@ -4,11 +4,6 @@ import (
 	"time"
 )
 
-// Team
-// BelongsTo Contest
-// ManyToMany User
-// HasMany Submission
-// HasMany TeamFlag
 type Team struct {
 	ContestID   uint         `gorm:"index;uniqueIndex:idx_teams_name_contest_active,where:deleted_at IS NULL;not null" json:"contest_id"`
 	Contest     Contest      `json:"-"`

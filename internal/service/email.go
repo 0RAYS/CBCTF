@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/db"
@@ -20,7 +22,7 @@ func SendEmail(user model.User) model.RetVal {
 	}
 	if _, err := task.EnqueueSendEmailTask(user.Email, token); err != nil {
 		log.Logger.Warningf("Failed to enqueue send email task: %s", err)
-		return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Task.EnqueueError, "Email", fmt.Sprintf("user_id=%d", user.ID), err)
 	}
 	return model.SuccessRetVal()
 }
@@ -28,7 +30,7 @@ func SendEmail(user model.User) model.RetVal {
 func VerifyEmail(tx *gorm.DB, form dto.VerifyEmail) model.RetVal {
 	userID, ret := redis.GetEmailVerifyUserID(form.Token)
 	if !ret.OK {
-		return model.RetVal{Msg: i18n.Model.Email.InvalidVerifyToken}
+		return model.FailRetVal(i18n.Model.Email.InvalidVerifyToken, "EmailVerifyToken", "", nil)
 	}
 	if ret = redis.DelEmailVerifyToken(form.Token, userID); !ret.OK {
 		return ret
@@ -48,7 +50,7 @@ func SendPasswordResetEmail(tx *gorm.DB, form dto.ForgotPasswordForm) model.RetV
 	}
 	if _, err := task.EnqueueSendResetPasswordEmailTask(user.Email, token); err != nil {
 		log.Logger.Warningf("Failed to enqueue send reset password email task: %s", err)
-		return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Task.EnqueueError, "Email", fmt.Sprintf("user_id=%d", user.ID), err)
 	}
 	return model.SuccessRetVal()
 }
@@ -57,7 +59,7 @@ func SendPasswordResetEmail(tx *gorm.DB, form dto.ForgotPasswordForm) model.RetV
 func ResetUserPassword(tx *gorm.DB, form dto.ResetPasswordForm) model.RetVal {
 	userID, ret := redis.GetPasswordResetUserID(form.Token)
 	if !ret.OK {
-		return model.RetVal{Msg: i18n.Model.User.InvalidResetToken}
+		return model.FailRetVal(i18n.Model.User.InvalidResetToken, "PasswordResetToken", "", nil)
 	}
 	if ret = redis.DelPasswordResetToken(form.Token, userID); !ret.OK {
 		return ret

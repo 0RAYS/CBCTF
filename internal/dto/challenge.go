@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/utils"
 )
 
-// GetChallengesForm for get challenges list
 type GetChallengesForm struct {
 	ListModelsForm
 	Type        model.ChallengeType `form:"type" json:"type" binding:"omitempty,oneof=static dynamic pods"`
@@ -27,7 +26,6 @@ func (f *GetChallengesForm) Validate(ctx *gin.Context) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-// GetCategoriesForm for get categories list
 type GetCategoriesForm struct {
 	Type model.ChallengeType `form:"type" json:"type" binding:"omitempty,oneof=static dynamic pods"`
 }

@@ -48,8 +48,8 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 	}
 	networkPolicy, err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create NetworkPolicy: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "NetworkPolicy", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to create NetworkPolicy %s: %s", options.Name, err)
+		return nil, model.FailRetVal(i18n.K8S.CreateError, "NetworkPolicy", options.Name, err)
 	}
 	return networkPolicy, model.SuccessRetVal()
 }
@@ -61,8 +61,8 @@ func DeleteNetworkPolicyCollection(ctx context.Context, labels map[string]string
 	}
 	err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete NetworkPolicy: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "NetworkPolicy", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to delete NetworkPolicies (%s): %s", options.LabelSelector, err)
+		return model.FailRetVal(i18n.K8S.DeleteError, "NetworkPolicy", options.LabelSelector, err)
 	}
 	return model.SuccessRetVal()
 }

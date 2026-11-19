@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"sort"
 	"strings"
 	"sync"
@@ -127,8 +128,8 @@ func GetSystemStatus(tx *gorm.DB) map[string]any {
 
 func validateK8sSettings(form dto.UpdateSettingForm) model.RetVal {
 	if name := form.K8SNamespace; name != nil {
-		if errors := validation.IsDNS1123Label(*name); len(errors) > 0 {
-			return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": strings.Join(errors, "; ")}}
+		if problems := validation.IsDNS1123Label(*name); len(problems) > 0 {
+			return model.FailRetVal(i18n.Response.BadRequest, "Setting", "k8s_namespace="+*name, errors.New(strings.Join(problems, "; ")))
 		}
 	}
 	return model.SuccessRetVal()
@@ -205,7 +206,7 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 	var snapshot *config.Config
 	ret := db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
 		if err := tx.Exec("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", "cbctf:settings").Error; err != nil {
-			return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+			return model.FailRetVal(i18n.Common.UnknownError, "Setting", "cbctf:settings", err)
 		}
 		repo := db.InitSettingRepo(tx)
 		keys := make([]string, 0, len(kv))

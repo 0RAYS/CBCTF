@@ -44,9 +44,9 @@ func buildPermissionChecks() []permissionCheck {
 		{Resource: "configmaps", Verb: "deletecollection", Namespace: ns},
 		// Core: PersistentVolumeClaims
 		{Resource: "persistentvolumeclaims", Verb: "get", Namespace: ns},
-		// Core: Namespaces (集群级别)
+		// Core: Namespaces (cluster-scoped)
 		{Resource: "namespaces", Verb: "get", Name: ns},
-		// Core: Nodes (集群级别)
+		// Core: Nodes (cluster-scoped)
 		{Resource: "nodes", Verb: "list"},
 		// batch: Jobs
 		{Group: "batch", Resource: "jobs", Verb: "create", Namespace: ns},
@@ -67,18 +67,18 @@ func buildPermissionChecks() []permissionCheck {
 		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "list", Namespace: ns},
 		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "watch", Namespace: ns},
 		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "deletecollection", Namespace: ns},
-		// KubeOVN: Subnets (集群级别)
+		// KubeOVN: Subnets (cluster-scoped)
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "get"},
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "deletecollection"},
-		// KubeOVN: VPCs (集群级别)
+		// KubeOVN: VPCs (cluster-scoped)
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "get"},
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "list"},
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "watch"},
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "delete"},
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "deletecollection"},
-		// KubeOVN: IPs (集群级别)
+		// KubeOVN: IPs (cluster-scoped)
 		{Group: "kubeovn.io", Resource: "ips", Verb: "deletecollection"},
 	}
 }

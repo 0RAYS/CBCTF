@@ -1,13 +1,9 @@
 package i18n
 
 var K8S = struct {
-	// Model Error
-	CreateError string
-	// Model Error
-	GetError string
-	// Model
-	NotFound string
-	// Model Error
+	CreateError       string
+	GetError          string
+	NotFound          string
 	DeleteError       string
 	PodRunError       string
 	AttachmentTimeout string

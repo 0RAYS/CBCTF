@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/config"
@@ -87,10 +89,10 @@ func VerifyUser(tx *gorm.DB, form dto.LoginForm) (model.User, model.RetVal) {
 	repo := db.InitUserRepo(tx)
 	user, ret := repo.GetByUniqueField("name", form.Name)
 	if !ret.OK {
-		return model.User{}, model.RetVal{Msg: i18n.Model.User.NamePasswordWrong}
+		return model.User{}, model.FailRetVal(i18n.Model.User.NamePasswordWrong, "User", "name="+form.Name, nil)
 	}
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
-		return model.User{}, model.RetVal{Msg: i18n.Model.User.NamePasswordWrong}
+		return model.User{}, model.FailRetVal(i18n.Model.User.NamePasswordWrong, "User", fmt.Sprintf("user_id=%d", user.ID), nil)
 	}
 	return user, model.SuccessRetVal()
 }
@@ -98,10 +100,10 @@ func VerifyUser(tx *gorm.DB, form dto.LoginForm) (model.User, model.RetVal) {
 func ChangeUserPwd(tx *gorm.DB, user model.User, form dto.ChangePasswordForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	if user.Password != model.NeverLoginPWD && !utils.CompareHashAndPassword(user.Password, form.OldPassword) {
-		return model.RetVal{Msg: i18n.Model.User.PasswordWrong}
+		return model.FailRetVal(i18n.Model.User.PasswordWrong, "User", fmt.Sprintf("user_id=%d", user.ID), nil)
 	}
 	if utils.CheckPassword(form.NewPassword) < 2 {
-		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
+		return model.FailRetVal(i18n.Model.User.WeakPassword, "User", fmt.Sprintf("user_id=%d", user.ID), nil)
 	}
 	return repo.Update(user.ID, db.UpdateUserOptions{Password: new(utils.HashPassword(form.NewPassword))})
 }
@@ -140,7 +142,7 @@ func UpdateUser(tx *gorm.DB, user model.User, form dto.UpdateUserForm) model.Ret
 
 func DeleteSelf(tx *gorm.DB, user model.User, form dto.DeleteSelfForm) model.RetVal {
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
-		return model.RetVal{Msg: i18n.Model.User.PasswordWrong}
+		return model.FailRetVal(i18n.Model.User.PasswordWrong, "User", fmt.Sprintf("user_id=%d", user.ID), nil)
 	}
 	return DeleteUser(tx, user)
 }
@@ -153,7 +155,7 @@ func DeleteUser(tx *gorm.DB, user model.User) model.RetVal {
 			return ret
 		}
 		if count > 0 {
-			return model.RetVal{Msg: i18n.Model.User.InContest}
+			return model.FailRetVal(i18n.Model.User.InContest, "User", fmt.Sprintf("user_id=%d", user.ID), nil)
 		}
 		return repo.Delete(user.ID)
 	})

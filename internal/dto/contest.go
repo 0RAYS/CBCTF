@@ -9,7 +9,6 @@ import (
 	"CBCTF/internal/model"
 )
 
-// CreateContestForm for create contest
 type CreateContestForm struct {
 	Name        string           `form:"name" json:"name" binding:"required"`
 	Description string           `form:"description" json:"description"`
@@ -31,7 +30,6 @@ func (f *CreateContestForm) Validate(_ *gin.Context) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-// UpdateContestForm for admin update contest info
 type UpdateContestForm struct {
 	Name        *string           `form:"name" json:"name" binding:"omitempty,min=1"`
 	Description *string           `form:"description" json:"description"`

@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/i18n"
@@ -71,7 +73,7 @@ func (p *PermissionRepo) GetUserPermissions(userID uint) ([]string, model.RetVal
 		Order("permissions.name ASC").
 		Pluck("permissions.name", &perms)
 	if res.Error != nil {
-		return nil, model.RetVal{Msg: i18n.Model.Permission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		return nil, model.FailRetVal(i18n.Model.Permission.GetError, "Permission", fmt.Sprintf("user_id=%d", userID), res.Error)
 	}
 	return perms, model.SuccessRetVal()
 }

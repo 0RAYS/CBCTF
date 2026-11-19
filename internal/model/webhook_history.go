@@ -4,9 +4,6 @@ import (
 	"time"
 )
 
-// WebhookHistory
-// BelongsTo Webhook
-// BelongsTo Event
 type WebhookHistory struct {
 	WebhookID uint          `json:"webhook_id"`
 	Webhook   Webhook       `json:"-"`

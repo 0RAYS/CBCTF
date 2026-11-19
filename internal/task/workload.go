@@ -6,9 +6,8 @@ import (
 	"CBCTF/internal/model"
 )
 
+// taskResourceError wraps a failed RetVal so that the resource kind, the
+// target that was looked up and the underlying cause all reach the logs.
 func taskResourceError(operation string, ret model.RetVal) error {
-	if detail, ok := ret.Attr["Error"]; ok {
-		return fmt.Errorf("%s: %s: %v", operation, ret.Msg, detail)
-	}
-	return fmt.Errorf("%s: %s", operation, ret.Msg)
+	return fmt.Errorf("%s: %w", operation, ret)
 }

@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/i18n"
@@ -85,12 +87,15 @@ func (c *ContestChallengeRepo) DeleteByChallengeID(challengeIDL ...uint) model.R
 func (c *ContestChallengeRepo) ListCategories(contestID uint, t model.ChallengeType) ([]string, model.RetVal) {
 	var categories []string
 	tx := c.DB.Model(&model.ContestChallenge{}).Where("contest_id = ?", contestID)
+	conditions := map[string]any{"contest_id": contestID}
 	if t != "" {
 		tx = tx.Where("type = ?", t)
+		conditions["type"] = t
 	}
+	target := conditionTarget(conditions)
 	if res := tx.Distinct().Order("category ASC").Pluck("category", &categories); res.Error != nil {
-		log.Logger.Warningf("Failed to list ContestChallenge categories: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to list ContestChallenge categories: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.ContestChallenge.GetError, "ContestChallenge", target, res.Error)
 	}
 	return categories, model.SuccessRetVal()
 }
@@ -120,11 +125,16 @@ func (c *ContestChallengeRepo) ListUnsolvedID(teamID, contestID uint, category s
 	if category != "" {
 		base = base.Where("contest_challenges.category = ?", category)
 	}
+	conditions := map[string]any{"contest_id": contestID, "team_id": teamID}
+	if category != "" {
+		conditions["category"] = category
+	}
+	target := conditionTarget(conditions)
 
 	var count int64
 	if res := base.Count(&count); res.Error != nil {
-		log.Logger.Warningf("Failed to list ContestChallenge: %s", res.Error)
-		return nil, 0, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to list ContestChallenge: %s (target=%s)", res.Error, target)
+		return nil, 0, model.FailRetVal(i18n.Model.ContestChallenge.GetError, "ContestChallenge", target, res.Error)
 	}
 
 	var ids []uint
@@ -133,8 +143,8 @@ func (c *ContestChallengeRepo) ListUnsolvedID(teamID, contestID uint, category s
 		Limit(limit).Offset(offset).
 		Scan(&ids)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to list ContestChallenge: %s", res.Error)
-		return nil, 0, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to list ContestChallenge: %s (target=%s)", res.Error, target)
+		return nil, 0, model.FailRetVal(i18n.Model.ContestChallenge.GetError, "ContestChallenge", target, res.Error)
 	}
 	return ids, count, model.SuccessRetVal()
 }
@@ -150,8 +160,9 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) model.RetVal {
 		return ret
 	}
 	if res := c.DB.Model(&model.ContestChallenge{}).Where("id IN ?", idL).Delete(&model.ContestChallenge{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete ContestChallenge: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.ContestChallenge.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("id=%v", idL)
+		log.Logger.Warningf("Failed to delete ContestChallenge: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.ContestChallenge.DeleteError, "ContestChallenge", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/db"
@@ -32,7 +34,7 @@ func CreateRole(tx *gorm.DB, form dto.CreateRoleForm) (model.Role, model.RetVal)
 
 func UpdateRole(tx *gorm.DB, role model.Role, form dto.UpdateRoleForm) model.RetVal {
 	if role.Default && form.Name != nil {
-		return model.RetVal{Msg: i18n.Model.Role.CannotUpdateDefault}
+		return model.FailRetVal(i18n.Model.Role.CannotUpdateDefault, "Role", fmt.Sprintf("role_id=%d", role.ID), nil)
 	}
 	return db.InitRoleRepo(tx).Update(role.ID, db.UpdateRoleOptions{
 		Name:        form.Name,
@@ -42,7 +44,7 @@ func UpdateRole(tx *gorm.DB, role model.Role, form dto.UpdateRoleForm) model.Ret
 
 func DeleteRole(tx *gorm.DB, role model.Role) model.RetVal {
 	if role.Default {
-		return model.RetVal{Msg: i18n.Model.Role.CannotDeleteDefault}
+		return model.FailRetVal(i18n.Model.Role.CannotDeleteDefault, "Role", fmt.Sprintf("role_id=%d", role.ID), nil)
 	}
 	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
 		return db.InitRoleRepo(tx2).Delete(role.ID)

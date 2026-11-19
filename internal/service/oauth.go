@@ -21,7 +21,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		id, ok := utils.GetClaimStringValue(response, provider.IDClaim, true)
 		if !ok {
 			log.Logger.Warningf("Failed to get user_id by provider %s: %s", provider.Provider, response)
-			return model.RetVal{Msg: i18n.Model.Oauth.MissingIDClaim}
+			return model.FailRetVal(i18n.Model.Oauth.MissingIDClaim, "OAuthProvider", "provider="+provider.Provider, nil)
 		}
 		name, ok := utils.GetClaimStringValue(response, provider.NameClaim, true)
 		if !ok {

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/db"
@@ -52,7 +54,7 @@ func CreateGroup(tx *gorm.DB, form dto.CreateGroupForm) (model.Group, model.RetV
 
 func UpdateGroup(tx *gorm.DB, group model.Group, form dto.UpdateGroupForm) model.RetVal {
 	if group.Default && form.Name != nil {
-		return model.RetVal{Msg: i18n.Model.Group.CannotUpdateDefault}
+		return model.FailRetVal(i18n.Model.Group.CannotUpdateDefault, "Group", fmt.Sprintf("group_id=%d", group.ID), nil)
 	}
 	return db.InitGroupRepo(tx).Update(group.ID, db.UpdateGroupOptions{
 		RoleID:      form.RoleID,
@@ -63,7 +65,7 @@ func UpdateGroup(tx *gorm.DB, group model.Group, form dto.UpdateGroupForm) model
 
 func DeleteGroup(tx *gorm.DB, group model.Group) model.RetVal {
 	if group.Default {
-		return model.RetVal{Msg: i18n.Model.Group.CannotDeleteDefault}
+		return model.FailRetVal(i18n.Model.Group.CannotDeleteDefault, "Group", fmt.Sprintf("group_id=%d", group.ID), nil)
 	}
 	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
 		return db.InitGroupRepo(tx2).Delete(group.ID)

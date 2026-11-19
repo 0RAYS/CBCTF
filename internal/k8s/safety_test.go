@@ -32,7 +32,7 @@ func TestCollectionDeletionRequiresOwner(t *testing.T) {
 	}
 	for name, operation := range operations {
 		t.Run(name, func(t *testing.T) {
-			// These must return before touching a client. Several clients are nil in tests.
+			// These return before touching a client; several clients are nil in tests.
 			for _, filters := range []map[string]string{
 				nil,
 				{},

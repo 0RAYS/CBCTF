@@ -56,7 +56,7 @@ func HandleImageDetectTask(ctx context.Context, t *asynq.Task) error {
 	defer cancel()
 	nodes, ret := k8s.ListSchedulableNodes(ctx)
 	if !ret.OK {
-		return fmt.Errorf("%s: %v", ret.Msg, ret.Attr)
+		return fmt.Errorf("%w", ret)
 	}
 	detections, err := k8s.DetectNodeImages(ctx, payload.Images, nodes)
 	if err != nil {

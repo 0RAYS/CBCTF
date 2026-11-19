@@ -23,7 +23,7 @@ func SearchIP(ctx *gin.Context) {
 	}
 	ip, err := utils.SearchIP(form.IP, filepath.Join(config.Env.Path, "GeoLite2-City.mmdb"))
 	if err != nil {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "GeoIP", form.IP, err))
 		return
 	}
 	data := gin.H{"iso": ip.Country.ISOCode, "timezone": ip.Location.TimeZone}

@@ -2,6 +2,8 @@ package router
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +17,9 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 )
+
+// errGeneratorNotActive marks a log request outside the generator lifecycle.
+var errGeneratorNotActive = errors.New("generator is not active")
 
 func GetGenerators(ctx *gin.Context) {
 	var form dto.ListGeneratorsForm
@@ -65,7 +70,7 @@ func GetGeneratorLogs(ctx *gin.Context) {
 	switch generator.Status {
 	case model.PendingGeneratorStatus, model.RunningGeneratorStatus, model.TerminatingGeneratorStatus:
 	default:
-		resp.JSON(ctx, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PodLog", "Error": "generator is not active"}})
+		resp.JSON(ctx, model.FailRetVal(i18n.K8S.GetError, "PodLog", fmt.Sprintf("generator_id=%d", generator.ID), errGeneratorNotActive))
 		return
 	}
 
@@ -83,7 +88,7 @@ func GetGeneratorLogs(ctx *gin.Context) {
 		return
 	}
 	if !k8s.GeneratorOwnsPod(generator, pod) {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Pod", generator.Name, nil))
 		return
 	}
 	logs, ret := k8s.GetPodLogs(ctxTimeout, generator.Name, "generator", form.Lines)
@@ -108,7 +113,7 @@ func GetGeneratorStatus(ctx *gin.Context) {
 		}
 	} else {
 		if !k8s.GeneratorOwnsPod(generator, pod) {
-			resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+			resp.JSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Pod", generator.Name, nil))
 			return
 		}
 		pods = append(pods, k8s.DescribePod(pod))

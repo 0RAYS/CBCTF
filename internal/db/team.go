@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -113,12 +114,13 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint) (model.Team, model.RetVal) {
 		Joins("INNER JOIN contests ON teams.contest_id = contests.id AND contests.deleted_at IS NULL").
 		Where("user_teams.user_id = ? AND teams.contest_id = ? AND teams.deleted_at IS NULL", userID, contestID).
 		Limit(1).Scan(&team)
+	target := fmt.Sprintf("contest_id=%d,user_id=%d", contestID, userID)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get Team: %s", res.Error)
-		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get Team: %s (target=%s)", res.Error, target)
+		return model.Team{}, model.FailRetVal(i18n.Model.Team.GetError, "Team", target, res.Error)
 	}
 	if res.RowsAffected == 0 {
-		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.NotFound}
+		return model.Team{}, model.FailRetVal(i18n.Model.Team.NotFound, "Team", target, nil)
 	}
 	return team, model.SuccessRetVal()
 }
@@ -140,9 +142,10 @@ func (t *TeamRepo) GetUserTeamMap(contestID uint, userIDL ...uint) (map[uint]uin
 		Joins("INNER JOIN teams ON teams.id = user_teams.team_id AND teams.deleted_at IS NULL").
 		Where("teams.contest_id = ? AND user_teams.user_id IN ?", contestID, userIDL).
 		Scan(&rows)
+	target := fmt.Sprintf("contest_id=%d,user_id=%v", contestID, userIDL)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get user team map: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Team.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get user team map: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Team.GetError, "Team", target, res.Error)
 	}
 
 	for _, row := range rows {
@@ -154,9 +157,10 @@ func (t *TeamRepo) GetUserTeamMap(contestID uint, userIDL ...uint) (map[uint]uin
 func (t *TeamRepo) CountUsers(teamID uint) (int64, model.RetVal) {
 	var count int64
 	res := t.DB.Model(&model.UserTeam{}).Where("team_id = ?", teamID).Count(&count)
+	target := fmt.Sprintf("team_id=%d", teamID)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count team users: %s", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.Team.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to count team users: %s (target=%s)", res.Error, target)
+		return 0, model.FailRetVal(i18n.Model.Team.GetError, "Team", target, res.Error)
 	}
 	return count, model.SuccessRetVal()
 }
@@ -178,9 +182,10 @@ func (t *TeamRepo) CountUsersMap(teamIDL ...uint) (map[uint]int64, model.RetVal)
 		Where("team_id IN ?", teamIDL).
 		Group("team_id").
 		Scan(&rows)
+	target := fmt.Sprintf("team_id=%v", teamIDL)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count team users: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Team.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to count team users: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Team.GetError, "Team", target, res.Error)
 	}
 	for _, item := range rows {
 		result[item.TeamID] = item.Count
@@ -209,8 +214,9 @@ func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
 		return ret
 	}
 	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
-		log.Logger.Errorf("Failed to delete Team: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.Team.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("id=%v", idL)
+		log.Logger.Errorf("Failed to delete Team: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.Team.DeleteError, "Team", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }

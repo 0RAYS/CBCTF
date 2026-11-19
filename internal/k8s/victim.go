@@ -72,9 +72,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag})
 	victim.Resources.UIDs = make(map[string]string)
 	if config.Env.K8S.CaptureEnabled {
-		// The capture sidecar writes the traffic captures into the victim
-		// traffic directory, which has to exist and belong to the capture
-		// user before the pods are created.
+		// The capture sidecar writes into the traffic directory, which has to
+		// exist and belong to the capture user before the pods are created.
 		if err := prepareCaptureTrafficDir(victim); err != nil {
 			log.Logger.Warningf(
 				"Failed to prepare traffic directory for victim %d: %s", victim.ID, err,
@@ -103,7 +102,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	for _, pod := range pods {
 		wg.Go(func() error {
 			ctx := wg.Context()
-			// VPC 模式下, 支持多 NetworkPolicy 根据 Labels 绑定到指定 Pod 上
+			// In VPC mode each pod gets its own service label, so several
+			// NetworkPolicies can bind to different pods.
 			podLabels := make(map[string]string, len(labels)+1)
 			maps.Copy(podLabels, labels)
 			if serviceName := podServiceName(pod.Spec); serviceName != "" {
@@ -121,7 +121,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				})
 			}
 
-			// 当 VPC 模式下, 一个 Pod 只有一个 Container
+			// In VPC mode a pod carries a single container.
 			if victim.Spec.NetworkPlan.Name != "" && pod.Spec.Containers[0].KubeVirt {
 				container := pod.Spec.Containers[0]
 				vm, ret := CreateVM(ctx, CreateVMOptions{
@@ -137,7 +137,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Networks:    networks,
 				})
 				if !ret.OK {
-					return resourceError(ret)
+					return ret
 				}
 				endpointsMutex.Lock()
 				victim.Resources.UIDs[pod.Name] = string(vm.UID)
@@ -202,7 +202,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Name: victimResourceName("vol", victim.ID, pod.Spec.Key), Labels: labels, Data: fileData,
 				})
 				if !ret.OK {
-					return resourceError(ret)
+					return ret
 				}
 				volumes = append(volumes, corev1.Volume{Name: "challenge-files", ConfigMap: &corev1.ConfigMapVolumeSource{Name: cm.Name}})
 			}
@@ -219,7 +219,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 
 			p, ret := CreatePod(ctx, pOptions)
 			if !ret.OK {
-				return resourceError(ret)
+				return ret
 			}
 			endpointsMutex.Lock()
 			victim.Resources.UIDs[pod.Name] = string(p.UID)
@@ -234,7 +234,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Selector:  podLabels,
 				})
 				if !ret.OK {
-					return resourceError(ret)
+					return ret
 				}
 				endpointsMutex.Lock()
 				for _, port := range service.Spec.Ports {
@@ -265,7 +265,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	}
 
 	if err := wg.Wait(); err != nil {
-		return victim, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return victim, model.FailRetVal(i18n.Common.UnknownError, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), err)
 	}
 
 	victim.Resources.NetworkPlan = victim.Spec.NetworkPlan
@@ -300,7 +300,7 @@ func createVictimNetworkResources(
 			Policies: policies,
 		})
 		if !ret.OK {
-			return resourceError(ret)
+			return ret
 		}
 		log.Logger.Debugf("Created victim network policy: victim_id=%d network_policy=%s", victim.ID, name)
 		return nil
@@ -332,7 +332,7 @@ func createVictimNetworkResources(
 
 	if victim.Spec.NetworkPlan.Name == "" {
 		if err := wg.Wait(); err != nil {
-			return nil, nil, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+			return nil, nil, nil, model.FailRetVal(i18n.Common.UnknownError, "VictimNetwork", fmt.Sprintf("victim_id=%d", victim.ID), err)
 		}
 		return subnetMap, netAttachDefMap, endpoints, model.SuccessRetVal()
 	}
@@ -361,7 +361,7 @@ func createVictimNetworkResources(
 				Labels: labels,
 			})
 			if !ret.OK {
-				return resourceError(ret)
+				return ret
 			}
 			log.Logger.Debugf("Created victim net attach def: victim_id=%d net_attach_def=%s", victim.ID, subnet.NetAttachDef.Name)
 			return nil
@@ -378,7 +378,7 @@ func createVictimNetworkResources(
 				NetAttachDef: subnet.NetAttachDef.Name,
 			})
 			if !ret.OK {
-				return resourceError(ret)
+				return ret
 			}
 			log.Logger.Debugf("Created victim subnet: victim_id=%d subnet=%s", victim.ID, subnet.Name)
 			return nil
@@ -386,7 +386,7 @@ func createVictimNetworkResources(
 	}
 
 	if err := wg.Wait(); err != nil {
-		return nil, nil, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, nil, nil, model.FailRetVal(i18n.Common.UnknownError, "VictimNetwork", fmt.Sprintf("victim_id=%d", victim.ID), err)
 	}
 
 	return subnetMap, netAttachDefMap, endpoints, model.SuccessRetVal()
@@ -398,16 +398,16 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		victim.ID, victim.TeamID.V, victim.ChallengeID, len(victim.ExposedEndpoints),
 	)
 	batch := model.NewBatch(len(victim.Spec.NetworkPlan.Subnets) + len(victim.ExposedEndpoints))
-	// Stop VM controllers before their Pods; retain CNI and NetworkPolicies until
-	// every workload (including FRP/capture sidecars) has disappeared.
+	// The workload tree goes first, the network tree stays until every
+	// workload (including FRP/capture sidecars) has disappeared.
 	if err := deleteVictimRoot(ctx, victim, "workloads"); err != nil {
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Victim", "Error": err.Error()}}
+		return model.FailRetVal(i18n.K8S.DeleteError, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), err)
 	}
 	if ret := WaitVictimPodsDeleted(ctx, victim); !ret.OK {
 		return ret
 	}
 	if err := deleteVictimRoot(ctx, victim, "network"); err != nil {
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VictimNetwork", "Error": err.Error()}}
+		return model.FailRetVal(i18n.K8S.DeleteError, "VictimNetwork", fmt.Sprintf("victim_id=%d", victim.ID), err)
 	}
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 		if ctx.Err() != nil {
@@ -423,7 +423,7 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		return batch.Result(ctx)
 	}
 	if err := deleteVictimVPC(ctx, victim); err != nil {
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
+		return model.FailRetVal(i18n.K8S.DeleteError, "VPC", victim.Spec.NetworkPlan.Name, err)
 	}
 	for _, endpoint := range victim.ExposedEndpoints {
 		if ctx.Err() != nil {
@@ -460,7 +460,7 @@ func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVa
 			}
 			vm, err := cachedVM(ctx, pod.Name)
 			if err != nil {
-				return model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
+				return model.FailRetVal(i18n.K8S.GetError, "VirtualMachine", pod.Name, err)
 			}
 			if vm != nil {
 				vmsGone = false
@@ -486,7 +486,7 @@ func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVa
 		}
 		select {
 		case <-ctx.Done():
-			return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": ctx.Err().Error()}}
+			return model.FailRetVal(i18n.Common.UnknownError, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), ctx.Err())
 		case <-ticker.C:
 		}
 	}

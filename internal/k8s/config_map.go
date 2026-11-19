@@ -32,8 +32,8 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	}
 	configMap, err = kubeClient.CoreV1().ConfigMaps(globalNamespace).Create(ctx, configMap, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create ConfigMap: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to create ConfigMap %s: %s", options.Name, err)
+		return nil, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", options.Name, err)
 	}
 	return configMap, model.SuccessRetVal()
 }
@@ -45,8 +45,8 @@ func DeleteConfigMapCollection(ctx context.Context, labels map[string]string) mo
 	}
 	err := kubeClient.CoreV1().ConfigMaps(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete ConfigMap: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to delete ConfigMaps (%s): %s", options.LabelSelector, err)
+		return model.FailRetVal(i18n.K8S.DeleteError, "ConfigMap", options.LabelSelector, err)
 	}
 	return model.SuccessRetVal()
 }

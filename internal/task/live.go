@@ -16,7 +16,7 @@ var inspector *asynq.Inspector
 
 func ListLiveTasks(status, queue, taskID string, limit, offset int) ([]*asynq.TaskInfo, int64, []string, []string, model.RetVal) {
 	if inspector == nil {
-		return nil, 0, nil, nil, model.RetVal{Msg: i18n.Task.InspectorUnavailable}
+		return nil, 0, nil, nil, model.FailRetVal(i18n.Task.InspectorUnavailable, "TaskQueue", "", nil)
 	}
 	if limit <= 0 {
 		limit = 20
@@ -26,7 +26,7 @@ func ListLiveTasks(status, queue, taskID string, limit, offset int) ([]*asynq.Ta
 	}
 	queues, err := inspector.Queues()
 	if err != nil {
-		return nil, 0, nil, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, 0, nil, nil, model.FailRetVal(i18n.Common.UnknownError, "TaskQueue", "", err)
 	}
 	sort.Strings(queues)
 	if queue != "" {
@@ -44,7 +44,7 @@ func ListLiveTasks(status, queue, taskID string, limit, offset int) ([]*asynq.Ta
 	for _, q := range queues {
 		tasks, err := listAllTaskState(status, q)
 		if err != nil {
-			return nil, 0, nil, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+			return nil, 0, nil, nil, model.FailRetVal(i18n.Common.UnknownError, "TaskQueue", q, err)
 		}
 		for _, item := range tasks {
 			if taskID != "" && !strings.Contains(item.ID, taskID) {

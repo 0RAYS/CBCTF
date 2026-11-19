@@ -1,6 +1,6 @@
 package utils
 
-// TidyPaginate 实现内存分页逻辑, 处理各类边界场景
+// TidyPaginate 把 offset/limit 规范成内存分页的起止位置，limit<=0 表示取全部剩余数据
 func TidyPaginate(length, limit, offset int) (int, int) {
 	if length == 0 {
 		return 0, 0

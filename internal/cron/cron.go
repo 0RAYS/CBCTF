@@ -8,6 +8,7 @@ import (
 	"github.com/robfig/cron/v3"
 
 	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
@@ -65,11 +66,11 @@ func exec(name string, task func() model.RetVal) func() {
 		now := time.Now()
 		cronjob, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", name)
 		if !ret.OK {
-			log.Logger.Warningf("Failed to get cron job %s: %s", name, ret.Msg)
+			log.Logger.Warningf("Failed to get cron job %s: %v", name, ret)
 			return
 		}
 		if ret = db.InitCronJobRepo(db.CronDB).UpdateStatus(cronjob.ID, result.OK, now); !ret.OK {
-			log.Logger.Warningf("Failed to update cron last runtime %s: %s", name, ret.Msg)
+			log.Logger.Warningf("Failed to update cron last runtime %s: %v", name, ret)
 		}
 		if result.OK && duration > time.Second.Seconds() {
 			log.Logger.Debugf("%s processing time: %s", name, time.Duration(duration*float64(time.Second)))
@@ -91,7 +92,7 @@ func Start() {
 	c.Schedule(cron.Every(5*time.Second), cron.FuncJob(saveTaskLogTask))
 
 	if ret := reloadAll(); !ret.OK {
-		log.Logger.Warningf("Failed to load cron jobs: %s %v", ret.Msg, ret.Attr)
+		log.Logger.Warningf("Failed to load cron jobs: %v", ret)
 	}
 	c.Start()
 }
@@ -107,7 +108,7 @@ func Stop() {
 func ReloadCronJob(name string) model.RetVal {
 	def, ok := taskMap[name]
 	if !ok {
-		return model.RetVal{Msg: "Cron job not registered", Attr: map[string]any{"Name": name}}
+		return model.FailRetVal(i18n.Cron.NotRegistered, "CronJob", name, nil)
 	}
 	cronJob, ret := db.InitCronJobRepo(db.CronDB).GetByUniqueField("name", name)
 	if !ret.OK {
@@ -138,7 +139,7 @@ func registerCronJob(cronJob model.CronJob, def taskDefinition, runOnStart bool)
 	spec := "@every " + cronJob.Schedule.String()
 	schedule, err := cron.ParseStandard(spec)
 	if err != nil {
-		return model.RetVal{Msg: "Invalid cron schedule", Attr: map[string]any{"Name": cronJob.Name, "Schedule": spec, "Error": err.Error()}}
+		return model.FailRetVal(i18n.Cron.InvalidSchedule, "CronJob", cronJob.Name, err).WithAttrs(map[string]any{"Schedule": spec})
 	}
 	if runOnStart {
 		schedule = &startupSchedule{Schedule: schedule, pending: true}

@@ -10,7 +10,7 @@ import (
 	"CBCTF/internal/config"
 )
 
-// Cors 跨域中间件
+// Cors 只放行配置里列出的来源。
 func Cors() gin.HandlerFunc {
 	var origins []string
 	for _, origin := range config.Env.Gin.Origins {

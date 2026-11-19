@@ -55,10 +55,10 @@ func isInWebhookWhitelist(target string) (bool, error) {
 func validateWebhookURL(target string) model.RetVal {
 	in, err := isInWebhookWhitelist(target)
 	if err != nil {
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Common.UnknownError, "Webhook", target, err)
 	}
 	if !in {
-		return model.RetVal{Msg: i18n.Model.Webhook.NotAllowedTarget}
+		return model.FailRetVal(i18n.Model.Webhook.NotAllowedTarget, "Webhook", "url="+target, nil)
 	}
 	return model.SuccessRetVal()
 }

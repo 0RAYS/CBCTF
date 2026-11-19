@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -34,15 +35,17 @@ func (t *TrafficRepo) ReplaceAnalysis(victimID uint, ips []string, accesses []tr
 		Where:     clause.Where{Exprs: []clause.Expression{clause.Expr{SQL: "NOT traffics.archived OR (EXCLUDED.archived AND traffics.analysis->>'partial' = 'true')"}}},
 	}).Create(&model.Traffic{VictimID: victimID, IPs: ips, Accesses: accesses, Analysis: report, Archived: archived})
 	if res.Error != nil {
-		return model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("victim_id=%d", victimID)
+		return model.FailRetVal(i18n.Model.Traffic.GetError, "Traffic", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }
 
 func (t *TrafficRepo) GetAnalysis(victimID uint) (model.Traffic, model.RetVal) {
 	var record model.Traffic
+	target := fmt.Sprintf("victim_id=%d", victimID)
 	if err := t.DB.Where("victim_id = ?", victimID).Limit(1).Find(&record).Error; err != nil {
-		return record, model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": err.Error()}}
+		return record, model.FailRetVal(i18n.Model.Traffic.GetError, "Traffic", target, err)
 	}
 	return record, model.SuccessRetVal()
 }
@@ -50,12 +53,15 @@ func (t *TrafficRepo) GetAnalysis(victimID uint) (model.Traffic, model.RetVal) {
 func (t *TrafficRepo) KnownFlags(victim model.Victim) ([]string, model.RetVal) {
 	var values []string
 	var err error
+	var target string
 	if victim.TeamID.Valid && victim.ContestChallengeID.Valid {
+		target = fmt.Sprintf("contest_challenge_id=%d,team_id=%d", victim.ContestChallengeID.V, victim.TeamID.V)
 		err = t.DB.Model(&model.TeamFlag{}).
 			Joins("JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
 			Where("team_flags.team_id = ? AND contest_flags.contest_challenge_id = ?", victim.TeamID.V, victim.ContestChallengeID.V).
 			Pluck("team_flags.value", &values).Error
 	} else {
+		target = fmt.Sprintf("challenge_id=%d", victim.ChallengeID)
 		err = t.DB.Model(&model.ChallengeFlag{}).Where("challenge_id = ?", victim.ChallengeID).Pluck("value", &values).Error
 		static := make([]string, 0, len(values))
 		for _, value := range values {
@@ -68,7 +74,7 @@ func (t *TrafficRepo) KnownFlags(victim model.Victim) ([]string, model.RetVal) {
 		values = static
 	}
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Model.Traffic.GetError, "Traffic", target, err)
 	}
 	return values, model.SuccessRetVal()
 }
@@ -83,9 +89,10 @@ func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 func (t *TrafficRepo) GetVictimIPs(victimID uint) ([]string, model.RetVal) {
 	var record model.Traffic
 	res := t.DB.Where("victim_id = ? AND deleted_at IS NULL", victimID).Limit(1).Find(&record)
+	target := fmt.Sprintf("victim_id=%d", victimID)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get traffic IPs: victim_id=%d error=%s", victimID, res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get traffic IPs: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Traffic.GetError, "Traffic", target, res.Error)
 	}
 	return record.IPs, model.SuccessRetVal()
 }
@@ -140,9 +147,10 @@ func (t *TrafficRepo) ListSharedContestVictimIPs(contestID uint, start, end time
 		ORDER BY e.ip_val ASC, first_time ASC, e.team_id ASC
 	`, contestID, start, end).Scan(&results)
 
+	target := fmt.Sprintf("contest_id=%d", contestID)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to list shared victim IPs: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to list shared victim IPs: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Traffic.GetError, "Traffic", target, res.Error)
 	}
 	return results, model.SuccessRetVal()
 }

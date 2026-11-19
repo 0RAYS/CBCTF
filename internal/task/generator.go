@@ -54,14 +54,14 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 					log.Logger.Debugf("Start generator skipped: generator_id=%d no longer exists", generator.ID)
 					return nil
 				}
-				return fmt.Errorf("get generator failed: %s", ret.Msg)
+				return fmt.Errorf("get generator failed: %w", ret)
 			}
 			if currentGenerator.Status != model.WaitingGeneratorStatus {
 				log.Logger.Infof("Start generator skipped: generator_id=%d status=%s", generator.ID, currentGenerator.Status)
 				return nil
 			}
 			if ret = generatorRepo.UpdateIfStatus(generator.ID, model.WaitingGeneratorStatus, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
-				return fmt.Errorf("update generator failed: %s", ret.Msg)
+				return fmt.Errorf("update generator failed: %w", ret)
 			}
 			claimed = true
 			generator = currentGenerator
@@ -79,7 +79,7 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 			}
 			ret = generatorRepo.UpdateIfStatus(generator.ID, model.PendingGeneratorStatus, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
 			if !ret.OK {
-				return fmt.Errorf("update generator failed: %s", ret.Msg)
+				return fmt.Errorf("update generator failed: %w", ret)
 			}
 			if err := ctx.Err(); err != nil {
 				return err
@@ -141,7 +141,7 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 				log.Logger.Debugf("Stop generator skipped: generator_id=%d no longer exists", payload.Generator.ID)
 				return nil
 			}
-			return fmt.Errorf("get generator failed: %s", ret.Msg)
+			return fmt.Errorf("get generator failed: %w", ret)
 		}
 		log.Logger.Infof("Stopping generator: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
 		unregisterCtx, unregisterCancel := context.WithTimeout(ctx, 5*time.Second)
@@ -153,11 +153,11 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 		ret = k8s.StopGenerator(stopCtx, generator)
 		cancel()
 		if !ret.OK {
-			return fmt.Errorf("stop generator failed: %s", ret.Msg)
+			return fmt.Errorf("stop generator failed: %w", ret)
 		}
 		ret = generatorRepo.Delete(generator.ID)
 		if !ret.OK {
-			return fmt.Errorf("delete generator failed: %s", ret.Msg)
+			return fmt.Errorf("delete generator failed: %w", ret)
 		}
 		log.Logger.Infof("Generator stopped: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
 		return nil

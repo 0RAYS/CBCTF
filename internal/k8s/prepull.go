@@ -21,14 +21,16 @@ func imageFailureKey(image string) string {
 	return fmt.Sprintf("prepull:%s:%x", globalNamespace, sha256.Sum256([]byte(NormalizeImage(image))))
 }
 
-// PartialPrepullError Some Jobs were already submitted. Retrying the original batch (especially
-// Always) would repeat successful side effects; callers should target failures.
+// PartialPrepullError reports that some warmup Jobs were already submitted.
+// Retrying the whole batch would repeat successful side effects, so the
+// failures are the part worth retrying.
 type PartialPrepullError struct{ Err error }
 
 func (e *PartialPrepullError) Error() string { return e.Err.Error() }
 func (e *PartialPrepullError) Unwrap() error { return e.Err }
 
-// NormalizeImage uses one identity for warmup, failure tracking and image inventories.
+// NormalizeImage gives warmup, failure tracking and image inventories one
+// identity for the same image.
 func NormalizeImage(image string) string {
 	image = strings.TrimSpace(image)
 	name, err := reference.ParseNormalizedNamed(image)
@@ -38,8 +40,9 @@ func NormalizeImage(image string) string {
 	return reference.TagNameOnly(name).String()
 }
 
-// Only confirmed pull failures exclude a node. An absent/truncated Node image
-// inventory is never evidence of failure. Success on a later warmup clears it.
+// Only confirmed pull failures exclude a node. An absent or truncated Node
+// image inventory is never evidence of failure, and a later successful warmup
+// clears the exclusion.
 func imageFailureAffinity(ctx context.Context, images []string) (*corev1.Affinity, error) {
 	var excluded []string
 	for _, image := range images {
@@ -61,8 +64,9 @@ func excludedNodeAffinity(excluded []string) *corev1.Affinity {
 		return nil
 	}
 	slices.Sort(excluded)
-	// MatchFields supports one value per requirement; requirements within a
-	// term are ANDed, excluding every failed node without selecting a good one.
+	// MatchFields supports one value per requirement, and requirements within
+	// a term are ANDed, so this excludes every failed node without selecting
+	// a good one.
 	fields := make([]corev1.NodeSelectorRequirement, 0, len(excluded))
 	for _, node := range slices.Compact(excluded) {
 		fields = append(fields, corev1.NodeSelectorRequirement{
@@ -80,9 +84,9 @@ func excludedNodeAffinity(excluded []string) *corev1.Affinity {
 	}
 }
 
-// PrepullImages submits all nodes before observing completion, so a slow node
-// does not delay warming other nodes. ImageID, not command exit status, proves
-// a successful pull (VM/distroless images need not contain echo or a shell).
+// PrepullImages submits every node before observing completion, so a slow node
+// does not delay the others. ImageID, not the command exit status, proves a
+// successful pull: VM and distroless images need not contain echo or a shell.
 func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPolicy string) error {
 	if pullPolicy == string(corev1.PullNever) || len(images) == 0 {
 		return nil
@@ -95,7 +99,7 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 	}
 	nodes, ret := ListSchedulableNodes(ctx)
 	if !ret.OK {
-		return resourceError(ret)
+		return ret
 	}
 	if len(nodes) == 0 {
 		return fmt.Errorf("no schedulable nodes for image warmup")
@@ -117,8 +121,7 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 		results: make(map[pullTarget]pullResult),
 		changed: make(chan struct{}, 1),
 	}
-	// Subscribe before creating Jobs to retain outcomes when Pods leave the
-	// cache. This handler shares the namespace's existing watch.
+	// Subscribe before creating Jobs so outcomes survive Pods leaving the cache.
 	handler, err := pods.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    observed.observe,
 		UpdateFunc: func(_, current any) { observed.observe(current) },
@@ -179,7 +182,7 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 				ServiceAccountName: runtimeServiceAccount(),
 			})
 			if !ret.OK {
-				failures = append(failures, fmt.Errorf("create warmup job node=%s images=%v: %w", node.Name, chunk, resourceError(ret)))
+				failures = append(failures, fmt.Errorf("create warmup job node=%s images=%v: %w", node.Name, chunk, ret))
 				continue
 			}
 			submitted++
@@ -233,7 +236,6 @@ func ChallengeImages(challenge model.Challenge, sidecars ...string) []string {
 	return templateImages(challenge.GeneratorImage, challenge.Template, sidecars...)
 }
 
-// ContestChallengeImages returns the images of a contest challenge copy.
 func ContestChallengeImages(contestChallenge model.ContestChallenge, sidecars ...string) []string {
 	return templateImages(contestChallenge.GeneratorImage, contestChallenge.Template, sidecars...)
 }

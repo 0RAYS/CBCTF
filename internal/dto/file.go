@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 )
 
-// DeleteFileForm for delete files
 type DeleteFileForm struct {
 	FileIDs []string `form:"file_ids" json:"file_ids" binding:"required,dive,uuid"`
 }

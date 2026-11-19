@@ -52,8 +52,8 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 	}
 	service, err := kubeClient.CoreV1().Services(globalNamespace).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create Service: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Service", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to create Service %s: %s", options.Name, err)
+		return nil, model.FailRetVal(i18n.K8S.CreateError, "Service", options.Name, err)
 	}
 	return service, model.SuccessRetVal()
 }
@@ -66,25 +66,26 @@ func ListServices(ctx context.Context, selectors ...map[string]string) (*corev1.
 	serviceList, err := kubeClient.CoreV1().Services(globalNamespace).List(ctx, options)
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Service"}}
+			return nil, model.FailRetVal(i18n.K8S.NotFound, "Service", options.LabelSelector, nil)
 		}
-		log.Logger.Warningf("Failed to list Service: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Service", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to list Services (%s): %s", options.LabelSelector, err)
+		return nil, model.FailRetVal(i18n.K8S.GetError, "Service", options.LabelSelector, err)
 	}
 	return serviceList, model.SuccessRetVal()
 }
 
-// DeleteService 删除 Service, 目前主要是靶机的端口映射
+// DeleteService deletes a Service, mainly the port mapping of a victim.
 func DeleteService(ctx context.Context, name string) model.RetVal {
 	err := kubeClient.CoreV1().Services(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Service %s: %s", name, err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Service", "Error": err.Error()}}
+		return model.FailRetVal(i18n.K8S.DeleteError, "Service", name, err)
 	}
 	return model.SuccessRetVal()
 }
 
-// DeleteServiceCollection Service 不支持 DeleteCollection
+// DeleteServiceCollection deletes the Services one by one, because Services do
+// not support DeleteCollection.
 func DeleteServiceCollection(ctx context.Context, labels map[string]string) model.RetVal {
 	if _, ret := deleteCollectionOptions("Service", labels); !ret.OK {
 		return ret

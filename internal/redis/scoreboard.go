@@ -25,7 +25,7 @@ func writeRanking[T any](ctx context.Context, key string, items []T) model.RetVa
 		err = RDB.Set(ctx, key, data, rankingTTL).Err()
 	}
 	if err != nil {
-		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.SetError, "Cache", key, err)
 	}
 	return model.SuccessRetVal()
 }
@@ -35,14 +35,14 @@ func readRanking[T any](ctx context.Context, key string, start, end int64) ([]T,
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Bytes()
 	if errors.Is(err, goredis.Nil) {
-		return nil, model.RetVal{Msg: i18n.Redis.NotFound}
+		return nil, model.FailRetVal(i18n.Redis.NotFound, "Cache", key, nil)
 	}
 	var items []T
 	if err == nil {
 		err = msgpack.Unmarshal(data, &items)
 	}
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Redis.GetError, "Cache", key, err)
 	}
 	start = max(0, start)
 	if end < start || start >= int64(len(items)) {

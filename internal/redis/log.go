@@ -91,7 +91,7 @@ func GetLogs(ctx context.Context, start, end int64, minLevel string) ([]string, 
 	logs, err := RDB.LRange(ctx, logKey, 0, MaxLogScanLimit).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get logs: %s", err)
-		return logs, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": logKey, "Error": err.Error()}}
+		return logs, model.FailRetVal(i18n.Redis.GetError, "Cache", logKey, err)
 	}
 	minWeight, ok := logLevelWeight[strings.ToLower(minLevel)]
 	if minLevel == "" || !ok {

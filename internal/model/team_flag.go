@@ -1,9 +1,5 @@
 package model
 
-// TeamFlag
-// BelongsTo Team
-// BelongsTo ContestFlag
-// BelongsTo ChallengeFlag
 type TeamFlag struct {
 	TeamID          uint          `gorm:"index;uniqueIndex:idx_team_flags_team_contest_flag_active,where:deleted_at IS NULL;index:idx_team_flags_team_value_active,priority:1,where:deleted_at IS NULL;index:idx_team_flags_team_solved_contest_flag_active,priority:1,where:deleted_at IS NULL" json:"team_id"`
 	Team            Team          `json:"-"`

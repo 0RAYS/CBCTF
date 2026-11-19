@@ -179,3 +179,13 @@ k8s:
   attachmentTimeout: "500"
 db:
   unavailable: "500"
+cron:
+  notRegistered: "400"
+  invalidSchedule: "400"
+  postgresPoolError: "500"
+  postgresConnError: "500"
+  postgresLockError: "500"
+  postgresListError: "500"
+  postgresIndexError: "500"
+  postgresCloseError: "500"
+  postgresRebuildFail: "500"

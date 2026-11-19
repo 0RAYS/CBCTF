@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -20,7 +21,8 @@ type TeamFlagRepo struct {
 func (t *TeamFlagRepo) CreateIfAbsent(flag model.TeamFlag) (model.TeamFlag, model.RetVal) {
 	res := t.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(&flag)
 	if res.Error != nil {
-		return model.TeamFlag{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("contest_flag_id=%d,team_id=%d", flag.ContestFlagID, flag.TeamID)
+		return model.TeamFlag{}, model.FailRetVal(i18n.Model.CreateError, model.Name(model.TeamFlag{}), target, res.Error)
 	}
 	return t.Get(GetOptions{Conditions: map[string]any{"team_id": flag.TeamID, "contest_flag_id": flag.ContestFlagID}})
 }
@@ -108,9 +110,10 @@ func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWit
 		Joins("INNER JOIN contest_challenges ON contest_flags.contest_challenge_id = contest_challenges.id AND contest_challenges.deleted_at IS NULL").
 		Where("team_flags.team_id IN ? AND team_flags.deleted_at IS NULL", teamIDL).
 		Scan(&results)
+	target := fmt.Sprintf("team_id=%v", teamIDL)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get TeamFlags: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get TeamFlags: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.TeamFlag.GetError, "TeamFlag", target, res.Error)
 	}
 	return results, model.SuccessRetVal()
 }
@@ -158,9 +161,10 @@ func (t *TeamFlagRepo) ListContestWrongFlagSubmissions(contestID uint, start, en
 			team_flags.team_id`).
 		Order("submissions.created_at ASC, submissions.id ASC, team_flags.team_id ASC").
 		Scan(&results)
+	target := fmt.Sprintf("contest_id=%d", contestID)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to list wrong flag submissions: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to list wrong flag submissions: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.TeamFlag.GetError, "TeamFlag", target, res.Error)
 	}
 	return results, model.SuccessRetVal()
 }
@@ -176,9 +180,10 @@ func (t *TeamFlagRepo) GetSolvedContestFlags(teamIDL ...uint) ([]SolvedContestFl
 		Where("team_flags.team_id IN ? AND team_flags.solved = true AND team_flags.deleted_at IS NULL", teamIDL).
 		Order("team_flags.team_id ASC, contest_flags.id ASC").
 		Scan(&results)
+	target := fmt.Sprintf("team_id=%v", teamIDL)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get solved team contest flags: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get solved team contest flags: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.TeamFlag.GetError, "TeamFlag", target, res.Error)
 	}
 	return results, model.SuccessRetVal()
 }
@@ -191,9 +196,10 @@ func (t *TeamFlagRepo) CountSolvedForChallenge(teamID uint, contestChallengeID u
 		Joins("INNER JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
 		Where("team_flags.team_id = ? AND contest_flags.contest_challenge_id = ? AND team_flags.solved = true AND contest_flags.active = true", teamID, contestChallengeID).
 		Count(&count)
+	target := fmt.Sprintf("contest_challenge_id=%d,team_id=%d", contestChallengeID, teamID)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count solved team flags for challenge: %s", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to count solved team flags for challenge: %s (target=%s)", res.Error, target)
+		return 0, model.FailRetVal(i18n.Model.TeamFlag.GetError, "TeamFlag", target, res.Error)
 	}
 	return count, model.SuccessRetVal()
 }
@@ -207,9 +213,10 @@ func (t *TeamFlagRepo) CountSolvedTeamsForContestChallenge(contestChallengeID ui
 		Where("contest_flags.contest_challenge_id = ? AND team_flags.solved = true AND contest_flags.active = true", contestChallengeID).
 		Distinct("team_flags.team_id").
 		Count(&count)
+	target := fmt.Sprintf("contest_challenge_id=%d", contestChallengeID)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count solved teams for contest challenge: %s", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to count solved teams for contest challenge: %s (target=%s)", res.Error, target)
+		return 0, model.FailRetVal(i18n.Model.TeamFlag.GetError, "TeamFlag", target, res.Error)
 	}
 	return count, model.SuccessRetVal()
 }
@@ -222,9 +229,10 @@ func (t *TeamFlagRepo) CountGenerated(teamID uint, contestFlagIDL ...uint) (int6
 	res := t.DB.Model(&model.TeamFlag{}).
 		Where("team_id = ? AND contest_flag_id IN ?", teamID, contestFlagIDL).
 		Count(&count)
+	target := fmt.Sprintf("contest_flag_id=%v,team_id=%d", contestFlagIDL, teamID)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count generated team flags: %s", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to count generated team flags: %s (target=%s)", res.Error, target)
+		return 0, model.FailRetVal(i18n.Model.TeamFlag.GetError, "TeamFlag", target, res.Error)
 	}
 	return count, model.SuccessRetVal()
 }
@@ -236,12 +244,13 @@ func (t *TeamFlagRepo) GetByContestChallengeAndValue(teamID uint, contestChallen
 		Where("team_flags.team_id = ? AND contest_flags.contest_challenge_id = ? AND team_flags.value = ?", teamID, contestChallengeID, value).
 		Limit(1).
 		Find(&teamFlag)
+	target := fmt.Sprintf("contest_challenge_id=%d,team_id=%d,value=%s", contestChallengeID, teamID, value)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get team flag by contest challenge and value: %s", res.Error)
-		return model.TeamFlag{}, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get team flag by contest challenge and value: %s (target=%s)", res.Error, target)
+		return model.TeamFlag{}, model.FailRetVal(i18n.Model.TeamFlag.GetError, "TeamFlag", target, res.Error)
 	}
 	if res.RowsAffected == 0 {
-		return model.TeamFlag{}, model.RetVal{Msg: i18n.Model.TeamFlag.NotFound}
+		return model.TeamFlag{}, model.FailRetVal(i18n.Model.TeamFlag.NotFound, "TeamFlag", target, nil)
 	}
 	return teamFlag, model.SuccessRetVal()
 }

@@ -28,9 +28,6 @@ const (
 )
 
 // Challenge 题库中的挑战
-// HasMany ChallengeFlag
-// HasMany ContestChallenge
-// HasMany Submission
 type Challenge struct {
 	ChallengeFlags    []ChallengeFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`

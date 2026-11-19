@@ -161,10 +161,10 @@ model:
   webhookHistory:
     createError: "Failed to save webhook delivery record: {{.Error}}"
 redis:
-  setError: "Failed to write cache {{.Key}}: {{.Error}}"
-  getError: "Failed to read cache {{.Key}}: {{.Error}}"
-  notFound: "Cache {{.Key}} not found"
-  deleteError: "Failed to delete cache {{.Key}}: {{.Error}}"
+  setError: "Failed to write cache {{.Target}}: {{.Error}}"
+  getError: "Failed to read cache {{.Target}}: {{.Error}}"
+  notFound: "Cache {{.Target}} not found"
+  deleteError: "Failed to delete cache {{.Target}}: {{.Error}}"
   invalidScriptResult: "Cache service returned an invalid result"
   invalidScriptPort: "Invalid port allocation result"
   invalidScriptSuccessFlag: "Cache operation returned an invalid status"
@@ -181,3 +181,13 @@ k8s:
   attachmentTimeout: "Attachment generation timed out. Try again later"
 db:
   unavailable: "Database is unavailable"
+cron:
+  notRegistered: "Scheduled task is not registered: {{.Target}}"
+  invalidSchedule: "Invalid schedule for scheduled task {{.Target}}: {{.Error}}"
+  postgresPoolError: "Failed to get PostgreSQL connection pool: {{.Error}}"
+  postgresConnError: "Failed to get PostgreSQL connection: {{.Error}}"
+  postgresLockError: "Failed to acquire PostgreSQL index rebuild lock: {{.Error}}"
+  postgresListError: "Failed to list PostgreSQL indexes: {{.Error}}"
+  postgresIndexError: "Failed to read PostgreSQL index: {{.Error}}"
+  postgresCloseError: "Failed to close PostgreSQL index list: {{.Error}}"
+  postgresRebuildFail: "Failed to rebuild some PostgreSQL indexes: {{.Rebuilt}} rebuilt, {{.Failed}} failed"

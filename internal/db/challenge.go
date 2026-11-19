@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -84,13 +85,15 @@ func (c *ChallengeRepo) ListForUnfinishedContests(now time.Time) ([]model.Challe
 func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.RetVal) {
 	var categories = make([]string, 0)
 	res := c.DB.Model(&model.Challenge{})
+	target := ""
 	if t != "" {
 		res = res.Where("type = ?", t)
+		target = fmt.Sprintf("type=%s", t)
 	}
 	res = res.Distinct().Order("category ASC").Pluck("category", &categories)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get Categories: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get Categories: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Challenge.GetError, "Challenge", target, res.Error)
 	}
 	return categories, model.SuccessRetVal()
 }
@@ -102,29 +105,35 @@ func (c *ChallengeRepo) ListChallengesAvailable(
 	t model.ChallengeType,
 ) ([]model.Challenge, int64, model.RetVal) {
 	tx := c.DB.Model(&model.Challenge{})
+	conditions := make(map[string]any)
 	if name != "" {
 		tx = tx.Where("challenges.name ILIKE ?", "%"+name+"%")
+		conditions["name"] = name
 	}
 	if description != "" {
 		tx = tx.Where("challenges.description ILIKE ?", "%"+description+"%")
+		conditions["description"] = description
 	}
 	if category != "" {
 		tx = tx.Where("challenges.category = ?", category)
+		conditions["category"] = category
 	}
 	if t != "" {
 		tx = tx.Where("challenges.type = ?", t)
+		conditions["type"] = t
 	}
+	target := conditionTarget(conditions)
 
 	var count int64
 	if res := tx.Count(&count); res.Error != nil {
-		log.Logger.Warningf("Failed to count Challenges: %s", res.Error)
-		return nil, 0, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to count Challenges: %s (target=%s)", res.Error, target)
+		return nil, 0, model.FailRetVal(i18n.Model.Challenge.GetError, "Challenge", target, res.Error)
 	}
 
 	var challenges = make([]model.Challenge, 0)
 	if res := tx.Order("challenges.id DESC").Limit(limit).Offset(offset).Find(&challenges); res.Error != nil {
-		log.Logger.Warningf("Failed to list Challenges: %s", res.Error)
-		return nil, 0, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to list Challenges: %s (target=%s)", res.Error, target)
+		return nil, 0, model.FailRetVal(i18n.Model.Challenge.GetError, "Challenge", target, res.Error)
 	}
 
 	return challenges, count, model.SuccessRetVal()
@@ -137,9 +146,10 @@ func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	var challengeIDL []uint
+	target := fmt.Sprintf("rand_id=%v", randIDL)
 	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Pluck("id", &challengeIDL); res.Error != nil {
-		log.Logger.Warningf("Failed to get Challenges: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get Challenges: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.Challenge.GetError, "Challenge", target, res.Error)
 	}
 	var ret model.RetVal
 	if ret = InitChallengeFlagRepo(c.DB).DeleteByChallengeID(challengeIDL...); !ret.OK {
@@ -152,8 +162,8 @@ func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 		return ret
 	}
 	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Delete(&model.Challenge{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Challenge: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.Challenge.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to delete Challenge: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.Challenge.DeleteError, "Challenge", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }

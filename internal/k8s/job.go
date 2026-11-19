@@ -77,8 +77,8 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 	}
 	job, err := kubeClient.BatchV1().Jobs(globalNamespace).Create(ctx, job, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create Job: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Job", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to create Job %s: %s", options.Name, err)
+		return nil, model.FailRetVal(i18n.K8S.CreateError, "Job", options.Name, err)
 	}
 	return job, model.SuccessRetVal()
 }

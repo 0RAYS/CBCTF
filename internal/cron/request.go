@@ -15,7 +15,7 @@ func saveRequestLogTask() {
 
 	if ret := db.InitRequestRepo(db.CronDB).Create(requests...); !ret.OK {
 		middleware.RestoreRequests(requests)
-		log.Logger.Warningf("Request log batch retained for retry: count=%d reason=%s", len(requests), ret.Msg)
+		log.Logger.Warningf("Request log batch retained for retry: count=%d reason=%v", len(requests), ret)
 	}
 }
 
@@ -27,6 +27,6 @@ func saveTaskLogTask() {
 
 	if ret := db.InitTaskRepo(db.TaskDB).CreateBatch(records...); !ret.OK {
 		task.RestoreTaskRecords(records)
-		log.Logger.Warningf("Failed to save task history batch: %s", ret.Msg)
+		log.Logger.Warningf("Failed to save task history batch: %v", ret)
 	}
 }

@@ -33,7 +33,7 @@ func (*casProtocol) ID() string {
 func (*casProtocol) LoginURL(_ context.Context, provider model.Oauth) (string, model.RetVal) {
 	loginURL, err := buildCASLoginURL(provider)
 	if err != nil {
-		return "", model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return "", model.FailRetVal(i18n.Common.UnknownError, "OAuthProvider", provider.Provider, err)
 	}
 	return loginURL, model.SuccessRetVal()
 }
@@ -45,18 +45,18 @@ func (*casProtocol) Exchange(ctx *gin.Context, provider model.Oauth) (map[string
 	}
 	validateURL, err := buildCASValidateURL(provider, form.Ticket)
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Common.UnknownError, "OAuthProvider", provider.Provider, err)
 	}
 	log.Logger.Debugf("CAS callback for provider %s: %s", provider.Provider, validateURL)
 	client := http.Client{Timeout: time.Second * 10}
 	request, err := http.NewRequestWithContext(ctx.Request.Context(), http.MethodGet, validateURL, nil)
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Common.UnknownError, "OAuthProvider", provider.Provider, err)
 	}
 	response, err := client.Do(request)
 	if err != nil {
 		log.Logger.Warningf("Failed to validate CAS ticket for provider %s: %s", provider.Provider, err)
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Common.UnknownError, "OAuthProvider", provider.Provider, err)
 	}
 	defer func(Body io.ReadCloser) {
 		if err = Body.Close(); err != nil {
@@ -66,7 +66,7 @@ func (*casProtocol) Exchange(ctx *gin.Context, provider model.Oauth) (map[string
 	result, err := parseCASServiceResponse(response.Body)
 	if err != nil {
 		log.Logger.Warningf("Failed to parse CAS response for provider %s: %s", provider.Provider, err)
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Common.UnknownError, "OAuthProvider", provider.Provider, err)
 	}
 	return result, model.SuccessRetVal()
 }

@@ -548,8 +548,6 @@ var Permissions = []Permission{
 	{Name: PermAdminLogRead, Resource: "admin:log", Operation: "read", Description: "查看日志"},
 }
 
-// Permission 权限
-// ManyToMany Role
 type Permission struct {
 	Roles       []Role `gorm:"many2many:role_permissions" json:"-"`
 	Name        string `gorm:"type:varchar(255);uniqueIndex:idx_permissions_name_active,where:deleted_at IS NULL;not null" json:"name"`

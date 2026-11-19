@@ -42,7 +42,6 @@ func (f *GetAllContestChallengesForm) Validate(ctx *gin.Context) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-// CreateContestChallengeForm add challenge to contest
 type CreateContestChallengeForm struct {
 	ChallengeIDs []string `form:"challenge_ids" json:"challenge_ids" binding:"required,dive,uuid"`
 }

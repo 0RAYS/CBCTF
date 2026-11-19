@@ -105,8 +105,7 @@ func DetectNodeImages(ctx context.Context, images []string, nodes []*corev1.Node
 		results: make(map[pullTarget]pullResult),
 		changed: make(chan struct{}, 1),
 	}
-	// Subscribe before creating the probe Jobs to retain outcomes when the
-	// Pods leave the cache.
+	// Subscribe before creating the probe Jobs so outcomes survive Pods leaving the cache.
 	handler, err := pods.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    observed.observe,
 		UpdateFunc: func(_, current any) { observed.observe(current) },
@@ -136,7 +135,7 @@ func DetectNodeImages(ctx context.Context, images []string, nodes []*corev1.Node
 			if !ret.OK {
 				// A failed probe leaves its images unverified instead of
 				// answering for the whole node.
-				log.Logger.Warningf("Failed to create the image detection probe: node=%s images=%v error=%v", node.Name, chunk, resourceError(ret))
+				log.Logger.Warningf("Failed to create the image detection probe: node=%s images=%v error=%v", node.Name, chunk, ret)
 				for _, image := range chunk {
 					delete(pending, pullTarget{node: node.Name, image: image})
 				}

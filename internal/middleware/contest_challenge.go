@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 
 	"CBCTF/internal/db"
@@ -17,7 +19,7 @@ func CheckChallengeType(t model.ChallengeType) gin.HandlerFunc {
 			challengeType = contestChallenge.Type
 		}
 		if challengeType != t {
-			resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
+			resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Challenge.InvalidType, "Challenge", "type="+string(challengeType), nil))
 			return
 		}
 		ctx.Next()
@@ -41,7 +43,7 @@ func CheckSolved(ctx *gin.Context) {
 		return
 	}
 	if solved {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.TeamFlag.AlreadySolved})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.TeamFlag.AlreadySolved, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), nil))
 		return
 	}
 	ctx.Next()

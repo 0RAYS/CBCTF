@@ -74,7 +74,7 @@ func GetMetrics(ctx context.Context) ([]SystemMetrics, int, model.RetVal) {
 	data, err := RDB.LRange(ctx, systemMetricsKey, 0, -1).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get system metrics: %s", err)
-		return metrics, 0, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": systemMetricsKey, "Error": err.Error()}}
+		return metrics, 0, model.FailRetVal(i18n.Redis.GetError, "Cache", systemMetricsKey, err)
 	}
 	skipped := 0
 	for _, d := range data {

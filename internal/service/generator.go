@@ -31,7 +31,7 @@ func resolveGeneratorSource(tx *gorm.DB, contestID uint, randID string) (model.G
 			return model.GeneratorSourceSnapshot{}, ret
 		}
 		if contestChallenge.Type != model.DynamicChallengeType {
-			return model.GeneratorSourceSnapshot{}, model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
+			return model.GeneratorSourceSnapshot{}, model.FailRetVal(i18n.Model.Challenge.InvalidType, "ContestChallenge", fmt.Sprintf("rand_id=%s,type=%s", randID, contestChallenge.Type), nil)
 		}
 		return model.NewContestChallengeSource(contestChallenge), model.SuccessRetVal()
 	}
@@ -40,7 +40,7 @@ func resolveGeneratorSource(tx *gorm.DB, contestID uint, randID string) (model.G
 		return model.GeneratorSourceSnapshot{}, ret
 	}
 	if challenge.Type != model.DynamicChallengeType {
-		return model.GeneratorSourceSnapshot{}, model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
+		return model.GeneratorSourceSnapshot{}, model.FailRetVal(i18n.Model.Challenge.InvalidType, "Challenge", fmt.Sprintf("rand_id=%s,type=%s", randID, challenge.Type), nil)
 	}
 	return model.NewChallengeSource(challenge), model.SuccessRetVal()
 }
@@ -82,12 +82,12 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 			continue
 		}
 		if _, err := task.EnqueueStartGeneratorTask(source, generator); err != nil {
-			batch.Fail(fmt.Sprintf("%s/generator:%d", key, generator.ID), "enqueue", model.RetVal{Msg: i18n.Task.EnqueueError})
+			batch.Fail(fmt.Sprintf("%s/generator:%d", key, generator.ID), "enqueue", model.FailRetVal(i18n.Task.EnqueueError, "Generator", fmt.Sprintf("generator_id=%d", generator.ID), err))
 			log.Logger.Warningf("Failed to enqueue start generator task: generator_id=%d name=%s source_id=%d error=%v", generator.ID, generator.Name, source.SourceID(), err)
 			if ret := generatorRepo.Delete(generator.ID); !ret.OK {
 				log.Logger.Warningf(
-					"Failed to delete generator after enqueue failure: generator_id=%d name=%s source_id=%d reason=%s",
-					generator.ID, generator.Name, source.SourceID(), ret.Msg,
+					"Failed to delete generator after enqueue failure: generator_id=%d name=%s source_id=%d reason=%v",
+					generator.ID, generator.Name, source.SourceID(), ret,
 				)
 			}
 			return batch.Result(tx.Statement.Context)
@@ -129,7 +129,7 @@ func StopGenerators(tx *gorm.DB, contestID uint, form dto.StopGeneratorsForm) mo
 		key := fmt.Sprint(id)
 		generator, exists := byID[id]
 		if !exists {
-			batch.Fail(key, "lookup", model.RetVal{Msg: i18n.Model.NotFound})
+			batch.Fail(key, "lookup", model.FailRetVal(i18n.Model.NotFound, "Generator", "id="+key, nil))
 			continue
 		}
 		if generator.Status == model.TerminatingGeneratorStatus || generator.Status == model.StoppedGeneratorStatus {
@@ -152,7 +152,7 @@ func StopGenerators(tx *gorm.DB, contestID uint, form dto.StopGeneratorsForm) mo
 func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {
 	switch generator.Status {
 	case model.WaitingGeneratorStatus, model.PendingGeneratorStatus:
-		return model.RetVal{Msg: i18n.Model.Generator.NotStoppable}
+		return model.FailRetVal(i18n.Model.Generator.NotStoppable, "Generator", fmt.Sprintf("generator_id=%d,status=%s", generator.ID, generator.Status), nil)
 	case model.TerminatingGeneratorStatus:
 		return model.SuccessRetVal()
 	}
@@ -172,7 +172,7 @@ func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {
 		if registerErr := registerGenerator(generator); registerErr != nil {
 			log.Logger.Warningf("Failed to re-register generator after stop enqueue failure: generator_id=%d name=%s error=%v", generator.ID, generator.Name, registerErr)
 		}
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Common.UnknownError, "Generator", fmt.Sprintf("generator_id=%d", generator.ID), err)
 	}
 	log.Logger.Infof("Stop generator queued: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
 	return model.SuccessRetVal()
@@ -196,7 +196,7 @@ func stopGeneratorResources(tx *gorm.DB, options db.GetOptions) model.RetVal {
 		}
 		steps := model.NewBatch(2)
 		if err := unregisterGenerator(generator); err != nil {
-			steps.Fail(key, "unregister", model.RetVal{Msg: i18n.Redis.DeleteError})
+			steps.Fail(key, "unregister", model.FailRetVal(i18n.Redis.DeleteError, "Generator", key, err))
 			log.Logger.Warningf("Failed to unregister generator before resource deletion: generator_id=%d name=%s error=%v", generator.ID, generator.Name, err)
 		} else {
 			steps.Success(key, "unregister")
@@ -237,11 +237,11 @@ func GetGenerator(tx *gorm.DB, source model.GeneratorSource) (model.Generator, s
 			return model.Generator{}, "", ret
 		}
 		if len(generators) == 0 {
-			return model.Generator{}, "", model.RetVal{Msg: i18n.Model.Generator.NotAvailable}
+			return model.Generator{}, "", model.FailRetVal(i18n.Model.Generator.NotAvailable, "Generator", generatorTargetDesc(target), nil)
 		}
 		for _, generator := range generators {
 			if err := registerGenerator(generator); err != nil {
-				return model.Generator{}, "", model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+				return model.Generator{}, "", model.FailRetVal(i18n.Common.UnknownError, "Generator", fmt.Sprintf("generator_id=%d", generator.ID), err)
 			}
 		}
 		generator, lockToken, err = redis.LockAvailableGenerator(ctx, target)
@@ -250,9 +250,18 @@ func GetGenerator(tx *gorm.DB, source model.GeneratorSource) (model.Generator, s
 		}
 	}
 	if errors.Is(err, redis.ErrGeneratorPoolEmpty) || errors.Is(err, redis.ErrNoAvailableGenerator) {
-		return model.Generator{}, "", model.RetVal{Msg: i18n.Model.Generator.NotAvailable}
+		return model.Generator{}, "", model.FailRetVal(i18n.Model.Generator.NotAvailable, "Generator", generatorTargetDesc(target), nil)
 	}
-	return model.Generator{}, "", model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+	return model.Generator{}, "", model.FailRetVal(i18n.Common.UnknownError, "Generator", generatorTargetDesc(target), err)
+}
+
+// generatorTargetDesc renders the generator pool key a lookup used, so a
+// failure states which challenge or contest copy was searched.
+func generatorTargetDesc(target model.GeneratorTarget) string {
+	if target.ContestChallengeID > 0 {
+		return fmt.Sprintf("contest_id=%d,contest_challenge_id=%d", target.ContestID, target.ContestChallengeID)
+	}
+	return fmt.Sprintf("challenge_id=%d", target.ChallengeID)
 }
 
 func registerGenerator(generator model.Generator) error {

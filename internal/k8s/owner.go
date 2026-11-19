@@ -54,7 +54,8 @@ func createVictimRoot(ctx context.Context, victim model.Victim, kind string) (co
 	}), ret
 }
 
-// ListVictimRoots Roots remain discoverable even if startup failed before creating a Pod.
+// ListVictimRoots finds the victims from their root ConfigMaps, so they stay
+// discoverable even if startup failed before creating a Pod.
 func ListVictimRoots(ctx context.Context) ([]model.Victim, error) {
 	c, err := cachedObjects(ctx, "configmaps")
 	if err != nil {
@@ -108,8 +109,8 @@ func ListVictimRoots(ctx context.Context) ([]model.Victim, error) {
 	return victims, nil
 }
 
-// Foreground GC completes the workload tree before the independently owned
-// network tree is deleted. Sibling resources cannot enforce this ordering.
+// deleteVictimRoot deletes a victim root with foreground GC, so its whole tree
+// completes before the next one. Sibling resources cannot enforce that ordering.
 func deleteVictimRoot(ctx context.Context, victim model.Victim, kind string) error {
 	client := kubeClient.CoreV1().ConfigMaps(globalNamespace)
 	name := victimRootName(victim.ID, kind)

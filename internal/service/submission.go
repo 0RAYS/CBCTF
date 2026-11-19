@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"sync"
 
 	"gorm.io/gorm"
@@ -33,7 +34,7 @@ func Submit(
 			return model.Submission{}, ret
 		}
 		if contestChallenge.Attempt <= attempts {
-			return model.Submission{}, model.RetVal{Msg: i18n.Model.Submission.NotAllowed}
+			return model.Submission{}, model.FailRetVal(i18n.Model.Submission.NotAllowed, "Submission", fmt.Sprintf("team_id=%d,contest_challenge_id=%d,attempts=%d", team.ID, contestChallenge.ID, attempts), nil)
 		}
 	}
 	solved, contestFlag, teamFlag, ret := VerifyFlag(tx, team, contestChallenge, form.Flag)
@@ -153,8 +154,7 @@ func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestC
 	})
 }
 
-// CheckIfSolved contestChallenge 需要预加载 ContestFlags
-// 只有当前生效（active）的 flag 才参与"是否解出"的判定。
+// CheckIfSolved 只有当前生效（active）的 flag 才参与"是否解出"的判定。
 func CheckIfSolved(tx *gorm.DB, team model.Team, contestFlags []model.ContestFlag) (bool, model.RetVal) {
 	if len(contestFlags) == 0 {
 		return true, model.SuccessRetVal()

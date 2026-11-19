@@ -32,7 +32,7 @@ func SetEmailVerifyToken(userID uint, token string) model.RetVal {
 	oldToken, err := RDB.Get(ctx, userTokenKey).Result()
 	if err != nil && !errors.Is(err, redis.Nil) {
 		log.Logger.Warningf("Failed to get old email verify token: %s", err)
-		return model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": userTokenKey, "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.GetError, "Cache", userTokenKey, err)
 	}
 
 	pipe := RDB.TxPipeline()
@@ -43,7 +43,7 @@ func SetEmailVerifyToken(userID uint, token string) model.RetVal {
 	pipe.Set(ctx, userTokenKey, token, emailVerifyTokenTTL)
 	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to set email verify token: %s", err)
-		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKeyTmpl, token), "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.SetError, "Cache", fmt.Sprintf(emailVerifyTokenKeyTmpl, token), err)
 	}
 	return model.SuccessRetVal()
 }
@@ -55,14 +55,14 @@ func GetEmailVerifyUserID(token string) (uint, model.RetVal) {
 	value, err := RDB.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return 0, model.RetVal{Msg: i18n.Redis.NotFound, Attr: map[string]any{"Key": key}}
+			return 0, model.FailRetVal(i18n.Redis.NotFound, "Cache", key, nil)
 		}
 		log.Logger.Warningf("Failed to get email verify token: %s", err)
-		return 0, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		return 0, model.FailRetVal(i18n.Redis.GetError, "Cache", key, err)
 	}
 	userID, err := strconv.ParseUint(value, 10, 64)
 	if err != nil {
-		return 0, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		return 0, model.FailRetVal(i18n.Redis.GetError, "Cache", key, err)
 	}
 	return uint(userID), model.SuccessRetVal()
 }
@@ -73,7 +73,7 @@ func DelEmailVerifyToken(token string, userID uint) model.RetVal {
 	defer cancel()
 	if err := RDB.Del(ctx, fmt.Sprintf(emailVerifyTokenKeyTmpl, token), fmt.Sprintf(emailVerifyUserTokenKeyTmpl, userID)).Err(); err != nil {
 		log.Logger.Warningf("Failed to delete email verify token: %s", err)
-		return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKeyTmpl, token), "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.DeleteError, "Cache", fmt.Sprintf(emailVerifyTokenKeyTmpl, token), err)
 	}
 	return model.SuccessRetVal()
 }
@@ -87,7 +87,7 @@ func SetPasswordResetToken(userID uint, token string) model.RetVal {
 	oldToken, err := RDB.Get(ctx, userTokenKey).Result()
 	if err != nil && !errors.Is(err, redis.Nil) {
 		log.Logger.Warningf("Failed to get old password reset token: %s", err)
-		return model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": userTokenKey, "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.GetError, "Cache", userTokenKey, err)
 	}
 
 	pipe := RDB.TxPipeline()
@@ -98,7 +98,7 @@ func SetPasswordResetToken(userID uint, token string) model.RetVal {
 	pipe.Set(ctx, userTokenKey, token, passwordResetTokenTTL)
 	if _, err = pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to set password reset token: %s", err)
-		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": fmt.Sprintf(passwordResetTokenKeyTmpl, token), "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.SetError, "Cache", fmt.Sprintf(passwordResetTokenKeyTmpl, token), err)
 	}
 	return model.SuccessRetVal()
 }
@@ -110,14 +110,14 @@ func GetPasswordResetUserID(token string) (uint, model.RetVal) {
 	value, err := RDB.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return 0, model.RetVal{Msg: i18n.Redis.NotFound, Attr: map[string]any{"Key": key}}
+			return 0, model.FailRetVal(i18n.Redis.NotFound, "Cache", key, nil)
 		}
 		log.Logger.Warningf("Failed to get password reset token: %s", err)
-		return 0, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		return 0, model.FailRetVal(i18n.Redis.GetError, "Cache", key, err)
 	}
 	userID, err := strconv.ParseUint(value, 10, 64)
 	if err != nil {
-		return 0, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		return 0, model.FailRetVal(i18n.Redis.GetError, "Cache", key, err)
 	}
 	return uint(userID), model.SuccessRetVal()
 }
@@ -128,7 +128,7 @@ func DelPasswordResetToken(token string, userID uint) model.RetVal {
 	defer cancel()
 	if err := RDB.Del(ctx, fmt.Sprintf(passwordResetTokenKeyTmpl, token), fmt.Sprintf(passwordResetUserTokenKeyTmpl, userID)).Err(); err != nil {
 		log.Logger.Warningf("Failed to delete password reset token: %s", err)
-		return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": fmt.Sprintf(passwordResetTokenKeyTmpl, token), "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.DeleteError, "Cache", fmt.Sprintf(passwordResetTokenKeyTmpl, token), err)
 	}
 	return model.SuccessRetVal()
 }

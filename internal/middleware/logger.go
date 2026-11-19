@@ -62,9 +62,7 @@ func Logger(ctx *gin.Context) {
 	}
 	start := time.Now()
 
-	// Process request
 	ctx.Next()
-	// Stop timer
 	latency := time.Now().Sub(start)
 	if ctx.Request.Method != "OPTIONS" {
 		TotalDuration.Add(latency.Milliseconds())

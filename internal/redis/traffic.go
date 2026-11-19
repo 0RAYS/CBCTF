@@ -28,22 +28,23 @@ func StoreTraffic(ctx context.Context, victim model.Victim, result *traffic.Pcap
 		err = RDB.Set(ctx, fmt.Sprintf(trafficsKeyTmpl, victim.ID), data, ttl).Err()
 	}
 	if err != nil {
-		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": trafficsKeyTmpl, "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.SetError, "Cache", fmt.Sprintf(trafficsKeyTmpl, victim.ID), err)
 	}
 	return model.SuccessRetVal()
 }
 
 func GetTraffic(ctx context.Context, victim model.Victim) (*traffic.PcapDirResult, model.RetVal) {
-	data, err := RDB.Get(ctx, fmt.Sprintf(trafficsKeyTmpl, victim.ID)).Bytes()
+	key := fmt.Sprintf(trafficsKeyTmpl, victim.ID)
+	data, err := RDB.Get(ctx, key).Bytes()
 	if errors.Is(err, redis.Nil) {
 		return nil, model.SuccessRetVal()
 	}
 	if err != nil {
-		return nil, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": trafficsKeyTmpl, "Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Redis.GetError, "Cache", key, err)
 	}
 	var snapshot traffic.PcapDirResult
 	if err = msgpack.Unmarshal(data, &snapshot); err != nil {
-		return nil, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": trafficsKeyTmpl, "Error": err.Error()}}
+		return nil, model.FailRetVal(i18n.Redis.GetError, "Cache", key, err)
 	}
 	return &snapshot, model.SuccessRetVal()
 }

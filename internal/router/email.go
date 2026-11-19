@@ -1,6 +1,8 @@
 package router
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 
 	"CBCTF/internal/db"
@@ -49,7 +51,7 @@ func ActivateEmail(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ActivateEmailEventType)
 	user := middleware.GetSelf(ctx)
 	if user.Verified {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.User.AlreadyVerified})
+		resp.JSON(ctx, model.FailRetVal(i18n.Model.User.AlreadyVerified, "User", fmt.Sprintf("user_id=%d", user.ID), nil))
 		return
 	}
 	ret := service.SendEmail(user)

@@ -28,7 +28,7 @@ func MetricsWhitelist(ctx *gin.Context) {
 			return
 		}
 	}
-	resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
+	resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.Forbidden, "Prometheus", "", nil))
 }
 
 func Prometheus(ctx *gin.Context) {

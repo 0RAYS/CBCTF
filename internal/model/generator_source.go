@@ -13,31 +13,23 @@ import (
 // 题库题目（Challenge）与比赛题目副本（ContestChallenge）都实现该接口，
 // 生成器与附件相关的代码只依赖它。
 type GeneratorSource interface {
-	// SourceID 来源标识：题库题目为题库 id，比赛题目副本为比赛题目 id
+	// SourceID 题库题目为题库 id，比赛题目副本为比赛题目 id
 	SourceID() uint
-	// SourceName 题目名称
 	SourceName() string
-	// SourceType 题目类型
 	SourceType() ChallengeType
-	// SourceImage 生成器镜像
 	SourceImage() string
-	// SourceDir 题目基础目录（附件与生成器的存放位置）
+	// SourceDir 题目基础目录，附件与生成器都放在这里
 	SourceDir() string
-	// SourceGeneratorPath 生成器压缩包的路径
 	SourceGeneratorPath() string
-	// SourceAttachmentPath 题目附件的路径
 	SourceAttachmentPath(teamID uint) string
-	// SourceAttachmentCachePath 附件缓存路径
 	SourceAttachmentCachePath(teamID uint, flags []string) string
-	// SourceAttachmentCachePathForRevision 指定源版本的附件缓存路径
 	SourceAttachmentCachePathForRevision(teamID uint, flags []string, revision string) string
-	// SourceChallengeID 溯源：题库题目 id
+	// SourceChallengeID 溯源用的题库题目 id
 	SourceChallengeID() uint
 	// SourceContestChallengeID 比赛题目 id，为 0 表示不是比赛题目
 	SourceContestChallengeID() uint
 	// SourceContestID 比赛 id，为 0 表示不属于某场比赛
 	SourceContestID() uint
-	// SourceTarget 生成器池的目标标识
 	SourceTarget() GeneratorTarget
 }
 
@@ -103,20 +95,18 @@ func (c ContestChallenge) SourceTarget() GeneratorTarget {
 	return NewContestGeneratorTarget(c.ContestID, c.ID)
 }
 
-// GeneratorTarget 生成器池的目标标识。
-// 生成器池按比赛题目划分，否则同一题库题目在多场比赛加入时会互相顶掉。
+// GeneratorTarget 生成器池的目标标识。生成器池按比赛题目划分，否则同一题库题目
+// 在多场比赛加入时会互相顶掉。
 type GeneratorTarget struct {
 	ContestID          uint
 	ChallengeID        uint
 	ContestChallengeID uint
 }
 
-// NewGeneratorTarget 返回题库题目的生成器目标
 func NewGeneratorTarget(challengeID uint) GeneratorTarget {
 	return GeneratorTarget{ChallengeID: challengeID}
 }
 
-// NewContestGeneratorTarget 返回比赛题目的生成器目标
 func NewContestGeneratorTarget(contestID, contestChallengeID uint) GeneratorTarget {
 	return GeneratorTarget{ContestID: contestID, ContestChallengeID: contestChallengeID}
 }
@@ -136,7 +126,6 @@ type GeneratorSourceSnapshot struct {
 	UpdatedAt          int64         `msgpack:"updated_at"`
 }
 
-// NewChallengeSource 返回题库题目的生成器来源快照
 func NewChallengeSource(c Challenge) GeneratorSourceSnapshot {
 	return GeneratorSourceSnapshot{
 		ID:            c.ID,
@@ -150,7 +139,6 @@ func NewChallengeSource(c Challenge) GeneratorSourceSnapshot {
 	}
 }
 
-// NewContestChallengeSource 返回比赛题目副本的生成器来源快照
 func NewContestChallengeSource(c ContestChallenge) GeneratorSourceSnapshot {
 	return GeneratorSourceSnapshot{
 		ID:                 c.ID,

@@ -2,6 +2,7 @@ package db
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 
 	"gorm.io/gorm"
@@ -45,11 +46,12 @@ func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.Ret
 	if value, ok := data["value"]; !ok || value == nil || absentSettingValue(value.(model.SettingValue).V) {
 		return model.SuccessRetVal()
 	}
+	target := fmt.Sprintf("key=%s", key)
 	for {
 		count++
 		if count > 10 {
-			log.Logger.Warningf("Failed to update Setting: too many times failed due to optimistic lock")
-			return model.RetVal{Msg: i18n.Model.Setting.DeadLock}
+			log.Logger.Warningf("Failed to update Setting: too many times failed due to optimistic lock (target=%s)", target)
+			return model.FailRetVal(i18n.Model.Setting.DeadLock, "Setting", target, nil)
 		}
 		m, ret := s.Get(key)
 		if !ret.OK {
@@ -57,8 +59,8 @@ func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.Ret
 		}
 		res := s.DB.Model(&m).Where("id = ?", m.ID).Updates(data)
 		if res.Error != nil {
-			log.Logger.Warningf("Failed to update Setting: %s", res.Error)
-			return model.RetVal{Msg: i18n.Model.Setting.UpdateError, Attr: map[string]any{"Error": res.Error.Error()}}
+			log.Logger.Warningf("Failed to update Setting: %s (target=%s)", res.Error, target)
+			return model.FailRetVal(i18n.Model.Setting.UpdateError, "Setting", target, res.Error)
 		}
 		if res.RowsAffected == 0 {
 			continue
@@ -276,24 +278,20 @@ func GetValue[T any](s *SettingRepo, key string) (T, model.RetVal) {
 	var out T
 	bytes, err := json.Marshal(data.Value.V)
 	if err != nil {
-		return zero, model.RetVal{
-			Msg: i18n.Model.Setting.InvalidType,
-			Attr: map[string]any{
+		return zero, model.FailRetVal(i18n.Model.Setting.InvalidType, "Setting", fmt.Sprintf("key=%s", data.Key), err).
+			WithAttrs(map[string]any{
 				"Key":         data.Key,
 				"Type":        targetType.String(),
 				"InvalidType": reflect.TypeOf(data.Value.V).String(),
-			},
-		}
+			})
 	}
 	if err = json.Unmarshal(bytes, &out); err != nil {
-		return zero, model.RetVal{
-			Msg: i18n.Model.Setting.InvalidType,
-			Attr: map[string]any{
+		return zero, model.FailRetVal(i18n.Model.Setting.InvalidType, "Setting", fmt.Sprintf("key=%s", data.Key), err).
+			WithAttrs(map[string]any{
 				"Key":         data.Key,
 				"Type":        targetType.String(),
 				"InvalidType": reflect.TypeOf(data.Value.V).String(),
-			},
-		}
+			})
 	}
 
 	return out, model.SuccessRetVal()

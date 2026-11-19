@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 
 	"CBCTF/internal/db"
@@ -27,7 +29,7 @@ func CheckIfGenerated(ctx *gin.Context) {
 		return
 	}
 	if !generated {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.TeamFlag.NotFound})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.TeamFlag.NotFound, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), nil))
 		return
 	}
 	ctx.Next()

@@ -78,27 +78,27 @@ func LockFrpsPort(host string, portRange []int32, protocol string) (int32, model
 	portsJSON, err := json.Marshal(portRange)
 	if err != nil {
 		log.Logger.Warningf("Failed to encode frps port range: %s", err)
-		return 0, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return 0, model.FailRetVal(i18n.Common.UnknownError, "Cache", key, err)
 	}
 	result, err := RDB.Eval(ctx, lockFrpsPortScript, []string{key, frpsRevisionKey}, string(portsJSON), protocol).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to eval lua script: %s", err)
-		return 0, model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		return 0, model.FailRetVal(i18n.Redis.SetError, "Cache", key, err)
 	}
 	resultSlice, ok := result.([]any)
 	if !ok || len(resultSlice) != 2 {
-		return 0, model.RetVal{Msg: i18n.Redis.InvalidScriptResult}
+		return 0, model.FailRetVal(i18n.Redis.InvalidScriptResult, "Cache", key, nil)
 	}
 	port, ok := resultSlice[0].(int64)
 	if !ok {
-		return 0, model.RetVal{Msg: i18n.Redis.InvalidScriptPort}
+		return 0, model.FailRetVal(i18n.Redis.InvalidScriptPort, "Cache", key, nil)
 	}
 	success, ok := resultSlice[1].(int64)
 	if !ok {
-		return 0, model.RetVal{Msg: i18n.Redis.InvalidScriptSuccessFlag}
+		return 0, model.FailRetVal(i18n.Redis.InvalidScriptSuccessFlag, "Cache", key, nil)
 	}
 	if success != 1 {
-		return int32(port), model.RetVal{Msg: i18n.Redis.NoAvailablePort}
+		return int32(port), model.FailRetVal(i18n.Redis.NoAvailablePort, "Cache", key, nil)
 	}
 	return int32(port), model.SuccessRetVal()
 }
@@ -113,7 +113,7 @@ func UnlockFrpsPort(host string, port int32, protocol string) model.RetVal {
 	_, err := RDB.Eval(ctx, unlockFrpsPortScript, []string{key, frpsRevisionKey}, port).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to eval lua script: %s", err)
-		return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+		return model.FailRetVal(i18n.Redis.DeleteError, "Cache", key, err)
 	}
 	return model.SuccessRetVal()
 }
@@ -126,7 +126,7 @@ func FrpsRevision(ctx context.Context) (string, model.RetVal) {
 		return "0", model.SuccessRetVal()
 	}
 	if err != nil {
-		return "", model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": frpsRevisionKey, "Error": err.Error()}}
+		return "", model.FailRetVal(i18n.Redis.GetError, "Cache", frpsRevisionKey, err)
 	}
 	return value, model.SuccessRetVal()
 }
@@ -168,7 +168,7 @@ func ReconcileFrpsPorts(expected map[string]map[string][]int32, revision string)
 		keys, next, err := RDB.Scan(ctx, cursor, "frps:*:*", 100).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan frps port locks: %s", err)
-			return 0, 0, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": "frps:*:*", "Error": err.Error()}}
+			return 0, 0, model.FailRetVal(i18n.Redis.GetError, "Cache", "frps:*:*", err)
 		}
 		for _, key := range keys {
 			keysToReplace[key] = true
@@ -197,7 +197,7 @@ func ReconcileFrpsPorts(expected map[string]map[string][]int32, revision string)
 			pipe.SAdd(ctx, staging, members...)
 			pipe.Expire(ctx, staging, 5*time.Minute)
 			if _, err := pipe.Exec(ctx); err != nil {
-				return 0, 0, model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
+				return 0, 0, model.FailRetVal(i18n.Redis.SetError, "Cache", key, err)
 			}
 		}
 		entries = append(entries, [2]string{key, staging})
@@ -205,11 +205,11 @@ func ReconcileFrpsPorts(expected map[string]map[string][]int32, revision string)
 	}
 	data, err := json.Marshal(entries)
 	if err != nil {
-		return 0, 0, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return 0, 0, model.FailRetVal(i18n.Common.UnknownError, "Cache", frpsRevisionKey, err)
 	}
 	result, err := RDB.Eval(ctx, replaceFrpsSnapshotScript, []string{frpsRevisionKey}, revision, string(data)).Int()
 	if err != nil || result < 0 {
-		return 0, 0, model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": frpsRevisionKey, "Error": fmt.Sprintf("snapshot replacement failed: %v (result %d)", err, result)}}
+		return 0, 0, model.FailRetVal(i18n.Redis.SetError, "Cache", frpsRevisionKey, fmt.Errorf("snapshot replacement failed: %v (result %d)", err, result))
 	}
 	if result == 0 {
 		log.Logger.Debug("FRPS reconciliation deferred: allocations changed during database snapshot")

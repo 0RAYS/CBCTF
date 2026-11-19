@@ -10,15 +10,14 @@ import (
 	"gorm.io/gorm"
 )
 
-// WithWorkloadLock serializes start/stop workers across processes without holding
-// a DB transaction open during Kubernetes calls. PostgreSQL releases session
-// locks if a worker dies. Requires direct/session-pooled PostgreSQL connections,
-// not transaction-mode PgBouncer (the chart uses direct connections).
+// WithWorkloadLock serializes start/stop workers across processes without holding a
+// DB transaction open during Kubernetes calls; PostgreSQL releases session locks if
+// a worker dies. Needs direct/session-pooled connections, not transaction-mode PgBouncer.
 func WithWorkloadLock(ctx context.Context, root *gorm.DB, kind string, id uint, fn func() error) error {
 	return withWorkloadLock(ctx, root, kind, id, false, fn)
 }
 
-// TryWithWorkloadLock Reconciliation must skip a busy workload instead of queuing behind startup.
+// TryWithWorkloadLock lets reconciliation skip a busy workload instead of queuing behind startup.
 func TryWithWorkloadLock(ctx context.Context, root *gorm.DB, kind string, id uint, fn func() error) error {
 	return withWorkloadLock(ctx, root, kind, id, true, fn)
 }

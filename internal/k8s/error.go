@@ -1,14 +1,13 @@
 package k8s
 
 import (
-	"fmt"
-
-	"CBCTF/internal/model"
+	"errors"
 )
 
-func resourceError(ret model.RetVal) error {
-	if detail, ok := ret.Attr["Error"]; ok {
-		return fmt.Errorf("%s: %v", ret.Msg, detail)
-	}
-	return fmt.Errorf("%s", ret.Msg)
-}
+// errMissingPodIdentity marks a deletion that was refused because the Pod
+// could not be identified safely.
+var errMissingPodIdentity = errors.New("refusing deletion without a Pod name and observed UID")
+
+// errMissingNamespace marks a deletion that was refused because the target
+// namespace was not given.
+var errMissingNamespace = errors.New("refusing deletion without a namespace")

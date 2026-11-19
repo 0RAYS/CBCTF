@@ -29,8 +29,8 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, m
 	}
 	vpc, err = ovnClient.KubeovnV1().Vpcs().Create(ctx, vpc, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create VPC: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to create VPC %s: %s", options.Name, err)
+		return nil, model.FailRetVal(i18n.K8S.CreateError, "VPC", options.Name, err)
 	}
 	return vpc, model.SuccessRetVal()
 }
@@ -42,8 +42,8 @@ func DeleteVPCCollection(ctx context.Context, labels map[string]string) model.Re
 	}
 	err := ovnClient.KubeovnV1().Vpcs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete VPC: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to delete VPCs (%s): %s", options.LabelSelector, err)
+		return model.FailRetVal(i18n.K8S.DeleteError, "VPC", options.LabelSelector, err)
 	}
 	return model.SuccessRetVal()
 }

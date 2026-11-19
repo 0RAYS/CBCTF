@@ -48,7 +48,6 @@ type ContestFlag struct {
 }
 
 type Docker struct {
-	// Error
 	InvalidComposeYaml string
 	DeleteError        string
 }
@@ -59,10 +58,8 @@ type Email struct {
 }
 
 type File struct {
-	NotAllowed string
-	// Error
-	ReadPcapError string
-	// Error
+	NotAllowed     string
+	ReadPcapError  string
 	CreateDirError string
 	CreateError    string
 	DeleteError    string
@@ -211,54 +208,46 @@ type WebhookHistory struct {
 }
 
 var Model = struct {
-	// Model Key
 	DuplicateKeyValue string
-	// Model Key
-	NotUniqueKey string
-	// Model
-	DeadLock string
-	// Model Error
-	CreateError string
-	// Model Error
-	GetError string
-	// Model
-	NotFound string
-	// Model Error
-	UpdateError string
-	// Model Error
-	DeleteError      string
-	Challenge        Challenge
-	ChallengeFlag    ChallengeFlag
-	Cheat            Cheat
-	Contest          Contest
-	ContestChallenge ContestChallenge
-	ContestFlag      ContestFlag
-	CronJob          CronJob
-	Docker           Docker
-	Email            Email
-	File             File
-	Generator        Generator
-	Group            Group
-	Notice           Notice
-	Oauth            Oauth
-	Permission       Permission
-	Pod              Pod
-	Request          Request
-	Role             Role
-	RolePermission   RolePermission
-	Setting          Setting
-	Submission       Submission
-	Task             ModelTask
-	Team             Team
-	TeamFlag         TeamFlag
-	Traffic          Traffic
-	User             User
-	UserContest      UserContest
-	UserGroup        UserGroup
-	UserTeam         UserTeam
-	Victim           Victim
-	Webhook          Webhook
-	WebhookHistory   WebhookHistory
+	NotUniqueKey      string
+	DeadLock          string
+	CreateError       string
+	GetError          string
+	NotFound          string
+	UpdateError       string
+	DeleteError       string
+	Challenge         Challenge
+	ChallengeFlag     ChallengeFlag
+	Cheat             Cheat
+	Contest           Contest
+	ContestChallenge  ContestChallenge
+	ContestFlag       ContestFlag
+	CronJob           CronJob
+	Docker            Docker
+	Email             Email
+	File              File
+	Generator         Generator
+	Group             Group
+	Notice            Notice
+	Oauth             Oauth
+	Permission        Permission
+	Pod               Pod
+	Request           Request
+	Role              Role
+	RolePermission    RolePermission
+	Setting           Setting
+	Submission        Submission
+	Task              ModelTask
+	Team              Team
+	TeamFlag          TeamFlag
+	Traffic           Traffic
+	User              User
+	UserContest       UserContest
+	UserGroup         UserGroup
+	UserTeam          UserTeam
+	Victim            Victim
+	Webhook           Webhook
+	WebhookHistory    WebhookHistory
 }{
 	DuplicateKeyValue: "model.duplicateKeyValue",
 	NotUniqueKey:      "model.notUniqueKey",

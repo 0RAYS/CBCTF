@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 )
@@ -15,13 +16,13 @@ const reindexPostgresLockKey = "cbctf:reindex_postgres"
 func reindexPostgresTask() model.RetVal {
 	sqlDB, err := db.CronDB.DB()
 	if err != nil {
-		return model.RetVal{Msg: "Failed to get PostgreSQL connection pool", Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Cron.PostgresPoolError, "PostgreSQL", "", err)
 	}
 
 	ctx := context.Background()
 	conn, err := sqlDB.Conn(ctx)
 	if err != nil {
-		return model.RetVal{Msg: "Failed to get PostgreSQL connection", Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Cron.PostgresConnError, "PostgreSQL", "", err)
 	}
 	defer func(conn *sql.Conn) {
 		_ = conn.Close()
@@ -29,7 +30,7 @@ func reindexPostgresTask() model.RetVal {
 
 	var locked bool
 	if err = conn.QueryRowContext(ctx, `SELECT pg_try_advisory_lock(hashtext($1))`, reindexPostgresLockKey).Scan(&locked); err != nil {
-		return model.RetVal{Msg: "Failed to acquire PostgreSQL index rebuild lock", Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Cron.PostgresLockError, "PostgreSQL", reindexPostgresLockKey, err)
 	}
 	if !locked {
 		log.Logger.Info("PostgreSQL index rebuild skipped: another rebuild is already running")
@@ -52,7 +53,7 @@ func reindexPostgresTask() model.RetVal {
 		ORDER BY pg_relation_size(c.oid) DESC, n.nspname, c.relname
 	`)
 	if err != nil {
-		return model.RetVal{Msg: "Failed to list PostgreSQL indexes", Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Cron.PostgresListError, "PostgreSQL", "", err)
 	}
 
 	var indexes []string
@@ -60,16 +61,16 @@ func reindexPostgresTask() model.RetVal {
 		var indexName string
 		if err = rows.Scan(&indexName); err != nil {
 			_ = rows.Close()
-			return model.RetVal{Msg: "Failed to read PostgreSQL index", Attr: map[string]any{"Error": err.Error()}}
+			return model.FailRetVal(i18n.Cron.PostgresIndexError, "PostgreSQL", "", err)
 		}
 		indexes = append(indexes, indexName)
 	}
 	if err = rows.Err(); err != nil {
 		_ = rows.Close()
-		return model.RetVal{Msg: "Failed to iterate PostgreSQL indexes", Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Cron.PostgresIndexError, "PostgreSQL", "", err)
 	}
 	if err = rows.Close(); err != nil {
-		return model.RetVal{Msg: "Failed to close PostgreSQL index list", Attr: map[string]any{"Error": err.Error()}}
+		return model.FailRetVal(i18n.Cron.PostgresCloseError, "PostgreSQL", "", err)
 	}
 	if len(indexes) == 0 {
 		log.Logger.Info("PostgreSQL index rebuild skipped: no user indexes found")
@@ -89,7 +90,11 @@ func reindexPostgresTask() model.RetVal {
 
 	log.Logger.Infof("PostgreSQL indexes rebuilt: %d/%d", rebuilt, len(indexes))
 	if len(failedIndexes) > 0 {
-		return model.RetVal{Msg: "Failed to rebuild some PostgreSQL indexes", Attr: map[string]any{"Rebuilt": rebuilt, "Failed": len(failedIndexes), "Indexes": failedIndexes}}
+		return model.FailRetVal(i18n.Cron.PostgresRebuildFail, "PostgreSQL", "", nil).WithAttrs(map[string]any{
+			"Rebuilt": rebuilt,
+			"Failed":  len(failedIndexes),
+			"Indexes": failedIndexes,
+		})
 	}
 
 	return model.SuccessRetVal()

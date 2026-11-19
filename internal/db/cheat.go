@@ -72,6 +72,7 @@ func (c *CheatRepo) Create(cheat model.Cheat) (model.Cheat, bool, model.RetVal) 
 		hash = strings.TrimSuffix(hash, "-")
 	}
 	cheat.Hash = fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s-%s-%s-%s", hash, cheat.ReasonType, cheat.IP, cheat.Comment))))
+	target := fmt.Sprintf("hash=%s", cheat.Hash)
 	mu, _ := CheatMutex.LoadOrStore(cheat.Hash, &sync.Mutex{})
 	mu.(*sync.Mutex).Lock()
 	defer mu.(*sync.Mutex).Unlock()
@@ -80,18 +81,18 @@ func (c *CheatRepo) Create(cheat model.Cheat) (model.Cheat, bool, model.RetVal) 
 	if res := c.DB.Where("hash = ?", cheat.Hash).First(&existing); res.Error == nil {
 		return existing, false, model.SuccessRetVal()
 	} else if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
-		log.Logger.Warningf("Failed to query Cheat by hash: %s", res.Error)
-		return model.Cheat{}, false, model.RetVal{Msg: i18n.Model.Cheat.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to query Cheat by hash: %s (target=%s)", res.Error, target)
+		return model.Cheat{}, false, model.FailRetVal(i18n.Model.Cheat.CreateError, "Cheat", target, res.Error)
 	}
 
 	res := c.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(&cheat)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to create Cheat: %s", res.Error)
-		return model.Cheat{}, false, model.RetVal{Msg: i18n.Model.Cheat.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to create Cheat: %s (target=%s)", res.Error, target)
+		return model.Cheat{}, false, model.FailRetVal(i18n.Model.Cheat.CreateError, "Cheat", target, res.Error)
 	}
 	if res.RowsAffected == 0 {
 		if err := c.DB.Where("hash = ?", cheat.Hash).First(&existing).Error; err != nil {
-			return model.Cheat{}, false, model.RetVal{Msg: i18n.Model.Cheat.CreateError, Attr: map[string]any{"Error": err.Error()}}
+			return model.Cheat{}, false, model.FailRetVal(i18n.Model.Cheat.CreateError, "Cheat", target, err)
 		}
 		return existing, false, model.SuccessRetVal()
 	}

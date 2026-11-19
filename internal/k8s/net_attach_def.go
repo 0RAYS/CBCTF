@@ -41,8 +41,8 @@ func CreateNetAttachDef(ctx context.Context, options CreateNetAttachDefOptions) 
 	}
 	netAttachDef, err = netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(globalNamespace).Create(ctx, netAttachDef, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create NetworkAttachmentDefinition: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "NetworkAttachmentDefinition", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to create NetworkAttachmentDefinition %s: %s", options.Name, err)
+		return nil, model.FailRetVal(i18n.K8S.CreateError, "NetworkAttachmentDefinition", options.Name, err)
 	}
 	return netAttachDef, model.SuccessRetVal()
 }
@@ -54,31 +54,25 @@ func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*ne
 	netAttachDef, err := netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace[0]).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "NetworkAttachmentDefinition"}}
+			return nil, model.FailRetVal(i18n.K8S.NotFound, "NetworkAttachmentDefinition", name, nil)
 		}
-		log.Logger.Warningf("Failed to get NetworkAttachmentDefinition: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "NetworkAttachmentDefinition", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to get NetworkAttachmentDefinition %s: %s", name, err)
+		return nil, model.FailRetVal(i18n.K8S.GetError, "NetworkAttachmentDefinition", name, err)
 	}
 	return netAttachDef, model.SuccessRetVal()
 }
 
 func DeleteNetAttachDefCollection(ctx context.Context, namespace string, labels map[string]string) model.RetVal {
 	if namespace == "" {
-		return model.RetVal{
-			Msg: i18n.K8S.DeleteError,
-			Attr: map[string]any{
-				"Model": "NetworkAttachmentDefinition",
-				"Error": "refusing deletion without a namespace",
-			},
-		}
+		return model.FailRetVal(i18n.K8S.DeleteError, "NetworkAttachmentDefinition", "", errMissingNamespace)
 	}
 	options, ret := deleteCollectionOptions("NetworkAttachmentDefinition", labels)
 	if !ret.OK {
 		return ret
 	}
 	if err := netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options); err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinition: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "NetworkAttachmentDefinition", "Error": err.Error()}}
+		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinitions (%s): %s", options.LabelSelector, err)
+		return model.FailRetVal(i18n.K8S.DeleteError, "NetworkAttachmentDefinition", options.LabelSelector, err)
 	}
 	return model.SuccessRetVal()
 }

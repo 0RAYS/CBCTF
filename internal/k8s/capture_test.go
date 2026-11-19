@@ -58,10 +58,9 @@ func TestCaptureContainerRunsOutsideRootAndKeepsCapabilities(t *testing.T) {
 	if securityContext.AllowPrivilegeEscalation == nil || *securityContext.AllowPrivilegeEscalation {
 		t.Fatal("capture must not allow privilege escalation")
 	}
-	// The capture needs CAP_BPF and CAP_PERFMON for the eBPF process
-	// attribution. Only a root container keeps them, because the container
-	// runtime drops the ambient capability set and the capture image only
-	// carries a CAP_NET_RAW file capability.
+	// The eBPF process attribution needs CAP_BPF and CAP_PERFMON. Only a root
+	// container keeps them, because the runtime drops the ambient capability
+	// set and the image carries only a CAP_NET_RAW file capability.
 	if securityContext.RunAsUser == nil || *securityContext.RunAsUser != 0 {
 		t.Fatalf("capture must run as root to keep the eBPF capabilities, got %v", securityContext.RunAsUser)
 	}
@@ -92,8 +91,8 @@ func TestCaptureContainerDeclaresTheCaptureUser(t *testing.T) {
 	for _, env := range capture.Env {
 		declared[env.Name] = env.Value
 	}
-	// The capture binary only writes its pcap into a directory that belongs
-	// to root or to the invoking user.
+	// The capture binary only writes its pcap into a directory owned by root
+	// or by the invoking user.
 	want := map[string]string{
 		captureInvokingUIDEnv: strconv.FormatInt(captureDropUID, 10),
 		captureInvokingGIDEnv: strconv.FormatInt(captureDropGID, 10),

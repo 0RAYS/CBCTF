@@ -41,7 +41,7 @@ func stopUnCtrlGeneratorTask() model.RetVal {
 				log.Logger.Infof("Deleted uncontrolled generator pod: pod=%s", pod.Name)
 			} else {
 				batch.Fail(pod.Name, "delete", ret)
-				log.Logger.Warningf("Failed to delete uncontrolled generator pod: pod=%s reason=%s", pod.Name, ret.Msg)
+				log.Logger.Warningf("Failed to delete uncontrolled generator pod: pod=%s reason=%v", pod.Name, ret)
 			}
 			itemCancel()
 		} else {

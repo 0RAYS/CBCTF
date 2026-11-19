@@ -152,7 +152,7 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 			}
 			unregisterCancel()
 			if deleteRet := generatorRepo.Delete(generator.ID); !deleteRet.OK {
-				return fmt.Errorf("generate attachment failed: %s; delete unavailable generator failed: %s", ret.Msg, deleteRet.Msg)
+				return fmt.Errorf("generate attachment failed: %w; delete unavailable generator failed: %w", ret, deleteRet)
 			}
 		}
 		return taskResourceError("generate attachment failed", ret)

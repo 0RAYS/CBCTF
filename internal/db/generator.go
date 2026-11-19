@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -70,12 +71,13 @@ func InitGeneratorRepo(tx *gorm.DB) *GeneratorRepo {
 
 // UpdateIfStatus prevents stale workers/requests from overwriting a stop.
 func (g *GeneratorRepo) UpdateIfStatus(id uint, expected string, options UpdateGeneratorOptions) model.RetVal {
+	target := fmt.Sprintf("id=%d,status=%s", id, expected)
 	res := g.DB.Model(&model.Generator{}).Where("id = ? AND status = ?", id, expected).Updates(options.Convert2Map())
 	if res.Error != nil {
-		return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": "Generator", "Error": res.Error.Error()}}
+		return model.FailRetVal(i18n.Model.UpdateError, "Generator", target, res.Error)
 	}
 	if res.RowsAffected == 0 {
-		return model.RetVal{Msg: i18n.Model.Generator.NotAvailable}
+		return model.FailRetVal(i18n.Model.Generator.NotAvailable, "Generator", target, nil)
 	}
 	return model.SuccessRetVal()
 }
@@ -114,8 +116,9 @@ func (g *GeneratorRepo) Delete(idL ...uint) model.RetVal {
 		}
 	}
 	if res := g.DB.Model(&model.Generator{}).Where("id IN ?", idL).Delete(&model.Generator{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Generator: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.Generator.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("id=%v", idL)
+		log.Logger.Warningf("Failed to delete Generator: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.Generator.DeleteError, "Generator", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }

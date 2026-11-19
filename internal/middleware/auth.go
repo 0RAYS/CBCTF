@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -30,12 +31,12 @@ func CheckAuth(ctx *gin.Context) {
 		}
 	}
 	if token == "" {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.Unauthorized, "Token", "", nil))
 		return
 	}
 	claims, err := utils.ParseToken(token, config.Env.Gin.JWT.Secret)
 	if err != nil {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.Unauthorized, "Token", "", err))
 		return
 	}
 	user, ret := db.InitUserRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(claims.UserID)
@@ -44,11 +45,11 @@ func CheckAuth(ctx *gin.Context) {
 		return
 	}
 	if claims.Gen != strconv.FormatUint(user.TokenGeneration, 10) {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.Unauthorized, "Token", fmt.Sprintf("user_id=%d", user.ID), nil))
 		return
 	}
 	if user.Banned {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.Forbidden, "User", fmt.Sprintf("user_id=%d", user.ID), nil))
 		return
 	}
 	ctx.Set("Self", user)
@@ -68,7 +69,7 @@ func GetSelf(ctx *gin.Context) model.User {
 func CheckCaptain(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.CaptainID != GetSelf(ctx).ID {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.Forbidden, "Team", fmt.Sprintf("team_id=%d", team.ID), nil))
 		return
 	}
 	ctx.Next()
@@ -77,7 +78,7 @@ func CheckCaptain(ctx *gin.Context) {
 // CheckVerified 检查邮箱是否已验证
 func CheckVerified(ctx *gin.Context) {
 	if !GetSelf(ctx).Verified {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.User.UnverifiedEmail})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.User.UnverifiedEmail, "User", fmt.Sprintf("user_id=%d", GetSelf(ctx).ID), nil))
 		return
 	}
 	ctx.Next()
@@ -87,7 +88,7 @@ func CheckVerified(ctx *gin.Context) {
 func CheckBanned(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.Banned {
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.Forbidden, "Team", fmt.Sprintf("team_id=%d", team.ID), nil))
 		return
 	}
 	ctx.Next()

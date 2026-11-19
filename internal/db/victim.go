@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -61,7 +62,7 @@ func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 func (v *VictimRepo) Create(victim model.Victim) (model.Victim, model.RetVal) {
 	if res := v.DB.Model(&model.Victim{}).Create(&victim); res.Error != nil {
 		log.Logger.Warningf("Failed to create Victim: %s", res.Error)
-		return model.Victim{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Name(model.Victim{}), "Error": res.Error.Error()}}
+		return model.Victim{}, model.FailRetVal(i18n.Model.CreateError, model.Name(model.Victim{}), "", res.Error)
 	}
 	return victim, model.SuccessRetVal()
 }
@@ -75,12 +76,14 @@ func (v *VictimRepo) UpdateIfStatus(id uint, expectedStatus string, options Upda
 		return model.SuccessRetVal()
 	}
 	res := v.DB.Model(&model.Victim{}).Where("id = ? AND status = ?", id, expectedStatus).Updates(data)
+	target := fmt.Sprintf("id=%d,status=%s", id, expectedStatus)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to update Victim: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": model.Name(model.Victim{}), "Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to update Victim: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.UpdateError, model.Name(model.Victim{}), target, res.Error)
 	}
 	if res.RowsAffected == 0 {
-		return model.RetVal{Msg: i18n.Model.Victim.NotStartable, Attr: map[string]any{"Model": model.Name(model.Victim{}), "ExpectedStatus": expectedStatus}}
+		return model.FailRetVal(i18n.Model.Victim.NotStartable, model.Name(model.Victim{}), target, nil).
+			WithAttrs(map[string]any{"ExpectedStatus": expectedStatus})
 	}
 	return model.SuccessRetVal()
 }
@@ -125,8 +128,9 @@ func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
 		}
 	}
 	if res := v.DB.Model(&model.Victim{}).Where("id IN ?", idL).Delete(&model.Victim{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Victim: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.Victim.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("id=%v", idL)
+		log.Logger.Warningf("Failed to delete Victim: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.Victim.DeleteError, model.Name(model.Victim{}), target, res.Error)
 	}
 	return model.SuccessRetVal()
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"math"
 	"sync"
 	"time"
@@ -19,7 +20,7 @@ func UpdateTeam(tx *gorm.DB, team model.Team, form dto.UpdateTeamForm) model.Ret
 	repo := db.InitTeamRepo(tx)
 	if form.CaptainID != nil && *form.CaptainID != team.CaptainID {
 		if !repo.IsInTeam(team.ID, *form.CaptainID) {
-			return model.RetVal{Msg: i18n.Model.Team.NotHasMember}
+			return model.FailRetVal(i18n.Model.Team.NotHasMember, "Team", fmt.Sprintf("team_id=%d,user_id=%d", team.ID, *form.CaptainID), nil)
 		}
 	}
 	return repo.Update(team.ID, db.UpdateTeamOptions{
@@ -45,7 +46,7 @@ func AdminUpdateTeam(tx *gorm.DB, team model.Team, form dto.AdminUpdateTeamForm)
 	repo := db.InitTeamRepo(tx)
 	if form.CaptainID != nil && *form.CaptainID != team.CaptainID {
 		if !repo.IsInTeam(team.ID, *form.CaptainID) {
-			return model.RetVal{Msg: i18n.Model.Team.NotHasMember}
+			return model.FailRetVal(i18n.Model.Team.NotHasMember, "Team", fmt.Sprintf("team_id=%d,user_id=%d", team.ID, *form.CaptainID), nil)
 		}
 	}
 	return repo.Update(team.ID, db.UpdateTeamOptions{
@@ -71,10 +72,10 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Join
 			return ret
 		}
 		if team.Banned {
-			return model.RetVal{Msg: i18n.Model.Team.Banned}
+			return model.FailRetVal(i18n.Model.Team.Banned, "Team", fmt.Sprintf("team_id=%d", team.ID), nil)
 		}
 		if form.Captcha != team.Captcha {
-			return model.RetVal{Msg: i18n.Model.Team.CaptchaWrong}
+			return model.FailRetVal(i18n.Model.Team.CaptchaWrong, "Team", fmt.Sprintf("team_id=%d", team.ID), nil)
 		}
 		mu, _ := JoinTeamMutex.LoadOrStore(team.ID, &sync.Mutex{})
 		mu.(*sync.Mutex).Lock()
@@ -84,15 +85,14 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Join
 			return ret
 		}
 		if int(memberCount)+1 > contest.Size {
-			return model.RetVal{Msg: i18n.Model.Team.Full}
+			return model.FailRetVal(i18n.Model.Team.Full, "Team", fmt.Sprintf("team_id=%d,contest_id=%d", team.ID, contest.ID), nil)
 		}
 		if repo.IsInContest(contest.ID, user.ID) {
-			return model.RetVal{Msg: i18n.Model.Contest.DuplicateMember}
+			return model.FailRetVal(i18n.Model.Contest.DuplicateMember, "Contest", fmt.Sprintf("contest_id=%d,user_id=%d", contest.ID, user.ID), nil)
 		}
 		if ret = db.AppendUserToTeam(tx, user, team); !ret.OK {
 			return ret
 		}
-		// 关联 User Contest Many2Many
 		if ret = db.AppendUserToContest(tx, user, contest); !ret.OK {
 			return ret
 		}
@@ -106,11 +106,11 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Cr
 	var result model.Team
 	ret := db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
 		if contest.Captcha != "" && form.Captcha != contest.Captcha {
-			return model.RetVal{Msg: i18n.Model.Contest.CaptchaWrong}
+			return model.FailRetVal(i18n.Model.Contest.CaptchaWrong, "Contest", fmt.Sprintf("contest_id=%d", contest.ID), nil)
 		}
 		repo := db.InitTeamRepo(tx)
 		if repo.IsInContest(contest.ID, user.ID) {
-			return model.RetVal{Msg: i18n.Model.Contest.DuplicateMember}
+			return model.FailRetVal(i18n.Model.Contest.DuplicateMember, "Contest", fmt.Sprintf("contest_id=%d,user_id=%d", contest.ID, user.ID), nil)
 		}
 		team, ret := repo.Create(model.Team{
 			Name:        form.Name,
@@ -142,10 +142,10 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 	return db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
 		repo := db.InitTeamRepo(tx)
 		if !repo.IsInTeam(team.ID, userID) {
-			return model.RetVal{Msg: i18n.Model.Team.NotHasMember}
+			return model.FailRetVal(i18n.Model.Team.NotHasMember, "Team", fmt.Sprintf("team_id=%d,user_id=%d", team.ID, userID), nil)
 		}
 		if team.CaptainID == userID {
-			return model.RetVal{Msg: i18n.Model.Team.CaptainCannotLeave}
+			return model.FailRetVal(i18n.Model.Team.CaptainCannotLeave, "Team", fmt.Sprintf("team_id=%d,user_id=%d", team.ID, userID), nil)
 		}
 		if ret := db.DeleteUserFromTeam(tx, model.User{ID: userID}, team); !ret.OK {
 			return ret

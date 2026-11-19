@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 
 	"CBCTF/internal/i18n"
@@ -41,7 +43,7 @@ func (g *GroupRepo) InitDefaultGroups() model.RetVal {
 	for _, group := range model.DefaultGroups {
 		res := g.DB.Model(&model.Group{}).FirstOrCreate(&group, group)
 		if res.Error != nil {
-			return model.RetVal{Msg: i18n.Model.Group.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+			return model.FailRetVal(i18n.Model.Group.GetError, "Group", fmt.Sprintf("name=%s", group.Name), res.Error)
 		}
 		savedGroup, ret := g.GetByID(group.ID, GetOptions{Preloads: map[string]GetOptions{"Role": {}}})
 		if !ret.OK {
@@ -66,8 +68,9 @@ func (g *GroupRepo) CountUsers(groupID uint) (int64, model.RetVal) {
 	var count int64
 	res := g.DB.Model(&model.UserGroup{}).Where("group_id = ?", groupID).Count(&count)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count group users: %s", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.Group.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("group_id=%d", groupID)
+		log.Logger.Warningf("Failed to count group users: %s (target=%s)", res.Error, target)
+		return 0, model.FailRetVal(i18n.Model.Group.GetError, "Group", target, res.Error)
 	}
 	return count, model.SuccessRetVal()
 }
@@ -80,8 +83,9 @@ func (g *GroupRepo) Delete(idL ...uint) model.RetVal {
 		return ret
 	}
 	if res := g.DB.Model(&model.Group{}).Where("id IN ?", idL).Delete(&model.Group{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Group: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.Group.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		target := fmt.Sprintf("id=%v", idL)
+		log.Logger.Warningf("Failed to delete Group: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.Group.DeleteError, "Group", target, res.Error)
 	}
 	return model.SuccessRetVal()
 }

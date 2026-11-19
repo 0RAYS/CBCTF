@@ -2,14 +2,8 @@ package email
 
 import "fmt"
 
-// buildHTML generates a branded HTML email with a call-to-action button.
-//
-// Parameters:
-//   - title      – displayed as the <h1> heading
-//   - greeting   – plain text paragraph shown below the heading
-//   - buttonText – label on the CTA button
-//   - buttonURL  – href of the CTA button
-//   - footerNote – small note below the button (e.g. expiry warning)
+// buildHTML renders a branded HTML email with a call-to-action button.
+// footerNote is the small note below the button, e.g. an expiry warning.
 func buildHTML(title, greeting, buttonText, buttonURL, footerNote string) string {
 	return fmt.Sprintf(`<!DOCTYPE html>
 <html lang="en">

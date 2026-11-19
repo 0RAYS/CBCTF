@@ -10,7 +10,7 @@ import (
 	"CBCTF/internal/view"
 )
 
-// GetSolvedStateResp model.ContestFlag Preload model.ContestChallenge
+// GetSolvedStateResp 按题目分类统计解题数量，两组 flag 都需预加载 ContestChallenge
 func GetSolvedStateResp(solved []model.ContestFlag, all []model.ContestFlag) []gin.H {
 	categories := make(map[uint]string)
 	for _, v := range all {
