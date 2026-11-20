@@ -2,9 +2,9 @@ package email
 
 import "fmt"
 
-// buildHTML renders a branded HTML email with a call-to-action button.
-// footerNote is the small note below the button, e.g. an expiry warning.
-func buildHTML(title, greeting, buttonText, buttonURL, footerNote string) string {
+// buildEmailShell renders the branded HTML frame of an email. The body holds
+// the rows that differ per email and the note closes the frame.
+func buildEmailShell(title, body, bottomNote string) string {
 	return fmt.Sprintf(`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,7 +27,34 @@ func buildHTML(title, greeting, buttonText, buttonURL, footerNote string) string
             </td>
           </tr>
 
-          <!-- Body -->
+%s
+
+          <!-- Divider + bottom bar -->
+          <tr>
+            <td style="border-top:1px solid #1a1a1a;padding:20px 40px;">
+              <p style="margin:0;font-size:11px;color:#4d4d4d;text-align:center;letter-spacing:0.2px;">
+                %s
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+		title,
+		title,
+		body,
+		bottomNote,
+	)
+}
+
+// buildHTML renders a branded HTML email with a call-to-action button.
+// footerNote is the small note below the button, e.g. an expiry warning.
+func buildHTML(title, greeting, buttonText, buttonURL, footerNote string) string {
+	body := fmt.Sprintf(`          <!-- Body -->
           <tr>
             <td style="padding:32px 40px 8px;">
               <p style="margin:0 0 32px;font-size:14px;line-height:1.75;color:#b3b3b3;">%s</p>
@@ -59,25 +86,7 @@ func buildHTML(title, greeting, buttonText, buttonURL, footerNote string) string
             <td style="padding:20px 40px 32px;">
               <p style="margin:0;font-size:12px;color:#4d4d4d;line-height:1.6;">%s</p>
             </td>
-          </tr>
-
-          <!-- Divider + bottom bar -->
-          <tr>
-            <td style="border-top:1px solid #1a1a1a;padding:20px 40px;">
-              <p style="margin:0;font-size:11px;color:#4d4d4d;text-align:center;letter-spacing:0.2px;">
-                This is an automated message. Please do not reply to this email.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`,
-		title,
-		title,
+          </tr>`,
 		greeting,
 		buttonURL,
 		buttonText,
@@ -85,33 +94,12 @@ func buildHTML(title, greeting, buttonText, buttonURL, footerNote string) string
 		buttonURL,
 		footerNote,
 	)
+	return buildEmailShell(title, body, "This is an automated message. Please do not reply to this email.")
 }
 
 // buildTestHTML generates a "SMTP configuration test" branded HTML email.
 func buildTestHTML(from string) string {
-	return fmt.Sprintf(`<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SMTP Configuration Test</title>
-</head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Segoe UI',system-ui,Arial,sans-serif;">
-  <table width="100%%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:48px 0;">
-    <tr>
-      <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0"
-               style="background:#0f0f0f;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;max-width:560px;width:100%%;">
-
-          <!-- Header -->
-          <tr>
-            <td style="padding:32px 40px 28px;border-bottom:1px solid #2a2a2a;">
-              <p style="margin:0 0 12px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#4d4d4d;font-weight:500;">CBCTF</p>
-              <h1 style="margin:0;font-size:22px;font-weight:600;color:#f9f9f9;line-height:1.3;">SMTP Configuration Test</h1>
-            </td>
-          </tr>
-
-          <!-- Body -->
+	body := fmt.Sprintf(`          <!-- Body -->
           <tr>
             <td style="padding:32px 40px 8px;">
               <!-- Status badge -->
@@ -141,21 +129,8 @@ func buildTestHTML(from string) string {
           </tr>
 
           <!-- Spacer -->
-          <tr><td style="height:32px;"></td></tr>
-
-          <!-- Divider + bottom bar -->
-          <tr>
-            <td style="border-top:1px solid #1a1a1a;padding:20px 40px;">
-              <p style="margin:0;font-size:11px;color:#4d4d4d;text-align:center;letter-spacing:0.2px;">
-                This is an automated test message from the CBCTF admin panel.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`, from)
+          <tr><td style="height:32px;"></td></tr>`,
+		from,
+	)
+	return buildEmailShell("SMTP Configuration Test", body, "This is an automated test message from the CBCTF admin panel.")
 }
