@@ -372,3 +372,38 @@ func TestPostgresEphemeralVolumeAndPullSecrets(t *testing.T) {
 		}
 	}
 }
+
+// appDeployment returns the chart's own Deployment, not the one the upstream
+// valkey chart renders.
+func appDeployment(t *testing.T, documents []map[string]any) map[string]any {
+	t.Helper()
+	for _, document := range documents {
+		if document["kind"] != "Deployment" || ownedByValkey(document) {
+			continue
+		}
+		return document
+	}
+	t.Fatal("the chart rendered no Deployment")
+	return nil
+}
+
+// The platform connects to PostgreSQL and Valkey while starting and exits when
+// either is unreachable, so the Pod must wait for both before the first
+// container start.
+func TestApplicationWaitsForDependencies(t *testing.T) {
+	documents := render(t)
+	config := appConfig(t, documents)
+	postgres := config["gorm"].(map[string]any)["postgres"].(map[string]any)
+	pod := appDeployment(t, documents)["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any)
+	initContainers, ok := pod["initContainers"].([]any)
+	if !ok || len(initContainers) == 0 {
+		t.Fatal("the application Deployment has no init container")
+	}
+	command := initContainers[0].(map[string]any)["command"].([]any)
+	script := command[len(command)-1].(string)
+	for _, endpoint := range []string{postgres["host"].(string), config["redis"].(map[string]any)["host"].(string)} {
+		if !strings.Contains(script, endpoint) {
+			t.Fatalf("the dependency wait does not cover %s: %s", endpoint, script)
+		}
+	}
+}
