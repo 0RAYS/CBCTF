@@ -24,9 +24,14 @@ func GetCheats(ctx *gin.Context) {
 	}
 	data := make([]gin.H, 0)
 	for _, cheat := range cheats {
-		data = append(data, resp.GetCheatResp(cheat))
+		data = append(data, resp.GetCheatListResp(cheat))
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "checked": checked, "cheats": data}))
+}
+
+// GetCheat 返回单条线索及其完整证据链。
+func GetCheat(ctx *gin.Context) {
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetCheatResp(middleware.GetCheat(ctx))))
 }
 
 func UpdateCheat(ctx *gin.Context) {
@@ -37,7 +42,7 @@ func UpdateCheat(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateCheatEventType)
 	cheat := middleware.GetCheat(ctx)
-	ret := service.UpdateCheat(db.DB.WithContext(ctx.Request.Context()), cheat, form)
+	ret := service.UpdateCheat(db.DB.WithContext(ctx.Request.Context()), cheat, form, middleware.GetSelf(ctx).ID)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

@@ -245,6 +245,14 @@ export const exportContestWriteups = (contestId) => {
   });
 };
 
+export const exportContestScoreboard = (contestId) => {
+  return request({
+    url: `/admin/contests/${contestId}/scoreboard/export`,
+    method: 'GET',
+    responseType: 'blob',
+  });
+};
+
 export const getContestTeamTraffic = (contestId, teamId, victimID, params, signal) => {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}/victims/${victimID}/traffic`,
@@ -350,6 +358,13 @@ export const getContestCheats = (contestId, params = { limit: 20, offset: 0 }) =
     url: `/admin/contests/${contestId}/cheats`,
     method: 'GET',
     params,
+  });
+};
+
+export const getContestCheat = (contestId, cheatId) => {
+  return request({
+    url: `/admin/contests/${contestId}/cheats/${cheatId}`,
+    method: 'GET',
   });
 };
 
