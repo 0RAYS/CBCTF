@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
-	"github.com/vmihailenco/msgpack/v5"
 
 	"CBCTF/internal/model"
 	"CBCTF/internal/webhook"
@@ -20,17 +19,12 @@ type WebhookPayload struct {
 }
 
 func EnqueueWebhookTask(event model.Event, target model.Webhook) (*asynq.TaskInfo, error) {
-	payload, err := msgpack.Marshal(WebhookPayload{Event: event, Target: target})
-	if err != nil {
-		return nil, err
-	}
-	task := asynq.NewTask(webhookTaskType, payload)
-	return enqueueTask(webhookTaskType, task, asynq.MaxRetry(target.Retry), asynq.Timeout(time.Duration(target.Timeout)*time.Second))
+	return enqueueMsgpackTask(webhookTaskType, WebhookPayload{Event: event, Target: target}, asynq.MaxRetry(target.Retry), asynq.Timeout(time.Duration(target.Timeout)*time.Second))
 }
 
 func HandleWebhookTask(_ context.Context, task *asynq.Task) error {
-	var payload WebhookPayload
-	if err := msgpack.Unmarshal(task.Payload(), &payload); err != nil {
+	payload, err := decodeMsgpackTask[WebhookPayload](task)
+	if err != nil {
 		return err
 	}
 	if err := webhook.SendPayload(payload.Event, payload.Target); err != nil {

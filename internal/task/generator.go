@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
-	"github.com/vmihailenco/msgpack/v5"
 
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
@@ -28,17 +27,12 @@ type StartGeneratorPayload struct {
 }
 
 func EnqueueStartGeneratorTask(source model.GeneratorSourceSnapshot, generator model.Generator) (*asynq.TaskInfo, error) {
-	payload, err := msgpack.Marshal(StartGeneratorPayload{source, generator})
-	if err != nil {
-		return nil, err
-	}
-	task := asynq.NewTask(startGeneratorTaskType, payload)
-	return enqueueTask(startGeneratorTaskType, task, asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
+	return enqueueMsgpackTask(startGeneratorTaskType, StartGeneratorPayload{source, generator}, asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
 }
 
 func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
-	var payload StartGeneratorPayload
-	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
+	payload, err := decodeMsgpackTask[StartGeneratorPayload](t)
+	if err != nil {
 		return err
 	}
 	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "generator", payload.Generator.ID, func() error {
@@ -119,18 +113,13 @@ type StopGeneratorPayload struct {
 }
 
 func EnqueueStopGeneratorTask(generator model.Generator) error {
-	payload, err := msgpack.Marshal(StopGeneratorPayload{generator})
-	if err != nil {
-		return err
-	}
-	task := asynq.NewTask(stopGeneratorTaskType, payload)
-	_, err = enqueueTask(stopGeneratorTaskType, task, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
+	_, err := enqueueMsgpackTask(stopGeneratorTaskType, StopGeneratorPayload{generator}, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
 	return err
 }
 
 func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
-	var payload StopGeneratorPayload
-	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
+	payload, err := decodeMsgpackTask[StopGeneratorPayload](t)
+	if err != nil {
 		return err
 	}
 	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "generator", payload.Generator.ID, func() error {

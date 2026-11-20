@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
-	"github.com/vmihailenco/msgpack/v5"
 
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
@@ -38,12 +37,8 @@ func EnqueueImageDetect(images []string) error {
 	if len(images) == 0 {
 		return nil
 	}
-	payload, err := msgpack.Marshal(ImageDetectPayload{Images: images})
-	if err != nil {
-		return err
-	}
 	options := []asynq.Option{asynq.MaxRetry(1), asynq.Timeout(10 * time.Minute), asynq.Unique(imageDetectUniqueTTL)}
-	_, err = enqueueTask(imageDetectTaskType, asynq.NewTask(imageDetectTaskType, payload), options...)
+	_, err := enqueueMsgpackTask(imageDetectTaskType, ImageDetectPayload{Images: images}, options...)
 	if errors.Is(err, asynq.ErrDuplicateTask) {
 		return nil
 	}
@@ -53,8 +48,8 @@ func EnqueueImageDetect(images []string) error {
 // HandleImageDetectTask probes the nodes and merges the result into the
 // common detection cache.
 func HandleImageDetectTask(ctx context.Context, t *asynq.Task) error {
-	var payload ImageDetectPayload
-	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
+	payload, err := decodeMsgpackTask[ImageDetectPayload](t)
+	if err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(ctx, 9*time.Minute)
