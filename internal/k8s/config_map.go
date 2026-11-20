@@ -4,7 +4,6 @@ import (
 	"context"
 
 	corev1 "k8s.io/api/core/v1"
-	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"CBCTF/internal/i18n"
@@ -39,14 +38,7 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 }
 
 func DeleteConfigMapCollection(ctx context.Context, labels map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("ConfigMap", labels)
-	if !ret.OK {
-		return ret
-	}
-	err := kubeClient.CoreV1().ConfigMaps(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete ConfigMaps (%s): %s", options.LabelSelector, err)
-		return model.FailRetVal(i18n.K8S.DeleteError, "ConfigMap", options.LabelSelector, err)
-	}
-	return model.SuccessRetVal()
+	return deleteCollection("ConfigMap", "ConfigMaps", labels, func(options metav1.ListOptions) error {
+		return kubeClient.CoreV1().ConfigMaps(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	})
 }

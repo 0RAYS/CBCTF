@@ -3,23 +3,13 @@ package k8s
 import (
 	"context"
 
-	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 )
 
 func DeleteIPCollection(ctx context.Context, labels map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("IP", labels)
-	if !ret.OK {
-		return ret
-	}
-	err := ovnClient.KubeovnV1().IPs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete IPs (%s): %s", options.LabelSelector, err)
-		return model.FailRetVal(i18n.K8S.DeleteError, "IP", options.LabelSelector, err)
-	}
-	return model.SuccessRetVal()
+	return deleteCollection("IP", "IPs", labels, func(options metav1.ListOptions) error {
+		return ovnClient.KubeovnV1().IPs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	})
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	kubeovnv1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
-	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"CBCTF/internal/i18n"
@@ -36,14 +35,7 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, m
 }
 
 func DeleteVPCCollection(ctx context.Context, labels map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("VPC", labels)
-	if !ret.OK {
-		return ret
-	}
-	err := ovnClient.KubeovnV1().Vpcs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete VPCs (%s): %s", options.LabelSelector, err)
-		return model.FailRetVal(i18n.K8S.DeleteError, "VPC", options.LabelSelector, err)
-	}
-	return model.SuccessRetVal()
+	return deleteCollection("VPC", "VPCs", labels, func(options metav1.ListOptions) error {
+		return ovnClient.KubeovnV1().Vpcs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	})
 }

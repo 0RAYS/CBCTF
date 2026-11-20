@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	netattv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
-	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"CBCTF/internal/i18n"
@@ -51,13 +50,7 @@ func DeleteNetAttachDefCollection(ctx context.Context, namespace string, labels 
 	if namespace == "" {
 		return model.FailRetVal(i18n.K8S.DeleteError, "NetworkAttachmentDefinition", "", errMissingNamespace)
 	}
-	options, ret := deleteCollectionOptions("NetworkAttachmentDefinition", labels)
-	if !ret.OK {
-		return ret
-	}
-	if err := netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options); err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinitions (%s): %s", options.LabelSelector, err)
-		return model.FailRetVal(i18n.K8S.DeleteError, "NetworkAttachmentDefinition", options.LabelSelector, err)
-	}
-	return model.SuccessRetVal()
+	return deleteCollection("NetworkAttachmentDefinition", "NetworkAttachmentDefinitions", labels, func(options metav1.ListOptions) error {
+		return netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	})
 }
