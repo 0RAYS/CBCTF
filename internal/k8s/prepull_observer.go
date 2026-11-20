@@ -15,10 +15,14 @@ type pullTarget struct {
 	image string
 }
 
+// pullResult 记录一次拉取观测的结果。
+// absent marks an image the node does not hold, which only
+// imagePullPolicy: Never can prove.
+// pullResult 记录一次拉取观测的结果。
+// absent marks an image the node does not hold, which only
+// imagePullPolicy: Never can prove.
 type pullResult struct {
 	pulled bool
-	// absent marks an image the node does not hold, which only
-	// imagePullPolicy: Never can prove.
 	absent bool
 	reason string
 }

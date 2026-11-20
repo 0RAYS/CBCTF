@@ -14,22 +14,21 @@ import (
 // 题目加入比赛时会把题库题目深拷贝一份到这里，此后题库的改动不再影响已加入的比赛。
 // ChallengeID 仅用于溯源。
 type ContestChallenge struct {
-	ContestID    uint          `gorm:"index" json:"contest_id"`
-	Contest      Contest       `json:"-"`
-	ChallengeID  uint          `gorm:"index" json:"challenge_id"`
-	Challenge    Challenge     `json:"-"`
-	RandID       string        `gorm:"type:varchar(36);uniqueIndex:idx_contest_challenges_rand_id_active,where:deleted_at IS NULL" json:"rand_id"`
-	ContestFlags []ContestFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Submissions  []Submission  `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Name         string        `json:"name"`
-	Description  string        `json:"description"`
-	Type         ChallengeType `gorm:"index" json:"type"`
-	Category     string        `gorm:"index" json:"category"`
-	Hidden       bool          `gorm:"index" json:"hidden"`
-	Attempt      int64         `json:"attempt"`
-	Hints        []string      `gorm:"serializer:json;type:jsonb;default:'[]'" json:"hints"`
-	Tags         []string      `gorm:"serializer:json;type:jsonb;default:'[]'" json:"tags"`
-	// 以下字段为题库题目的副本，题库改动不会同步到这里
+	ContestID       uint              `gorm:"index" json:"contest_id"`
+	Contest         Contest           `json:"-"`
+	ChallengeID     uint              `gorm:"index" json:"challenge_id"`
+	Challenge       Challenge         `json:"-"`
+	RandID          string            `gorm:"type:varchar(36);uniqueIndex:idx_contest_challenges_rand_id_active,where:deleted_at IS NULL" json:"rand_id"`
+	ContestFlags    []ContestFlag     `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions     []Submission      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Name            string            `json:"name"`
+	Description     string            `json:"description"`
+	Type            ChallengeType     `gorm:"index" json:"type"`
+	Category        string            `gorm:"index" json:"category"`
+	Hidden          bool              `gorm:"index" json:"hidden"`
+	Attempt         int64             `json:"attempt"`
+	Hints           []string          `gorm:"serializer:json;type:jsonb;default:'[]'" json:"hints"`
+	Tags            []string          `gorm:"serializer:json;type:jsonb;default:'[]'" json:"tags"`
 	Template        ChallengeTemplate `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
 	GeneratorImage  string            `json:"generator_image"`
 	NetworkPolicies NetworkPolicies   `gorm:"type:jsonb" json:"network_policies"`

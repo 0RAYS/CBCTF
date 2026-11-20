@@ -20,13 +20,13 @@ type SimpleChallengeView struct {
 }
 
 // ChallengeUsageView 描述一个引用了题库题目的比赛题目实例。
+// ContestID 比赛 id。
+// ContestName 比赛名称。
+// ContestChallenge 比赛题目实例。
+// Solvers 已解出该题目的队伍数。
 type ChallengeUsageView struct {
-	// ContestID 比赛 id
-	ContestID uint
-	// ContestName 比赛名称
-	ContestName string
-	// ContestChallenge 比赛题目实例
+	ContestID        uint
+	ContestName      string
 	ContestChallenge model.ContestChallenge
-	// Solvers 已解出该题目的队伍数
-	Solvers int64
+	Solvers          int64
 }
