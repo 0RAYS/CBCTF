@@ -105,7 +105,7 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 
 私有镜像仓库的拉取凭据不在后台配置：运行时 Pod 使用 Helm 写入的 `k8s.service_account` ServiceAccount，它带着 Chart 的 `imagePullSecrets` 与 `imageCredentials`。
 
-预热、调度、缓存与回收机制见[工作负载调度](/deploy/workloads.md)。启用 FRP 时使用 ClusterIP，否则使用 NodePort。
+预热、调度、缓存与回收机制见[工作负载调度](/deploy/workloads.md)。启用 FRP 时使用 ClusterIP，否则使用 NodePort。启用 FRP 但没有配置 FRPS 时，靶机按未启用 FRP 启动，系统配置不变，系统日志中会有一条警告。
 
 ## Helm 与配置文件的关系
 
