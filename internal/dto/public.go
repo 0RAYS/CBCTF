@@ -20,3 +20,9 @@ func (f *ListModelsForm) Validate(ctx *gin.Context) model.RetVal {
 	}
 	return model.SuccessRetVal()
 }
+
+// LeaderboardForm 排行榜查询参数，ShowHidden 决定隐藏队伍是否参与排名与名次计算。
+type LeaderboardForm struct {
+	ListModelsForm
+	ShowHidden bool `form:"show_hidden" json:"show_hidden"`
+}

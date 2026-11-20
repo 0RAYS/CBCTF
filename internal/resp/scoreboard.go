@@ -27,6 +27,7 @@ func GetTeamRankingResp(teamView view.TeamRankingView, isAdmin bool) gin.H {
 		"score":       team.Score,
 		"picture":     team.Picture,
 		"last":        team.Last,
+		"rank":        team.Rank,
 		"hidden":      team.Hidden,
 		"captain_id":  team.CaptainID,
 		"solved":      GetSolvedStateViewResp(teamView.Solved),
@@ -35,6 +36,20 @@ func GetTeamRankingResp(teamView view.TeamRankingView, isAdmin bool) gin.H {
 		data["captcha"] = team.Captcha
 	}
 	return data
+}
+
+// GetUserRankingResp 用户总分榜中的一行。
+func GetUserRankingResp(userView view.UserRankingView) gin.H {
+	user := userView.User
+	return gin.H{
+		"id":      user.ID,
+		"name":    user.Name,
+		"picture": user.Picture,
+		"score":   user.Score,
+		"solved":  user.Solved,
+		"rank":    userView.Rank,
+		"hidden":  user.Hidden,
+	}
 }
 
 func GetScoreboardResp(teams []view.ScoreboardTeamView) []gin.H {
@@ -58,6 +73,8 @@ func GetScoreboardResp(teams []view.ScoreboardTeamView) []gin.H {
 			"score":       team.Score,
 			"picture":     team.Picture,
 			"last":        team.Last,
+			"rank":        team.Rank,
+			"hidden":      team.Hidden,
 			"users":       teamView.UserCount,
 			"challenges":  solved,
 		})

@@ -26,7 +26,7 @@ func BuildContestView(tx *gorm.DB, contest model.Contest) view.ContestView {
 			result.Unavailable = append(result.Unavailable, field)
 		}
 	}
-	champion, _, rankRet := GetTeamRanking(tx, contest, 1, 0)
+	champion, _, rankRet := GetTeamRanking(tx, contest, 1, 0, false)
 	if !rankRet.OK {
 		result.Unavailable = append(result.Unavailable, "highest")
 	}

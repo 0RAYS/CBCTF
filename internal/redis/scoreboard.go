@@ -30,7 +30,7 @@ func writeRanking[T any](ctx context.Context, key string, items []T) model.RetVa
 	return model.SuccessRetVal()
 }
 
-func readRanking[T any](ctx context.Context, key string, start, end int64) ([]T, model.RetVal) {
+func readRanking[T any](ctx context.Context, key string) ([]T, model.RetVal) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Bytes()
@@ -44,22 +44,20 @@ func readRanking[T any](ctx context.Context, key string, start, end int64) ([]T,
 	if err != nil {
 		return nil, model.FailRetVal(i18n.Redis.GetError, "Cache", key, err)
 	}
-	start = max(0, start)
-	if end < start || start >= int64(len(items)) {
-		return []T{}, model.SuccessRetVal()
-	}
-	return items[start:min(end+1, int64(len(items)))], model.SuccessRetVal()
+	return items, model.SuccessRetVal()
 }
 
 func UpdateTeamRanking(ctx context.Context, contestID uint, teams []model.Team) model.RetVal {
 	return writeRanking(ctx, fmt.Sprintf("ranking:contest:%d", contestID), teams)
 }
-func GetTeamRanking(ctx context.Context, contestID uint, start, end int64) ([]model.Team, model.RetVal) {
-	return readRanking[model.Team](ctx, fmt.Sprintf("ranking:contest:%d", contestID), start, end)
+// GetTeamRanking 返回完整的队伍排名快照，隐藏队伍需要在分页前剔除。
+func GetTeamRanking(ctx context.Context, contestID uint) ([]model.Team, model.RetVal) {
+	return readRanking[model.Team](ctx, fmt.Sprintf("ranking:contest:%d", contestID))
 }
 func UpdateUserRanking(ctx context.Context, users []model.User) model.RetVal {
 	return writeRanking(ctx, "ranking:users", users)
 }
-func GetUserRanking(ctx context.Context, start, end int64) ([]model.User, model.RetVal) {
-	return readRanking[model.User](ctx, "ranking:users", start, end)
+// GetUserRanking 返回完整的用户排名快照，隐藏用户需要在分页前剔除。
+func GetUserRanking(ctx context.Context) ([]model.User, model.RetVal) {
+	return readRanking[model.User](ctx, "ranking:users")
 }

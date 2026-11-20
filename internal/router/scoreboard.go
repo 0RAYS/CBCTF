@@ -17,13 +17,18 @@ import (
 	"CBCTF/internal/xlsx"
 )
 
+// showHiddenTeams 隐藏队伍是否出现在排行榜中。管理员始终可以看到全部队伍。
+func showHiddenTeams(ctx *gin.Context, form dto.LeaderboardForm) bool {
+	return middleware.IsFullAccess(ctx) || form.ShowHidden
+}
+
 func GetTeamRanking(ctx *gin.Context) {
-	var form dto.ListModelsForm
+	var form dto.LeaderboardForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	teams, count, ret := service.GetTeamRankingViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form.Limit, form.Offset, middleware.IsFullAccess(ctx))
+	teams, count, ret := service.GetTeamRankingViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form.Limit, form.Offset, showHiddenTeams(ctx, form))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -38,12 +43,12 @@ func GetTeamRanking(ctx *gin.Context) {
 }
 
 func GetScoreboard(ctx *gin.Context) {
-	var form dto.ListModelsForm
+	var form dto.LeaderboardForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	teams, count, ret := service.GetScoreboardViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form.Limit, form.Offset, middleware.IsFullAccess(ctx))
+	teams, count, ret := service.GetScoreboardViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form.Limit, form.Offset, showHiddenTeams(ctx, form))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -53,7 +58,12 @@ func GetScoreboard(ctx *gin.Context) {
 }
 
 func GetRankTimeline(ctx *gin.Context) {
-	data, ret := service.GetRankTimelineViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx))
+	var form dto.LeaderboardForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	data, ret := service.GetRankTimelineViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), showHiddenTeams(ctx, form))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -61,10 +71,34 @@ func GetRankTimeline(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetRankTimelineResp(data)))
 }
 
+// GetUserRanking 全局用户总分榜，登录用户可见。
+func GetUserRanking(ctx *gin.Context) {
+	var form dto.LeaderboardForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	users, count, ret := service.GetUserRankingViews(db.DB.WithContext(ctx.Request.Context()), form.Limit, form.Offset, form.ShowHidden)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	data := make([]gin.H, 0, len(users))
+	for _, user := range users {
+		data = append(data, resp.GetUserRankingResp(user))
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"users": data, "count": count}))
+}
+
 // ExportScoreboard 导出比赛排行榜为 xlsx，一行一支队伍，含每道题的得分与解题时间。
 func ExportScoreboard(ctx *gin.Context) {
+	var form dto.LeaderboardForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
 	contest := middleware.GetContest(ctx)
-	data, ret := service.GetLeaderboardExportView(db.DB.WithContext(ctx.Request.Context()), contest, middleware.IsFullAccess(ctx))
+	data, ret := service.GetLeaderboardExportView(db.DB.WithContext(ctx.Request.Context()), contest, showHiddenTeams(ctx, form))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
