@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
-	"github.com/vmihailenco/msgpack/v5"
 
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
@@ -25,17 +24,12 @@ type StartVictimPayload struct {
 }
 
 func EnqueueStartVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
-	payload, err := msgpack.Marshal(StartVictimPayload{victim})
-	if err != nil {
-		return nil, err
-	}
-	task := asynq.NewTask(startVictimTaskType, payload)
-	return enqueueTask(startVictimTaskType, task, asynq.MaxRetry(3), asynq.Timeout(4*time.Minute))
+	return enqueueMsgpackTask(startVictimTaskType, StartVictimPayload{victim}, asynq.MaxRetry(3), asynq.Timeout(4*time.Minute))
 }
 
 func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
-	var payload StartVictimPayload
-	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
+	payload, err := decodeMsgpackTask[StartVictimPayload](t)
+	if err != nil {
 		return err
 	}
 	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "victim", payload.Victim.ID, func() error {
@@ -165,18 +159,13 @@ type StopVictimPayload struct {
 }
 
 func EnqueueStopVictimTask(victim model.Victim) error {
-	payload, err := msgpack.Marshal(StopVictimPayload{victim})
-	if err != nil {
-		return err
-	}
-	task := asynq.NewTask(stopVictimTaskType, payload)
-	_, err = enqueueTask(stopVictimTaskType, task, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
+	_, err := enqueueMsgpackTask(stopVictimTaskType, StopVictimPayload{victim}, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
 	return err
 }
 
 func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
-	var payload StopVictimPayload
-	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
+	payload, err := decodeMsgpackTask[StopVictimPayload](t)
+	if err != nil {
 		return err
 	}
 	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "victim", payload.Victim.ID, func() error {

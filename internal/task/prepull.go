@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
-	"github.com/vmihailenco/msgpack/v5"
 	corev1 "k8s.io/api/core/v1"
 
 	"CBCTF/internal/k8s"
@@ -40,19 +39,15 @@ func EnqueuePrepullTargets(images, nodes []string, pullPolicy string) error {
 	}
 	nodes = slices.Clone(nodes)
 	slices.Sort(nodes)
-	payload, err := msgpack.Marshal(PrepullPayload{
-		Images:     images,
-		Nodes:      slices.Compact(nodes),
-		PullPolicy: pullPolicy,
-	})
-	if err != nil {
-		return err
-	}
 	options := []asynq.Option{asynq.MaxRetry(2), asynq.Timeout(11 * time.Minute)}
 	if pullPolicy != string(corev1.PullAlways) {
 		options = append(options, asynq.Unique(15*time.Minute))
 	}
-	_, err = enqueueTask(prepullTaskType, asynq.NewTask(prepullTaskType, payload), options...)
+	_, err := enqueueMsgpackTask(prepullTaskType, PrepullPayload{
+		Images:     images,
+		Nodes:      slices.Compact(nodes),
+		PullPolicy: pullPolicy,
+	}, options...)
 	if errors.Is(err, asynq.ErrDuplicateTask) {
 		return nil
 	}
@@ -60,13 +55,13 @@ func EnqueuePrepullTargets(images, nodes []string, pullPolicy string) error {
 }
 
 func HandlePrepullTask(ctx context.Context, t *asynq.Task) error {
-	var payload PrepullPayload
-	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
+	payload, err := decodeMsgpackTask[PrepullPayload](t)
+	if err != nil {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
-	err := k8s.PrepullImages(ctx, payload.Images, payload.Nodes, payload.PullPolicy)
+	err = k8s.PrepullImages(ctx, payload.Images, payload.Nodes, payload.PullPolicy)
 	if _, ok := errors.AsType[*k8s.PartialPrepullError](err); ok {
 		return errors.Join(err, asynq.SkipRetry)
 	}

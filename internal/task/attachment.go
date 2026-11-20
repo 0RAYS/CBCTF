@@ -94,8 +94,8 @@ func EnqueueGenAttachmentTask(userID uint, source model.GeneratorSourceSnapshot,
 }
 
 func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
-	var payload GenAttachmentPayload
-	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
+	payload, err := decodeMsgpackTask[GenAttachmentPayload](t)
+	if err != nil {
 		return err
 	}
 	path := payload.Source.SourceAttachmentCachePath(payload.TeamID, payload.Flags)

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
-	"github.com/vmihailenco/msgpack/v5"
 	"gorm.io/gorm"
 
 	"CBCTF/internal/db"
@@ -25,17 +24,12 @@ type LoadTrafficPayload struct {
 }
 
 func EnqueueLoadTrafficTask(victim model.Victim) (*asynq.TaskInfo, error) {
-	payload, err := msgpack.Marshal(LoadTrafficPayload{Victim: victim})
-	if err != nil {
-		return nil, err
-	}
-	task := asynq.NewTask(loadTrafficTaskType, payload)
-	return enqueueTask(loadTrafficTaskType, task, asynq.MaxRetry(3), asynq.Timeout(5*time.Minute))
+	return enqueueMsgpackTask(loadTrafficTaskType, LoadTrafficPayload{Victim: victim}, asynq.MaxRetry(3), asynq.Timeout(5*time.Minute))
 }
 
 func HandleLoadTrafficTask(ctx context.Context, t *asynq.Task) error {
-	var payload LoadTrafficPayload
-	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
+	payload, err := decodeMsgpackTask[LoadTrafficPayload](t)
+	if err != nil {
 		return err
 	}
 	victim := payload.Victim

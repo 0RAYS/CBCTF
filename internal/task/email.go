@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hibiken/asynq"
-	"github.com/vmihailenco/msgpack/v5"
 
 	"CBCTF/internal/email"
 	"CBCTF/internal/log"
@@ -30,12 +29,7 @@ type SendEmailPayload struct {
 }
 
 func enqueueEmailTask(payload SendEmailPayload) (*asynq.TaskInfo, error) {
-	data, err := msgpack.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-	task := asynq.NewTask(sendEmailTaskType, data)
-	return enqueueTask(sendEmailTaskType, task, asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
+	return enqueueMsgpackTask(sendEmailTaskType, payload, asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
 }
 
 func EnqueueSendEmailTask(to, token string) (*asynq.TaskInfo, error) {
@@ -47,11 +41,10 @@ func EnqueueSendResetPasswordEmailTask(to, token string) (*asynq.TaskInfo, error
 }
 
 func HandleSendEmailTask(_ context.Context, t *asynq.Task) error {
-	var payload SendEmailPayload
-	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
+	payload, err := decodeMsgpackTask[SendEmailPayload](t)
+	if err != nil {
 		return err
 	}
-	var err error
 	emailKind := "unknown"
 	switch payload.Kind {
 	case EmailKindVerify:
