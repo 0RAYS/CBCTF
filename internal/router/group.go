@@ -98,22 +98,14 @@ func UpdateGroup(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateGroupEventType)
 	group := middleware.GetGroup(ctx)
 	ret := service.UpdateGroup(db.DB.WithContext(ctx.Request.Context()), group, form)
-	if ret.OK {
-		invalidateRBAC()
-		ctx.Set(middleware.CTXEventSuccessKey, true)
-	}
-	resp.JSON(ctx, ret)
+	respondRBACChange(ctx, ret)
 }
 
 func DeleteGroup(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteGroupEventType)
 	group := middleware.GetGroup(ctx)
 	ret := service.DeleteGroup(db.DB.WithContext(ctx.Request.Context()), group)
-	if ret.OK {
-		invalidateRBAC()
-		ctx.Set(middleware.CTXEventSuccessKey, true)
-	}
-	resp.JSON(ctx, ret)
+	respondRBACChange(ctx, ret)
 }
 
 func AssignUserToGroup(ctx *gin.Context) {

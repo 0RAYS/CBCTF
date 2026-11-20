@@ -50,6 +50,18 @@ func setAuthCookie(ctx *gin.Context, token string) {
 	})
 }
 
+// issueToken signs the login token of the user and aborts the request when the
+// token cannot be issued.
+func issueToken(ctx *gin.Context, user model.User) (string, bool) {
+	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
+	if err != nil {
+		log.Logger.Warningf("Failed to generate token: %s", err)
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Token", fmt.Sprintf("user_id=%d", user.ID), err))
+		return "", false
+	}
+	return token, true
+}
+
 func GetCaptcha(ctx *gin.Context) {
 	id, image, answer, err := utils.GenerateCaptcha()
 	if err != nil {
@@ -88,10 +100,8 @@ func Register(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
-	if err != nil {
-		log.Logger.Warningf("Failed to generate token: %s", err)
-		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Token", fmt.Sprintf("user_id=%d", user.ID), err))
+	token, ok := issueToken(ctx, user)
+	if !ok {
 		return
 	}
 	ctx.Set("Self", user)
@@ -122,10 +132,8 @@ func Login(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
-	if err != nil {
-		log.Logger.Warningf("Failed to generate token: %s", err)
-		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Token", fmt.Sprintf("user_id=%d", user.ID), err))
+	token, ok := issueToken(ctx, user)
+	if !ok {
 		return
 	}
 	ctx.Set("Self", user)

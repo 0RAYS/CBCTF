@@ -13,7 +13,6 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/oa"
@@ -106,10 +105,8 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
-	if err != nil {
-		log.Logger.Warningf("Failed to generate token: %s", err)
-		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Token", fmt.Sprintf("user_id=%d", user.ID), err))
+	token, ok := issueToken(ctx, user)
+	if !ok {
 		return
 	}
 	ctx.Set("Self", user)
@@ -146,10 +143,8 @@ func ExchangeOauthCode(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	token, err := utils.GenerateToken(user.ID, user.Name, config.Env.Gin.JWT.Secret, user.TokenGeneration)
-	if err != nil {
-		log.Logger.Warningf("Failed to generate token: %s", err)
-		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Token", fmt.Sprintf("user_id=%d", user.ID), err))
+	token, ok := issueToken(ctx, user)
+	if !ok {
 		return
 	}
 	setAuthCookie(ctx, token)
