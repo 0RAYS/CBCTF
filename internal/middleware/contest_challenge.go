@@ -1,11 +1,8 @@
 package middleware
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 
-	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -28,23 +25,5 @@ func CheckChallengeType(t model.ChallengeType) gin.HandlerFunc {
 
 // CheckSolved model.Team 是否完全解决 model.ContestChallenge
 func CheckSolved(ctx *gin.Context) {
-	team := GetTeam(ctx)
-	contestChallenge := GetContestChallenge(ctx)
-	contestFlags, _, ret := db.InitContestFlagRepo(db.DB.WithContext(ctx.Request.Context())).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
-	})
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	solved, ret := service.CheckIfSolved(db.DB.WithContext(ctx.Request.Context()), team, contestFlags)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	if solved {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.TeamFlag.AlreadySolved, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), nil))
-		return
-	}
-	ctx.Next()
+	checkTeamFlagState(ctx, true, i18n.Model.TeamFlag.AlreadySolved, service.CheckIfSolved)
 }

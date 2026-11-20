@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -11,6 +12,84 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 )
+
+// byIDLookup is the shape every by-id repository lookup shares.
+type byIDLookup[T any] interface {
+	GetByID(id uint, options ...db.GetOptions) (T, model.RetVal)
+}
+
+// byRandIDLookup is the shape every by-random-id repository lookup shares.
+type byRandIDLookup[T any] interface {
+	GetByRandID(randID string, options ...db.GetOptions) (T, model.RetVal)
+}
+
+// getResource returns the resource a middleware stored under key, or the zero
+// value when the middleware did not run.
+func getResource[T any](ctx *gin.Context, key string) T {
+	value, ok := ctx.Get(key)
+	if !ok || value == nil {
+		var zero T
+		return zero
+	}
+	return value.(T)
+}
+
+// uriUint reads a required numeric path parameter.
+func uriUint(ctx *gin.Context, param, kind, targetKey string) (uint, bool) {
+	raw := ctx.Param(param)
+	id, err := strconv.ParseUint(raw, 10, strconv.IntSize)
+	if err != nil {
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, kind, targetKey+"="+raw, err))
+		return 0, false
+	}
+	if id == 0 {
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, kind, targetKey+"="+raw, fmt.Errorf("path parameter %s must not be zero", param)))
+		return 0, false
+	}
+	return uint(id), true
+}
+
+// uriString reads a required path parameter.
+func uriString(ctx *gin.Context, param, kind, targetKey string) (string, bool) {
+	raw := ctx.Param(param)
+	if raw == "" {
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, kind, targetKey+"="+raw, fmt.Errorf("missing %s path parameter", param)))
+		return "", false
+	}
+	return raw, true
+}
+
+// loadByID loads the resource addressed by a numeric path parameter and stores
+// it in the context under key.
+func loadByID[T any](ctx *gin.Context, key, param, kind, targetKey string, repo byIDLookup[T], options ...db.GetOptions) bool {
+	id, ok := uriUint(ctx, param, kind, targetKey)
+	if !ok {
+		return false
+	}
+	value, ret := repo.GetByID(id, options...)
+	if !ret.OK {
+		resp.AbortJSON(ctx, ret)
+		return false
+	}
+	ctx.Set(key, value)
+	return true
+}
+
+// loadByRandID loads the resource addressed by a random id path parameter and
+// stores it in the context under key.
+func loadByRandID[T any](ctx *gin.Context, key, param, kind, targetKey string, repo byRandIDLookup[T], options ...db.GetOptions) bool {
+	randID, ok := uriString(ctx, param, kind, targetKey)
+	if !ok {
+		return false
+	}
+	value, ret := repo.GetByRandID(randID, options...)
+	if !ret.OK {
+		resp.AbortJSON(ctx, ret)
+		return false
+	}
+	ctx.Set(key, value)
+	return true
+}
 
 func SetFullAccess(ctx *gin.Context) {
 	ctx.Set("FullAccess", true)
@@ -22,158 +101,74 @@ func IsFullAccess(ctx *gin.Context) bool {
 }
 
 func SetRole(ctx *gin.Context) {
-	type roleIDUri struct {
-		RoleID uint `uri:"roleID" binding:"required"`
-	}
-	var roleID roleIDUri
-	if err := ctx.ShouldBindUri(&roleID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Role", "role_id="+ctx.Param("roleID"), err))
+	if !loadByID(ctx, "Role", "roleID", "Role", "role_id", db.InitRoleRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	role, ret := db.InitRoleRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(roleID.RoleID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	ctx.Set("Role", role)
 	ctx.Next()
 }
 
 func GetRole(ctx *gin.Context) model.Role {
-	role, ok := ctx.Get("Role")
-	if !ok || role == nil {
-		return model.Role{}
-	}
-	return role.(model.Role)
+	return getResource[model.Role](ctx, "Role")
 }
 
 func SetGroup(ctx *gin.Context) {
-	type groupIDUri struct {
-		GroupID uint `uri:"groupID" binding:"required"`
-	}
-	var groupID groupIDUri
-	if err := ctx.ShouldBindUri(&groupID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Group", "group_id="+ctx.Param("groupID"), err))
+	if !loadByID(ctx, "Group", "groupID", "Group", "group_id", db.InitGroupRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	group, ret := db.InitGroupRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(groupID.GroupID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	ctx.Set("Group", group)
 	ctx.Next()
 }
 
 func GetGroup(ctx *gin.Context) model.Group {
-	group, ok := ctx.Get("Group")
-	if !ok || group == nil {
-		return model.Group{}
-	}
-	return group.(model.Group)
+	return getResource[model.Group](ctx, "Group")
 }
 
 func SetPermission(ctx *gin.Context) {
-	type permissionIDUri struct {
-		PermissionID uint `uri:"permissionID" binding:"required"`
-	}
-	var permissionID permissionIDUri
-	if err := ctx.ShouldBindUri(&permissionID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Permission", "permission_id="+ctx.Param("permissionID"), err))
+	if !loadByID(ctx, "Permission", "permissionID", "Permission", "permission_id", db.InitPermissionRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	permission, ret := db.InitPermissionRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(permissionID.PermissionID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	ctx.Set("Permission", permission)
 	ctx.Next()
 }
 
 func GetPermission(ctx *gin.Context) model.Permission {
-	permission, ok := ctx.Get("Permission")
-	if !ok || permission == nil {
-		return model.Permission{}
-	}
-	return permission.(model.Permission)
+	return getResource[model.Permission](ctx, "Permission")
 }
 
 func SetUser(ctx *gin.Context) {
-	type userIDUri struct {
-		UserID uint `uri:"userID" binding:"required"`
-	}
-	var userID userIDUri
-	if err := ctx.ShouldBindUri(&userID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "User", "user_id="+ctx.Param("userID"), err))
+	if !loadByID(ctx, "User", "userID", "User", "user_id", db.InitUserRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	user, ret := db.InitUserRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(userID.UserID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	ctx.Set("User", user)
 	ctx.Next()
 }
 
 func GetUser(ctx *gin.Context) model.User {
-	user, ok := ctx.Get("User")
-	if !ok || user == nil {
-		return model.User{}
-	}
-	return user.(model.User)
+	return getResource[model.User](ctx, "User")
 }
 
 func SetContest(ctx *gin.Context) {
-	type contestIDUri struct {
-		ContestID uint `uri:"contestID" binding:"required"`
-	}
-	var contestID contestIDUri
-	if err := ctx.ShouldBindUri(&contestID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Contest", "contest_id="+ctx.Param("contestID"), err))
+	if !loadByID(ctx, "Contest", "contestID", "Contest", "contest_id", db.InitContestRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	contest, ret := db.InitContestRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(contestID.ContestID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
+	contest := GetContest(ctx)
 	if !IsFullAccess(ctx) && contest.Hidden {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Contest.NotFound, "Contest", fmt.Sprintf("contest_id=%d", contest.ID), nil))
 		return
 	}
-	ctx.Set("Contest", contest)
 	ctx.Next()
 }
 
 func GetContest(ctx *gin.Context) model.Contest {
-	contest, ok := ctx.Get("Contest")
-	if !ok || contest == nil {
-		return model.Contest{}
-	}
-	return contest.(model.Contest)
+	return getResource[model.Contest](ctx, "Contest")
 }
 
 func SetTeam(ctx *gin.Context) {
-	type teamIDUri struct {
-		TeamID uint `uri:"teamID" binding:"required"`
-	}
-	var teamID teamIDUri
-	if err := ctx.ShouldBindUri(&teamID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Team", "team_id="+ctx.Param("teamID"), err))
+	if !loadByID(ctx, "Team", "teamID", "Team", "team_id", db.InitTeamRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	team, ret := db.InitTeamRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(teamID.TeamID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
+	team := GetTeam(ctx)
 	if contest := GetContest(ctx); contest.ID != 0 && team.ContestID != contest.ID {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Team.NotFound, "Team", fmt.Sprintf("team_id=%d", team.ID), nil))
 		return
 	}
-	ctx.Set("Team", team)
 	ctx.Next()
 }
 
@@ -188,28 +183,20 @@ func SetTeamByUser(ctx *gin.Context) {
 }
 
 func GetTeam(ctx *gin.Context) model.Team {
-	team, ok := ctx.Get("Team")
-	if !ok || team == nil {
-		return model.Team{}
-	}
-	return team.(model.Team)
+	return getResource[model.Team](ctx, "Team")
 }
 
 func SetFile(t model.FileType) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		type fileIDUri struct {
-			FileID string `uri:"fileID" binding:"required"`
-		}
-		var fileID fileIDUri
-		if err := ctx.ShouldBindUri(&fileID); err != nil {
-			resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "File", "file_id="+ctx.Param("fileID"), err))
+		randID, ok := uriString(ctx, "fileID", "File", "file_id")
+		if !ok {
 			return
 		}
 		options := db.GetOptions{}
 		if t != "" {
 			options = db.GetOptions{Conditions: map[string]any{"type": t}}
 		}
-		file, ret := db.InitFileRepo(db.DB.WithContext(ctx.Request.Context())).GetByUniqueField("rand_id", fileID.FileID, options)
+		file, ret := db.InitFileRepo(db.DB.WithContext(ctx.Request.Context())).GetByUniqueField("rand_id", randID, options)
 		if !ret.OK {
 			resp.AbortJSON(ctx, ret)
 			return
@@ -245,24 +232,14 @@ func SetTrafficFile(ctx *gin.Context) {
 }
 
 func SetTeamWriteupFile(ctx *gin.Context) {
-	type fileIDUri struct {
-		FileID string `uri:"fileID" binding:"required"`
-	}
-	var fileID fileIDUri
-	if err := ctx.ShouldBindUri(&fileID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "File", "file_id="+ctx.Param("fileID"), err))
+	if !loadByRandID(ctx, "File", "fileID", "File", "file_id", db.InitFileRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	file, ret := db.InitFileRepo(db.DB.WithContext(ctx.Request.Context())).GetByRandID(fileID.FileID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
+	file := GetFile(ctx)
 	if team := GetTeam(ctx); !(file.Model == model.Name(team) && file.ModelID == team.ID) {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.File.NotFound, "File", fmt.Sprintf("file_id=%d,team_id=%d", file.ID, team.ID), nil))
 		return
 	}
-	ctx.Set("File", file)
 	ctx.Next()
 }
 
@@ -301,115 +278,59 @@ func SetAttachmentFile(test bool) gin.HandlerFunc {
 }
 
 func GetFile(ctx *gin.Context) model.File {
-	file, ok := ctx.Get("File")
-	if !ok || file == nil {
-		return model.File{}
-	}
-	return file.(model.File)
+	return getResource[model.File](ctx, "File")
 }
 
 func SetNotice(ctx *gin.Context) {
-	type noticeIDUri struct {
-		NoticeID uint `uri:"noticeID" binding:"required"`
-	}
-	var noticeID noticeIDUri
-	if err := ctx.ShouldBindUri(&noticeID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Notice", "notice_id="+ctx.Param("noticeID"), err))
+	if !loadByID(ctx, "Notice", "noticeID", "Notice", "notice_id", db.InitNoticeRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	notice, ret := db.InitNoticeRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(noticeID.NoticeID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
+	notice := GetNotice(ctx)
 	if contest := GetContest(ctx); contest.ID != 0 && notice.ContestID != contest.ID {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Notice.NotFound, "Notice", fmt.Sprintf("notice_id=%d", notice.ID), nil))
 		return
 	}
-	ctx.Set("Notice", notice)
 	ctx.Next()
 }
 
 func GetNotice(ctx *gin.Context) model.Notice {
-	notice, ok := ctx.Get("Notice")
-	if !ok || notice == nil {
-		return model.Notice{}
-	}
-	return notice.(model.Notice)
+	return getResource[model.Notice](ctx, "Notice")
 }
 
 func SetChallenge(ctx *gin.Context) {
-	type challengeIDUri struct {
-		ChallengeID string `uri:"challengeID" binding:"required"`
-	}
-	var challengeID challengeIDUri
-	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Challenge", "challenge_id="+ctx.Param("challengeID"), err))
+	if !loadByRandID(ctx, "Challenge", "challengeID", "Challenge", "challenge_id", db.InitChallengeRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	challenge, ret := db.InitChallengeRepo(db.DB.WithContext(ctx.Request.Context())).GetByRandID(challengeID.ChallengeID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	ctx.Set("Challenge", challenge)
 	ctx.Next()
 }
 
 func GetChallenge(ctx *gin.Context) model.Challenge {
-	challenge, ok := ctx.Get("Challenge")
-	if !ok || challenge == nil {
-		return model.Challenge{}
-	}
-	return challenge.(model.Challenge)
+	return getResource[model.Challenge](ctx, "Challenge")
 }
 
 func SetContestChallenge(ctx *gin.Context) {
-	type challengeIDUri struct {
-		ChallengeID string `uri:"challengeID" binding:"required"`
-	}
-	var challengeID challengeIDUri
-	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Challenge", "challenge_id="+ctx.Param("challengeID"), err))
-		return
-	}
-	contestChallenge, ret := db.InitContestChallengeRepo(db.DB.WithContext(ctx.Request.Context())).GetByRandID(challengeID.ChallengeID, db.GetOptions{
+	if !loadByRandID(ctx, "ContestChallenge", "challengeID", "Challenge", "challenge_id", db.InitContestChallengeRepo(db.DB.WithContext(ctx.Request.Context())), db.GetOptions{
 		Conditions: map[string]any{"contest_id": GetContest(ctx).ID},
-	})
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
+	}) {
 		return
 	}
+	contestChallenge := GetContestChallenge(ctx)
 	if contestChallenge.Hidden && !IsFullAccess(ctx) {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Contest.NotFound, "ContestChallenge", fmt.Sprintf("contest_challenge_id=%d", contestChallenge.ID), nil))
 		return
 	}
-	ctx.Set("ContestChallenge", contestChallenge)
 	ctx.Next()
 }
 
 func GetContestChallenge(ctx *gin.Context) model.ContestChallenge {
-	contestChallenge, ok := ctx.Get("ContestChallenge")
-	if !ok || contestChallenge == nil {
-		return model.ContestChallenge{}
-	}
-	return contestChallenge.(model.ContestChallenge)
+	return getResource[model.ContestChallenge](ctx, "ContestChallenge")
 }
 
 func SetContestFlag(ctx *gin.Context) {
-	type flagIDUri struct {
-		FlagID uint `uri:"flagID" binding:"required"`
-	}
-	var flagID flagIDUri
-	if err := ctx.ShouldBindUri(&flagID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "ContestFlag", "flag_id="+ctx.Param("flagID"), err))
+	if !loadByID(ctx, "ContestFlag", "flagID", "ContestFlag", "contest_flag_id", db.InitContestFlagRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	contestFlag, ret := db.InitContestFlagRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(flagID.FlagID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
+	contestFlag := GetContestFlag(ctx)
 	if contest := GetContest(ctx); contest.ID != 0 && contestFlag.ContestID != contest.ID {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.ContestFlag.NotFound, "ContestFlag", fmt.Sprintf("contest_flag_id=%d", contestFlag.ID), nil))
 		return
@@ -418,62 +339,34 @@ func SetContestFlag(ctx *gin.Context) {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.ContestFlag.NotFound, "ContestFlag", fmt.Sprintf("contest_flag_id=%d", contestFlag.ID), nil))
 		return
 	}
-	ctx.Set("ContestFlag", contestFlag)
 	ctx.Next()
 }
 
 func GetContestFlag(ctx *gin.Context) model.ContestFlag {
-	contestFlag, ok := ctx.Get("ContestFlag")
-	if !ok || contestFlag == nil {
-		return model.ContestFlag{}
-	}
-	return contestFlag.(model.ContestFlag)
+	return getResource[model.ContestFlag](ctx, "ContestFlag")
 }
 
 func SetGenerator(ctx *gin.Context) {
-	type generatorIDUri struct {
-		GeneratorID uint `uri:"generatorID" binding:"required"`
-	}
-	var generatorID generatorIDUri
-	if err := ctx.ShouldBindUri(&generatorID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Generator", "generator_id="+ctx.Param("generatorID"), err))
+	if !loadByID(ctx, "Generator", "generatorID", "Generator", "generator_id", db.InitGeneratorRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	generator, ret := db.InitGeneratorRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(generatorID.GeneratorID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
+	generator := GetGenerator(ctx)
 	if contest := GetContest(ctx); contest.ID != 0 && (!generator.ContestID.Valid || generator.ContestID.V != contest.ID) {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Generator", fmt.Sprintf("generator_id=%d", generator.ID), nil))
 		return
 	}
-	ctx.Set("Generator", generator)
 	ctx.Next()
 }
 
 func GetGenerator(ctx *gin.Context) model.Generator {
-	generator, ok := ctx.Get("Generator")
-	if !ok || generator == nil {
-		return model.Generator{}
-	}
-	return generator.(model.Generator)
+	return getResource[model.Generator](ctx, "Generator")
 }
 
 func SetVictim(ctx *gin.Context) {
-	type victimIDUri struct {
-		VictimID uint `uri:"victimID" binding:"required"`
-	}
-	var victimID victimIDUri
-	if err := ctx.ShouldBindUri(&victimID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Victim", "victim_id="+ctx.Param("victimID"), err))
+	if !loadByID(ctx, "Victim", "victimID", "Victim", "victim_id", db.InitVictimRepo(db.DB.WithContext(ctx.Request.Context())), db.GetOptions{Deleted: true}) {
 		return
 	}
-	victim, ret := db.InitVictimRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(victimID.VictimID, db.GetOptions{Deleted: true})
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
+	victim := GetVictim(ctx)
 	if contest := GetContest(ctx); contest.ID != 0 && (!victim.ContestID.Valid || victim.ContestID.V != contest.ID) {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Victim.NotFound, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), nil))
 		return
@@ -482,170 +375,83 @@ func SetVictim(ctx *gin.Context) {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Victim.NotFound, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), nil))
 		return
 	}
-	ctx.Set("Victim", victim)
 	ctx.Next()
 }
 
 func GetVictim(ctx *gin.Context) model.Victim {
-	victim, ok := ctx.Get("Victim")
-	if !ok || victim == nil {
-		return model.Victim{}
-	}
-	return victim.(model.Victim)
+	return getResource[model.Victim](ctx, "Victim")
 }
 
 func SetCheat(ctx *gin.Context) {
-	type cheatIDUri struct {
-		CheatID uint `uri:"cheatID" binding:"required"`
-	}
-	var cheatID cheatIDUri
-	if err := ctx.ShouldBindUri(&cheatID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Cheat", "cheat_id="+ctx.Param("cheatID"), err))
+	if !loadByID(ctx, "Cheat", "cheatID", "Cheat", "cheat_id", db.InitCheatRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	cheat, ret := db.InitCheatRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(cheatID.CheatID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
+	cheat := GetCheat(ctx)
 	if contest := GetContest(ctx); contest.ID != 0 && cheat.ContestID != contest.ID {
 		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Cheat.NotFound, "Cheat", fmt.Sprintf("cheat_id=%d", cheat.ID), nil))
 		return
 	}
-	ctx.Set("Cheat", cheat)
 	ctx.Next()
 }
 
 func GetCheat(ctx *gin.Context) model.Cheat {
-	cheat, ok := ctx.Get("Cheat")
-	if !ok || cheat == nil {
-		return model.Cheat{}
-	}
-	return cheat.(model.Cheat)
+	return getResource[model.Cheat](ctx, "Cheat")
 }
 
 func SetOauth(ctx *gin.Context) {
-	type oauthIDUri struct {
-		OauthID uint `uri:"oauthID" binding:"required"`
-	}
-	var oauthID oauthIDUri
-	if err := ctx.ShouldBindUri(&oauthID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "OAuthProvider", "oauth_id="+ctx.Param("oauthID"), err))
+	if !loadByID(ctx, "Oauth", "oauthID", "OAuthProvider", "oauth_id", db.InitOauthRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	oauth, ret := db.InitOauthRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(oauthID.OauthID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	ctx.Set("Oauth", oauth)
 	ctx.Next()
 }
 
 func GetOauth(ctx *gin.Context) model.Oauth {
-	oauth, ok := ctx.Get("Oauth")
-	if !ok || oauth == nil {
-		return model.Oauth{}
-	}
-	return oauth.(model.Oauth)
+	return getResource[model.Oauth](ctx, "Oauth")
 }
 
 // SetOauthUri 只传递名称，不查库，后续由内存中的 map 解析
 func SetOauthUri(ctx *gin.Context) {
-	type oauthUri struct {
-		OauthUri string `uri:"oauth" binding:"required"`
-	}
-	var oauth oauthUri
-	if err := ctx.ShouldBindUri(&oauth); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "OAuthProvider", "oauth="+ctx.Param("oauth"), err))
+	name, ok := uriString(ctx, "oauth", "OAuthProvider", "oauth")
+	if !ok {
 		return
 	}
-	ctx.Set("OauthUri", oauth.OauthUri)
+	ctx.Set("OauthUri", name)
 	ctx.Next()
 }
 
 func GetOauthUri(ctx *gin.Context) string {
-	oauth, ok := ctx.Get("OauthUri")
-	if !ok || oauth == nil {
-		return ""
-	}
-	return oauth.(string)
+	return getResource[string](ctx, "OauthUri")
 }
 
 func SetSmtp(ctx *gin.Context) {
-	type smtpIDUri struct {
-		SmtpID uint `uri:"smtpID" binding:"required"`
-	}
-	var smtpID smtpIDUri
-	if err := ctx.ShouldBindUri(&smtpID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Smtp", "smtp_id="+ctx.Param("smtpID"), err))
+	if !loadByID(ctx, "Smtp", "smtpID", "Smtp", "smtp_id", db.InitSmtpRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	smtp, ret := db.InitSmtpRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(smtpID.SmtpID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	ctx.Set("Smtp", smtp)
 	ctx.Next()
 }
 
 func GetSmtp(ctx *gin.Context) model.Smtp {
-	smtp, ok := ctx.Get("Smtp")
-	if !ok || smtp == nil {
-		return model.Smtp{}
-	}
-	return smtp.(model.Smtp)
+	return getResource[model.Smtp](ctx, "Smtp")
 }
 
 func SetCronJob(ctx *gin.Context) {
-	type cronJobIDUri struct {
-		CronJobID uint `uri:"cronJobID" binding:"required"`
-	}
-	var cronJobID cronJobIDUri
-	if err := ctx.ShouldBindUri(&cronJobID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "CronJob", "cron_job_id="+ctx.Param("cronJobID"), err))
+	if !loadByID(ctx, "CronJob", "cronJobID", "CronJob", "cron_job_id", db.InitCronJobRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	cronJob, ret := db.InitCronJobRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(cronJobID.CronJobID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	ctx.Set("CronJob", cronJob)
 	ctx.Next()
 }
 
 func GetCronJob(ctx *gin.Context) model.CronJob {
-	cronJob, ok := ctx.Get("CronJob")
-	if !ok || cronJob == nil {
-		return model.CronJob{}
-	}
-	return cronJob.(model.CronJob)
+	return getResource[model.CronJob](ctx, "CronJob")
 }
 
 func SetWebhook(ctx *gin.Context) {
-	type webhookIDUti struct {
-		WebhookID uint `uri:"webhookID" binding:"required"`
-	}
-	var webhookID webhookIDUti
-	if err := ctx.ShouldBindUri(&webhookID); err != nil {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Response.BadRequest, "Webhook", "webhook_id="+ctx.Param("webhookID"), err))
+	if !loadByID(ctx, "Webhook", "webhookID", "Webhook", "webhook_id", db.InitWebhookRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	webhook, ret := db.InitWebhookRepo(db.DB.WithContext(ctx.Request.Context())).GetByID(webhookID.WebhookID)
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
-	}
-	ctx.Set("Webhook", webhook)
 	ctx.Next()
 }
 
 func GetWebhook(ctx *gin.Context) model.Webhook {
-	webhook, ok := ctx.Get("Webhook")
-	if !ok || webhook == nil {
-		return model.Webhook{}
-	}
-	return webhook.(model.Webhook)
+	return getResource[model.Webhook](ctx, "Webhook")
 }

@@ -73,22 +73,14 @@ func UpdateRole(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateRoleEventType)
 	role := middleware.GetRole(ctx)
 	ret := service.UpdateRole(db.DB.WithContext(ctx.Request.Context()), role, form)
-	if ret.OK {
-		invalidateRBAC()
-		ctx.Set(middleware.CTXEventSuccessKey, true)
-	}
-	resp.JSON(ctx, ret)
+	respondRBACChange(ctx, ret)
 }
 
 func DeleteRole(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteRoleEventType)
 	role := middleware.GetRole(ctx)
 	ret := service.DeleteRole(db.DB.WithContext(ctx.Request.Context()), role)
-	if ret.OK {
-		invalidateRBAC()
-		ctx.Set(middleware.CTXEventSuccessKey, true)
-	}
-	resp.JSON(ctx, ret)
+	respondRBACChange(ctx, ret)
 }
 
 func AssignPermission(ctx *gin.Context) {
@@ -100,11 +92,7 @@ func AssignPermission(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.AssignPermissionEventType)
 	role := middleware.GetRole(ctx)
 	ret := service.AssignPermission(db.DB.WithContext(ctx.Request.Context()), role, form)
-	if ret.OK {
-		invalidateRBAC()
-		ctx.Set(middleware.CTXEventSuccessKey, true)
-	}
-	resp.JSON(ctx, ret)
+	respondRBACChange(ctx, ret)
 }
 
 func RevokePermission(ctx *gin.Context) {
@@ -116,9 +104,5 @@ func RevokePermission(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.RevokePermissionEventType)
 	role := middleware.GetRole(ctx)
 	ret := service.RevokePermission(db.DB.WithContext(ctx.Request.Context()), role, form)
-	if ret.OK {
-		invalidateRBAC()
-		ctx.Set(middleware.CTXEventSuccessKey, true)
-	}
-	resp.JSON(ctx, ret)
+	respondRBACChange(ctx, ret)
 }

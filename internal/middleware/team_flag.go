@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
@@ -12,8 +13,14 @@ import (
 	"CBCTF/internal/service"
 )
 
-// CheckIfGenerated model.Team 是否初始化 model.TeamFlag
-func CheckIfGenerated(ctx *gin.Context) {
+// checkTeamFlagState aborts the request when the team flag state of the
+// current contest challenge differs from the expected one.
+func checkTeamFlagState(
+	ctx *gin.Context,
+	expected bool,
+	msg string,
+	check func(*gorm.DB, model.Team, []model.ContestFlag) (bool, model.RetVal),
+) {
 	team := GetTeam(ctx)
 	contestChallenge := GetContestChallenge(ctx)
 	contestFlags, _, ret := db.InitContestFlagRepo(db.DB.WithContext(ctx.Request.Context())).List(-1, -1, db.GetOptions{
@@ -23,14 +30,19 @@ func CheckIfGenerated(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	generated, ret := service.CheckIfGenerated(db.DB.WithContext(ctx.Request.Context()), team, contestFlags)
+	state, ret := check(db.DB.WithContext(ctx.Request.Context()), team, contestFlags)
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	if !generated {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.TeamFlag.NotFound, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), nil))
+	if state == expected {
+		resp.AbortJSON(ctx, model.FailRetVal(msg, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), nil))
 		return
 	}
 	ctx.Next()
+}
+
+// CheckIfGenerated model.Team 是否初始化 model.TeamFlag
+func CheckIfGenerated(ctx *gin.Context) {
+	checkTeamFlagState(ctx, false, i18n.Model.TeamFlag.NotFound, service.CheckIfGenerated)
 }
