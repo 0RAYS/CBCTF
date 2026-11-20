@@ -106,14 +106,14 @@ func Init() *gin.Engine {
 		)
 	}
 
-	auth.GET("/users/rank", GetUserRanking)
+	auth.GET("/users/leaderboard", GetUserRanking)
 
 	contest := auth.Group("/contests/:contestID", middleware.SetContest)
 	{
 		contest.GET("", GetContest)
-		contest.GET("/rank", GetTeamRanking)
-		contest.GET("/scoreboard", GetScoreboard)
-		contest.GET("/timeline", GetRankTimeline)
+		contest.GET("/leaderboard", GetTeamRanking)
+		contest.GET("/leaderboard/challenges", GetLeaderboardMatrix)
+		contest.GET("/leaderboard/timeline", GetRankTimeline)
 		contest.POST("/teams/join", middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam)
 		contest.POST("/teams/create", middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam)
 
@@ -359,10 +359,10 @@ func Init() *gin.Engine {
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
 			adminContest.POST("/picture", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("contest"))
-			adminContest.GET("/rank", GetTeamRanking)
-			adminContest.GET("/scoreboard", GetScoreboard)
-			adminContest.GET("/scoreboard/export", ExportScoreboard)
-			adminContest.GET("/timeline", GetRankTimeline)
+			adminContest.GET("/leaderboard", GetTeamRanking)
+			adminContest.GET("/leaderboard/challenges", GetLeaderboardMatrix)
+			adminContest.GET("/leaderboard/export", ExportLeaderboard)
+			adminContest.GET("/leaderboard/timeline", GetRankTimeline)
 			adminContest.GET("/traffic/overlaps", GetContestTrafficOverlaps)
 			adminContest.GET("/writeups/export", ExportContestWriteups)
 

@@ -70,9 +70,9 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 	count, ret = db.InitSubmissionRepo(tx).Count()
 	appendCount("Submissions", count, ret)
 	users, _, _ := GetUserRanking(tx, 5, 0, false)
-	scoreboard := make([]gin.H, 0, len(users))
+	leaderboard := make([]gin.H, 0, len(users))
 	for _, user := range users {
-		scoreboard = append(scoreboard, gin.H{
+		leaderboard = append(leaderboard, gin.H{
 			"name":   user.Name,
 			"score":  user.Score,
 			"solved": user.Solved,
@@ -80,7 +80,7 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 	}
 	data["upcoming"] = upcoming
 	data["stats"] = stats
-	data["scoreboard"] = scoreboard
+	data["leaderboard"] = leaderboard
 	return data
 }
 

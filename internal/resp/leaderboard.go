@@ -6,7 +6,7 @@ import (
 	"CBCTF/internal/view"
 )
 
-func GetSolvedStateViewResp(states []view.ScoreboardSolvedStateView) []gin.H {
+func GetSolvedStateViewResp(states []view.LeaderboardSolvedStateView) []gin.H {
 	data := make([]gin.H, 0, len(states))
 	for _, state := range states {
 		data = append(data, gin.H{
@@ -52,7 +52,7 @@ func GetUserRankingResp(userView view.UserRankingView) gin.H {
 	}
 }
 
-func GetScoreboardResp(teams []view.ScoreboardTeamView) []gin.H {
+func GetLeaderboardMatrixResp(teams []view.LeaderboardMatrixTeamView) []gin.H {
 	data := make([]gin.H, 0)
 	for _, teamView := range teams {
 		team := teamView.Team

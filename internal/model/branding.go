@@ -165,7 +165,7 @@ func DefaultBranding() Branding {
 				},
 				Action: LocalizedText{
 					ZhCN: "查看排行榜",
-					En:   "VIEW SCOREBOARD",
+					En:   "VIEW LEADERBOARD",
 				},
 			},
 		},

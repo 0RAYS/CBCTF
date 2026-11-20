@@ -42,18 +42,18 @@ func GetTeamRanking(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"teams": data, "count": count}))
 }
 
-func GetScoreboard(ctx *gin.Context) {
+func GetLeaderboardMatrix(ctx *gin.Context) {
 	var form dto.LeaderboardForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	teams, count, ret := service.GetScoreboardViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form.Limit, form.Offset, showHiddenTeams(ctx, form))
+	teams, count, ret := service.GetLeaderboardMatrixViews(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form.Limit, form.Offset, showHiddenTeams(ctx, form))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	data := resp.GetScoreboardResp(teams)
+	data := resp.GetLeaderboardMatrixResp(teams)
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"teams": data, "count": count}))
 }
 
@@ -90,8 +90,8 @@ func GetUserRanking(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"users": data, "count": count}))
 }
 
-// ExportScoreboard 导出比赛排行榜为 xlsx，一行一支队伍，含每道题的得分与解题时间。
-func ExportScoreboard(ctx *gin.Context) {
+// ExportLeaderboard 导出比赛排行榜为 xlsx，一行一支队伍，含每道题的得分与解题时间。
+func ExportLeaderboard(ctx *gin.Context) {
 	var form dto.LeaderboardForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
