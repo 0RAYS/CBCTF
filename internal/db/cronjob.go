@@ -100,25 +100,5 @@ func (c *CronJobRepo) InitCronJob() model.RetVal {
 }
 
 func (c *CronJobRepo) UpdateStatus(id uint, success bool, last time.Time) model.RetVal {
-	var diffOptions DiffUpdateCronJobOptions
-	var options UpdateCronJobOptions
-	if success {
-		diffOptions = DiffUpdateCronJobOptions{
-			Success: 1,
-		}
-		options = UpdateCronJobOptions{
-			SuccessLast: &last,
-		}
-	} else {
-		diffOptions = DiffUpdateCronJobOptions{
-			Failure: 1,
-		}
-		options = UpdateCronJobOptions{
-			FailureLast: &last,
-		}
-	}
-	if ret := c.DiffUpdate(id, diffOptions); !ret.OK {
-		return ret
-	}
-	return c.Update(id, options)
+	return updateRunStatus(&c.BaseRepo, id, success, last)
 }

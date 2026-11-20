@@ -83,27 +83,7 @@ func (g *GeneratorRepo) UpdateIfStatus(id uint, expected string, options UpdateG
 }
 
 func (g *GeneratorRepo) UpdateStatus(id uint, success bool, last time.Time) model.RetVal {
-	var diffOptions DiffUpdateGeneratorOptions
-	var options UpdateGeneratorOptions
-	if success {
-		diffOptions = DiffUpdateGeneratorOptions{
-			Success: 1,
-		}
-		options = UpdateGeneratorOptions{
-			SuccessLast: &last,
-		}
-	} else {
-		diffOptions = DiffUpdateGeneratorOptions{
-			Failure: 1,
-		}
-		options = UpdateGeneratorOptions{
-			FailureLast: &last,
-		}
-	}
-	if ret := g.DiffUpdate(id, diffOptions); !ret.OK {
-		return ret
-	}
-	return g.Update(id, options)
+	return updateRunStatus(&g.BaseRepo, id, success, last)
 }
 
 func (g *GeneratorRepo) Delete(idL ...uint) model.RetVal {
