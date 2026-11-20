@@ -13,14 +13,18 @@ const (
 	StoppedGeneratorStatus     = "stopped"
 )
 
+// Generator 是动态题目生成器实例。
+// ChallengeID 题库题目溯源。
+// ContestChallengeID 比赛题目 id，同一题库题目在多场比赛加入时各自持有独立副本。
+// Generator 是动态题目生成器实例。
+// ChallengeID 题库题目溯源。
+// ContestChallengeID 比赛题目 id，同一题库题目在多场比赛加入时各自持有独立副本。
 type Generator struct {
-	WorkerToken string `json:"-"`
-	Image       string `json:"image"`
-	// ChallengeID 题库题目溯源
-	ChallengeID   uint      `gorm:"index" json:"challenge_id"`
-	ChallengeName string    `json:"challenge_name"`
-	Challenge     Challenge `json:"-"`
-	// ContestChallengeID 比赛题目 id，同一题库题目在多场比赛加入时各自持有独立副本。
+	WorkerToken        string           `json:"-"`
+	Image              string           `json:"image"`
+	ChallengeID        uint             `gorm:"index" json:"challenge_id"`
+	ChallengeName      string           `json:"challenge_name"`
+	Challenge          Challenge        `json:"-"`
 	ContestChallengeID sql.Null[uint]   `gorm:"index" json:"contest_challenge_id"`
 	ContestChallenge   ContestChallenge `json:"-"`
 	ContestID          sql.Null[uint]   `gorm:"index" json:"contest_id"`

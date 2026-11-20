@@ -41,14 +41,16 @@ const (
 	AttrError = "Error"
 )
 
+// RetVal carries the outcome of an operation: data on success, message and
+// shared context on failure.
+// Err keeps the underlying cause intact when the failure is wrapped, so
+// errors.Is and errors.As still work.
 type RetVal struct {
 	Data any
 	Attr map[string]any
 	Msg  string
 	OK   bool
-	// Err keeps the underlying cause intact when the failure is wrapped, so
-	// errors.Is and errors.As still work.
-	Err error `json:"-"`
+	Err  error `json:"-"`
 }
 
 func SuccessRetVal(data ...any) RetVal {

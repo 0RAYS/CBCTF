@@ -48,6 +48,7 @@ CBCTF is a Kubernetes-native CTF platform, not a challenge repo: Go/Gin backend 
 - No large pasted payloads: do not inline JSON request/response samples or API schemas in comments. Keep a single descriptive line per exported function.
 - No commented-out code. Delete it; version control keeps the history.
 - No boilerplate doc comments on interface implementations (e.g. `// SourceID 实现 GeneratorSource`). Document the interface once, then let the compiler speak.
+- Struct definitions carry no comments inside the body. A comment about a field belongs above the `type ... struct` line, as part of the type's doc comment.
 - Keep the long English explanations of non-obvious mechanics (Kubernetes capability requirements, kubelet image-list truncation, cache-key derivation, traffic-analysis invariants). Those are the comments worth reading.
 - Frontend API wrappers (`frontend/src/api`) get one short line per function; do not duplicate response shapes there.
 

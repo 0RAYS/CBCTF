@@ -8,17 +8,17 @@ import (
 )
 
 // challengeFlagMatch 描述一条派生 flag 与题库现有 flag 的对齐结果。
+// ExistingID 命中的题库 flag id，为 0 表示需要新建。
+// Value 最终的 flag 值模板。
+// Binding 最终的注入绑定。
+// Changed 是否需要写回题库。
+// Created 是否需要新建。
 type challengeFlagMatch struct {
-	// ExistingID 命中的题库 flag id，为 0 表示需要新建
 	ExistingID uint
-	// Value 最终的 flag 值模板
-	Value string
-	// Binding 最终的注入绑定
-	Binding model.FlagBinding
-	// Changed 是否需要写回题库
-	Changed bool
-	// Created 是否需要新建
-	Created bool
+	Value      string
+	Binding    model.FlagBinding
+	Changed    bool
+	Created    bool
 }
 
 // matchChallengeFlags 把 compose 派生出的 flag 与题库现有 flag 对齐。
