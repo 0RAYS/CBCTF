@@ -24,7 +24,7 @@ func checkCheatTask() model.RetVal {
 			return batch.Result(db.CronDB.Statement.Context)
 		}
 		key := fmt.Sprint(contest.ID)
-		if time.Now().Sub(contest.Start.Add(contest.Duration)) > job.Schedule*2 {
+		if !contest.EndedWithin(time.Now(), job.Schedule*2) {
 			batch.Skip(key, "outside_scan_window")
 			continue
 		}
