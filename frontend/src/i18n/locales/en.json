@@ -112,7 +112,8 @@
         "challenges": "CHALLENGES",
         "lastSubmit": "LAST SUBMIT"
       }
-    }
+    },
+    "hidden": "Hidden"
   },
   "footer": {
     "copyright": "© 2026 CBCTF",
@@ -143,7 +144,8 @@
     "notices": "NOTICES",
     "generators": "GENERATORS",
     "victims": "VICTIMS",
-    "branding": "BRANDING"
+    "branding": "BRANDING",
+    "leaderboard": "LEADERBOARD"
   },
   "admin": {
     "batch": {
@@ -2806,15 +2808,20 @@
       }
     },
     "scoreboard": {
-      "export": "Export Leaderboard",
+      "showHiddenTeams": "Show hidden teams",
       "toast": {
-        "fetchFailed": "Failed to load scoreboard",
-        "exportFailed": "Failed to export the leaderboard"
+        "fetchFailed": "Failed to load scoreboard"
       },
       "timeline": {
         "title": "Score progression",
         "teams": "Teams in rank order",
         "failed": "Failed to load score progression"
+      }
+    },
+    "leaderboard": {
+      "showHiddenUsers": "Show hidden users",
+      "toast": {
+        "fetchFailed": "Failed to load the leaderboard"
       }
     },
     "countdown": {

@@ -14,13 +14,14 @@ export const getContestInfo = (contestId) => {
   });
 };
 
-export const getContestRank = (contestId, limit = 3, offset = 0) => {
+export const getContestRank = (contestId, limit = 3, offset = 0, showHidden = false) => {
   return request({
     url: `/contests/${contestId}/rank`,
     method: 'GET',
     params: {
       limit,
       offset,
+      show_hidden: showHidden ? 1 : 0,
     },
   });
 };
@@ -33,18 +34,13 @@ export const getContestScoreboard = (contestId, params = { limit: 20, offset: 0 
   });
 };
 
-export const exportContestScoreboard = (contestId) => {
-  return request({
-    url: `/contests/${contestId}/scoreboard/export`,
-    method: 'GET',
-    responseType: 'blob',
-  });
-};
-
-export const getContestTimeline = (contestId) => {
+export const getContestTimeline = (contestId, showHidden = false) => {
   return request({
     url: `/contests/${contestId}/timeline`,
     method: 'GET',
+    params: {
+      show_hidden: showHidden ? 1 : 0,
+    },
   });
 };
 

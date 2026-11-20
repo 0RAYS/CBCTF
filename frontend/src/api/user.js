@@ -14,6 +14,14 @@ export const getAccessibleRoutes = () => {
   });
 };
 
+export const getUserRanking = (params = { limit: 20, offset: 0 }) => {
+  return request({
+    url: '/users/rank',
+    method: 'GET',
+    params,
+  });
+};
+
 export const updatePassword = (data) => {
   return request({
     url: '/me/password',

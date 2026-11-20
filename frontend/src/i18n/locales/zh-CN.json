@@ -112,7 +112,8 @@
         "challenges": "题目",
         "lastSubmit": "最后提交"
       }
-    }
+    },
+    "hidden": "隐藏"
   },
   "footer": {
     "copyright": "© 2026 CBCTF",
@@ -143,7 +144,8 @@
     "notices": "公告",
     "generators": "生成器",
     "victims": "靶机",
-    "branding": "品牌"
+    "branding": "品牌",
+    "leaderboard": "排行榜"
   },
   "admin": {
     "batch": {
@@ -2806,15 +2808,20 @@
       }
     },
     "scoreboard": {
-      "export": "导出排行榜",
+      "showHiddenTeams": "显示隐藏队伍",
       "toast": {
-        "fetchFailed": "获取排行榜失败",
-        "exportFailed": "导出排行榜失败"
+        "fetchFailed": "获取排行榜失败"
       },
       "timeline": {
         "title": "上分曲线",
         "teams": "按排名排序的队伍",
         "failed": "获取上分曲线失败"
+      }
+    },
+    "leaderboard": {
+      "showHiddenUsers": "显示隐藏用户",
+      "toast": {
+        "fetchFailed": "获取排行榜失败"
       }
     },
     "countdown": {
