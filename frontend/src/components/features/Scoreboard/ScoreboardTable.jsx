@@ -220,7 +220,7 @@ function ScoreboardTable({
                     className="sticky left-0 z-10 bg-neutral-800 p-3 text-center text-neutral-300 font-mono tabular-nums border-r border-neutral-600/40"
                     style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
                   >
-                    <TruncatedText>{(currentPage - 1) * pageSize + teamIndex + 1}</TruncatedText>
+                    <TruncatedText>{team.rank ?? (currentPage - 1) * pageSize + teamIndex + 1}</TruncatedText>
                   </td>
 
                   <td

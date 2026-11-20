@@ -4,21 +4,16 @@ import ScoreboardRanking from '../../components/features/Scoreboard/ScoreboardRa
 import ScoreboardTable from '../../components/features/Scoreboard/ScoreboardTable';
 import ScoreboardTimeline from '../../components/features/Scoreboard/ScoreboardTimeline';
 import { collectChallenges, toRankingTeam } from '../../components/features/Scoreboard/scoreboardModel.js';
-import {
-  exportContestScoreboard,
-  getContestInfo,
-  getContestRank,
-  getContestScoreboard,
-  getContestTimeline,
-} from '../../api/contest';
+import { getContestInfo, getContestRank, getContestScoreboard, getContestTimeline } from '../../api/contest';
 import { getTeamInfo } from '../../api/game/team';
 import Button from '../../components/common/Button';
 import Pagination from '../../components/common/Pagination';
 import { IconList, IconTable } from '@tabler/icons-react';
 import ScoreboardStats from '../../components/features/Scoreboard/ScoreboardStats';
 import { toast } from '../../utils/toast.js';
-import { downloadBlobResponse } from '../../utils/fileDownload';
 import { useTranslation } from 'react-i18next';
+import { useHiddenVisibility } from '../../hooks/useHiddenVisibility.js';
+import Checkbox from '../../components/common/Checkbox';
 
 function GameScoreBoardPage() {
   const { contestId } = useParams();
@@ -42,6 +37,7 @@ function ContestScoreboard({ contestId }) {
   const [timelineLoading, setTimelineLoading] = useState(true);
   const [timelineError, setTimelineError] = useState(false);
   const [timelineVersion, setTimelineVersion] = useState(0);
+  const [showHidden, setShowHidden] = useHiddenVisibility('cbctf.scoreboard.showHiddenTeams');
   const [scoreboardData, setScoreboardData] = useState({
     stats: { totalTeams: 0, totalSolves: 0, highestScore: 0, totalPlayers: 0 },
     teams: [],
@@ -55,7 +51,7 @@ function ContestScoreboard({ contestId }) {
 
     setRankingLoading(true);
     Promise.all([
-      getContestRank(contestId, pageSize, (currentPage - 1) * pageSize),
+      getContestRank(contestId, pageSize, (currentPage - 1) * pageSize, showHidden),
       getTeamInfo(contestId),
       getContestInfo(contestId),
     ])
@@ -84,7 +80,7 @@ function ContestScoreboard({ contestId }) {
     return () => {
       ignore = true;
     };
-  }, [contestId, currentPage, i18n.language, t]);
+  }, [contestId, currentPage, showHidden, i18n.language, t]);
 
   useEffect(() => {
     if (viewMode !== 'table' || tableData.page === tableCurrentPage) return;
@@ -93,6 +89,7 @@ function ContestScoreboard({ contestId }) {
     getContestScoreboard(contestId, {
       limit: tablePageSize,
       offset: (tableCurrentPage - 1) * tablePageSize,
+      show_hidden: showHidden ? 1 : 0,
     })
       .then((response) => {
         if (ignore || response.code !== 200) return;
@@ -109,13 +106,13 @@ function ContestScoreboard({ contestId }) {
     return () => {
       ignore = true;
     };
-  }, [contestId, viewMode, tableCurrentPage]);
+  }, [contestId, viewMode, tableCurrentPage, showHidden]);
 
   useEffect(() => {
     let ignore = false;
     setTimelineLoading(true);
     setTimelineError(false);
-    getContestTimeline(contestId)
+    getContestTimeline(contestId, showHidden)
       .then((response) => {
         if (ignore) return;
         if (response.code === 200) setTimelineData(response.data || []);
@@ -133,19 +130,12 @@ function ContestScoreboard({ contestId }) {
     return () => {
       ignore = true;
     };
-  }, [contestId, timelineVersion]);
+  }, [contestId, showHidden, timelineVersion]);
 
-  const handleExportLeaderboard = async () => {
-    try {
-      const response = await exportContestScoreboard(contestId);
-      downloadBlobResponse(
-        response,
-        `contest-${contestId}-leaderboard.xlsx`,
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      );
-    } catch (error) {
-      toast.danger({ description: error.message || t('game.scoreboard.toast.exportFailed') });
-    }
+  const handleShowHiddenChange = (event) => {
+    setShowHidden(event.target.checked);
+    setCurrentPage(1);
+    setTableCurrentPage(1);
   };
 
   return (
@@ -175,9 +165,12 @@ function ContestScoreboard({ contestId }) {
               />
             ))}
           </div>
-          <Button variant="outline" size="sm" onClick={handleExportLeaderboard}>
-            {t('game.scoreboard.export')}
-          </Button>
+          <Checkbox
+            checked={showHidden}
+            onChange={handleShowHiddenChange}
+            label={t('game.scoreboard.showHiddenTeams')}
+            className="text-xs text-neutral-400"
+          />
         </div>
       </div>
       <ScoreboardStats {...scoreboardData.stats} />

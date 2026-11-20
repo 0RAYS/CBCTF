@@ -12,12 +12,17 @@ function MainLayout() {
   const { t } = useTranslation();
   const { siteName } = useBranding();
 
-  const mainTabs = useMemo(() => [{ id: 'GAMES', label: t('nav.games') }], [t]);
+  const mainTabs = useMemo(() => {
+    const tabs = [{ id: 'GAMES', label: t('nav.games') }];
+    if (user.isAuthenticated) tabs.push({ id: 'LEADERBOARD', label: t('nav.leaderboard') });
+    return tabs;
+  }, [t, user.isAuthenticated]);
 
-  const isGamesActive = location.pathname === '/games';
+  const activeTab =
+    location.pathname === '/games' ? 'GAMES' : location.pathname === '/leaderboard' ? 'LEADERBOARD' : '';
 
-  const handleTabChange = () => {
-    navigate('/games');
+  const handleTabChange = (tabId) => {
+    navigate(tabId === 'LEADERBOARD' ? '/leaderboard' : '/games');
   };
 
   const handleLogoClick = () => {
@@ -35,7 +40,7 @@ function MainLayout() {
   return (
     <BaseLayout
       tabs={mainTabs}
-      activeTab={isGamesActive ? 'GAMES' : ''}
+      activeTab={activeTab}
       onTabChange={handleTabChange}
       onLogoClick={handleLogoClick}
       onPictureClick={handlePictureClick}

@@ -2,7 +2,7 @@ export function toRankingTeam(team, index = 0, page = 1, pageSize = 20, locale =
   const solved = team.solved || [];
   return {
     id: team.id,
-    rank: (page - 1) * pageSize + index + 1,
+    rank: team.rank ?? (page - 1) * pageSize + index + 1,
     name: team.name,
     picture: team.picture,
     score: team.score,

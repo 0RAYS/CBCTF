@@ -51,6 +51,12 @@ test('ranking defaults missing solves and last submission without changing zero 
   assert.equal(ranking.lastSubmit, '-');
 });
 
+test('ranking uses the server rank so hidden teams do not shift the listed positions', () => {
+  assert.equal(toRankingTeam({ id: 1, rank: 7, score: 100 }, 0, 1, 20).rank, 7);
+  assert.equal(toRankingTeam({ id: 2, rank: 0, score: 100 }, 3, 2, 20).rank, 0);
+  assert.equal(toRankingTeam({ id: 3, score: 100 }, 3, 2, 20).rank, 24);
+});
+
 test('challenge collection retains the first matching id before category/name sorting', () => {
   const first = Object.freeze({ id: 1, category: 'WEB', name: 'Zulu', solved: 0 });
   const second = Object.freeze({ id: 2, category: 'PWN', name: 'Alpha' });
