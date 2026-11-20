@@ -50,7 +50,7 @@ export function useBranding() {
         titlePrefix: resolve(branding.home?.leaderboard?.title_prefix, t('home.leaderboard.titlePrefix')),
         titleHighlight: resolve(branding.home?.leaderboard?.title_highlight, t('home.leaderboard.titleHighlight')),
         subtitle: resolve(branding.home?.leaderboard?.subtitle, t('home.leaderboard.subtitle')),
-        action: resolve(branding.home?.leaderboard?.action, t('home.leaderboard.viewScoreboard')),
+        action: resolve(branding.home?.leaderboard?.action, t('home.leaderboard.viewLeaderboard')),
       },
     },
   };

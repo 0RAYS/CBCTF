@@ -14,9 +14,9 @@ export const getContestInfo = (contestId) => {
   });
 };
 
-export const getContestRank = (contestId, limit = 3, offset = 0, showHidden = false) => {
+export const getContestLeaderboard = (contestId, limit = 3, offset = 0, showHidden = false) => {
   return request({
-    url: `/contests/${contestId}/rank`,
+    url: `/contests/${contestId}/leaderboard`,
     method: 'GET',
     params: {
       limit,
@@ -26,17 +26,17 @@ export const getContestRank = (contestId, limit = 3, offset = 0, showHidden = fa
   });
 };
 
-export const getContestScoreboard = (contestId, params = { limit: 20, offset: 0 }) => {
+export const getContestLeaderboardChallenges = (contestId, params = { limit: 20, offset: 0 }) => {
   return request({
-    url: `/contests/${contestId}/scoreboard`,
+    url: `/contests/${contestId}/leaderboard/challenges`,
     method: 'GET',
     params,
   });
 };
 
-export const getContestTimeline = (contestId, showHidden = false) => {
+export const getContestLeaderboardTimeline = (contestId, showHidden = false) => {
   return request({
-    url: `/contests/${contestId}/timeline`,
+    url: `/contests/${contestId}/leaderboard/timeline`,
     method: 'GET',
     params: {
       show_hidden: showHidden ? 1 : 0,

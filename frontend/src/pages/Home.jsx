@@ -50,7 +50,7 @@ function Home() {
         const res = await getStats();
         if (res.code === 200) {
           setStats(res.data.stats);
-          setLeaderboard(res.data.scoreboard);
+          setLeaderboard(res.data.leaderboard);
           setUpcomingContests(transformUpcomingData(res.data.upcoming));
         }
       } catch (error) {

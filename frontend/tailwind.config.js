@@ -45,7 +45,7 @@ export default {
             800: '#061178',
             900: '#030852',
           },
-          // Semantic rank tokens (scoreboard gold/silver/bronze)
+          // Semantic rank tokens (leaderboard gold/silver/bronze)
           'rank': {
             'gold':   '#c9a227',
             'silver': '#8a9bb0',

@@ -51,7 +51,7 @@ export const DEFAULT_BRANDING = {
         zh_cn: 'Meet the elite teams leading our global leaderboard',
         en: 'Meet the elite teams leading our global leaderboard',
       },
-      action: { zh_cn: 'VIEW SCOREBOAR', en: 'VIEW SCOREBOARD' },
+      action: { zh_cn: 'VIEW LEADERBOARD', en: 'VIEW LEADERBOARD' },
     },
   },
 };

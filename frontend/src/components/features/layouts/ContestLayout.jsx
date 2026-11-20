@@ -32,7 +32,7 @@ function ContestLayout() {
     const tabs = [
       { id: 'overview', label: t('nav.overview') },
       { id: 'challenges', label: t('nav.challenges') },
-      { id: 'scoreboard', label: t('nav.scoreboard') },
+      { id: 'leaderboard', label: t('nav.leaderboard') },
       { id: 'team', label: t('nav.team') },
       { id: 'notice', label: t('nav.notice') },
     ];

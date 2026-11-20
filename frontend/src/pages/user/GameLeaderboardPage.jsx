@@ -1,27 +1,32 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import ScoreboardRanking from '../../components/features/Scoreboard/ScoreboardRanking';
-import ScoreboardTable from '../../components/features/Scoreboard/ScoreboardTable';
-import ScoreboardTimeline from '../../components/features/Scoreboard/ScoreboardTimeline';
-import { collectChallenges, toRankingTeam } from '../../components/features/Scoreboard/scoreboardModel.js';
-import { getContestInfo, getContestRank, getContestScoreboard, getContestTimeline } from '../../api/contest';
+import LeaderboardRanking from '../../components/features/Leaderboard/LeaderboardRanking';
+import LeaderboardTable from '../../components/features/Leaderboard/LeaderboardTable';
+import LeaderboardTimeline from '../../components/features/Leaderboard/LeaderboardTimeline';
+import { collectChallenges, toRankingTeam } from '../../components/features/Leaderboard/leaderboardModel.js';
+import {
+  getContestInfo,
+  getContestLeaderboard,
+  getContestLeaderboardChallenges,
+  getContestLeaderboardTimeline,
+} from '../../api/contest';
 import { getTeamInfo } from '../../api/game/team';
 import Button from '../../components/common/Button';
 import Pagination from '../../components/common/Pagination';
 import { IconList, IconTable } from '@tabler/icons-react';
-import ScoreboardStats from '../../components/features/Scoreboard/ScoreboardStats';
+import LeaderboardStats from '../../components/features/Leaderboard/LeaderboardStats';
 import { toast } from '../../utils/toast.js';
 import { useTranslation } from 'react-i18next';
 import { useHiddenVisibility } from '../../hooks/useHiddenVisibility.js';
 import Checkbox from '../../components/common/Checkbox';
 
-function GameScoreBoardPage() {
+function GameLeaderboardPage() {
   const { contestId } = useParams();
   // A contest owns its pages, cached responses and timeline selection.
-  return <ContestScoreboard key={contestId} contestId={contestId} />;
+  return <ContestLeaderboard key={contestId} contestId={contestId} />;
 }
 
-function ContestScoreboard({ contestId }) {
+function ContestLeaderboard({ contestId }) {
   const { t, i18n } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
@@ -37,8 +42,8 @@ function ContestScoreboard({ contestId }) {
   const [timelineLoading, setTimelineLoading] = useState(true);
   const [timelineError, setTimelineError] = useState(false);
   const [timelineVersion, setTimelineVersion] = useState(0);
-  const [showHidden, setShowHidden] = useHiddenVisibility('cbctf.scoreboard.showHiddenTeams');
-  const [scoreboardData, setScoreboardData] = useState({
+  const [showHidden, setShowHidden] = useHiddenVisibility('cbctf.leaderboard.showHiddenTeams');
+  const [leaderboardData, setLeaderboardData] = useState({
     stats: { totalTeams: 0, totalSolves: 0, highestScore: 0, totalPlayers: 0 },
     teams: [],
     userTeam: null,
@@ -51,14 +56,14 @@ function ContestScoreboard({ contestId }) {
 
     setRankingLoading(true);
     Promise.all([
-      getContestRank(contestId, pageSize, (currentPage - 1) * pageSize, showHidden),
+      getContestLeaderboard(contestId, pageSize, (currentPage - 1) * pageSize, showHidden),
       getTeamInfo(contestId),
       getContestInfo(contestId),
     ])
       .then(([rankResponse, teamResponse, contestInfoResponse]) => {
         if (ignore) return;
         if (rankResponse.code === 200 && teamResponse.code === 200 && contestInfoResponse.code === 200) {
-          setScoreboardData({
+          setLeaderboardData({
             stats: {
               totalTeams: contestInfoResponse.data.teams,
               totalPlayers: contestInfoResponse.data.users,
@@ -72,7 +77,7 @@ function ContestScoreboard({ contestId }) {
         }
       })
       .catch((error) => {
-        if (!ignore) toast.danger({ description: error.message || t('game.scoreboard.toast.fetchFailed') });
+        if (!ignore) toast.danger({ description: error.message || t('game.leaderboard.toast.fetchFailed') });
       })
       .finally(() => {
         if (!ignore) setRankingLoading(false);
@@ -86,7 +91,7 @@ function ContestScoreboard({ contestId }) {
     if (viewMode !== 'table' || tableData.page === tableCurrentPage) return;
     let ignore = false;
     setTableData({ page: null, teams: [], challenges: [], count: 0 });
-    getContestScoreboard(contestId, {
+    getContestLeaderboardChallenges(contestId, {
       limit: tablePageSize,
       offset: (tableCurrentPage - 1) * tablePageSize,
       show_hidden: showHidden ? 1 : 0,
@@ -101,7 +106,7 @@ function ContestScoreboard({ contestId }) {
         });
       })
       .catch((error) => {
-        if (!ignore) toast.danger({ description: error.message || t('game.scoreboard.toast.fetchFailed') });
+        if (!ignore) toast.danger({ description: error.message || t('game.leaderboard.toast.fetchFailed') });
       });
     return () => {
       ignore = true;
@@ -112,7 +117,7 @@ function ContestScoreboard({ contestId }) {
     let ignore = false;
     setTimelineLoading(true);
     setTimelineError(false);
-    getContestTimeline(contestId, showHidden)
+    getContestLeaderboardTimeline(contestId, showHidden)
       .then((response) => {
         if (ignore) return;
         if (response.code === 200) setTimelineData(response.data || []);
@@ -121,7 +126,7 @@ function ContestScoreboard({ contestId }) {
       .catch((error) => {
         if (!ignore) {
           setTimelineError(true);
-          toast.danger({ description: error.message || t('game.scoreboard.toast.fetchFailed') });
+          toast.danger({ description: error.message || t('game.leaderboard.toast.fetchFailed') });
         }
       })
       .finally(() => {
@@ -141,16 +146,16 @@ function ContestScoreboard({ contestId }) {
   return (
     <div className="contest-container mx-auto min-w-0 space-y-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-xl sm:text-3xl font-mono text-neutral-50 tracking-wider">{t('nav.scoreboard')}</h1>
+        <h1 className="text-xl sm:text-3xl font-mono text-neutral-50 tracking-wider">{t('nav.leaderboard')}</h1>
         <div className="flex flex-wrap items-center gap-3">
           <div
             role="group"
-            aria-label={t('nav.scoreboard')}
+            aria-label={t('nav.leaderboard')}
             className="flex items-center gap-2 p-1 bg-black/30 border border-neutral-300/30 rounded-md"
           >
             {[
               { mode: 'ranking', label: t('common.rank'), icon: <IconList size={16} /> },
-              { mode: 'table', label: t('common.scoreboard.headers.challenges'), icon: <IconTable size={16} /> },
+              { mode: 'table', label: t('common.leaderboard.headers.challenges'), icon: <IconTable size={16} /> },
             ].map(({ mode, label, icon }) => (
               <Button
                 key={mode}
@@ -168,20 +173,20 @@ function ContestScoreboard({ contestId }) {
           <Checkbox
             checked={showHidden}
             onChange={handleShowHiddenChange}
-            label={t('game.scoreboard.showHiddenTeams')}
+            label={t('game.leaderboard.showHiddenTeams')}
             className="text-xs text-neutral-400"
           />
         </div>
       </div>
-      <ScoreboardStats {...scoreboardData.stats} />
-      <ScoreboardTimeline
+      <LeaderboardStats {...leaderboardData.stats} />
+      <LeaderboardTimeline
         timelineData={timelineData || []}
         loading={timelineLoading}
         error={timelineError}
         onRetry={() => setTimelineVersion((version) => version + 1)}
       />
       {viewMode === 'table' ? (
-        <ScoreboardTable
+        <LeaderboardTable
           teams={tableData.teams}
           challenges={tableData.challenges}
           totalCount={tableData.count}
@@ -191,17 +196,17 @@ function ContestScoreboard({ contestId }) {
           onPageChange={setTableCurrentPage}
         />
       ) : (
-        <ScoreboardRanking
-          teams={scoreboardData.teams}
+        <LeaderboardRanking
+          teams={leaderboardData.teams}
           loading={rankingLoading}
           locale={i18n.language || 'en-US'}
           labels={{
-            rank: t('common.scoreboard.headers.rank'),
-            team: t('common.scoreboard.headers.team'),
-            score: t('common.scoreboard.headers.score'),
-            challenges: t('common.scoreboard.headers.challenges'),
-            lastSubmit: t('common.scoreboard.headers.lastSubmit'),
-            total: t('common.scoreboard.total'),
+            rank: t('common.leaderboard.headers.rank'),
+            team: t('common.leaderboard.headers.team'),
+            score: t('common.leaderboard.headers.score'),
+            challenges: t('common.leaderboard.headers.challenges'),
+            lastSubmit: t('common.leaderboard.headers.lastSubmit'),
+            total: t('common.leaderboard.total'),
           }}
           emptyMessage={t('common.noData')}
           footer={
@@ -224,4 +229,4 @@ function ContestScoreboard({ contestId }) {
   );
 }
 
-export default GameScoreBoardPage;
+export default GameLeaderboardPage;

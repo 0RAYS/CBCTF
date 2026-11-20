@@ -2,30 +2,30 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
 import {
-  exportContestScoreboard,
+  exportContestLeaderboard,
   exportContestWriteups,
   getContestInfo,
-  getContestRank,
-  getContestScoreboard,
-  getContestTimeline,
+  getContestLeaderboard,
+  getContestLeaderboardChallenges,
+  getContestLeaderboardTimeline,
 } from '../../../api/admin/contest';
 import { downloadBlobResponse } from '../../../utils/fileDownload';
-import AdminRanking from '../../../components/features/Scoreboard/AdminRanking';
-import ScoreboardTable from '../../../components/features/Scoreboard/ScoreboardTable';
-import ScoreboardTimeline from '../../../components/features/Scoreboard/ScoreboardTimeline';
-import { collectChallenges, toRankingTeam } from '../../../components/features/Scoreboard/scoreboardModel.js';
+import AdminRanking from '../../../components/features/Leaderboard/AdminRanking';
+import LeaderboardTable from '../../../components/features/Leaderboard/LeaderboardTable';
+import LeaderboardTimeline from '../../../components/features/Leaderboard/LeaderboardTimeline';
+import { collectChallenges, toRankingTeam } from '../../../components/features/Leaderboard/leaderboardModel.js';
 import Button from '../../../components/common/Button';
 import { IconList, IconTable } from '@tabler/icons-react';
-import ScoreboardStats from '../../../components/features/Scoreboard/ScoreboardStats.jsx';
+import LeaderboardStats from '../../../components/features/Leaderboard/LeaderboardStats.jsx';
 import { useTranslation } from 'react-i18next';
 import { useTeamDetailDialog } from '../../../components/features/Admin/details/useTeamDetailDialog.jsx';
 
-function AdminContestScoreboard(props) {
+function AdminContestLeaderboard(props) {
   const { id } = useParams();
-  return <ContestScoreboard key={id} id={id} {...props} />;
+  return <ContestLeaderboard key={id} id={id} {...props} />;
 }
 
-function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange }) {
+function ContestLeaderboard({ id, viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange }) {
   const [viewMode, setViewMode] = useState(externalViewMode === 'table' ? 'table' : 'ranking');
 
   const [teams, setTeams] = useState([]);
@@ -86,7 +86,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
     setTimelineLoading(true);
     setTimelineError(false);
     try {
-      const response = await getContestTimeline(id);
+      const response = await getContestLeaderboardTimeline(id);
       if (isCurrent()) {
         if (response.code === 200) setTimelineData(response.data || []);
         else setTimelineError(true);
@@ -94,7 +94,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
     } catch (error) {
       if (isCurrent()) {
         setTimelineError(true);
-        toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTimelineFailed') });
+        toast.danger({ description: error.message || t('admin.contests.leaderboard.toast.fetchTimelineFailed') });
       }
     } finally {
       if (isCurrent()) setTimelineLoading(false);
@@ -103,7 +103,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
 
   const fetchRankings = async (isCurrent) => {
     try {
-      const response = await getContestRank(parseInt(id), {
+      const response = await getContestLeaderboard(parseInt(id), {
         limit: pageSize,
         offset: (currentPage - 1) * pageSize,
       });
@@ -113,17 +113,17 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
       }
     } catch (error) {
       if (isCurrent())
-        toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
+        toast.danger({ description: error.message || t('admin.contests.leaderboard.toast.fetchTeamsFailed') });
     } finally {
       if (isCurrent()) setRankingLoading(false);
     }
   };
 
-  const fetchScoreboardTable = async (isCurrent) => {
+  const fetchLeaderboardTable = async (isCurrent) => {
     setTableTeams([]);
     setChallenges([]);
     try {
-      const response = await getContestScoreboard(parseInt(id), {
+      const response = await getContestLeaderboardChallenges(parseInt(id), {
         limit: tablePageSize,
         offset: (tableCurrentPage - 1) * tablePageSize,
       });
@@ -136,7 +136,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
       }
     } catch (error) {
       if (isCurrent())
-        toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchScoreboardFailed') });
+        toast.danger({ description: error.message || t('admin.contests.leaderboard.toast.fetchLeaderboardFailed') });
     } finally {
       if (isCurrent()) setTableLoading(false);
     }
@@ -157,7 +157,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
       })
       .catch((error) => {
         if (!ignore)
-          toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchScoreboardFailed') });
+          toast.danger({ description: error.message || t('admin.contests.leaderboard.toast.fetchLeaderboardFailed') });
       });
     return () => {
       ignore = true;
@@ -172,7 +172,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
       fetchRankings(isCurrent);
     } else if (viewMode === 'table') {
       setTableLoading(true);
-      fetchScoreboardTable(isCurrent);
+      fetchLeaderboardTable(isCurrent);
     }
     return () => {
       ignore = true;
@@ -199,13 +199,13 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
       const response = await exportContestWriteups(parseInt(id));
       downloadBlobResponse(response, `contest-${id}.zip`, 'application/zip');
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.exportWriteupsFailed') });
+      toast.danger({ description: error.message || t('admin.contests.leaderboard.toast.exportWriteupsFailed') });
     }
   };
 
   const handleExportLeaderboard = async () => {
     try {
-      const response = await exportContestScoreboard(parseInt(id));
+      const response = await exportContestLeaderboard(parseInt(id));
       downloadBlobResponse(
         response,
         `contest-${id}-leaderboard.xlsx`,
@@ -213,7 +213,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
       );
     } catch (error) {
       toast.danger({
-        description: error.message || t('admin.contests.scoreboard.toast.exportLeaderboardFailed'),
+        description: error.message || t('admin.contests.leaderboard.toast.exportLeaderboardFailed'),
       });
     }
   };
@@ -226,11 +226,11 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
   return (
     <div className="w-full min-w-0 mx-auto space-y-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-xl font-mono text-neutral-50">{t('nav.scoreboard')}</h1>
+        <h1 className="text-xl font-mono text-neutral-50">{t('nav.leaderboard')}</h1>
         <div className="flex flex-wrap items-center gap-3">
           <div
             role="group"
-            aria-label={t('nav.scoreboard')}
+            aria-label={t('nav.leaderboard')}
             className="flex items-center gap-2 p-1 bg-black/30 border border-neutral-300/30 rounded-md"
           >
             <Button
@@ -248,24 +248,24 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
               size="sm"
               align="icon-left"
               icon={<IconTable size={16} />}
-              aria-label={t('common.scoreboard.headers.challenges')}
-              title={t('common.scoreboard.headers.challenges')}
+              aria-label={t('common.leaderboard.headers.challenges')}
+              title={t('common.leaderboard.headers.challenges')}
               aria-pressed={viewMode === 'table'}
               onClick={() => handleViewModeChange('table')}
             />
           </div>
 
           <Button variant="outline" size="sm" onClick={handleExportLeaderboard}>
-            {t('admin.contests.scoreboard.exportLeaderboard')}
+            {t('admin.contests.leaderboard.export')}
           </Button>
           <Button variant="outline" size="sm" onClick={handleExportWriteups}>
-            {t('admin.contests.scoreboard.export')}
+            {t('admin.contests.leaderboard.exportWriteups')}
           </Button>
         </div>
       </div>
 
-      <ScoreboardStats {...stats} />
-      <ScoreboardTimeline
+      <LeaderboardStats {...stats} />
+      <LeaderboardTimeline
         timelineData={timelineData || []}
         loading={timelineLoading}
         error={timelineError}
@@ -282,7 +282,7 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
           onRowClick={handleRowClick}
         />
       ) : (
-        <ScoreboardTable
+        <LeaderboardTable
           teams={tableTeams}
           challenges={challenges}
           totalCount={tableTotalCount}
@@ -298,4 +298,4 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
   );
 }
 
-export default AdminContestScoreboard;
+export default AdminContestLeaderboard;

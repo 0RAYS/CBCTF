@@ -14,9 +14,9 @@ export const getAccessibleRoutes = () => {
   });
 };
 
-export const getUserRanking = (params = { limit: 20, offset: 0 }) => {
+export const getUserLeaderboard = (params = { limit: 20, offset: 0 }) => {
   return request({
-    url: '/users/rank',
+    url: '/users/leaderboard',
     method: 'GET',
     params,
   });

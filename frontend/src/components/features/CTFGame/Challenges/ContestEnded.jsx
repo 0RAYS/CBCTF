@@ -3,7 +3,7 @@ import { Button, Card } from '../../../common';
 import { useTranslation } from 'react-i18next';
 import WriteupUpload from '../Writeup/WriteupUpload';
 
-function ContestEnded({ contestInfo, onViewScoreboard, onUploadWriteup, onViewChallenges, writeups = [] }) {
+function ContestEnded({ contestInfo, onViewLeaderboard, onUploadWriteup, onViewChallenges, writeups = [] }) {
   const { t } = useTranslation();
 
   return (
@@ -89,8 +89,8 @@ function ContestEnded({ contestInfo, onViewScoreboard, onUploadWriteup, onViewCh
             <Button variant="outline" size="lg" onClick={onViewChallenges}>
               {t('game.contestEnded.actions.viewChallenges')}
             </Button>
-            <Button variant="primary" size="lg" onClick={onViewScoreboard}>
-              {t('game.contestEnded.actions.viewFinalScoreboard')}
+            <Button variant="primary" size="lg" onClick={onViewLeaderboard}>
+              {t('game.contestEnded.actions.viewFinalLeaderboard')}
             </Button>
           </motion.div>
         </div>

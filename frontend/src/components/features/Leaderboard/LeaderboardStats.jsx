@@ -3,14 +3,14 @@ import { Card } from '../../common';
 import { useTranslation } from 'react-i18next';
 
 /** 积分榜总览统计组件 */
-function ScoreboardStats({ totalTeams, totalSolves, highestScore, totalPlayers }) {
+function LeaderboardStats({ totalTeams, totalSolves, highestScore, totalPlayers }) {
   const { t, i18n } = useTranslation();
 
   const stats = [
-    { label: t('game.scoreboardStats.totalTeams'), value: totalTeams, valueClass: 'text-neutral-50' },
-    { label: t('game.scoreboardStats.totalPlayers'), value: totalPlayers, valueClass: 'text-neutral-50' },
-    { label: t('game.scoreboardStats.totalSolves'), value: totalSolves, valueClass: 'text-geek-400' },
-    { label: t('game.scoreboardStats.highestScore'), value: highestScore, valueClass: 'text-yellow-400' },
+    { label: t('game.leaderboardStats.totalTeams'), value: totalTeams, valueClass: 'text-neutral-50' },
+    { label: t('game.leaderboardStats.totalPlayers'), value: totalPlayers, valueClass: 'text-neutral-50' },
+    { label: t('game.leaderboardStats.totalSolves'), value: totalSolves, valueClass: 'text-geek-400' },
+    { label: t('game.leaderboardStats.highestScore'), value: highestScore, valueClass: 'text-yellow-400' },
   ];
 
   return (
@@ -34,4 +34,4 @@ function ScoreboardStats({ totalTeams, totalSolves, highestScore, totalPlayers }
   );
 }
 
-export default ScoreboardStats;
+export default LeaderboardStats;

@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  buildScoreboardColumns,
+  buildLeaderboardColumns,
   collectChallenges,
   indexTeamChallenges,
   toRankingTeam,
-} from '../src/components/features/Scoreboard/scoreboardModel.js';
-import { buildTimelineChartData, buildTimelineModel } from '../src/components/features/Scoreboard/timelineModel.js';
-import { buildTimelineOption, timelineTeamColor } from '../src/components/features/Scoreboard/timelineOption.js';
+} from '../src/components/features/Leaderboard/leaderboardModel.js';
+import { buildTimelineChartData, buildTimelineModel } from '../src/components/features/Leaderboard/timelineModel.js';
+import { buildTimelineOption, timelineTeamColor } from '../src/components/features/Leaderboard/timelineOption.js';
 
 const times = [0, 1, 2, 3].map((minute) => `2026-09-10T10:0${minute}:00Z`);
 
@@ -117,7 +117,7 @@ test('table columns preserve category order and clamp estimated widths', () => {
     { id: 3, category: 'WEB', name: '12345678' },
     { id: 4, category: '__proto__', name: null },
   ]);
-  const model = buildScoreboardColumns(challenges);
+  const model = buildLeaderboardColumns(challenges);
   assert.deepEqual(
     model.categoryEntries.map(([category]) => category),
     ['WEB', 'PWN', '__proto__']
@@ -128,7 +128,7 @@ test('table columns preserve category order and clamp estimated widths', () => {
   );
   assert.deepEqual(model.widths, [80, 112, 200, 80]);
   assert.equal(model.widthById.get(3), 112);
-  assert.deepEqual(buildScoreboardColumns().columns, []);
+  assert.deepEqual(buildLeaderboardColumns().columns, []);
 });
 
 test('timeline sorting is immutable and duplicate timestamps retain their first event', () => {

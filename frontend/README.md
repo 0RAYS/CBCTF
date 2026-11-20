@@ -57,7 +57,7 @@ src/
           display/             实例、Flag 表单、提示、骨架
         Team/                  队伍设置、加载和编辑
         Writeup/               两个入口共用的题解上传与查询
-      Scoreboard/              两端共用的排名、题目矩阵、时间线和纯模型
+      Leaderboard/            两端共用的排名、题目矩阵、时间线和纯模型
       UserSettings/            资料、安全和账户确认分区
       layouts/                 选手/管理员页面壳及导航
   hooks/                       不依赖管理员业务的通用 hooks

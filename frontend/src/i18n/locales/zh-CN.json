@@ -103,7 +103,7 @@
       "deleteWarning": "此操作不可撤销"
     },
     "selectAll": "全选",
-    "scoreboard": {
+    "leaderboard": {
       "total": "总计",
       "headers": {
         "rank": "排名",
@@ -123,7 +123,6 @@
     "games": "比赛",
     "overview": "概览",
     "challenges": "题目",
-    "scoreboard": "排行榜",
     "team": "队伍",
     "notice": "公告",
     "writeup": "题解",
@@ -994,13 +993,13 @@
           "resetSolvesFailed": "重置解题记录失败"
         }
       },
-      "scoreboard": {
-        "export": "导出 Writeup",
-        "exportLeaderboard": "导出排行榜",
+      "leaderboard": {
+        "exportWriteups": "导出 Writeup",
+        "export": "导出排行榜",
         "toast": {
           "fetchTimelineFailed": "获取时间线数据失败",
           "fetchTeamsFailed": "获取团队列表失败",
-          "fetchScoreboardFailed": "获取积分榜失败",
+          "fetchLeaderboardFailed": "获取排行榜失败",
           "exportWriteupsFailed": "导出 Writeup 失败",
           "exportLeaderboardFailed": "导出排行榜失败"
         }
@@ -2423,7 +2422,7 @@
       "titlePrefix": "Top",
       "titleHighlight": "Performers",
       "subtitle": "Top teams on the leaderboard",
-      "viewScoreboard": "查看排行榜"
+      "viewLeaderboard": "查看排行榜"
     }
   },
   "auth": {
@@ -2666,7 +2665,7 @@
       },
       "actions": {
         "viewChallenges": "查看题目",
-        "viewFinalScoreboard": "查看最终排行榜"
+        "viewFinalLeaderboard": "查看最终排行榜"
       }
     },
     "statusPanel": {
@@ -2677,13 +2676,13 @@
       "teamScore": "队伍得分",
       "flagsSolved": "解题数"
     },
-    "scoreboardStats": {
+    "leaderboardStats": {
       "totalTeams": "队伍总数",
       "totalPlayers": "参赛总人数",
       "totalSolves": "解题总数",
       "highestScore": "最高分"
     },
-    "scoreboardTable": {
+    "leaderboardTable": {
       "members": "{{count}}人",
       "status": {
         "solved": "已解出",
@@ -2807,7 +2806,7 @@
         "uploadFailed": "题解上传失败"
       }
     },
-    "scoreboard": {
+    "leaderboard": {
       "showHiddenTeams": "显示隐藏队伍",
       "toast": {
         "fetchFailed": "获取排行榜失败"
@@ -2818,7 +2817,7 @@
         "failed": "获取上分曲线失败"
       }
     },
-    "leaderboard": {
+    "userLeaderboard": {
       "showHiddenUsers": "显示隐藏用户",
       "toast": {
         "fetchFailed": "获取排行榜失败"

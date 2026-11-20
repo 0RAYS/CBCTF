@@ -51,10 +51,10 @@ export const getAdminContestNavSections = (t, contestId, routes = null) => {
       apiRoute: 'GET /admin/contests/:contestID/challenges',
     },
     {
-      id: 'scoreboard',
-      label: t('nav.scoreboard'),
-      path: `/admin/contests/${contestId}/scoreboard`,
-      apiRoute: 'GET /admin/contests/:contestID/scoreboard',
+      id: 'leaderboard',
+      label: t('nav.leaderboard'),
+      path: `/admin/contests/${contestId}/leaderboard`,
+      apiRoute: 'GET /admin/contests/:contestID/leaderboard/challenges',
     },
     {
       id: 'teams',

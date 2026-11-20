@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUserRanking } from '../../api/user';
+import { getUserLeaderboard } from '../../api/user';
 import { Avatar, List, Pagination } from '../../components/common';
 import Checkbox from '../../components/common/Checkbox';
 import { useHiddenVisibility } from '../../hooks/useHiddenVisibility.js';
@@ -19,7 +19,7 @@ function UserLeaderboardPage() {
   useEffect(() => {
     let ignore = false;
     setLoading(true);
-    getUserRanking({
+    getUserLeaderboard({
       limit: PAGE_SIZE,
       offset: (currentPage - 1) * PAGE_SIZE,
       show_hidden: showHidden ? 1 : 0,
@@ -30,7 +30,7 @@ function UserLeaderboardPage() {
         setTotalCount(response.data.count || 0);
       })
       .catch((error) => {
-        if (!ignore) toast.danger({ description: error.message || t('game.leaderboard.toast.fetchFailed') });
+        if (!ignore) toast.danger({ description: error.message || t('game.userLeaderboard.toast.fetchFailed') });
       })
       .finally(() => {
         if (!ignore) setLoading(false);
@@ -41,9 +41,9 @@ function UserLeaderboardPage() {
   }, [currentPage, showHidden, t]);
 
   const columns = [
-    { key: 'rank', label: t('common.scoreboard.headers.rank'), width: '12%' },
-    { key: 'name', label: t('common.scoreboard.headers.team'), width: '48%' },
-    { key: 'score', label: t('common.scoreboard.headers.score'), width: '20%' },
+    { key: 'rank', label: t('common.leaderboard.headers.rank'), width: '12%' },
+    { key: 'name', label: t('common.leaderboard.headers.team'), width: '48%' },
+    { key: 'score', label: t('common.leaderboard.headers.score'), width: '20%' },
     { key: 'solved', label: t('common.solved'), width: '20%' },
   ];
 
@@ -82,7 +82,7 @@ function UserLeaderboardPage() {
             setShowHidden(event.target.checked);
             setCurrentPage(1);
           }}
-          label={t('game.leaderboard.showHiddenUsers')}
+          label={t('game.userLeaderboard.showHiddenUsers')}
           className="text-xs text-neutral-400"
         />
       </div>
