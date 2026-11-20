@@ -37,6 +37,34 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 
+      initContainers:
+        # The platform opens its database and cache connections during startup
+        # and exits when either is unreachable, so the Pod holds here until
+        # both accept connections instead of crash-looping through the backoff.
+        - name: wait-for-dependencies
+          image: "busybox:1.36"
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              deadline=$(($(date +%s) + 300))
+              wait_for() {
+                host="$1"
+                port="$2"
+                until nc -w 2 "$host" "$port" </dev/null >/dev/null 2>&1; do
+                  if [ "$(date +%s)" -ge "$deadline" ]; then
+                    echo "timed out waiting for $host:$port" >&2
+                    return 1
+                  fi
+                  sleep 2
+                done
+                echo "$host:$port is reachable"
+              }
+              wait_for "{{ include "cbctf.postgres.host" . }}" "{{ .Values.postgres.service.port }}"
+              wait_for "{{ include "cbctf.valkey.host" . }}" "{{ .Values.valkey.service.port }}"
+
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -64,15 +92,17 @@ spec:
           livenessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 30
-            periodSeconds: 15
-            failureThreshold: 5
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           readinessProbe:
             tcpSocket:
               port: http
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            timeoutSeconds: 3
+            failureThreshold: 2
 
           {{- with .Values.resources }}
           resources:

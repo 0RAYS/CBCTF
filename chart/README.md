@@ -15,6 +15,16 @@ These fields are deployment-only:
 
 Runtime settings are seeded only once and subsequently read from the database. Changing Helm values does not overwrite saved settings; use the system settings page and restart initialized components when needed. The Deployment uses one replica with `Recreate`, not a rolling update.
 
+## Startup order and probes
+
+The platform connects to PostgreSQL and Valkey while starting and exits when
+either is unreachable. An init container holds the Pod until both accept
+connections, so the app starts against a ready database instead of
+crash-looping through the kubelet backoff. It gives up after five minutes.
+
+Liveness probes the HTTP port every 5 seconds and readiness every 3 seconds;
+`startupProbe` still gates both until the platform finished its startup.
+
 ## Valkey (0.0.30)
 
 The cache and Asynq task queue are deployed by the upstream
