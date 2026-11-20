@@ -63,8 +63,8 @@ flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 
 <img src="static/img/dashboard.png" width="100%" alt="管理后台" />
 <img src="static/img/contest.png" width="100%" alt="比赛详情" />
-<img src="static/img/scoreboard-1.png" width="100%" alt="排行榜" />
-<img src="static/img/scoreboard-2.png" width="100%" alt="排行榜（图表）" />
+<img src="static/img/leaderboard-1.png" width="100%" alt="排行榜" />
+<img src="static/img/leaderboard-2.png" width="100%" alt="排行榜（图表）" />
 <img src="static/img/contest-settings.png" width="100%" alt="比赛设置" />
 <img src="static/img/settings.png" width="100%" alt="系统设置" />
 <img src="static/img/branding.png" width="100%" alt="品牌化配置" />
