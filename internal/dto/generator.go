@@ -12,11 +12,8 @@ type ListGeneratorsForm struct {
 }
 
 func (f *ListGeneratorsForm) Validate(ctx *gin.Context) model.RetVal {
-	if _, ok := ctx.GetQuery("limit"); !ok {
-		f.Limit = 10
-	}
-	if _, ok := ctx.GetQuery("offset"); !ok {
-		f.Offset = 0
+	if ret := f.ListModelsForm.Validate(ctx); !ret.OK {
+		return ret
 	}
 	return model.SuccessRetVal()
 }

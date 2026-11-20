@@ -11,13 +11,19 @@ type ListModelsForm struct {
 	Limit  int `form:"limit" json:"limit" binding:"gte=0,lte=100"`
 }
 
-func (f *ListModelsForm) Validate(ctx *gin.Context) model.RetVal {
+// ApplyPaginationDefaults keeps the default page size when the query does not
+// set one.
+func (f *ListModelsForm) ApplyPaginationDefaults(ctx *gin.Context, defaultLimit int) {
 	if _, ok := ctx.GetQuery("limit"); !ok {
-		f.Limit = 10
+		f.Limit = defaultLimit
 	}
 	if _, ok := ctx.GetQuery("offset"); !ok {
 		f.Offset = 0
 	}
+}
+
+func (f *ListModelsForm) Validate(ctx *gin.Context) model.RetVal {
+	f.ApplyPaginationDefaults(ctx, 10)
 	return model.SuccessRetVal()
 }
 

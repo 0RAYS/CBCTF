@@ -14,11 +14,8 @@ type GetContestChallengesForm struct {
 }
 
 func (f *GetContestChallengesForm) Validate(ctx *gin.Context) model.RetVal {
-	if _, ok := ctx.GetQuery("limit"); !ok {
-		f.Limit = 10
-	}
-	if _, ok := ctx.GetQuery("offset"); !ok {
-		f.Offset = 0
+	if ret := f.ListModelsForm.Validate(ctx); !ret.OK {
+		return ret
 	}
 	f.Category = utils.ToTitle(f.Category)
 	return model.SuccessRetVal()
@@ -32,11 +29,8 @@ type GetAllContestChallengesForm struct {
 }
 
 func (f *GetAllContestChallengesForm) Validate(ctx *gin.Context) model.RetVal {
-	if _, ok := ctx.GetQuery("limit"); !ok {
-		f.Limit = 10
-	}
-	if _, ok := ctx.GetQuery("offset"); !ok {
-		f.Offset = 0
+	if ret := f.ListModelsForm.Validate(ctx); !ret.OK {
+		return ret
 	}
 	f.Category = utils.ToTitle(f.Category)
 	return model.SuccessRetVal()

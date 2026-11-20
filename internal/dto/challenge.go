@@ -16,11 +16,8 @@ type GetChallengesForm struct {
 }
 
 func (f *GetChallengesForm) Validate(ctx *gin.Context) model.RetVal {
-	if _, ok := ctx.GetQuery("limit"); !ok {
-		f.Limit = 10
-	}
-	if _, ok := ctx.GetQuery("offset"); !ok {
-		f.Offset = 0
+	if ret := f.ListModelsForm.Validate(ctx); !ret.OK {
+		return ret
 	}
 	f.Category = utils.ToTitle(f.Category)
 	return model.SuccessRetVal()
