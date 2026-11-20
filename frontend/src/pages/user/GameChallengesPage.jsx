@@ -115,7 +115,7 @@ function ContestChallenges({ contestId }) {
               teamScore: contestStatus.team.score,
               teamSolved: contestStatus.team.solved,
             }}
-            onViewScoreboard={() => navigate(`/contests/${contestId}/scoreboard`)}
+            onViewLeaderboard={() => navigate(`/contests/${contestId}/leaderboard`)}
             onUploadWriteup={handleUploadWriteup}
             onViewChallenges={() => setShowChallengesAfterEnd(true)}
             writeups={writeups.writeups}

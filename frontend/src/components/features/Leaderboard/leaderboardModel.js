@@ -36,7 +36,7 @@ export function collectChallenges(teams = []) {
   );
 }
 
-export function buildScoreboardColumns(challenges = []) {
+export function buildLeaderboardColumns(challenges = []) {
   const byCategory = challenges.reduce((categories, challenge) => {
     (categories[challenge.category] ??= []).push(challenge);
     return categories;

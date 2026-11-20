@@ -15,7 +15,7 @@ const DEFAULT_LABELS = {
   total: 'TOTAL',
 };
 
-function ScoreboardRanking({
+function LeaderboardRanking({
   teams = [],
   labels = {},
   locale = 'en-US',
@@ -37,14 +37,14 @@ function ScoreboardRanking({
     padding: 4,
   });
   const gridCols =
-    'grid-cols-[2rem_minmax(0,1fr)_var(--sb-score-width)] lg:grid-cols-[2.25rem_minmax(9rem,14rem)_var(--sb-score-width)_minmax(12rem,1fr)_9rem]';
+    'grid-cols-[2rem_minmax(0,1fr)_var(--lb-score-width)] lg:grid-cols-[2.25rem_minmax(9rem,14rem)_var(--lb-score-width)_minmax(12rem,1fr)_9rem]';
 
   return (
-    <div className="w-full min-w-0 space-y-4" style={{ '--sb-score-width': `${scoreWidth}px` }}>
+    <div className="w-full min-w-0 space-y-4" style={{ '--lb-score-width': `${scoreWidth}px` }}>
       {measurement}
       <Card variant="default" padding="none" animate className="overflow-hidden">
         <div className="overflow-x-auto">
-          <div className="min-w-[calc(var(--sb-score-width)+10rem)] lg:min-w-[calc(var(--sb-score-width)+37rem)]">
+          <div className="min-w-[calc(var(--lb-score-width)+10rem)] lg:min-w-[calc(var(--lb-score-width)+37rem)]">
             <div
               className={`grid ${gridCols} gap-x-3 gap-y-1.5 px-3 py-2 border-b border-neutral-600/50 items-center bg-neutral-800/40`}
             >
@@ -177,4 +177,4 @@ function ScoreboardRanking({
   );
 }
 
-export default ScoreboardRanking;
+export default LeaderboardRanking;

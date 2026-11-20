@@ -28,7 +28,7 @@ Frontend is the embedded React app for CBCTF. Trust executable config over stale
 ## Structure
 
 - See `README.md` for the domain map and component contracts. Pages adapt routes/scopes; business components, hooks, loaders and pure models live together in `components/features`.
-- Shared scoreboard presentation lives in `features/Scoreboard`. Admin detail hooks, IP lookup, traffic, images, generators and victims live in their Admin domains, not `common`, global `hooks`, or contest-only directories.
+- Shared leaderboard presentation lives in `features/Leaderboard`. Admin detail hooks, IP lookup, traffic, images, generators and victims live in their Admin domains, not `common`, global `hooks`, or contest-only directories.
 - Keep `common` business-independent, never import pages from components, and avoid synchronous dependency cycles. Import heavy Markdown/EChart adapters directly, preserving lazy chart/editor boundaries.
 - Use `Modal` for the shell, `ConfirmModal` for confirmation actions, `Checkbox` for checkbox fields, and `MarkdownContent` for GFM. Do not restore deleted compatibility aliases or old-path re-export wrappers.
 - Tests enforce a 500-line limit for each source JS/JSX file and exact-case import resolution. Split by responsibility rather than moving a large page into a large hook. New pure modules must be added to the reviewed architecture-test dependency set.

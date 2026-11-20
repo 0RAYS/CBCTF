@@ -45,13 +45,13 @@ function LeaderboardPreview({ topUsers, isLoading }) {
         >
           <div className={`${ROW_LAYOUT} py-2 border-b border-neutral-700/60 bg-neutral-800/40`}>
             <TruncatedText className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
-              {t('common.scoreboard.headers.rank')}
+              {t('common.leaderboard.headers.rank')}
             </TruncatedText>
             <TruncatedText className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
-              {t('common.scoreboard.headers.team')}
+              {t('common.leaderboard.headers.team')}
             </TruncatedText>
             <TruncatedText className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em] text-right">
-              {t('common.scoreboard.headers.score')}
+              {t('common.leaderboard.headers.score')}
             </TruncatedText>
             <TruncatedText className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em] text-right">
               {t('common.solved')}

@@ -110,9 +110,9 @@ export function getContestTeam(contestId, teamId) {
   });
 }
 
-export function getContestRank(contestId, params = { limit: 20, offset: 0 }, noLoading = false) {
+export function getContestLeaderboard(contestId, params = { limit: 20, offset: 0 }, noLoading = false) {
   return request({
-    url: `/admin/contests/${contestId}/rank`,
+    url: `/admin/contests/${contestId}/leaderboard`,
     method: 'GET',
     params,
     noLoading,
@@ -245,9 +245,9 @@ export const exportContestWriteups = (contestId) => {
   });
 };
 
-export const exportContestScoreboard = (contestId) => {
+export const exportContestLeaderboard = (contestId) => {
   return request({
-    url: `/admin/contests/${contestId}/scoreboard/export`,
+    url: `/admin/contests/${contestId}/leaderboard/export`,
     method: 'GET',
     responseType: 'blob',
   });
@@ -288,17 +288,17 @@ export const detectContestImages = (contestId) => {
   });
 };
 
-export const getContestScoreboard = (contestId, params = { limit: 20, offset: 0 }) => {
+export const getContestLeaderboardChallenges = (contestId, params = { limit: 20, offset: 0 }) => {
   return request({
-    url: `/admin/contests/${contestId}/scoreboard`,
+    url: `/admin/contests/${contestId}/leaderboard/challenges`,
     method: 'GET',
     params,
   });
 };
 
-export const getContestTimeline = (contestId) => {
+export const getContestLeaderboardTimeline = (contestId) => {
   return request({
-    url: `/admin/contests/${contestId}/timeline`,
+    url: `/admin/contests/${contestId}/leaderboard/timeline`,
     method: 'GET',
   });
 };

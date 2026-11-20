@@ -103,7 +103,7 @@
       "deleteWarning": "This action cannot be undone."
     },
     "selectAll": "Select all",
-    "scoreboard": {
+    "leaderboard": {
       "total": "TOTAL",
       "headers": {
         "rank": "RANK",
@@ -123,7 +123,6 @@
     "games": "GAMES",
     "overview": "OVERVIEW",
     "challenges": "CHALLENGES",
-    "scoreboard": "SCOREBOARD",
     "team": "TEAM",
     "notice": "NOTICE",
     "writeup": "WRITEUP",
@@ -994,13 +993,13 @@
           "resetSolvesFailed": "Failed to reset solves"
         }
       },
-      "scoreboard": {
-        "export": "Export Writeups",
-        "exportLeaderboard": "Export Leaderboard",
+      "leaderboard": {
+        "exportWriteups": "Export Writeups",
+        "export": "Export Leaderboard",
         "toast": {
           "fetchTimelineFailed": "Failed to load timeline",
           "fetchTeamsFailed": "Failed to load rankings",
-          "fetchScoreboardFailed": "Failed to load scoreboard",
+          "fetchLeaderboardFailed": "Failed to load the leaderboard",
           "exportWriteupsFailed": "Failed to export Writeups",
           "exportLeaderboardFailed": "Failed to export the leaderboard"
         }
@@ -2423,7 +2422,7 @@
       "titlePrefix": "Top",
       "titleHighlight": "Performers",
       "subtitle": "Top teams on the leaderboard",
-      "viewScoreboard": "VIEW SCOREBOARD"
+      "viewLeaderboard": "VIEW LEADERBOARD"
     }
   },
   "auth": {
@@ -2666,7 +2665,7 @@
       },
       "actions": {
         "viewChallenges": "VIEW CHALLENGES",
-        "viewFinalScoreboard": "VIEW FINAL SCOREBOARD"
+        "viewFinalLeaderboard": "VIEW FINAL LEADERBOARD"
       }
     },
     "statusPanel": {
@@ -2677,13 +2676,13 @@
       "teamScore": "Team Score",
       "flagsSolved": "Flags Solved"
     },
-    "scoreboardStats": {
+    "leaderboardStats": {
       "totalTeams": "Total Teams",
       "totalPlayers": "Total Players",
       "totalSolves": "Total Solves",
       "highestScore": "Highest Score"
     },
-    "scoreboardTable": {
+    "leaderboardTable": {
       "members": "{{count}} members",
       "status": {
         "solved": "Solved",
@@ -2807,10 +2806,10 @@
         "uploadFailed": "Failed to upload writeup"
       }
     },
-    "scoreboard": {
+    "leaderboard": {
       "showHiddenTeams": "Show hidden teams",
       "toast": {
-        "fetchFailed": "Failed to load scoreboard"
+        "fetchFailed": "Failed to load the leaderboard"
       },
       "timeline": {
         "title": "Score progression",
@@ -2818,7 +2817,7 @@
         "failed": "Failed to load score progression"
       }
     },
-    "leaderboard": {
+    "userLeaderboard": {
       "showHiddenUsers": "Show hidden users",
       "toast": {
         "fetchFailed": "Failed to load the leaderboard"

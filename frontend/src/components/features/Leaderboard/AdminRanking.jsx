@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '../../common';
-import ScoreboardRanking from './ScoreboardRanking.jsx';
+import LeaderboardRanking from './LeaderboardRanking.jsx';
 
 /** 管理后台积分榜组件 */
 function AdminRanking({
@@ -15,16 +15,16 @@ function AdminRanking({
   const { t, i18n } = useTranslation();
 
   return (
-    <ScoreboardRanking
+    <LeaderboardRanking
       teams={teams}
       locale={i18n.language || 'en-US'}
       labels={{
-        rank: t('common.scoreboard.headers.rank'),
-        team: t('common.scoreboard.headers.team'),
-        score: t('common.scoreboard.headers.score'),
-        challenges: t('common.scoreboard.headers.challenges'),
-        lastSubmit: t('common.scoreboard.headers.lastSubmit'),
-        total: t('common.scoreboard.total'),
+        rank: t('common.leaderboard.headers.rank'),
+        team: t('common.leaderboard.headers.team'),
+        score: t('common.leaderboard.headers.score'),
+        challenges: t('common.leaderboard.headers.challenges'),
+        lastSubmit: t('common.leaderboard.headers.lastSubmit'),
+        total: t('common.leaderboard.total'),
       }}
       emptyMessage={t('common.noData')}
       loading={loading}

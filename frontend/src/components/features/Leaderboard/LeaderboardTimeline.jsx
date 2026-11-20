@@ -9,7 +9,7 @@ import TruncatedText from '../../common/TruncatedText';
 const ReactECharts = lazy(() => import('../../common/EChart'));
 
 /** 分数时间线图表组件 */
-function ScoreboardTimeline({ timelineData = [], loading = false, error = false, onRetry }) {
+function LeaderboardTimeline({ timelineData = [], loading = false, error = false, onRetry }) {
   const { t, i18n } = useTranslation();
   const [hiddenTeams, setHiddenTeams] = useState(() => new Set());
 
@@ -28,12 +28,12 @@ function ScoreboardTimeline({ timelineData = [], loading = false, error = false,
 
   return (
     <Card variant="default" padding="sm" className="min-w-0">
-      <h2 className="mb-2 text-xs font-mono text-neutral-300">{t('game.scoreboard.timeline.title')}</h2>
+      <h2 className="mb-2 text-xs font-mono text-neutral-300">{t('game.leaderboard.timeline.title')}</h2>
       {!loading && !error && model.teams.length > 0 && (
         <div
           className="flex max-h-20 flex-wrap gap-1.5 overflow-y-auto mb-2"
           role="group"
-          aria-label={t('game.scoreboard.timeline.teams')}
+          aria-label={t('game.leaderboard.timeline.teams')}
         >
           {model.teams.map((team, index) => (
             <Button
@@ -62,7 +62,7 @@ function ScoreboardTimeline({ timelineData = [], loading = false, error = false,
             className="h-full flex flex-col gap-2 items-center justify-center text-sm text-neutral-400"
             role="status"
           >
-            <span>{t(loading ? 'common.loading' : error ? 'game.scoreboard.timeline.failed' : 'common.noData')}</span>
+            <span>{t(loading ? 'common.loading' : error ? 'game.leaderboard.timeline.failed' : 'common.noData')}</span>
             {error && !loading && onRetry && (
               <Button size="sm" variant="ghost" onClick={onRetry}>
                 {t('common.retry')}
@@ -83,4 +83,4 @@ function ScoreboardTimeline({ timelineData = [], loading = false, error = false,
   );
 }
 
-export default ScoreboardTimeline;
+export default LeaderboardTimeline;

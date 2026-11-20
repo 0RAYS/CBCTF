@@ -3,12 +3,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, Card, Pagination, ScrollingText } from '../../common';
 import Loading from '../../common/Loading';
 import { useTranslation } from 'react-i18next';
-import { buildScoreboardColumns, indexTeamChallenges } from './scoreboardModel.js';
+import { buildLeaderboardColumns, indexTeamChallenges } from './leaderboardModel.js';
 import useScoreColumnWidth from './useScoreColumnWidth';
 import TruncatedText from '../../common/TruncatedText';
 
 /** 通用表格式积分榜组件 */
-function ScoreboardTable({
+function LeaderboardTable({
   teams = [],
   challenges = [],
   totalCount = 0,
@@ -27,7 +27,7 @@ function ScoreboardTable({
   const scoreValues = useMemo(() => teams.map((team) => team.score), [teams]);
   const { width: scoreWidth, measurement } = useScoreColumnWidth({
     scores: scoreValues,
-    label: t('common.scoreboard.headers.score'),
+    label: t('common.leaderboard.headers.score'),
     scoreClassName: 'text-base',
     padding: 25,
     minWidth: 80,
@@ -67,7 +67,7 @@ function ScoreboardTable({
     columns: challengeColumns,
     widths: challengeColWidths,
     widthById: challengeWidthMap,
-  } = useMemo(() => buildScoreboardColumns(challenges), [challenges]);
+  } = useMemo(() => buildLeaderboardColumns(challenges), [challenges]);
   const teamChallengeIndexes = useMemo(() => teams.map((team) => indexTeamChallenges(team.challenges || [])), [teams]);
   const challengeWidth = challengeColWidths.reduce((total, width) => total + width, 0);
   // Fill spare space with the team column so actual widths keep matching sticky offsets.
@@ -99,17 +99,17 @@ function ScoreboardTable({
         padding="none"
         className="overflow-hidden"
         style={{
-          '--sb-rank-width': `${stickyWidths.rankWidth}px`,
-          '--sb-team-width': `${teamWidth}px`,
-          '--sb-score-width': `${scoreWidth}px`,
+          '--lb-rank-width': `${stickyWidths.rankWidth}px`,
+          '--lb-team-width': `${teamWidth}px`,
+          '--lb-score-width': `${scoreWidth}px`,
         }}
       >
         <div className="overflow-x-auto" ref={containerRef}>
           <table style={{ width: tableWidth, tableLayout: 'fixed' }}>
             <colgroup>
-              <col style={{ width: 'var(--sb-rank-width)' }} />
-              <col style={{ width: 'var(--sb-team-width)' }} />
-              <col style={{ width: 'var(--sb-score-width)' }} />
+              <col style={{ width: 'var(--lb-rank-width)' }} />
+              <col style={{ width: 'var(--lb-team-width)' }} />
+              <col style={{ width: 'var(--lb-score-width)' }} />
               {challengeColWidths.map((width, index) => (
                 <col key={`challenge-col-${index}`} style={{ width: `${width}px` }} />
               ))}
@@ -119,33 +119,33 @@ function ScoreboardTable({
                 <th
                   scope="col"
                   className="sticky left-0 z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
-                  style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
+                  style={{ width: 'var(--lb-rank-width)', minWidth: 'var(--lb-rank-width)' }}
                 >
-                  <TruncatedText>{t('common.scoreboard.headers.rank')}</TruncatedText>
+                  <TruncatedText>{t('common.leaderboard.headers.rank')}</TruncatedText>
                 </th>
                 <th
                   scope="col"
                   className="z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
                   style={{
                     position: detailPosition,
-                    width: 'var(--sb-team-width)',
-                    minWidth: 'var(--sb-team-width)',
-                    left: 'var(--sb-rank-width)',
+                    width: 'var(--lb-team-width)',
+                    minWidth: 'var(--lb-team-width)',
+                    left: 'var(--lb-rank-width)',
                   }}
                 >
-                  <TruncatedText>{t('common.scoreboard.headers.team')}</TruncatedText>
+                  <TruncatedText>{t('common.leaderboard.headers.team')}</TruncatedText>
                 </th>
                 <th
                   scope="col"
                   className="z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase whitespace-nowrap border-r border-neutral-600/40"
                   style={{
                     position: detailPosition,
-                    width: 'var(--sb-score-width)',
-                    minWidth: 'var(--sb-score-width)',
-                    left: 'calc(var(--sb-rank-width) + var(--sb-team-width))',
+                    width: 'var(--lb-score-width)',
+                    minWidth: 'var(--lb-score-width)',
+                    left: 'calc(var(--lb-rank-width) + var(--lb-team-width))',
                   }}
                 >
-                  <TruncatedText>{t('common.scoreboard.headers.score')}</TruncatedText>
+                  <TruncatedText>{t('common.leaderboard.headers.score')}</TruncatedText>
                 </th>
 
                 {categoryEntries.map(([category, categoryIchallenges]) => (
@@ -167,24 +167,24 @@ function ScoreboardTable({
               <tr className="bg-neutral-800/40 border-t border-neutral-600/40">
                 <th
                   className="sticky left-0 z-10 bg-neutral-800 p-2 border-r border-neutral-600/40"
-                  style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
+                  style={{ width: 'var(--lb-rank-width)', minWidth: 'var(--lb-rank-width)' }}
                 ></th>
                 <th
                   className="z-10 bg-neutral-800 p-2 border-r border-neutral-600/40"
                   style={{
                     position: detailPosition,
-                    width: 'var(--sb-team-width)',
-                    minWidth: 'var(--sb-team-width)',
-                    left: 'var(--sb-rank-width)',
+                    width: 'var(--lb-team-width)',
+                    minWidth: 'var(--lb-team-width)',
+                    left: 'var(--lb-rank-width)',
                   }}
                 ></th>
                 <th
                   className="z-10 bg-neutral-800 p-2 border-r border-neutral-600/40"
                   style={{
                     position: detailPosition,
-                    width: 'var(--sb-score-width)',
-                    minWidth: 'var(--sb-score-width)',
-                    left: 'calc(var(--sb-rank-width) + var(--sb-team-width))',
+                    width: 'var(--lb-score-width)',
+                    minWidth: 'var(--lb-score-width)',
+                    left: 'calc(var(--lb-rank-width) + var(--lb-team-width))',
                   }}
                 ></th>
 
@@ -218,7 +218,7 @@ function ScoreboardTable({
                 >
                   <td
                     className="sticky left-0 z-10 bg-neutral-800 p-3 text-center text-neutral-300 font-mono tabular-nums border-r border-neutral-600/40"
-                    style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
+                    style={{ width: 'var(--lb-rank-width)', minWidth: 'var(--lb-rank-width)' }}
                   >
                     <TruncatedText>{team.rank ?? (currentPage - 1) * pageSize + teamIndex + 1}</TruncatedText>
                   </td>
@@ -227,9 +227,9 @@ function ScoreboardTable({
                     className="z-10 bg-neutral-800 p-3 border-r border-neutral-600/40"
                     style={{
                       position: detailPosition,
-                      width: 'var(--sb-team-width)',
-                      minWidth: 'var(--sb-team-width)',
-                      left: 'var(--sb-rank-width)',
+                      width: 'var(--lb-team-width)',
+                      minWidth: 'var(--lb-team-width)',
+                      left: 'var(--lb-rank-width)',
                     }}
                   >
                     <div className="flex items-center gap-2">
@@ -242,7 +242,7 @@ function ScoreboardTable({
                           speed={15}
                         />
                         <TruncatedText className="text-xs text-neutral-500 tabular-nums">
-                          {t('game.scoreboardTable.members', { count: team.users })}
+                          {t('game.leaderboardTable.members', { count: team.users })}
                         </TruncatedText>
                       </div>
                     </div>
@@ -252,9 +252,9 @@ function ScoreboardTable({
                     className="z-10 bg-neutral-800 p-3 text-base text-center text-geek-400 font-mono tabular-nums whitespace-nowrap border-r border-neutral-600/40"
                     style={{
                       position: detailPosition,
-                      width: 'var(--sb-score-width)',
-                      minWidth: 'var(--sb-score-width)',
-                      left: 'calc(var(--sb-rank-width) + var(--sb-team-width))',
+                      width: 'var(--lb-score-width)',
+                      minWidth: 'var(--lb-score-width)',
+                      left: 'calc(var(--lb-rank-width) + var(--lb-team-width))',
                     }}
                   >
                     <TruncatedText>{scoreValues[teamIndex]}</TruncatedText>
@@ -272,7 +272,9 @@ function ScoreboardTable({
                         <div
                           className="transition-transform duration-200 group-hover/cell:scale-110 flex items-center justify-center font-mono text-lg"
                           title={`${team.name} - ${challenge.name}: ${
-                            solved ? t('game.scoreboardTable.status.solved') : t('game.scoreboardTable.status.unsolved')
+                            solved
+                              ? t('game.leaderboardTable.status.solved')
+                              : t('game.leaderboardTable.status.unsolved')
                           }`}
                         >
                           {solved ? (
@@ -304,4 +306,4 @@ function ScoreboardTable({
   );
 }
 
-export default ScoreboardTable;
+export default LeaderboardTable;

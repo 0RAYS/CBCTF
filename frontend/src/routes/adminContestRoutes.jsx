@@ -6,7 +6,7 @@ const AdminContestsLayout = lazy(() => import('../components/features/layouts/Ad
 
 const AdminContestDetail = lazy(() => import('../pages/admin/contests/index.jsx'));
 const AdminContestChallenges = lazy(() => import('../pages/admin/contests/challenges'));
-const AdminContestScoreboard = lazy(() => import('../pages/admin/contests/scoreboard'));
+const AdminContestLeaderboard = lazy(() => import('../pages/admin/contests/leaderboard'));
 const AdminContestTeams = lazy(() => import('../pages/admin/contests/teams'));
 const AdminContestSettings = lazy(() => import('../pages/admin/contests/settings'));
 const AdminContestNotices = lazy(() => import('../pages/admin/contests/notice'));
@@ -17,7 +17,11 @@ const AdminContestGenerators = lazy(() => import('../pages/admin/contests/genera
 
 const ADMIN_CONTEST_ROUTES = [
   { path: 'challenges', Component: AdminContestChallenges, apiRoute: 'GET /admin/contests/:contestID/challenges' },
-  { path: 'scoreboard', Component: AdminContestScoreboard, apiRoute: 'GET /admin/contests/:contestID/scoreboard' },
+  {
+    path: 'leaderboard',
+    Component: AdminContestLeaderboard,
+    apiRoute: 'GET /admin/contests/:contestID/leaderboard/challenges',
+  },
   { path: 'teams', Component: AdminContestTeams, apiRoute: 'GET /admin/contests/:contestID/teams' },
   { path: 'notices', Component: AdminContestNotices, apiRoute: 'GET /admin/contests/:contestID/notices' },
   { path: 'images', Component: AdminContestImagesPull, apiRoute: 'GET /admin/contests/:contestID/images' },
