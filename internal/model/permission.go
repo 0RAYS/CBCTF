@@ -97,6 +97,7 @@ const (
 	PermAdminContestDelete        = "admin:contest:delete"
 	PermAdminContestList          = "admin:contest:list"
 	PermAdminContestRank          = "admin:contest:rank"
+	PermAdminContestRankExport    = "admin:contest_rank:export"
 	PermAdminContestWriteupExport = "admin:contest_writeup:export"
 
 	PermAdminTeamRead   = "admin:team:read"
@@ -164,10 +165,11 @@ var RoutePermissions = map[string]string{
 	"POST /me/activate":   PermSelfActivate,
 
 	// /contests/:contestID
-	"GET /contests/:contestID":            PermUserContestRead,
-	"GET /contests/:contestID/rank":       PermUserContestRank,
-	"GET /contests/:contestID/scoreboard": PermUserContestRank,
-	"GET /contests/:contestID/timeline":   PermUserContestRank,
+	"GET /contests/:contestID":                   PermUserContestRead,
+	"GET /contests/:contestID/rank":              PermUserContestRank,
+	"GET /contests/:contestID/scoreboard":        PermUserContestRank,
+	"GET /contests/:contestID/timeline":          PermUserContestRank,
+	"GET /contests/:contestID/scoreboard/export": PermUserContestRank,
 
 	"POST /contests/:contestID/teams/join":   PermUserTeamJoin,
 	"POST /contests/:contestID/teams/create": PermUserTeamCreate,
@@ -311,17 +313,18 @@ var RoutePermissions = map[string]string{
 	"POST /admin/images/detect": PermAdminImageDetect,
 
 	// /admin/contests
-	"GET /admin/contests":                             PermAdminContestList,
-	"POST /admin/contests":                            PermAdminContestCreate,
-	"GET /admin/contests/:contestID":                  PermAdminContestRead,
-	"PUT /admin/contests/:contestID":                  PermAdminContestUpdate,
-	"DELETE /admin/contests/:contestID":               PermAdminContestDelete,
-	"POST /admin/contests/:contestID/picture":         PermAdminContestUpdate,
-	"GET /admin/contests/:contestID/rank":             PermAdminContestRank,
-	"GET /admin/contests/:contestID/scoreboard":       PermAdminContestRank,
-	"GET /admin/contests/:contestID/timeline":         PermAdminContestRank,
-	"GET /admin/contests/:contestID/traffic/overlaps": PermAdminContestTrafficRead,
-	"GET /admin/contests/:contestID/writeups/export":  PermAdminContestWriteupExport,
+	"GET /admin/contests":                              PermAdminContestList,
+	"POST /admin/contests":                             PermAdminContestCreate,
+	"GET /admin/contests/:contestID":                   PermAdminContestRead,
+	"PUT /admin/contests/:contestID":                   PermAdminContestUpdate,
+	"DELETE /admin/contests/:contestID":                PermAdminContestDelete,
+	"POST /admin/contests/:contestID/picture":          PermAdminContestUpdate,
+	"GET /admin/contests/:contestID/rank":              PermAdminContestRank,
+	"GET /admin/contests/:contestID/scoreboard":        PermAdminContestRank,
+	"GET /admin/contests/:contestID/timeline":          PermAdminContestRank,
+	"GET /admin/contests/:contestID/scoreboard/export": PermAdminContestRankExport,
+	"GET /admin/contests/:contestID/traffic/overlaps":  PermAdminContestTrafficRead,
+	"GET /admin/contests/:contestID/writeups/export":   PermAdminContestWriteupExport,
 
 	// /admin/contests/:contestID/teams
 	"GET /admin/contests/:contestID/teams":                                            PermAdminTeamList,
@@ -502,6 +505,7 @@ var Permissions = []Permission{
 	{Name: PermAdminContestDelete, Resource: "admin:contest", Operation: "delete", Description: "删除比赛"},
 	{Name: PermAdminContestList, Resource: "admin:contest", Operation: "list", Description: "查看比赛列表"},
 	{Name: PermAdminContestRank, Resource: "admin:contest", Operation: "rank", Description: "查看比赛排名"},
+	{Name: PermAdminContestRankExport, Resource: "admin:contest_rank", Operation: "export", Description: "导出比赛排行榜"},
 	{Name: PermAdminContestWriteupExport, Resource: "admin:contest_writeup", Operation: "export", Description: "导出比赛 Writeup"},
 
 	{Name: PermAdminTeamRead, Resource: "admin:team", Operation: "read", Description: "查看队伍详情"},

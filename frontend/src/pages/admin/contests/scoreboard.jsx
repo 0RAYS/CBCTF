@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
 import {
+  exportContestScoreboard,
   exportContestWriteups,
   getContestInfo,
   getContestRank,
@@ -193,12 +194,27 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
     }
   }, [externalViewMode]);
 
-  const handleExportScoreboard = async () => {
+  const handleExportWriteups = async () => {
     try {
       const response = await exportContestWriteups(parseInt(id));
       downloadBlobResponse(response, `contest-${id}.zip`, 'application/zip');
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.exportWriteupsFailed') });
+    }
+  };
+
+  const handleExportLeaderboard = async () => {
+    try {
+      const response = await exportContestScoreboard(parseInt(id));
+      downloadBlobResponse(
+        response,
+        `contest-${id}-leaderboard.xlsx`,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+    } catch (error) {
+      toast.danger({
+        description: error.message || t('admin.contests.scoreboard.toast.exportLeaderboardFailed'),
+      });
     }
   };
 
@@ -239,7 +255,10 @@ function ContestScoreboard({ id, viewMode: externalViewMode, onViewModeChange: e
             />
           </div>
 
-          <Button variant="outline" size="sm" onClick={handleExportScoreboard}>
+          <Button variant="outline" size="sm" onClick={handleExportLeaderboard}>
+            {t('admin.contests.scoreboard.exportLeaderboard')}
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleExportWriteups}>
             {t('admin.contests.scoreboard.export')}
           </Button>
         </div>
