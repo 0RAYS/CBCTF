@@ -64,8 +64,8 @@ The flag prefix can be customized in event settings (default: `CBCTF`):
 
 <img src="static/img/dashboard.png" width="100%" alt="Admin Dashboard" />
 <img src="static/img/contest.png" width="100%" alt="Contest" />
-<img src="static/img/scoreboard-1.png" width="100%" alt="Scoreboard" />
-<img src="static/img/scoreboard-2.png" width="100%" alt="Scoreboard (Chart)" />
+<img src="static/img/scoreboard-1.png" width="100%" alt="Leaderboard" />
+<img src="static/img/scoreboard-2.png" width="100%" alt="Leaderboard (Chart)" />
 <img src="static/img/contest-settings.png" width="100%" alt="Contest Settings" />
 <img src="static/img/settings.png" width="100%" alt="System Settings" />
 <img src="static/img/branding.png" width="100%" alt="Branding" />
