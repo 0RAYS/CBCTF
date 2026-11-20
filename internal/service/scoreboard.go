@@ -123,36 +123,6 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, model.
 	return users, count, model.SuccessRetVal()
 }
 
-func buildSolvedStateViews(solved []model.ContestFlag, all []model.ContestFlag) []view.ScoreboardSolvedStateView {
-	categories := make(map[uint]string)
-	for _, v := range all {
-		categories[v.ContestChallengeID] = v.ContestChallenge.Category
-	}
-	allCount := make(map[string]int64)
-	for _, v := range all {
-		allCount[v.ContestChallenge.Category] += 1
-	}
-	solvedCount := make(map[string]int64)
-	for _, flag := range solved {
-		solvedCount[categories[flag.ContestChallengeID]] += 1
-	}
-	data := make([]view.ScoreboardSolvedStateView, 0)
-	for category, total := range allCount {
-		if _, ok := solvedCount[category]; !ok {
-			solvedCount[category] = 0
-		}
-		data = append(data, view.ScoreboardSolvedStateView{
-			Category: category,
-			Solved:   solvedCount[category],
-			All:      total,
-		})
-	}
-	slices.SortFunc(data, func(a, b view.ScoreboardSolvedStateView) int {
-		return strings.Compare(a.Category, b.Category)
-	})
-	return data
-}
-
 func GetTeamRankingViews(tx *gorm.DB, contest model.Contest, limit, offset int, admin bool) ([]view.TeamRankingView, int64, model.RetVal) {
 	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
@@ -190,7 +160,7 @@ func GetTeamRankingViews(tx *gorm.DB, contest model.Contest, limit, offset int, 
 		views = append(views, view.TeamRankingView{
 			Team:      team,
 			UserCount: userCountMap[team.ID],
-			Solved:    buildSolvedStateViews(solvedMap[team.ID], contestFlags),
+			Solved:    view.BuildSolvedStateViews(solvedMap[team.ID], contestFlags),
 		})
 	}
 	return views, count, model.SuccessRetVal()

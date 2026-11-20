@@ -28,16 +28,13 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 			if !ret.OK {
 				return ret
 			}
-			if contestChallenge.Type == model.DynamicChallengeType {
-				if err := task.EnqueueGenAttachmentTask(team.CaptainID, model.NewContestChallengeSource(contestChallenge), team.ID, teamFlags); err != nil {
-					log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-					return model.FailRetVal(
-						i18n.Model.CreateError,
-						model.Name(model.TeamFlag{}),
-						fmt.Sprintf("team_id=%d contest_challenge_id=%d", team.ID, contestChallenge.ID),
-						err,
-					)
-				}
+			if err := enqueueDynamicAttachment(team.CaptainID, team, contestChallenge, teamFlags); err != nil {
+				return model.FailRetVal(
+					i18n.Model.CreateError,
+					model.Name(model.TeamFlag{}),
+					fmt.Sprintf("team_id=%d contest_challenge_id=%d", team.ID, contestChallenge.ID),
+					err,
+				)
 			}
 			return model.SuccessRetVal()
 		})
@@ -51,6 +48,49 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 		}
 	}
 	return model.SuccessRetVal()
+}
+
+// enqueueDynamicAttachment queues the attachment generation of a dynamic
+// challenge for the team. Static challenges need no attachment.
+func enqueueDynamicAttachment(userID uint, team model.Team, contestChallenge model.ContestChallenge, teamFlags []model.TeamFlag) error {
+	if contestChallenge.Type != model.DynamicChallengeType {
+		return nil
+	}
+	if err := task.EnqueueGenAttachmentTask(userID, model.NewContestChallengeSource(contestChallenge), team.ID, teamFlags); err != nil {
+		log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
+		return err
+	}
+	return nil
+}
+
+// applyTeamChallenge applies a team flag change to a contest challenge and
+// queues the attachment of a dynamic challenge. The contest challenge must
+// carry its flags so that the change can resolve them.
+func applyTeamChallenge(
+	tx *gorm.DB,
+	user model.User,
+	team model.Team,
+	contest model.Contest,
+	contestChallenge model.ContestChallenge,
+	apply func(*gorm.DB) ([]model.TeamFlag, model.RetVal),
+) model.RetVal {
+	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+	})
+	if !ret.OK {
+		return ret
+	}
+	contestChallenge.ContestFlags = contestFlags
+	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		teamFlags, applyRet := apply(tx2)
+		if !applyRet.OK {
+			return applyRet
+		}
+		if err := enqueueDynamicAttachment(user.ID, team, contestChallenge, teamFlags); err != nil {
+			return model.FailRetVal(i18n.Task.EnqueueError, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), err)
+		}
+		return model.SuccessRetVal()
+	})
 }
 
 func renderChallengeFlagValue(value string) string {
@@ -190,52 +230,14 @@ func ListTeamFlagViews(tx *gorm.DB, team model.Team) ([]view.TeamFlagChallengeVi
 }
 
 func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) model.RetVal {
-	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
-	})
-	if !ret.OK {
-		return ret
-	}
-	contestChallenge.ContestFlags = contestFlags
-	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		teamFlags, createRet := CreateTeamFlag(tx2, team, contest, contestChallenge)
-		if !createRet.OK {
-			return createRet
-		}
-		if contestChallenge.Type != model.DynamicChallengeType {
-			return model.SuccessRetVal()
-		}
-
-		if err := task.EnqueueGenAttachmentTask(user.ID, model.NewContestChallengeSource(contestChallenge), team.ID, teamFlags); err != nil {
-			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-			return model.FailRetVal(i18n.Task.EnqueueError, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), err)
-		}
-		return model.SuccessRetVal()
+	return applyTeamChallenge(tx, user, team, contest, contestChallenge, func(tx2 *gorm.DB) ([]model.TeamFlag, model.RetVal) {
+		return CreateTeamFlag(tx2, team, contest, contestChallenge)
 	})
 }
 
 func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) model.RetVal {
-	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
-	})
-	if !ret.OK {
-		return ret
-	}
-	contestChallenge.ContestFlags = contestFlags
-	ret = db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		teamFlags, updateRet := UpdateTeamFlag(tx2, team, contest, contestChallenge)
-		if !updateRet.OK {
-			return updateRet
-		}
-		if contestChallenge.Type != model.DynamicChallengeType {
-			return model.SuccessRetVal()
-		}
-
-		if err := task.EnqueueGenAttachmentTask(user.ID, model.NewContestChallengeSource(contestChallenge), team.ID, teamFlags); err != nil {
-			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-			return model.FailRetVal(i18n.Task.EnqueueError, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), err)
-		}
-		return model.SuccessRetVal()
+	ret := applyTeamChallenge(tx, user, team, contest, contestChallenge, func(tx2 *gorm.DB) ([]model.TeamFlag, model.RetVal) {
+		return UpdateTeamFlag(tx2, team, contest, contestChallenge)
 	})
 	if !ret.OK {
 		return ret
