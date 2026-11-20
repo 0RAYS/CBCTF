@@ -53,9 +53,9 @@ flag 前缀可在赛事设置中自定义（默认 `CBCTF`）：
 
 <img src="/img/contest.png" width="100%" alt="比赛详情" />
 
-<img src="/img/scoreboard-1.png" width="100%" alt="排行榜" />
+<img src="/img/leaderboard-1.png" width="100%" alt="排行榜" />
 
-<img src="/img/scoreboard-2.png" width="100%" alt="排行榜（图表）" />
+<img src="/img/leaderboard-2.png" width="100%" alt="排行榜（图表）" />
 
 <img src="/img/contest-settings.png" width="100%" alt="比赛设置" />
 
