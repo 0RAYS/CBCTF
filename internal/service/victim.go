@@ -626,45 +626,11 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 }
 
 func StopVictims(tx *gorm.DB, contestID uint, form dto.StopVictimsForm) model.RetVal {
-	if len(form.Victims) == 0 {
-		return model.SuccessRetVal()
-	}
-	options := db.GetOptions{Conditions: map[string]any{"id": form.Victims}, Deleted: true}
-	if contestID > 0 {
-		options.Conditions["contest_id"] = contestID
-	}
-	victims, _, ret := db.InitVictimRepo(tx).List(-1, -1, options)
-	if !ret.OK {
-		return ret
-	}
-	byID := make(map[uint]model.Victim, len(victims))
-	for _, victim := range victims {
-		byID[victim.ID] = victim
-	}
-	batch := model.NewBatch(len(form.Victims))
-	for _, id := range form.Victims {
-		if tx.Statement.Context.Err() != nil {
-			return batch.Result(tx.Statement.Context)
-		}
-		key := fmt.Sprint(id)
-		victim, exists := byID[id]
-		if !exists {
-			batch.Fail(key, "lookup", model.FailRetVal(i18n.Model.NotFound, "Victim", "id="+key, nil))
-			continue
-		}
-		if victim.Status == model.TerminatingVictimStatus || victim.Status == model.StoppedVictimStatus {
-			batch.Skip(key, "already_stopping")
-			continue
-		}
-		ret = StopVictim(tx, victim)
-		if ret.OK {
-			batch.Success(key, "queued")
-		} else {
-			batch.Fail(key, "stop", ret)
-			if model.BatchDependencyFailed(ret) {
-				return batch.Result(tx.Statement.Context)
-			}
-		}
-	}
-	return batch.Result(tx.Statement.Context)
+	return stopWorkloads(tx, "Victim", form.Victims, contestID,
+		func(options db.GetOptions) ([]model.Victim, int64, model.RetVal) {
+			return db.InitVictimRepo(tx).List(-1, -1, options)
+		},
+		func(victim model.Victim) string { return victim.Status },
+		func(victim model.Victim) model.RetVal { return StopVictim(tx, victim) },
+	)
 }
