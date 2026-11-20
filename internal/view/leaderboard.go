@@ -8,14 +8,14 @@ import (
 	"CBCTF/internal/model"
 )
 
-type ScoreboardSolvedStateView struct {
+type LeaderboardSolvedStateView struct {
 	Category string
 	Solved   int64
 	All      int64
 }
 
 // BuildSolvedStateViews 按题目分类统计解题数量，两组 flag 都需预加载 ContestChallenge
-func BuildSolvedStateViews(solved []model.ContestFlag, all []model.ContestFlag) []ScoreboardSolvedStateView {
+func BuildSolvedStateViews(solved []model.ContestFlag, all []model.ContestFlag) []LeaderboardSolvedStateView {
 	categories := make(map[uint]string)
 	for _, v := range all {
 		categories[v.ContestChallengeID] = v.ContestChallenge.Category
@@ -28,18 +28,18 @@ func BuildSolvedStateViews(solved []model.ContestFlag, all []model.ContestFlag) 
 	for _, flag := range solved {
 		solvedCount[categories[flag.ContestChallengeID]] += 1
 	}
-	data := make([]ScoreboardSolvedStateView, 0)
+	data := make([]LeaderboardSolvedStateView, 0)
 	for category, total := range allCount {
 		if _, ok := solvedCount[category]; !ok {
 			solvedCount[category] = 0
 		}
-		data = append(data, ScoreboardSolvedStateView{
+		data = append(data, LeaderboardSolvedStateView{
 			Category: category,
 			Solved:   solvedCount[category],
 			All:      total,
 		})
 	}
-	slices.SortFunc(data, func(a, b ScoreboardSolvedStateView) int {
+	slices.SortFunc(data, func(a, b LeaderboardSolvedStateView) int {
 		return strings.Compare(a.Category, b.Category)
 	})
 	return data
@@ -48,10 +48,10 @@ func BuildSolvedStateViews(solved []model.ContestFlag, all []model.ContestFlag) 
 type TeamRankingView struct {
 	Team      model.Team
 	UserCount int64
-	Solved    []ScoreboardSolvedStateView
+	Solved    []LeaderboardSolvedStateView
 }
 
-type ScoreboardChallengeSolveView struct {
+type LeaderboardChallengeSolveView struct {
 	ID       string
 	Total    int
 	Solved   int
@@ -59,10 +59,10 @@ type ScoreboardChallengeSolveView struct {
 	Category string
 }
 
-type ScoreboardTeamView struct {
+type LeaderboardMatrixTeamView struct {
 	Team       model.Team
 	UserCount  int64
-	Challenges []ScoreboardChallengeSolveView
+	Challenges []LeaderboardChallengeSolveView
 }
 
 type RankTimelinePointView struct {

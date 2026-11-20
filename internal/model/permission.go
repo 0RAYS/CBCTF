@@ -167,13 +167,13 @@ var RoutePermissions = map[string]string{
 	"POST /me/activate":   PermSelfActivate,
 
 	// /users
-	"GET /users/rank": PermUserRank,
+	"GET /users/leaderboard": PermUserRank,
 
 	// /contests/:contestID
-	"GET /contests/:contestID":                   PermUserContestRead,
-	"GET /contests/:contestID/rank":       PermUserContestRank,
-	"GET /contests/:contestID/scoreboard": PermUserContestRank,
-	"GET /contests/:contestID/timeline":   PermUserContestRank,
+	"GET /contests/:contestID":                        PermUserContestRead,
+	"GET /contests/:contestID/leaderboard":            PermUserContestRank,
+	"GET /contests/:contestID/leaderboard/challenges": PermUserContestRank,
+	"GET /contests/:contestID/leaderboard/timeline":   PermUserContestRank,
 
 	"POST /contests/:contestID/teams/join":   PermUserTeamJoin,
 	"POST /contests/:contestID/teams/create": PermUserTeamCreate,
@@ -317,18 +317,18 @@ var RoutePermissions = map[string]string{
 	"POST /admin/images/detect": PermAdminImageDetect,
 
 	// /admin/contests
-	"GET /admin/contests":                              PermAdminContestList,
-	"POST /admin/contests":                             PermAdminContestCreate,
-	"GET /admin/contests/:contestID":                   PermAdminContestRead,
-	"PUT /admin/contests/:contestID":                   PermAdminContestUpdate,
-	"DELETE /admin/contests/:contestID":                PermAdminContestDelete,
-	"POST /admin/contests/:contestID/picture":          PermAdminContestUpdate,
-	"GET /admin/contests/:contestID/rank":              PermAdminContestRank,
-	"GET /admin/contests/:contestID/scoreboard":        PermAdminContestRank,
-	"GET /admin/contests/:contestID/timeline":          PermAdminContestRank,
-	"GET /admin/contests/:contestID/scoreboard/export": PermAdminContestRankExport,
-	"GET /admin/contests/:contestID/traffic/overlaps":  PermAdminContestTrafficRead,
-	"GET /admin/contests/:contestID/writeups/export":   PermAdminContestWriteupExport,
+	"GET /admin/contests":                                   PermAdminContestList,
+	"POST /admin/contests":                                  PermAdminContestCreate,
+	"GET /admin/contests/:contestID":                        PermAdminContestRead,
+	"PUT /admin/contests/:contestID":                        PermAdminContestUpdate,
+	"DELETE /admin/contests/:contestID":                     PermAdminContestDelete,
+	"POST /admin/contests/:contestID/picture":               PermAdminContestUpdate,
+	"GET /admin/contests/:contestID/leaderboard":            PermAdminContestRank,
+	"GET /admin/contests/:contestID/leaderboard/challenges": PermAdminContestRank,
+	"GET /admin/contests/:contestID/leaderboard/timeline":   PermAdminContestRank,
+	"GET /admin/contests/:contestID/leaderboard/export":     PermAdminContestRankExport,
+	"GET /admin/contests/:contestID/traffic/overlaps":       PermAdminContestTrafficRead,
+	"GET /admin/contests/:contestID/writeups/export":        PermAdminContestWriteupExport,
 
 	// /admin/contests/:contestID/teams
 	"GET /admin/contests/:contestID/teams":                                            PermAdminTeamList,

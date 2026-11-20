@@ -226,7 +226,7 @@ func GetTeamRankingViews(tx *gorm.DB, contest model.Contest, limit, offset int, 
 	return views, count, model.SuccessRetVal()
 }
 
-func GetScoreboardViews(tx *gorm.DB, contest model.Contest, limit, offset int, showHidden bool) ([]view.ScoreboardTeamView, int64, model.RetVal) {
+func GetLeaderboardMatrixViews(tx *gorm.DB, contest model.Contest, limit, offset int, showHidden bool) ([]view.LeaderboardMatrixTeamView, int64, model.RetVal) {
 	teams, count, ret := GetTeamRanking(tx, contest, limit, offset, showHidden)
 	if !ret.OK {
 		return nil, 0, ret
@@ -289,12 +289,12 @@ func GetScoreboardViews(tx *gorm.DB, contest model.Contest, limit, offset int, s
 			}
 		}
 	}
-	views := make([]view.ScoreboardTeamView, 0, len(teamIDs))
+	views := make([]view.LeaderboardMatrixTeamView, 0, len(teamIDs))
 	for _, team := range teams {
-		challenges := make([]view.ScoreboardChallengeSolveView, 0, len(teamMap[team.ID]))
+		challenges := make([]view.LeaderboardChallengeSolveView, 0, len(teamMap[team.ID]))
 		for challengeRandID, solvedCount := range teamMap[team.ID] {
 			challenge := challengeMap[challengeRandID]
-			challenges = append(challenges, view.ScoreboardChallengeSolveView{
+			challenges = append(challenges, view.LeaderboardChallengeSolveView{
 				ID:       challengeRandID,
 				Total:    globalMap[challengeRandID],
 				Solved:   solvedCount,
@@ -302,7 +302,7 @@ func GetScoreboardViews(tx *gorm.DB, contest model.Contest, limit, offset int, s
 				Category: challenge.Category,
 			})
 		}
-		views = append(views, view.ScoreboardTeamView{
+		views = append(views, view.LeaderboardMatrixTeamView{
 			Team:       team,
 			UserCount:  userCountMap[team.ID],
 			Challenges: challenges,
