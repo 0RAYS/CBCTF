@@ -161,6 +161,7 @@ export default function CheatsManager({ contestId }) {
       </motion.div>
       {dialog?.action === 'detail' && (
         <CheatEvidenceDialog
+          contestId={contestId}
           cheat={dialog.cheat}
           onClose={closeDialog}
           openUserDetail={openUserDetail}

@@ -17,13 +17,13 @@ export default function CheatsTable({
   const { t, i18n } = useTranslation();
   const columns = [
     ['id', 'id', '5%'],
-    ['model', 'model', '15%'],
-    ['type', 'type', '10%'],
-    ['reason_type', 'reasonType', '12%'],
-    ['reason', 'reason', '14%'],
-    ['ip', 'ip', '10%'],
-    ['checked', 'status', '10%'],
-    ['time', 'time', '14%'],
+    ['model', 'model', '13%'],
+    ['type', 'type', '9%'],
+    ['reason_type', 'reasonType', '11%'],
+    ['reason', 'reason', '22%'],
+    ['ip', 'ip', '9%'],
+    ['checked', 'status', '9%'],
+    ['time', 'time', '12%'],
   ].map(([key, label, width]) => ({
     key,
     label: t(`admin.contests.cheats.columns.${label}`),
@@ -44,9 +44,19 @@ export default function CheatsTable({
         );
       case 'reason':
         return (
-          <span className="max-w-50 truncate block" title={item.reason}>
-            {item.reason || '-'}
-          </span>
+          <div className="min-w-0">
+            <span className="max-w-50 truncate block" title={item.reason}>
+              {item.reason || '-'}
+            </span>
+            {item.evidence_summary?.subject && (
+              <span className="block text-xs text-neutral-500 font-mono truncate" title={item.evidence_summary.subject}>
+                {t('admin.contests.cheats.summary.hint', {
+                  actors: item.evidence_summary.actors,
+                  events: item.evidence_summary.events,
+                })}
+              </span>
+            )}
+          </div>
         );
       case 'ip':
         return <CheatIp ip={item.ip} />;

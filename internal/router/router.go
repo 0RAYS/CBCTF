@@ -407,6 +407,7 @@ func Init() *gin.Engine {
 			adminContest.POST("/cheats", CheckCheat)
 			adminContestCheat := adminContest.Group("/cheats/:cheatID", middleware.SetCheat)
 			{
+				adminContestCheat.GET("", GetCheat)
 				adminContestCheat.PUT("", UpdateCheat)
 				adminContestCheat.DELETE("", DeleteCheat(false))
 			}

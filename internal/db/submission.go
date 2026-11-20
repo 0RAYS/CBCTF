@@ -133,6 +133,52 @@ func (s *SubmissionRepo) ListFlagSolvers(contestFlagID uint) ([]FlagSolverRow, m
 	return rows, model.SuccessRetVal()
 }
 
+// ContestIPSubmission 是某个 IP 上的一次 flag 提交及其题目。
+type ContestIPSubmission struct {
+	IP                 string
+	SubmissionID       uint
+	TeamID             uint
+	UserID             uint
+	ContestChallengeID uint
+	ChallengeName      string
+	SubmittedAt        time.Time
+	Value              string
+	Solved             bool
+}
+
+// ListContestIPSubmissions 返回给定 IP 上的 flag 提交，每个 IP 最多保留 limit 条最早记录。
+func (s *SubmissionRepo) ListContestIPSubmissions(contestID uint, ips []string, start, end time.Time, limit int) ([]ContestIPSubmission, model.RetVal) {
+	if contestID == 0 || len(ips) == 0 {
+		return nil, model.SuccessRetVal()
+	}
+
+	var submissions []ContestIPSubmission
+	res := s.DB.Raw(`
+		WITH scoped AS (
+			SELECT submissions.ip, submissions.id AS submission_id, submissions.team_id, submissions.user_id,
+				submissions.contest_challenge_id, submissions.created_at AS submitted_at, submissions.value, submissions.solved,
+				contest_challenges.name AS challenge_name,
+				ROW_NUMBER() OVER (PARTITION BY submissions.ip ORDER BY submissions.created_at ASC, submissions.id ASC) AS event_rank
+			FROM submissions
+			INNER JOIN contest_challenges ON contest_challenges.id = submissions.contest_challenge_id AND contest_challenges.deleted_at IS NULL
+			WHERE submissions.contest_id = ?
+				AND submissions.deleted_at IS NULL
+				AND submissions.created_at >= ? AND submissions.created_at <= ?
+				AND submissions.ip IN ?
+		)
+		SELECT ip, submission_id, team_id, user_id, contest_challenge_id, challenge_name, submitted_at, value, solved
+		FROM scoped
+		WHERE event_rank <= ?
+		ORDER BY ip ASC, submitted_at ASC
+	`, contestID, start, end, ips, limit).Scan(&submissions)
+	if res.Error != nil {
+		target := fmt.Sprintf("contest_id=%d,ips=%d", contestID, len(ips))
+		log.Logger.Warningf("Failed to list contest IP submissions: %s (target=%s)", res.Error, target)
+		return nil, model.FailRetVal(i18n.Model.Submission.GetError, "Submission", target, res.Error)
+	}
+	return submissions, model.SuccessRetVal()
+}
+
 func (s *SubmissionRepo) ListSolvedByTeamID(teamIDL ...uint) ([]model.Submission, model.RetVal) {
 	if len(teamIDL) == 0 {
 		return nil, model.SuccessRetVal()

@@ -203,6 +203,7 @@ test('extracted business models/parsers/serializers stay isolated from runtime l
     'components/features/Admin/challenges/editor/composeValidation.js',
     'components/features/Admin/challenges/editor/guideModel.js',
     'components/features/Admin/challenges/editor/networkPolicy.js',
+    'components/features/Admin/cheats/cheatFormat.js',
     'components/features/Admin/cheats/payloads.js',
     'components/features/Admin/generators/generatorUtils.js',
     'components/features/Admin/batch/batchModel.js',

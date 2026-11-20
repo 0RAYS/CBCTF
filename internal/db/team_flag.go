@@ -80,12 +80,16 @@ type SolvedContestFlagRow struct {
 
 type ContestWrongFlagSubmission struct {
 	CreatedAt          time.Time
+	MatchedSolvedAt    time.Time
 	Value              string
 	IP                 string
 	SubmissionID       uint
 	TeamID             uint
+	UserID             uint
 	ContestChallengeID uint
+	ChallengeName      string
 	MatchedTeamID      uint
+	MatchedUserID      uint
 }
 
 func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWithChallenge, model.RetVal) {
@@ -127,15 +131,29 @@ func (t *TeamFlagRepo) ListContestWrongFlagSubmissions(contestID uint, start, en
 	res := t.DB.Table("submissions").
 		Select(`submissions.id AS submission_id,
 			submissions.team_id,
+			submissions.user_id,
 			submissions.contest_challenge_id,
+			contest_challenges.name AS challenge_name,
 			submissions.value,
 			submissions.ip,
 			submissions.created_at,
-			team_flags.team_id AS matched_team_id`).
+			team_flags.team_id AS matched_team_id,
+			team_flags.user_id AS matched_user_id,
+			owner_solve.solved_at AS matched_solved_at`).
 		Joins("INNER JOIN team_flags ON team_flags.value = submissions.value AND team_flags.deleted_at IS NULL").
 		Joins("INNER JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
 		Joins("INNER JOIN teams AS submission_teams ON submission_teams.id = submissions.team_id AND submission_teams.deleted_at IS NULL").
 		Joins("INNER JOIN teams AS matched_teams ON matched_teams.id = team_flags.team_id AND matched_teams.deleted_at IS NULL").
+		Joins("INNER JOIN contest_challenges ON contest_challenges.id = submissions.contest_challenge_id AND contest_challenges.deleted_at IS NULL").
+		// 合法持有者的首次解题时间决定了冒用发生得有多快。
+		Joins(`LEFT JOIN LATERAL (
+			SELECT MIN(solved_submissions.created_at) AS solved_at
+			FROM submissions AS solved_submissions
+			WHERE solved_submissions.contest_flag_id = team_flags.contest_flag_id
+				AND solved_submissions.team_id = team_flags.team_id
+				AND solved_submissions.solved = true
+				AND solved_submissions.deleted_at IS NULL
+		) AS owner_solve ON TRUE`).
 		Where("submissions.contest_id = ? AND submissions.solved = false AND submissions.deleted_at IS NULL", contestID).
 		Where("submissions.created_at >= ? AND submissions.created_at <= ?", start, end).
 		Where("contest_flags.contest_challenge_id = submissions.contest_challenge_id").
@@ -154,11 +172,15 @@ func (t *TeamFlagRepo) ListContestWrongFlagSubmissions(contestID uint, start, en
 		Where("submission_teams.contest_id = ? AND matched_teams.contest_id = ?", contestID, contestID).
 		Group(`submissions.id,
 			submissions.team_id,
+			submissions.user_id,
 			submissions.contest_challenge_id,
+			contest_challenges.name,
 			submissions.value,
 			submissions.ip,
 			submissions.created_at,
-			team_flags.team_id`).
+			team_flags.team_id,
+			team_flags.user_id,
+			owner_solve.solved_at`).
 		Order("submissions.created_at ASC, submissions.id ASC, team_flags.team_id ASC").
 		Scan(&results)
 	target := fmt.Sprintf("contest_id=%d", contestID)

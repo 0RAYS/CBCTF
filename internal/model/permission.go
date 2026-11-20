@@ -350,6 +350,7 @@ var RoutePermissions = map[string]string{
 	"GET /admin/contests/:contestID/cheats":             PermAdminCheatList,
 	"DELETE /admin/contests/:contestID/cheats":          PermAdminCheatDelete,
 	"POST /admin/contests/:contestID/cheats":            PermAdminCheatCreate,
+	"GET /admin/contests/:contestID/cheats/:cheatID":    PermAdminCheatList,
 	"PUT /admin/contests/:contestID/cheats/:cheatID":    PermAdminCheatUpdate,
 	"DELETE /admin/contests/:contestID/cheats/:cheatID": PermAdminCheatDelete,
 
