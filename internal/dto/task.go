@@ -14,12 +14,7 @@ type ListTasksForm struct {
 }
 
 func (f *ListTasksForm) Validate(ctx *gin.Context) model.RetVal {
-	if _, ok := ctx.GetQuery("limit"); !ok {
-		f.Limit = 20
-	}
-	if _, ok := ctx.GetQuery("offset"); !ok {
-		f.Offset = 0
-	}
+	f.ApplyPaginationDefaults(ctx, 20)
 	return model.SuccessRetVal()
 }
 
@@ -31,11 +26,6 @@ type ListLiveTasksForm struct {
 }
 
 func (f *ListLiveTasksForm) Validate(ctx *gin.Context) model.RetVal {
-	if _, ok := ctx.GetQuery("limit"); !ok {
-		f.Limit = 20
-	}
-	if _, ok := ctx.GetQuery("offset"); !ok {
-		f.Offset = 0
-	}
+	f.ApplyPaginationDefaults(ctx, 20)
 	return model.SuccessRetVal()
 }
