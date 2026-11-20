@@ -85,6 +85,22 @@ func InitContestRepo(tx *gorm.DB) *ContestRepo {
 	}
 }
 
+// ListUnfinished returns the contests that have not ended yet, including the
+// upcoming ones. Use Go duration arithmetic, matching Contest.IsOver exactly.
+func (c *ContestRepo) ListUnfinished(now time.Time) ([]model.Contest, model.RetVal) {
+	contests, ret := InitContestRepo(c.DB.Select("id", "start", "duration")).FindAll()
+	if !ret.OK {
+		return nil, ret
+	}
+	unfinished := make([]model.Contest, 0, len(contests))
+	for _, contest := range contests {
+		if !now.After(contest.Start.Add(contest.Duration)) {
+			unfinished = append(unfinished, contest)
+		}
+	}
+	return unfinished, model.SuccessRetVal()
+}
+
 func (c *ContestRepo) CountUsers(contestID uint) (int64, model.RetVal) {
 	var count int64
 	res := c.DB.Model(&model.UserContest{}).Where("contest_id = ?", contestID).Count(&count)

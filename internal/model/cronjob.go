@@ -17,6 +17,7 @@ const (
 	CloseUnCtrlVictimsCronJob   = "CloseUnCtrlVictims"
 	SyncFrpsPortLocksCronJob    = "SyncFrpsPortLocks"
 	ReindexPostgresCronJob      = "ReindexPostgres"
+	DetectImagesCronJob         = "DetectImages"
 )
 
 var CronJobs = []CronJob{
@@ -34,6 +35,7 @@ var CronJobs = []CronJob{
 	{Name: ClearCheatMutexCronJob, Description: "清理作弊检测锁缓存", Schedule: 10 * time.Minute},
 	{Name: ClearJoinTeamMutexCronJob, Description: "清理队伍加入锁缓存", Schedule: 10 * time.Minute},
 	{Name: ReindexPostgresCronJob, Description: "并发重建 PostgreSQL 数据库索引", Schedule: 24 * time.Hour},
+	{Name: DetectImagesCronJob, Description: "检测题库与未结束比赛题目的镜像状态并刷新镜像检测缓存", Schedule: 30 * time.Minute},
 }
 
 type CronJob struct {

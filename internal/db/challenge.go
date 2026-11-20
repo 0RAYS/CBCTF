@@ -60,15 +60,13 @@ func (c *ChallengeRepo) GetByRandID(randID string, optionsL ...GetOptions) (mode
 // ListForUnfinishedContests includes upcoming and running contests, regardless
 // of visibility. Use Go duration arithmetic, matching Contest.IsOver exactly.
 func (c *ChallengeRepo) ListForUnfinishedContests(now time.Time) ([]model.Challenge, model.RetVal) {
-	contests, ret := InitContestRepo(c.DB.Select("id", "start", "duration")).FindAll()
+	contests, ret := InitContestRepo(c.DB).ListUnfinished(now)
 	if !ret.OK {
 		return nil, ret
 	}
-	var contestIDs []uint
+	contestIDs := make([]uint, 0, len(contests))
 	for _, contest := range contests {
-		if !now.After(contest.Start.Add(contest.Duration)) {
-			contestIDs = append(contestIDs, contest.ID)
-		}
+		contestIDs = append(contestIDs, contest.ID)
 	}
 	if len(contestIDs) == 0 {
 		return []model.Challenge{}, model.SuccessRetVal()

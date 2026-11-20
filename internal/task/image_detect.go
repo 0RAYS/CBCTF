@@ -17,14 +17,18 @@ import (
 
 const imageDetectTaskType = "tasks:detect"
 
-// ImageDetectPayload carries the scope and the images of one detection run.
+// imageDetectUniqueTTL keeps a pending detection from being queued twice. It
+// outlasts the detection timeout, and the scheduled runs are far enough apart
+// to queue the same images again.
+const imageDetectUniqueTTL = 15 * time.Minute
+
+// ImageDetectPayload carries the images of one detection run.
 type ImageDetectPayload struct {
-	Scope  string   `msgpack:"scope"`
 	Images []string `msgpack:"images"`
 }
 
-// EnqueueImageDetect starts a detection run for one scope.
-func EnqueueImageDetect(scope string, images []string) error {
+// EnqueueImageDetect starts a detection run for the given images.
+func EnqueueImageDetect(images []string) error {
 	images = slices.Clone(images)
 	for i := range images {
 		images[i] = k8s.NormalizeImage(images[i])
@@ -34,11 +38,11 @@ func EnqueueImageDetect(scope string, images []string) error {
 	if len(images) == 0 {
 		return nil
 	}
-	payload, err := msgpack.Marshal(ImageDetectPayload{Scope: scope, Images: images})
+	payload, err := msgpack.Marshal(ImageDetectPayload{Images: images})
 	if err != nil {
 		return err
 	}
-	options := []asynq.Option{asynq.MaxRetry(1), asynq.Timeout(10 * time.Minute)}
+	options := []asynq.Option{asynq.MaxRetry(1), asynq.Timeout(10 * time.Minute), asynq.Unique(imageDetectUniqueTTL)}
 	_, err = enqueueTask(imageDetectTaskType, asynq.NewTask(imageDetectTaskType, payload), options...)
 	if errors.Is(err, asynq.ErrDuplicateTask) {
 		return nil
@@ -46,7 +50,8 @@ func EnqueueImageDetect(scope string, images []string) error {
 	return err
 }
 
-// HandleImageDetectTask probes the nodes and keeps the last result only.
+// HandleImageDetectTask probes the nodes and merges the result into the
+// common detection cache.
 func HandleImageDetectTask(ctx context.Context, t *asynq.Task) error {
 	var payload ImageDetectPayload
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
@@ -62,7 +67,7 @@ func HandleImageDetectTask(ctx context.Context, t *asynq.Task) error {
 	if err != nil {
 		return err
 	}
-	return redis.SaveImageDetection(ctx, payload.Scope, model.ImageDetection{
+	return redis.SaveImageDetection(ctx, model.ImageDetection{
 		DetectedAt: time.Now(),
 		Nodes:      detections,
 	})

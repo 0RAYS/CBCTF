@@ -14,8 +14,9 @@ import (
 	"CBCTF/internal/service"
 )
 
-// formatNodeImages reports the last detection result per node. The node list
-// stays live, so a node that joined after the detection is still selectable.
+// formatNodeImages reports the cached detection result per node, limited to
+// the target images. The node list stays live, so a node that joined after
+// the detection is still selectable.
 func formatNodeImages(nodes []string, detection *model.ImageDetection, targetImages []string) []gin.H {
 	targetSet := make(map[string]struct{}, len(targetImages))
 	for _, image := range targetImages {
@@ -75,7 +76,7 @@ func GetImages(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	detection := service.LoadImageDetection(ctx.Request.Context(), service.GlobalImageScope())
+	detection := service.LoadImageDetection(ctx.Request.Context())
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{
 		"nodes":         formatNodeImages(nodes, detection, targetImages),
 		"target_images": targetImages,
@@ -95,7 +96,7 @@ func GetContestChallengeImage(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	detection := service.LoadImageDetection(ctx.Request.Context(), service.ContestImageScope(contest.ID))
+	detection := service.LoadImageDetection(ctx.Request.Context())
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{
 		"nodes":         formatNodeImages(nodes, detection, targetImages),
 		"target_images": targetImages,
@@ -110,7 +111,7 @@ func DetectImages(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ret = service.DetectImages(ctx.Request.Context(), service.GlobalImageScope(), targetImages)
+	ret = service.DetectImages(ctx.Request.Context(), targetImages)
 	ctx.Set(middleware.CTXEventTypeKey, model.DetectImageEventType)
 	ctx.Set(middleware.CTXEventSuccessKey, ret.OK)
 	resp.JSON(ctx, ret)
@@ -124,7 +125,7 @@ func DetectContestChallengeImages(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ret = service.DetectImages(ctx.Request.Context(), service.ContestImageScope(contest.ID), targetImages)
+	ret = service.DetectImages(ctx.Request.Context(), targetImages)
 	ctx.Set(middleware.CTXEventTypeKey, model.DetectImageEventType)
 	ctx.Set(middleware.CTXEventSuccessKey, ret.OK)
 	resp.JSON(ctx, ret)

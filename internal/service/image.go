@@ -88,36 +88,55 @@ func ListNodeNames(ctx context.Context) ([]string, model.RetVal) {
 	return names, model.SuccessRetVal()
 }
 
-// GlobalImageScope identifies one detection scope, so the last result of a scope
-// never mixes with another one.
-func GlobalImageScope() string { return "global" }
+// DetectionImages returns the images a detection run has to cover: the whole
+// challenge library and the images of the unfinished contests. A contest
+// challenge is a copy of a library challenge, so it can name images the
+// library entry does not.
+func DetectionImages(tx *gorm.DB, now time.Time) ([]string, model.RetVal) {
+	images, ret := ListChallengeImages(tx)
+	if !ret.OK {
+		return nil, ret
+	}
+	contests, ret := db.InitContestRepo(tx).ListUnfinished(now)
+	if !ret.OK {
+		return nil, ret
+	}
+	for _, contest := range contests {
+		contestImages, ret := ListContestChallengeImages(tx, contest)
+		if !ret.OK {
+			return nil, ret
+		}
+		images = append(images, contestImages...)
+	}
+	slices.Sort(images)
+	return slices.Compact(images), model.SuccessRetVal()
+}
 
-func ContestImageScope(contestID uint) string { return fmt.Sprintf("contest:%d", contestID) }
-
-// DetectImages starts a detection run for one scope. The run probes the nodes
-// with imagePullPolicy: Never and keeps only its last result.
-func DetectImages(ctx context.Context, scope string, images []string) model.RetVal {
+// DetectImages starts a detection run for the given images. The run probes the
+// nodes with imagePullPolicy: Never and merges its result into the common
+// detection cache.
+func DetectImages(ctx context.Context, images []string) model.RetVal {
 	batch := model.NewBatch(1)
 	if len(images) == 0 {
-		batch.Skip(scope, "no images")
+		batch.Skip("images", "no images")
 		return batch.Result(ctx)
 	}
-	if err := task.EnqueueImageDetect(scope, images); err != nil {
-		log.Logger.Warningf("Failed to enqueue image detection: scope=%s error=%v", scope, err)
-		batch.Fail(scope, "enqueue", model.FailRetVal(i18n.Task.EnqueueError, "ImageDetect", scope, err))
+	if err := task.EnqueueImageDetect(images); err != nil {
+		log.Logger.Warningf("Failed to enqueue image detection: error=%v", err)
+		batch.Fail("images", "enqueue", model.FailRetVal(i18n.Task.EnqueueError, "ImageDetect", "", err))
 		return batch.Result(ctx)
 	}
-	batch.Success(scope, "queued")
+	batch.Success("images", "queued")
 	return batch.Result(ctx)
 }
 
-// LoadImageDetection returns the last detection result of a scope, if any.
-func LoadImageDetection(ctx context.Context, scope string) *model.ImageDetection {
+// LoadImageDetection returns the common detection result, if any.
+func LoadImageDetection(ctx context.Context) *model.ImageDetection {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	detection, err := redis.LoadImageDetection(ctx, scope)
+	detection, err := redis.LoadImageDetection(ctx)
 	if err != nil {
-		log.Logger.Warningf("Failed to load the image detection result: scope=%s error=%v", scope, err)
+		log.Logger.Warningf("Failed to load the image detection result: error=%v", err)
 		return nil
 	}
 	return detection
