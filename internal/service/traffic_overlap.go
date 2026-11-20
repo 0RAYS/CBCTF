@@ -22,7 +22,7 @@ type TrafficOverlap struct {
 }
 
 func GetContestTrafficOverlaps(ctx context.Context, contest model.Contest) ([]TrafficOverlap, model.RetVal) {
-	rows, ret := db.InitTrafficRepo(db.DB.WithContext(ctx)).ListSharedContestVictimIPs(contest.ID, contest.Start, contest.Start.Add(contest.Duration))
+	rows, ret := db.InitTrafficRepo(db.DB.WithContext(ctx)).ListSharedContestVictimIPs(contest.ID, contest.Start, contest.End())
 	if !ret.OK {
 		return nil, ret
 	}

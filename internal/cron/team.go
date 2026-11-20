@@ -20,7 +20,7 @@ func clearEmptyTeamTask() model.RetVal {
 	}
 	contestIDL := make([]uint, 0)
 	for _, contest := range contests {
-		if time.Now().Sub(contest.Start.Add(contest.Duration)) > job.Schedule*2 {
+		if !contest.EndedWithin(time.Now(), job.Schedule*2) {
 			continue
 		}
 		contestIDL = append(contestIDL, contest.ID)

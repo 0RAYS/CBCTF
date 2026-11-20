@@ -107,7 +107,7 @@ func shouldKeepUserGroup(userTeamMap map[uint]uint, userIDs []uint) bool {
 }
 
 func CheckWebReqIP(tx *gorm.DB, contest model.Contest) model.RetVal {
-	start, end := contest.Start, contest.Start.Add(contest.Duration)
+	start, end := contest.Start, contest.End()
 	rows, ret := db.InitRequestRepo(tx).ListSharedContestUserIPs(contest.ID, start, end)
 	if !ret.OK {
 		return ret
@@ -194,7 +194,7 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) model.RetVal {
 }
 
 func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) model.RetVal {
-	start, end := contest.Start, contest.Start.Add(contest.Duration)
+	start, end := contest.Start, contest.End()
 	rows, ret := db.InitTrafficRepo(tx).ListSharedContestVictimIPs(contest.ID, start, end)
 	if !ret.OK {
 		return ret
@@ -276,7 +276,7 @@ type wrongFlagGroup struct {
 }
 
 func CheckWrongFlag(tx *gorm.DB, contest model.Contest) model.RetVal {
-	rows, ret := db.InitTeamFlagRepo(tx).ListContestWrongFlagSubmissions(contest.ID, contest.Start, contest.Start.Add(contest.Duration))
+	rows, ret := db.InitTeamFlagRepo(tx).ListContestWrongFlagSubmissions(contest.ID, contest.Start, contest.End())
 	if !ret.OK {
 		return ret
 	}

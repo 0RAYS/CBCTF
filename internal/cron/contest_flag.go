@@ -24,7 +24,7 @@ func updateFlagScoreTask() model.RetVal {
 	}
 	ids := make([]uint, 0, len(contests))
 	for _, contest := range contests {
-		if time.Since(contest.Start.Add(contest.Duration)) <= job.Schedule*2 {
+		if contest.EndedWithin(time.Now(), job.Schedule*2) {
 			ids = append(ids, contest.ID)
 		}
 	}

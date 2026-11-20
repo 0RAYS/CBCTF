@@ -31,7 +31,7 @@ func updateTeamRankingTask() model.RetVal {
 			return batch.Result(ctx)
 		}
 		key := fmt.Sprint(contest.ID)
-		if time.Now().Sub(contest.Start.Add(contest.Duration)) > job.Schedule*2 {
+		if !contest.EndedWithin(time.Now(), job.Schedule*2) {
 			batch.Skip(key, "outside_refresh_window")
 			continue
 		}

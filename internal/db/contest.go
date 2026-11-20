@@ -94,7 +94,7 @@ func (c *ContestRepo) ListUnfinished(now time.Time) ([]model.Contest, model.RetV
 	}
 	unfinished := make([]model.Contest, 0, len(contests))
 	for _, contest := range contests {
-		if !now.After(contest.Start.Add(contest.Duration)) {
+		if !now.After(contest.End()) {
 			unfinished = append(unfinished, contest)
 		}
 	}

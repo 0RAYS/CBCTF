@@ -36,8 +36,19 @@ type Contest struct {
 	BaseModel
 }
 
+// End returns the moment the contest stops scoring.
+func (c Contest) End() time.Time {
+	return c.Start.Add(c.Duration)
+}
+
+// EndedWithin reports whether the contest ended within the given window
+// before now. A contest that has not ended yet is always inside the window.
+func (c Contest) EndedWithin(now time.Time, window time.Duration) bool {
+	return now.Sub(c.End()) <= window
+}
+
 func (c Contest) IsOver() bool {
-	return time.Now().After(c.Start.Add(c.Duration))
+	return time.Now().After(c.End())
 }
 
 func (c Contest) IsComing() bool {
