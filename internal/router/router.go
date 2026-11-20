@@ -106,12 +106,13 @@ func Init() *gin.Engine {
 		)
 	}
 
+	auth.GET("/users/rank", GetUserRanking)
+
 	contest := auth.Group("/contests/:contestID", middleware.SetContest)
 	{
 		contest.GET("", GetContest)
 		contest.GET("/rank", GetTeamRanking)
 		contest.GET("/scoreboard", GetScoreboard)
-		contest.GET("/scoreboard/export", ExportScoreboard)
 		contest.GET("/timeline", GetRankTimeline)
 		contest.POST("/teams/join", middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam)
 		contest.POST("/teams/create", middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam)

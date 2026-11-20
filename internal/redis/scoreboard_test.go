@@ -43,7 +43,7 @@ func TestRankingSnapshotPreservesDatabaseOrderAndEmptyLists(t *testing.T) {
 	if ret := UpdateTeamRanking(context.Background(), 1, teams); !ret.OK {
 		t.Fatal(ret)
 	}
-	got, ret := GetTeamRanking(context.Background(), 1, 0, 1)
+	got, ret := GetTeamRanking(context.Background(), 1)
 	if !ret.OK || len(got) != 2 || got[0].ID != 2 || !got[0].Last.Equal(teams[0].Last) {
 		t.Fatalf("ordering/precision lost: %+v %+v", got, ret)
 	}
@@ -53,7 +53,7 @@ func TestRankingSnapshotPreservesDatabaseOrderAndEmptyLists(t *testing.T) {
 	if ret := UpdateTeamRanking(context.Background(), 1, []model.Team{}); !ret.OK {
 		t.Fatal(ret)
 	}
-	got, ret = GetTeamRanking(context.Background(), 1, 0, 10)
+	got, ret = GetTeamRanking(context.Background(), 1)
 	if !ret.OK || len(got) != 0 {
 		t.Fatalf("empty snapshot not preserved: %+v %+v", got, ret)
 	}

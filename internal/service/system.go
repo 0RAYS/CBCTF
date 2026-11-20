@@ -69,7 +69,7 @@ func GetHomePageData(tx *gorm.DB) gin.H {
 	appendCount("Challenges", count, ret)
 	count, ret = db.InitSubmissionRepo(tx).Count()
 	appendCount("Submissions", count, ret)
-	users, _, _ := GetUserRanking(tx, 5, 0)
+	users, _, _ := GetUserRanking(tx, 5, 0, false)
 	scoreboard := make([]gin.H, 0, len(users))
 	for _, user := range users {
 		scoreboard = append(scoreboard, gin.H{

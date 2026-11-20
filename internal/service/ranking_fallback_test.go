@@ -41,7 +41,7 @@ func TestRankingCacheFailureReadsDatabaseWithoutRebuild(t *testing.T) {
 		}
 		tx.RowsAffected = 2
 	})
-	teams, count, ret := GetTeamRanking(database, model.Contest{ID: 1}, 10, 0)
+	teams, count, ret := GetTeamRanking(database, model.Contest{ID: 1}, 10, 0, false)
 	if !ret.OK || count != 2 || len(teams) != 2 || teams[0].ID != 2 || teams[0].Rank != 1 || writes != 0 || hook.calls != 1 {
 		t.Fatalf("cache error caused rebuild or lost DB data: %+v count=%d ret=%+v writes=%d cache_calls=%d", teams, count, ret, writes, hook.calls)
 	}

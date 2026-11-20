@@ -57,13 +57,55 @@ func UpdateTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([
 }
 
 func rankedTeams(tx *gorm.DB, contestID uint) ([]model.Team, model.RetVal) {
-	return db.InitTeamRepo(tx).FindAll(db.GetOptions{Conditions: map[string]any{"contest_id": contestID, "banned": false}, Sort: []string{"score DESC", "last ASC", "id ASC"}})
+	return db.InitTeamRepo(tx).FindAll(db.GetOptions{Conditions: map[string]any{"contest_id": contestID, "banned": false}, Sort: teamRankingSort})
 }
 
-func GetTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([]model.Team, int64, model.RetVal) {
-	count, ret := db.InitTeamRepo(tx).Count(db.CountOptions{
-		Conditions: map[string]any{"contest_id": contest.ID, "banned": false},
+// 排行榜排序规则：积分降序、最后得分时间升序、ID 升序。
+var (
+	teamRankingSort = []string{"score DESC", "last ASC", "id ASC"}
+	userRankingSort = []string{"score DESC", "solved DESC", "id ASC"}
+)
+
+// teamRankingConditions 队伍排行榜查询条件，隐藏队伍是否参与排名由 showHidden 决定。
+func teamRankingConditions(contestID uint, showHidden bool) map[string]any {
+	conditions := map[string]any{"contest_id": contestID, "banned": false}
+	if !showHidden {
+		conditions["hidden"] = false
+	}
+	return conditions
+}
+
+// userRankingConditions 用户排行榜查询条件，隐藏用户是否参与排名由 showHidden 决定。
+func userRankingConditions(showHidden bool) map[string]any {
+	conditions := map[string]any{"banned": false}
+	if !showHidden {
+		conditions["hidden"] = false
+	}
+	return conditions
+}
+
+// teamRankingPage 返回队伍排行榜当前页。缓存快照与数据库一致时使用快照，否则回落到数据库。
+func teamRankingPage(tx *gorm.DB, contestID uint, showHidden bool, count int64, start, end int) ([]model.Team, model.RetVal) {
+	if cached, cacheRet := redis.GetTeamRanking(tx.Statement.Context, contestID); cacheRet.OK {
+		visible := cached
+		if !showHidden {
+			visible = slices.DeleteFunc(cached, func(team model.Team) bool { return team.Hidden })
+		}
+		if int64(len(visible)) == count {
+			return visible[start:end], model.SuccessRetVal()
+		}
+	}
+	teams, _, ret := db.InitTeamRepo(tx).List(end-start, start, db.GetOptions{
+		Conditions: teamRankingConditions(contestID, showHidden),
+		Sort:       teamRankingSort,
 	})
+	return teams, ret
+}
+
+// GetTeamRanking 返回比赛队伍排名。名次按参与排名的队伍连续编号，隐藏队伍被剔除时不留空缺。
+func GetTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int, showHidden bool) ([]model.Team, int64, model.RetVal) {
+	conditions := teamRankingConditions(contest.ID, showHidden)
+	count, ret := db.InitTeamRepo(tx).Count(db.CountOptions{Conditions: conditions})
 	if !ret.OK {
 		return nil, 0, ret
 	}
@@ -71,14 +113,9 @@ func GetTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([]mo
 	if end-start <= 0 {
 		return nil, count, model.SuccessRetVal()
 	}
-	teams, ret := redis.GetTeamRanking(tx.Statement.Context, contest.ID, int64(start), int64(end-1))
-	if !ret.OK || len(teams) != end-start {
-		// Cache failure is not a reason to mutate scores or recursively rebuild.
-		var dbRet model.RetVal
-		teams, _, dbRet = db.InitTeamRepo(tx).List(end-start, start, db.GetOptions{Conditions: map[string]any{"contest_id": contest.ID, "banned": false}, Sort: []string{"score DESC", "last ASC", "id ASC"}})
-		if !dbRet.OK {
-			return nil, count, dbRet
-		}
+	teams, ret := teamRankingPage(tx, contest.ID, showHidden, count, start, end)
+	if !ret.OK {
+		return nil, count, ret
 	}
 	for i := range teams {
 		teams[i].Rank = start + i + 1
@@ -89,7 +126,7 @@ func GetTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([]mo
 func UpdateUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, model.RetVal) {
 	users, _, ret := db.InitUserRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"banned": false},
-		Sort:       []string{"score DESC", "solved DESC", "id ASC"},
+		Sort:       userRankingSort,
 	})
 	if !ret.OK {
 		return nil, 0, ret
@@ -101,29 +138,56 @@ func UpdateUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, mod
 	return users[start:end], int64(len(users)), model.SuccessRetVal()
 }
 
-func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, model.RetVal) {
-	count, ret := db.InitUserRepo(tx).Count(db.CountOptions{
-		Conditions: map[string]any{"banned": false},
-	})
+func GetUserRanking(tx *gorm.DB, limit, offset int, showHidden bool) ([]model.User, int64, model.RetVal) {
+	conditions := userRankingConditions(showHidden)
+	count, ret := db.InitUserRepo(tx).Count(db.CountOptions{Conditions: conditions})
 	if !ret.OK {
-		return nil, count, ret
+		return nil, 0, ret
 	}
 	start, end := utils.TidyPaginate(int(count), limit, offset)
 	if end-start <= 0 {
 		return nil, count, model.SuccessRetVal()
 	}
-	users, ret := redis.GetUserRanking(tx.Statement.Context, int64(start), int64(end-1))
-	if !ret.OK || len(users) != end-start {
-		var dbRet model.RetVal
-		users, _, dbRet = db.InitUserRepo(tx).List(end-start, start, db.GetOptions{Conditions: map[string]any{"banned": false}, Sort: []string{"score DESC", "solved DESC", "id ASC"}})
-		if !dbRet.OK {
-			return nil, count, dbRet
-		}
+	users, ret := userRankingPage(tx, showHidden, count, start, end)
+	if !ret.OK {
+		return nil, count, ret
 	}
 	return users, count, model.SuccessRetVal()
 }
 
-func GetTeamRankingViews(tx *gorm.DB, contest model.Contest, limit, offset int, admin bool) ([]view.TeamRankingView, int64, model.RetVal) {
+// userRankingPage 返回用户排行榜当前页。缓存快照与数据库一致时使用快照，否则回落到数据库。
+func userRankingPage(tx *gorm.DB, showHidden bool, count int64, start, end int) ([]model.User, model.RetVal) {
+	if cached, cacheRet := redis.GetUserRanking(tx.Statement.Context); cacheRet.OK {
+		visible := cached
+		if !showHidden {
+			visible = slices.DeleteFunc(cached, func(user model.User) bool { return user.Hidden })
+		}
+		if int64(len(visible)) == count {
+			return visible[start:end], model.SuccessRetVal()
+		}
+	}
+	users, _, ret := db.InitUserRepo(tx).List(end-start, start, db.GetOptions{
+		Conditions: userRankingConditions(showHidden),
+		Sort:       userRankingSort,
+	})
+	return users, ret
+}
+
+// GetUserRankingViews 返回用户总分榜视图，名次按参与排名的用户连续编号。
+func GetUserRankingViews(tx *gorm.DB, limit, offset int, showHidden bool) ([]view.UserRankingView, int64, model.RetVal) {
+	users, count, ret := GetUserRanking(tx, limit, offset, showHidden)
+	if !ret.OK {
+		return nil, 0, ret
+	}
+	start := max(offset, 0)
+	views := make([]view.UserRankingView, 0, len(users))
+	for i, user := range users {
+		views = append(views, view.UserRankingView{User: user, Rank: start + i + 1})
+	}
+	return views, count, model.SuccessRetVal()
+}
+
+func GetTeamRankingViews(tx *gorm.DB, contest model.Contest, limit, offset int, showHidden bool) ([]view.TeamRankingView, int64, model.RetVal) {
 	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
@@ -131,7 +195,7 @@ func GetTeamRankingViews(tx *gorm.DB, contest model.Contest, limit, offset int, 
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	teams, count, ret := GetTeamRanking(tx, contest, limit, offset)
+	teams, count, ret := GetTeamRanking(tx, contest, limit, offset, showHidden)
 	if !ret.OK {
 		return nil, 0, ret
 	}
@@ -153,10 +217,6 @@ func GetTeamRankingViews(tx *gorm.DB, contest model.Contest, limit, offset int, 
 	}
 	views := make([]view.TeamRankingView, 0, len(teams))
 	for _, team := range teams {
-		if !admin && team.Hidden {
-			count--
-			continue
-		}
 		views = append(views, view.TeamRankingView{
 			Team:      team,
 			UserCount: userCountMap[team.ID],
@@ -166,8 +226,8 @@ func GetTeamRankingViews(tx *gorm.DB, contest model.Contest, limit, offset int, 
 	return views, count, model.SuccessRetVal()
 }
 
-func GetScoreboardViews(tx *gorm.DB, contest model.Contest, limit, offset int, admin bool) ([]view.ScoreboardTeamView, int64, model.RetVal) {
-	teams, count, ret := GetTeamRanking(tx, contest, limit, offset)
+func GetScoreboardViews(tx *gorm.DB, contest model.Contest, limit, offset int, showHidden bool) ([]view.ScoreboardTeamView, int64, model.RetVal) {
+	teams, count, ret := GetTeamRanking(tx, contest, limit, offset, showHidden)
 	if !ret.OK {
 		return nil, 0, ret
 	}
@@ -201,10 +261,6 @@ func GetScoreboardViews(tx *gorm.DB, contest model.Contest, limit, offset int, a
 	teamMap := make(map[uint]map[string]int)
 	teamIDs := make([]uint, 0, len(teams))
 	for _, team := range teams {
-		if !admin && team.Hidden {
-			count--
-			continue
-		}
 		teamMap[team.ID] = make(map[string]int)
 		for challengeID := range globalMap {
 			teamMap[team.ID][challengeID] = 0
@@ -235,9 +291,6 @@ func GetScoreboardViews(tx *gorm.DB, contest model.Contest, limit, offset int, a
 	}
 	views := make([]view.ScoreboardTeamView, 0, len(teamIDs))
 	for _, team := range teams {
-		if !admin && team.Hidden {
-			continue
-		}
 		challenges := make([]view.ScoreboardChallengeSolveView, 0, len(teamMap[team.ID]))
 		for challengeRandID, solvedCount := range teamMap[team.ID] {
 			challenge := challengeMap[challengeRandID]
@@ -259,9 +312,9 @@ func GetScoreboardViews(tx *gorm.DB, contest model.Contest, limit, offset int, a
 }
 
 // GetLeaderboardExportView 汇总排行榜导出所需的排名与分题解题明细。
-// 非管理员看不到隐藏队伍与隐藏题目，名次沿用积分榜中的位置。
-func GetLeaderboardExportView(tx *gorm.DB, contest model.Contest, admin bool) (view.LeaderboardExportView, model.RetVal) {
-	teams, _, ret := GetTeamRanking(tx, contest, -1, 0)
+// 导出是管理员视角的产物，隐藏题目全部导出；隐藏队伍是否出现在导出中由 showHidden 决定。
+func GetLeaderboardExportView(tx *gorm.DB, contest model.Contest, showHidden bool) (view.LeaderboardExportView, model.RetVal) {
+	teams, _, ret := GetTeamRanking(tx, contest, -1, 0, showHidden)
 	if !ret.OK {
 		return view.LeaderboardExportView{}, ret
 	}
@@ -276,27 +329,14 @@ func GetLeaderboardExportView(tx *gorm.DB, contest model.Contest, admin bool) (v
 		return view.LeaderboardExportView{}, ret
 	}
 
-	visibleChallenges := make([]model.ContestChallenge, 0, len(contestChallenges))
-	for _, contestChallenge := range contestChallenges {
-		if contestChallenge.Hidden && !admin {
-			continue
-		}
-		visibleChallenges = append(visibleChallenges, contestChallenge)
-	}
-	slices.SortFunc(visibleChallenges, func(a, b model.ContestChallenge) int {
+	slices.SortFunc(contestChallenges, func(a, b model.ContestChallenge) int {
 		if order := strings.Compare(a.Category, b.Category); order != 0 {
 			return order
 		}
 		return strings.Compare(a.Name, b.Name)
 	})
 
-	visibleTeams := make([]model.Team, 0, len(teams))
-	for _, team := range teams {
-		if team.Hidden && !admin {
-			continue
-		}
-		visibleTeams = append(visibleTeams, team)
-	}
+	visibleTeams := teams
 	teamIDs := make([]uint, 0, len(visibleTeams))
 	for _, team := range visibleTeams {
 		teamIDs = append(teamIDs, team.ID)
@@ -326,10 +366,10 @@ func GetLeaderboardExportView(tx *gorm.DB, contest model.Contest, admin bool) (v
 
 	exportView := view.LeaderboardExportView{
 		ContestName: contest.Name,
-		Challenges:  make([]view.LeaderboardChallengeView, 0, len(visibleChallenges)),
+		Challenges:  make([]view.LeaderboardChallengeView, 0, len(contestChallenges)),
 		Teams:       make([]view.LeaderboardTeamView, 0, len(visibleTeams)),
 	}
-	for _, contestChallenge := range visibleChallenges {
+	for _, contestChallenge := range contestChallenges {
 		exportView.Challenges = append(exportView.Challenges, view.LeaderboardChallengeView{
 			ID:       contestChallenge.ID,
 			Name:     contestChallenge.Name,
@@ -352,16 +392,12 @@ func GetLeaderboardExportView(tx *gorm.DB, contest model.Contest, admin bool) (v
 	return exportView, model.SuccessRetVal()
 }
 
-func GetRankTimelineViews(tx *gorm.DB, contest model.Contest) ([]view.RankTimelineTeamView, model.RetVal) {
-	teams, _, ret := GetTeamRanking(tx, contest, 10, 0)
+func GetRankTimelineViews(tx *gorm.DB, contest model.Contest, showHidden bool) ([]view.RankTimelineTeamView, model.RetVal) {
+	teams, _, ret := GetTeamRanking(tx, contest, 10, 0, showHidden)
 	if !ret.OK {
 		return nil, ret
 	}
-	// Redis returns current ranking order, but each cached team may carry an old Rank.
-	// Assign positions before filtering so omitted zero-score teams do not shift ranks.
-	for i := range teams {
-		teams[i].Rank = i + 1
-	}
+	// 名次在剔除零分队伍前确定，被省略的队伍不会挤占其他队伍的名次。
 	teams = slices.DeleteFunc(teams, func(team model.Team) bool {
 		return team.Score == 0
 	})

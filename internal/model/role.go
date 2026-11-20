@@ -15,7 +15,7 @@ var DefaultRoles = []Role{
 var DefaultRolePermissionMap = map[string][]string{
 	AdminRoleName: {
 		PermSelfRead, PermSelfUpdate, PermSelfDelete, PermSelfActivate,
-		PermUserContestRead, PermUserContestRank,
+		PermUserContestRead, PermUserContestRank, PermUserRank,
 		PermUserTeamCreate, PermUserTeamJoin, PermUserTeamRead, PermUserTeamUpdate, PermUserTeamDelete,
 		PermUserNoticeList,
 		PermUserChallengeList, PermUserChallengeRead, PermUserChallengeInit, PermUserChallengeReset, PermUserChallengeSubmit,
@@ -52,7 +52,7 @@ var DefaultRolePermissionMap = map[string][]string{
 	},
 	OrganizerRoleName: {
 		PermSelfRead, PermSelfUpdate, PermSelfDelete, PermSelfActivate,
-		PermUserContestRead, PermUserContestRank,
+		PermUserContestRead, PermUserContestRank, PermUserRank,
 		PermUserTeamCreate, PermUserTeamJoin, PermUserTeamRead, PermUserTeamUpdate, PermUserTeamDelete,
 		PermUserNoticeList,
 		PermUserChallengeList, PermUserChallengeRead, PermUserChallengeInit, PermUserChallengeReset, PermUserChallengeSubmit,
@@ -77,7 +77,7 @@ var DefaultRolePermissionMap = map[string][]string{
 	},
 	UserRoleName: {
 		PermSelfRead, PermSelfUpdate, PermSelfDelete, PermSelfActivate,
-		PermUserContestRead, PermUserContestRank,
+		PermUserContestRead, PermUserContestRank, PermUserRank,
 		PermUserTeamCreate, PermUserTeamJoin, PermUserTeamRead, PermUserTeamUpdate, PermUserTeamDelete,
 		PermUserNoticeList,
 		PermUserChallengeList, PermUserChallengeRead, PermUserChallengeInit, PermUserChallengeReset, PermUserChallengeSubmit,

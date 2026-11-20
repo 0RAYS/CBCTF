@@ -9,6 +9,8 @@ const (
 	PermUserContestRead = "user:contest:read"
 	PermUserContestRank = "user:contest:rank"
 
+	PermUserRank = "user:rank:read"
+
 	PermUserTeamCreate = "user:team:create"
 	PermUserTeamJoin   = "user:team:join"
 	PermUserTeamRead   = "user:team:read"
@@ -164,12 +166,14 @@ var RoutePermissions = map[string]string{
 	"POST /me/picture":    PermSelfUpdate,
 	"POST /me/activate":   PermSelfActivate,
 
+	// /users
+	"GET /users/rank": PermUserRank,
+
 	// /contests/:contestID
 	"GET /contests/:contestID":                   PermUserContestRead,
-	"GET /contests/:contestID/rank":              PermUserContestRank,
-	"GET /contests/:contestID/scoreboard":        PermUserContestRank,
-	"GET /contests/:contestID/timeline":          PermUserContestRank,
-	"GET /contests/:contestID/scoreboard/export": PermUserContestRank,
+	"GET /contests/:contestID/rank":       PermUserContestRank,
+	"GET /contests/:contestID/scoreboard": PermUserContestRank,
+	"GET /contests/:contestID/timeline":   PermUserContestRank,
 
 	"POST /contests/:contestID/teams/join":   PermUserTeamJoin,
 	"POST /contests/:contestID/teams/create": PermUserTeamCreate,
@@ -416,6 +420,8 @@ var Permissions = []Permission{
 
 	{Name: PermUserContestRead, Resource: "user:contest", Operation: "read", Description: "查看比赛详情"},
 	{Name: PermUserContestRank, Resource: "user:contest", Operation: "rank", Description: "查看比赛排名"},
+
+	{Name: PermUserRank, Resource: "user:rank", Operation: "read", Description: "查看用户总分榜"},
 
 	{Name: PermUserTeamCreate, Resource: "user:team", Operation: "create", Description: "创建队伍"},
 	{Name: PermUserTeamJoin, Resource: "user:team", Operation: "join", Description: "加入队伍"},
