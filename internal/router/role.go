@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 )
@@ -60,7 +59,7 @@ func CreateRole(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	redis.DeleteRBAC()
+	invalidateRBAC()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetRoleResp(role)))
 }
@@ -75,7 +74,7 @@ func UpdateRole(ctx *gin.Context) {
 	role := middleware.GetRole(ctx)
 	ret := service.UpdateRole(db.DB.WithContext(ctx.Request.Context()), role, form)
 	if ret.OK {
-		redis.DeleteRBAC()
+		invalidateRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -86,7 +85,7 @@ func DeleteRole(ctx *gin.Context) {
 	role := middleware.GetRole(ctx)
 	ret := service.DeleteRole(db.DB.WithContext(ctx.Request.Context()), role)
 	if ret.OK {
-		redis.DeleteRBAC()
+		invalidateRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -102,7 +101,7 @@ func AssignPermission(ctx *gin.Context) {
 	role := middleware.GetRole(ctx)
 	ret := service.AssignPermission(db.DB.WithContext(ctx.Request.Context()), role, form)
 	if ret.OK {
-		redis.DeleteRBAC()
+		invalidateRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -118,7 +117,7 @@ func RevokePermission(ctx *gin.Context) {
 	role := middleware.GetRole(ctx)
 	ret := service.RevokePermission(db.DB.WithContext(ctx.Request.Context()), role, form)
 	if ret.OK {
-		redis.DeleteRBAC()
+		invalidateRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)

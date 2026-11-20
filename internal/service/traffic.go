@@ -377,21 +377,21 @@ func GetTraffic(ctx context.Context, victim model.Victim, form dto.GetTrafficFor
 	}, model.SuccessRetVal()
 }
 
-func loadTrafficSnapshot(ctx context.Context, victim model.Victim) (*traffic.PcapDirResult, model.RetVal) {
+func loadTrafficSnapshot(ctx context.Context, victim model.Victim) (traffic.PcapDirResult, model.RetVal) {
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 	snapshot, ret := redis.GetTraffic(ctx, victim)
 	if ret.OK && snapshot != nil {
-		return snapshot, ret
+		return *snapshot, ret
 	}
 	result, err := traffic.ReadPcapDir(ctx, victim.TrafficBasePath(), victim.TrafficProxyPorts())
 	if err != nil {
-		return nil, model.FailRetVal(i18n.Model.File.ReadPcapError, "Traffic", victim.TrafficBasePath(), err)
+		return traffic.PcapDirResult{}, model.FailRetVal(i18n.Model.File.ReadPcapError, "Traffic", victim.TrafficBasePath(), err)
 	}
 	if ret = redis.StoreTraffic(ctx, victim, &result); !ret.OK {
 		log.Logger.Warningf("Traffic cache unavailable: victim_id=%d reason=%v", victim.ID, ret)
 	}
-	return &result, model.SuccessRetVal()
+	return result, model.SuccessRetVal()
 }
 
 func emptyTrafficTopology(victim model.Victim, form dto.GetTrafficForm) resp.TrafficTopologyResp {

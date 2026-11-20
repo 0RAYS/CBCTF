@@ -108,7 +108,7 @@ func copyChallengeFiles(tx *gorm.DB, challenge model.Challenge, contestChallenge
 		record.Size = info.Size()
 	}
 	if _, ret := db.InitFileRepo(tx).Create(record); !ret.OK {
-		log.Logger.Warningf("Failed to record contest challenge attachment: contest_challenge_id=%d", contestChallenge.ID)
+		log.Logger.Warningf("Failed to record contest challenge attachment: contest_challenge_id=%d reason=%v", contestChallenge.ID, ret)
 	}
 	return model.SuccessRetVal()
 }
@@ -119,12 +119,12 @@ func copyFileContent(source, target string) error {
 	if err != nil {
 		return err
 	}
-	defer src.Close()
+	defer func() { _ = src.Close() }()
 	dst, err := os.Create(target)
 	if err != nil {
 		return err
 	}
-	defer dst.Close()
+	defer func() { _ = dst.Close() }()
 	if _, err = io.Copy(dst, src); err != nil {
 		return err
 	}

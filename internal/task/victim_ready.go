@@ -57,7 +57,7 @@ func reconcileVictim(ctx context.Context, id uint) error {
 		if ret.Msg == i18n.Model.NotFound {
 			return nil
 		}
-		return fmt.Errorf("read victim readiness: %w", ret)
+		return fmt.Errorf("read victim readiness: %w", ret.AsError())
 	}
 	if victim.Status != model.PendingVictimStatus {
 		return nil
@@ -79,7 +79,7 @@ func reconcileVictim(ctx context.Context, id uint) error {
 		}
 		ret = repo.UpdateIfStatus(id, model.PendingVictimStatus, db.UpdateVictimOptions{Status: new(model.TerminatingVictimStatus)})
 		if !ret.OK {
-			return fmt.Errorf("mark terminating: %w", ret)
+			return fmt.Errorf("mark terminating: %w", ret.AsError())
 		}
 		return nil
 	}
@@ -93,7 +93,7 @@ func reconcileVictim(ctx context.Context, id uint) error {
 		ExposedEndpoints: &victim.ExposedEndpoints,
 	})
 	if !ret.OK {
-		return fmt.Errorf("mark running: %w", ret)
+		return fmt.Errorf("mark running: %w", ret.AsError())
 	}
 	log.Logger.Infof("Victim is running: victim_id=%d", id)
 	return nil

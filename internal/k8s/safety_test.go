@@ -154,6 +154,9 @@ func TestImagePullJobHasBoundedLifetimeAndNoCredentials(t *testing.T) {
 	if !ret.OK {
 		t.Fatal(ret)
 	}
+	if job == nil {
+		t.Fatal("no job returned")
+	}
 	pod := job.Spec.Template.Spec
 	if pod.AutomountServiceAccountToken == nil || *pod.AutomountServiceAccountToken ||
 		pod.EnableServiceLinks == nil || *pod.EnableServiceLinks {
@@ -175,6 +178,9 @@ func TestWorkloadsUseTheConfiguredServiceAccount(t *testing.T) {
 	if !ret.OK {
 		t.Fatal(ret)
 	}
+	if pod == nil {
+		t.Fatal("no pod returned")
+	}
 	if pod.Spec.ServiceAccountName != "cbctf-runtime" {
 		t.Fatalf("pod service account: %q", pod.Spec.ServiceAccountName)
 	}
@@ -186,6 +192,9 @@ func TestWorkloadsUseTheConfiguredServiceAccount(t *testing.T) {
 	})
 	if !ret.OK {
 		t.Fatal(ret)
+	}
+	if job == nil {
+		t.Fatal("no job returned")
 	}
 	if job.Spec.Template.Spec.ServiceAccountName != "cbctf-runtime" {
 		t.Fatalf("job service account: %q", job.Spec.Template.Spec.ServiceAccountName)

@@ -105,7 +105,9 @@ func SendPayload(event model.Event, target model.Webhook) error {
 	if err != nil {
 		options.Success = false
 		options.Error = err.Error()
-		db.InitWebhookHistoryRepo(db.TaskDB).Create(options)
+		if _, ret := db.InitWebhookHistoryRepo(db.TaskDB).Create(options); !ret.OK {
+			log.Logger.Warningf("Failed to record webhook history: event_id=%d webhook_id=%d reason=%v", event.ID, target.ID, ret)
+		}
 		return err
 	}
 	defer func(Body io.ReadCloser) {
@@ -125,7 +127,9 @@ func SendPayload(event model.Event, target model.Webhook) error {
 			event.ID, target.ID, target.Method, logURL(target.URL), resp.StatusCode, duration,
 		)
 	}
-	db.InitWebhookHistoryRepo(db.TaskDB).Create(options)
+	if _, ret := db.InitWebhookHistoryRepo(db.TaskDB).Create(options); !ret.OK {
+		log.Logger.Warningf("Failed to record webhook history: event_id=%d webhook_id=%d reason=%v", event.ID, target.ID, ret)
+	}
 	if !options.Success {
 		return fmt.Errorf("webhook returned HTTP %d", resp.StatusCode)
 	}

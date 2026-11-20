@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"maps"
 	"strings"
 	"time"
 
@@ -87,19 +88,15 @@ func (r RetVal) WithAttrs(extra map[string]any) RetVal {
 		return r
 	}
 	attr := make(map[string]any, len(r.Attr)+len(extra))
-	for key, value := range r.Attr {
-		attr[key] = value
-	}
-	for key, value := range extra {
-		attr[key] = value
-	}
+	maps.Copy(attr, r.Attr)
+	maps.Copy(attr, extra)
 	r.Attr = attr
 	return r
 }
 
-// Error renders a failure as a single line for logs and wrapped errors: the
+// String renders a failure as a single line for logs and wrapped errors: the
 // message key followed by the resource kind, the target and the cause.
-func (r RetVal) Error() string {
+func (r RetVal) String() string {
 	if r.OK {
 		return r.Msg
 	}
@@ -120,9 +117,11 @@ func (r RetVal) Error() string {
 	return sb.String()
 }
 
-// Unwrap exposes the underlying cause to errors.Is and errors.As.
-func (r RetVal) Unwrap() error {
-	return r.Err
+// AsError converts a failed result into an error that keeps the shared
+// context, so a wrapped error still names the resource, the target and the
+// cause.
+func (r RetVal) AsError() error {
+	return retError{ret: r}
 }
 
 // Cause returns the underlying cause of the failure: the wrapped error, the
@@ -136,3 +135,9 @@ func (r RetVal) Cause() error {
 	}
 	return errors.New(r.Msg)
 }
+
+// retError adapts a failed result to the error interface.
+type retError struct{ ret RetVal }
+
+func (e retError) Error() string { return e.ret.String() }
+func (e retError) Unwrap() error { return e.ret.Err }

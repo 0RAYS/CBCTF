@@ -200,8 +200,11 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				Labels: labels,
 				Data:   map[string]string{"frpc.toml": podFrpcConfigMap[name], "nginx.conf": podNginxConfigMap[name]},
 			})
-			if !ret.OK || fcm == nil {
-				return ret
+			if !ret.OK {
+				return ret.AsError()
+			}
+			if fcm == nil {
+				return model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", name, errMissingConfigMap).AsError()
 			}
 			fcmVolume := corev1.Volume{
 				Name: "frpc-volume",
@@ -271,7 +274,10 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			}
 			p, ret := CreatePod(ctx, options)
 			if !ret.OK {
-				return ret
+				return ret.AsError()
+			}
+			if p == nil {
+				return model.FailRetVal(i18n.K8S.CreateError, "Pod", name, errMissingPodObject).AsError()
 			}
 			victim.Resources.UIDs[name] = string(p.UID)
 			return nil

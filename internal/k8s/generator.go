@@ -129,6 +129,9 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 		return ret
 	}
 	if ret.OK {
+		if pod == nil {
+			return model.FailRetVal(i18n.K8S.NotFound, "Pod", generator.Name, errMissingPodLookup)
+		}
 		if !GeneratorOwnsPod(generator, pod) {
 			return model.FailRetVal(i18n.K8S.DeleteError, "Pod", generator.Name, errGeneratorNotOwned)
 		}

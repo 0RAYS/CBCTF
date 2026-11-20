@@ -109,6 +109,9 @@ func TestSerializerExpressionsErrorsAndScanReset(t *testing.T) {
 		t.Fatal(err)
 	}
 	field := parsed.LookUpField("rules")
+	if field == nil {
+		t.Fatal("rules field is not registered")
+	}
 	record := model.Contest{Rules: []string{"stale"}}
 	dst := reflect.ValueOf(&record).Elem()
 	for _, input := range []any{`["one","中文"]`, []byte(`[]`), nil} {

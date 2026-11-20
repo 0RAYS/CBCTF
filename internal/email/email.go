@@ -95,7 +95,9 @@ func SendEmailWithSender(sender *Sender, to, subject, htmlContent string) error 
 	if err != nil {
 		email.Success = false
 	}
-	db.InitEmailRepo(db.DB).Create(email)
+	if _, ret := db.InitEmailRepo(db.DB).Create(email); !ret.OK {
+		log.Logger.Warningf("Failed to record email delivery: to=%s subject=%s reason=%v", to, subject, ret)
+	}
 	return err
 }
 

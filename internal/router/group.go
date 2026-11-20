@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 )
@@ -82,10 +81,10 @@ func CreateGroup(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateGroupEventType)
 	group, ret := service.CreateGroup(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
-		redis.DeleteRBAC()
 		resp.JSON(ctx, ret)
 		return
 	}
+	invalidateRBAC()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetGroupResp(service.BuildGroupView(db.DB.WithContext(ctx.Request.Context()), group))))
 }
@@ -100,7 +99,7 @@ func UpdateGroup(ctx *gin.Context) {
 	group := middleware.GetGroup(ctx)
 	ret := service.UpdateGroup(db.DB.WithContext(ctx.Request.Context()), group, form)
 	if ret.OK {
-		redis.DeleteRBAC()
+		invalidateRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -111,7 +110,7 @@ func DeleteGroup(ctx *gin.Context) {
 	group := middleware.GetGroup(ctx)
 	ret := service.DeleteGroup(db.DB.WithContext(ctx.Request.Context()), group)
 	if ret.OK {
-		redis.DeleteRBAC()
+		invalidateRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -127,7 +126,7 @@ func AssignUserToGroup(ctx *gin.Context) {
 	group := middleware.GetGroup(ctx)
 	user, ret := service.AssignUserToGroup(db.DB.WithContext(ctx.Request.Context()), group, form)
 	if ret.OK {
-		redis.DeleteUserRBAC(user.ID)
+		invalidateUserRBAC(user.ID)
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -143,7 +142,7 @@ func RemoveUserFromGroup(ctx *gin.Context) {
 	group := middleware.GetGroup(ctx)
 	user, ret := service.RemoveUserFromGroup(db.DB.WithContext(ctx.Request.Context()), group, form)
 	if ret.OK {
-		redis.DeleteUserRBAC(user.ID)
+		invalidateUserRBAC(user.ID)
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
