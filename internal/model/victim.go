@@ -16,11 +16,11 @@ import (
 )
 
 const (
-	WaitingVictimStatus     = "waiting"
-	PendingVictimStatus     = "pending"
-	RunningVictimStatus     = "running"
-	TerminatingVictimStatus = "terminating"
-	StoppedVictimStatus     = "stopped"
+	WaitingVictimStatus     = WaitingStatus
+	PendingVictimStatus     = PendingStatus
+	RunningVictimStatus     = RunningStatus
+	TerminatingVictimStatus = TerminatingStatus
+	StoppedVictimStatus     = StoppedStatus
 )
 
 // Victim 靶机实例

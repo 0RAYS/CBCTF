@@ -1,120 +1,84 @@
 package cron
 
 import (
+	"sync"
+
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
 )
 
-// clearSubmissionMutexTask 定时任务清理flag提交锁 service.SolvedMutex
-func clearSubmissionMutexTask() model.RetVal {
+// clearContestMutexes drops the lock entries whose record or contest is gone,
+// and the ones whose contest no longer accepts that kind of lock.
+func clearContestMutexes(
+	mutex *sync.Map,
+	contestIDOf func(key any) (uint, model.RetVal),
+	expired func(model.Contest) bool,
+) model.RetVal {
 	result := model.SuccessRetVal()
 	contests := make(map[uint]model.Contest)
 	contestRepo := db.InitContestRepo(db.CronDB)
-	contestFlagRepo := db.InitContestFlagRepo(db.CronDB)
-	service.SolvedMutex.Range(func(k, _ any) bool {
-		contestFlag, ret := contestFlagRepo.GetByID(k.(uint))
+	mutex.Range(func(k, _ any) bool {
+		contestID, ret := contestIDOf(k)
 		if !ret.OK {
 			if ret.Msg != i18n.Model.NotFound {
 				result = ret
 				return false
 			}
-			service.SolvedMutex.Delete(k)
+			mutex.Delete(k)
 			return true
 		}
-		contest, ok := contests[contestFlag.ContestID]
+		contest, ok := contests[contestID]
 		if !ok {
-			contest, ret = contestRepo.GetByID(contestFlag.ContestID)
+			contest, ret = contestRepo.GetByID(contestID)
 			if !ret.OK {
 				if ret.Msg != i18n.Model.NotFound {
 					result = ret
 					return false
 				}
-				service.SolvedMutex.Delete(k)
+				mutex.Delete(k)
 				return true
 			}
-			contests[contestFlag.ContestID] = contest
+			contests[contestID] = contest
 		}
-		if !contest.IsRunning() {
-			service.SolvedMutex.Delete(k)
+		if expired(contest) {
+			mutex.Delete(k)
 		}
 		return true
 	})
 	return result
+}
+
+// clearSubmissionMutexTask 定时任务清理flag提交锁 service.SolvedMutex
+func clearSubmissionMutexTask() model.RetVal {
+	contestFlagRepo := db.InitContestFlagRepo(db.CronDB)
+	return clearContestMutexes(&service.SolvedMutex, func(key any) (uint, model.RetVal) {
+		contestFlag, ret := contestFlagRepo.GetByID(key.(uint))
+		return contestFlag.ContestID, ret
+	}, func(contest model.Contest) bool {
+		return !contest.IsRunning()
+	})
 }
 
 // clearCheatMutexTask 定时任务清理作弊检测锁 db.CheatMutex
 func clearCheatMutexTask() model.RetVal {
-	result := model.SuccessRetVal()
-	contests := make(map[uint]model.Contest)
-	contestRepo := db.InitContestRepo(db.CronDB)
 	cheatRepo := db.InitCheatRepo(db.CronDB)
-	db.CheatMutex.Range(func(k, _ any) bool {
-		hash := k.(string)
-		cheat, ret := cheatRepo.Get(db.GetOptions{Conditions: map[string]any{"hash": hash}})
-		if !ret.OK {
-			if ret.Msg != i18n.Model.NotFound {
-				result = ret
-				return false
-			}
-			db.CheatMutex.Delete(k)
-			return true
-		}
-		contest, ok := contests[cheat.ContestID]
-		if !ok {
-			contest, ret = contestRepo.GetByID(cheat.ContestID)
-			if !ret.OK {
-				if ret.Msg != i18n.Model.NotFound {
-					result = ret
-					return false
-				}
-				db.CheatMutex.Delete(k)
-				return true
-			}
-			contests[cheat.ContestID] = contest
-		}
-		if !contest.IsRunning() {
-			db.CheatMutex.Delete(k)
-		}
-		return true
+	return clearContestMutexes(&db.CheatMutex, func(key any) (uint, model.RetVal) {
+		cheat, ret := cheatRepo.Get(db.GetOptions{Conditions: map[string]any{"hash": key.(string)}})
+		return cheat.ContestID, ret
+	}, func(contest model.Contest) bool {
+		return !contest.IsRunning()
 	})
-	return result
 }
 
 // clearJoinTeamMutexTask 定时任务清理加入队伍锁 service.JoinTeamMutex
 func clearJoinTeamMutexTask() model.RetVal {
-	result := model.SuccessRetVal()
-	contests := make(map[uint]model.Contest)
-	contestRepo := db.InitContestRepo(db.CronDB)
 	teamRepo := db.InitTeamRepo(db.CronDB)
-	service.JoinTeamMutex.Range(func(k, _ any) bool {
-		contestFlag, ret := teamRepo.GetByID(k.(uint))
-		if !ret.OK {
-			if ret.Msg != i18n.Model.NotFound {
-				result = ret
-				return false
-			}
-			service.JoinTeamMutex.Delete(k)
-			return true
-		}
-		contest, ok := contests[contestFlag.ContestID]
-		if !ok {
-			contest, ret = contestRepo.GetByID(contestFlag.ContestID)
-			if !ret.OK {
-				if ret.Msg != i18n.Model.NotFound {
-					result = ret
-					return false
-				}
-				service.JoinTeamMutex.Delete(k)
-				return true
-			}
-			contests[contestFlag.ContestID] = contest
-		}
-		if contest.IsOver() {
-			service.JoinTeamMutex.Delete(k)
-		}
-		return true
+	return clearContestMutexes(&service.JoinTeamMutex, func(key any) (uint, model.RetVal) {
+		team, ret := teamRepo.GetByID(key.(uint))
+		return team.ContestID, ret
+	}, func(contest model.Contest) bool {
+		return contest.IsOver()
 	})
-	return result
 }

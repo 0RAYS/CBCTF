@@ -106,47 +106,13 @@ func warmGeneratorPool(source model.GeneratorSourceSnapshot) {
 }
 
 func StopGenerators(tx *gorm.DB, contestID uint, form dto.StopGeneratorsForm) model.RetVal {
-	if len(form.Generators) == 0 {
-		return model.SuccessRetVal()
-	}
-	options := db.GetOptions{Conditions: map[string]any{"id": form.Generators}, Deleted: true}
-	if contestID > 0 {
-		options.Conditions["contest_id"] = contestID
-	}
-	generators, _, ret := db.InitGeneratorRepo(tx).List(-1, -1, options)
-	if !ret.OK {
-		return ret
-	}
-	byID := make(map[uint]model.Generator, len(generators))
-	for _, generator := range generators {
-		byID[generator.ID] = generator
-	}
-	batch := model.NewBatch(len(form.Generators))
-	for _, id := range form.Generators {
-		if tx.Statement.Context.Err() != nil {
-			return batch.Result(tx.Statement.Context)
-		}
-		key := fmt.Sprint(id)
-		generator, exists := byID[id]
-		if !exists {
-			batch.Fail(key, "lookup", model.FailRetVal(i18n.Model.NotFound, "Generator", "id="+key, nil))
-			continue
-		}
-		if generator.Status == model.TerminatingGeneratorStatus || generator.Status == model.StoppedGeneratorStatus {
-			batch.Skip(key, "already_stopping")
-			continue
-		}
-		ret = StopGenerator(tx, generator)
-		if ret.OK {
-			batch.Success(key, "queued")
-		} else {
-			batch.Fail(key, "stop", ret)
-			if model.BatchDependencyFailed(ret) {
-				return batch.Result(tx.Statement.Context)
-			}
-		}
-	}
-	return batch.Result(tx.Statement.Context)
+	return stopWorkloads(tx, "Generator", form.Generators, contestID,
+		func(options db.GetOptions) ([]model.Generator, int64, model.RetVal) {
+			return db.InitGeneratorRepo(tx).List(-1, -1, options)
+		},
+		func(generator model.Generator) string { return generator.Status },
+		func(generator model.Generator) model.RetVal { return StopGenerator(tx, generator) },
+	)
 }
 
 func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {

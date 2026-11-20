@@ -6,11 +6,11 @@ import (
 )
 
 const (
-	WaitingGeneratorStatus     = "waiting"
-	PendingGeneratorStatus     = "pending"
-	RunningGeneratorStatus     = "running"
-	TerminatingGeneratorStatus = "terminating"
-	StoppedGeneratorStatus     = "stopped"
+	WaitingGeneratorStatus     = WaitingStatus
+	PendingGeneratorStatus     = PendingStatus
+	RunningGeneratorStatus     = RunningStatus
+	TerminatingGeneratorStatus = TerminatingStatus
+	StoppedGeneratorStatus     = StoppedStatus
 )
 
 // Generator 是动态题目生成器实例。
