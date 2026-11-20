@@ -18,12 +18,13 @@ type CheatRepo struct {
 	BaseRepo[model.Cheat]
 }
 
+// UpdateCheatRepo 是一次线索更新需要写入的字段。
+// ReviewedBy 与 ReviewedAt 记录最后一次给出结论的管理员和时间。
 type UpdateCheatRepo struct {
-	Reason  *string
-	Type    *model.CheatType
-	Checked *bool
-	Comment *string
-	// ReviewedBy 与 ReviewedAt 记录最后一次给出结论的管理员和时间。
+	Reason     *string
+	Type       *model.CheatType
+	Checked    *bool
+	Comment    *string
 	ReviewedBy *uint
 	ReviewedAt *time.Time
 }

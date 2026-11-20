@@ -57,8 +57,9 @@ func (t *TeamFlagRepo) DeleteByContestFlagID(contestFlagIDL ...uint) model.RetVa
 	return t.DeleteByFieldID("contest_flag_id", contestFlagIDL...)
 }
 
+// TeamFlagWithChallenge 是队伍解题记录与关联比赛 flag 的查询结果。
+// ContestFlag 字段
 type TeamFlagWithChallenge struct {
-	// ContestFlag 字段
 	ContestFlagValue         string
 	ContestChallengeName     string
 	ContestChallengeCategory string
