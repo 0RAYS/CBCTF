@@ -194,16 +194,9 @@ func DeletePod(ctx context.Context, name string, uid types.UID) model.RetVal {
 }
 
 func DeletePodCollection(ctx context.Context, labels map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("Pod", labels)
-	if !ret.OK {
-		return ret
-	}
-	err := kubeClient.CoreV1().Pods(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Pods (%s): %s", options.LabelSelector, err)
-		return model.FailRetVal(i18n.K8S.DeleteError, "Pod", options.LabelSelector, err)
-	}
-	return model.SuccessRetVal()
+	return deleteCollection("Pod", "Pods", labels, func(options metav1.ListOptions) error {
+		return kubeClient.CoreV1().Pods(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	})
 }
 
 // DeletePodAndWait waits for the deletion to complete: acceptance is not

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	netv1 "k8s.io/api/networking/v1"
-	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"CBCTF/internal/i18n"
@@ -55,14 +54,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 }
 
 func DeleteNetworkPolicyCollection(ctx context.Context, labels map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("NetworkPolicy", labels)
-	if !ret.OK {
-		return ret
-	}
-	err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete NetworkPolicies (%s): %s", options.LabelSelector, err)
-		return model.FailRetVal(i18n.K8S.DeleteError, "NetworkPolicy", options.LabelSelector, err)
-	}
-	return model.SuccessRetVal()
+	return deleteCollection("NetworkPolicy", "NetworkPolicies", labels, func(options metav1.ListOptions) error {
+		return kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	})
 }

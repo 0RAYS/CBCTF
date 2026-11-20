@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	kubeovnv1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
-	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"CBCTF/internal/i18n"
@@ -50,14 +49,7 @@ func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.
 }
 
 func DeleteSubnetCollection(ctx context.Context, labels map[string]string) model.RetVal {
-	options, ret := deleteCollectionOptions("Subnet", labels)
-	if !ret.OK {
-		return ret
-	}
-	err := ovnClient.KubeovnV1().Subnets().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Subnets (%s): %s", options.LabelSelector, err)
-		return model.FailRetVal(i18n.K8S.DeleteError, "Subnet", options.LabelSelector, err)
-	}
-	return model.SuccessRetVal()
+	return deleteCollection("Subnet", "Subnets", labels, func(options metav1.ListOptions) error {
+		return ovnClient.KubeovnV1().Subnets().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	})
 }
