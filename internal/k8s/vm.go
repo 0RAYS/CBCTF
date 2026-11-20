@@ -9,7 +9,6 @@ import (
 
 	"go.yaml.in/yaml/v4"
 	corev1 "k8s.io/api/core/v1"
-	apierror "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -210,11 +209,7 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 func GetVM(ctx context.Context, name string) (*v1.VirtualMachine, model.RetVal) {
 	vm, err := virtClient.KubevirtV1().VirtualMachines(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, model.FailRetVal(i18n.K8S.NotFound, "VirtualMachine", name, nil)
-		}
-		log.Logger.Warningf("Failed to get VirtualMachine %s: %s", name, err)
-		return nil, model.FailRetVal(i18n.K8S.GetError, "VirtualMachine", name, err)
+		return nil, getFailed("VirtualMachine", name, err)
 	}
 	return vm, model.SuccessRetVal()
 }
