@@ -36,9 +36,9 @@ func TestLeaderboardWorkbookHeaders(t *testing.T) {
 		t.Fatalf("build workbook: %v", err)
 	}
 	headers := []string{
-		"排名 Rank", "队伍 Team", "总分 Score", "解题数 Solved", "成员数 Members", "最后解题 Last Solve",
-		"Web-Login 得分 Score", "Web-Login 解题时间 Solved At",
-		"Pwn-Buffer 得分 Score", "Pwn-Buffer 解题时间 Solved At",
+		"Rank", "Team", "Score", "Solved", "Members", "Last Solve",
+		"Web-Login Score", "Web-Login Solved At",
+		"Pwn-Buffer Score", "Pwn-Buffer Solved At",
 	}
 	for index, want := range headers {
 		cell, err := excelize.CoordinatesToCellName(index+1, 1)

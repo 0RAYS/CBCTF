@@ -23,7 +23,7 @@ func LeaderboardWorkbook(data view.LeaderboardExportView) (*excelize.File, error
 		return nil, err
 	}
 
-	headers := []string{"排名 Rank", "队伍 Team", "总分 Score", "解题数 Solved", "成员数 Members", "最后解题 Last Solve"}
+	headers := []string{"Rank", "Team", "Score", "Solved", "Members", "Last Solve"}
 	labels := make([]string, 0, len(data.Challenges))
 	occurrences := make(map[string]int, len(data.Challenges))
 	for _, challenge := range data.Challenges {
@@ -36,7 +36,7 @@ func LeaderboardWorkbook(data view.LeaderboardExportView) (*excelize.File, error
 			label = fmt.Sprintf("%s #%d", label, occurrences[label])
 		}
 		labels = append(labels, label)
-		headers = append(headers, label+" 得分 Score", label+" 解题时间 Solved At")
+		headers = append(headers, label+" Score", label+" Solved At")
 	}
 	for index, header := range headers {
 		cell, err := excelize.CoordinatesToCellName(index+1, 1)
