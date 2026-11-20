@@ -3,6 +3,7 @@ package service
 import (
 	"slices"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -27,7 +28,7 @@ func UpdateTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([
 			return ret
 		}
 		for _, team := range teams {
-			if ret := db.InitTeamRepo(work).Update(team.ID, db.UpdateTeamOptions{Score: new(scores[team.ID])}); !ret.OK {
+			if ret := db.InitTeamRepo(work).Update(team.ID, db.UpdateTeamOptions{Score: new(scores[team.ID].Total)}); !ret.OK {
 				return ret
 			}
 		}
@@ -285,6 +286,100 @@ func GetScoreboardViews(tx *gorm.DB, contest model.Contest, limit, offset int, a
 		})
 	}
 	return views, count, model.SuccessRetVal()
+}
+
+// GetLeaderboardExportView 汇总排行榜导出所需的排名与分题解题明细。
+// 非管理员看不到隐藏队伍与隐藏题目，名次沿用积分榜中的位置。
+func GetLeaderboardExportView(tx *gorm.DB, contest model.Contest, admin bool) (view.LeaderboardExportView, model.RetVal) {
+	teams, _, ret := GetTeamRanking(tx, contest, -1, 0)
+	if !ret.OK {
+		return view.LeaderboardExportView{}, ret
+	}
+	contestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+	})
+	if !ret.OK {
+		return view.LeaderboardExportView{}, ret
+	}
+	scores, ret := CalcTeamScores(tx, contest.Blood, teams...)
+	if !ret.OK {
+		return view.LeaderboardExportView{}, ret
+	}
+
+	visibleChallenges := make([]model.ContestChallenge, 0, len(contestChallenges))
+	for _, contestChallenge := range contestChallenges {
+		if contestChallenge.Hidden && !admin {
+			continue
+		}
+		visibleChallenges = append(visibleChallenges, contestChallenge)
+	}
+	slices.SortFunc(visibleChallenges, func(a, b model.ContestChallenge) int {
+		if order := strings.Compare(a.Category, b.Category); order != 0 {
+			return order
+		}
+		return strings.Compare(a.Name, b.Name)
+	})
+
+	visibleTeams := make([]model.Team, 0, len(teams))
+	for _, team := range teams {
+		if team.Hidden && !admin {
+			continue
+		}
+		visibleTeams = append(visibleTeams, team)
+	}
+	teamIDs := make([]uint, 0, len(visibleTeams))
+	for _, team := range visibleTeams {
+		teamIDs = append(teamIDs, team.ID)
+	}
+	memberCounts, ret := db.InitTeamRepo(tx).CountUsersMap(teamIDs...)
+	if !ret.OK {
+		return view.LeaderboardExportView{}, ret
+	}
+	submissions, ret := db.InitSubmissionRepo(tx).ListSolvedByTeamID(teamIDs...)
+	if !ret.OK {
+		return view.LeaderboardExportView{}, ret
+	}
+	solvedAt := make(map[uint]map[uint]time.Time, len(teamIDs))
+	for _, submission := range submissions {
+		if submission.CreatedAt.IsZero() {
+			continue
+		}
+		times, ok := solvedAt[submission.TeamID]
+		if !ok {
+			times = make(map[uint]time.Time)
+			solvedAt[submission.TeamID] = times
+		}
+		if earliest, ok := times[submission.ContestChallengeID]; !ok || submission.CreatedAt.Before(earliest) {
+			times[submission.ContestChallengeID] = submission.CreatedAt
+		}
+	}
+
+	exportView := view.LeaderboardExportView{
+		ContestName: contest.Name,
+		Challenges:  make([]view.LeaderboardChallengeView, 0, len(visibleChallenges)),
+		Teams:       make([]view.LeaderboardTeamView, 0, len(visibleTeams)),
+	}
+	for _, contestChallenge := range visibleChallenges {
+		exportView.Challenges = append(exportView.Challenges, view.LeaderboardChallengeView{
+			ID:       contestChallenge.ID,
+			Name:     contestChallenge.Name,
+			Category: contestChallenge.Category,
+		})
+	}
+	for _, team := range visibleTeams {
+		teamScore := scores[team.ID]
+		exportView.Teams = append(exportView.Teams, view.LeaderboardTeamView{
+			Rank:        team.Rank,
+			Name:        team.Name,
+			Score:       team.Score,
+			MemberCount: memberCounts[team.ID],
+			SolvedCount: len(teamScore.ByChallenge),
+			LastSolve:   team.Last,
+			Scores:      teamScore.ByChallenge,
+			SolvedAt:    solvedAt[team.ID],
+		})
+	}
+	return exportView, model.SuccessRetVal()
 }
 
 func GetRankTimelineViews(tx *gorm.DB, contest model.Contest) ([]view.RankTimelineTeamView, model.RetVal) {

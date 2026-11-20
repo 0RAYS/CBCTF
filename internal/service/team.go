@@ -162,12 +162,18 @@ func CalcTeamScore(tx *gorm.DB, team model.Team, blood bool) (float64, model.Ret
 	if !ret.OK {
 		return 0, ret
 	}
-	score := math.Trunc(scoreMap[team.ID]*100) / 100
-	return score, model.SuccessRetVal()
+	return scoreMap[team.ID].Total, model.SuccessRetVal()
 }
 
-func CalcTeamScores(tx *gorm.DB, blood bool, teams ...model.Team) (map[uint]float64, model.RetVal) {
-	scoreMap := make(map[uint]float64)
+// TeamScore 队伍总分及其分题得分明细。
+// ByChallenge 的键即该队伍解出的比赛题目，未解出的题目不会出现在其中。
+type TeamScore struct {
+	Total       float64
+	ByChallenge map[uint]float64
+}
+
+func CalcTeamScores(tx *gorm.DB, blood bool, teams ...model.Team) (map[uint]TeamScore, model.RetVal) {
+	scoreMap := make(map[uint]TeamScore)
 	if len(teams) == 0 {
 		return scoreMap, model.SuccessRetVal()
 	}
@@ -175,7 +181,7 @@ func CalcTeamScores(tx *gorm.DB, blood bool, teams ...model.Team) (map[uint]floa
 	teamIDL := make([]uint, 0, len(teams))
 	for _, team := range teams {
 		teamIDL = append(teamIDL, team.ID)
-		scoreMap[team.ID] = 0
+		scoreMap[team.ID] = TeamScore{ByChallenge: make(map[uint]float64)}
 	}
 
 	rows, ret := db.InitContestFlagRepo(tx).GetTeamsSolvedContestFlags(teamIDL...)
@@ -211,11 +217,18 @@ func CalcTeamScores(tx *gorm.DB, blood bool, teams ...model.Team) (map[uint]floa
 				score += row.Score * model.ThirdBloodRate
 			}
 		}
-		scoreMap[row.TeamID] += score
+		teamScore := scoreMap[row.TeamID]
+		teamScore.Total += score
+		teamScore.ByChallenge[row.ContestChallengeID] += score
+		scoreMap[row.TeamID] = teamScore
 	}
 
-	for teamID, score := range scoreMap {
-		scoreMap[teamID] = math.Trunc(score*100) / 100
+	for teamID, teamScore := range scoreMap {
+		teamScore.Total = math.Trunc(teamScore.Total*100) / 100
+		for challengeID, score := range teamScore.ByChallenge {
+			teamScore.ByChallenge[challengeID] = math.Trunc(score*100) / 100
+		}
+		scoreMap[teamID] = teamScore
 	}
 	return scoreMap, model.SuccessRetVal()
 }

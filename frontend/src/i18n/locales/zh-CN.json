@@ -994,11 +994,13 @@
       },
       "scoreboard": {
         "export": "导出 Writeup",
+        "exportLeaderboard": "导出排行榜",
         "toast": {
           "fetchTimelineFailed": "获取时间线数据失败",
           "fetchTeamsFailed": "获取团队列表失败",
           "fetchScoreboardFailed": "获取积分榜失败",
-          "exportWriteupsFailed": "导出 Writeup 失败"
+          "exportWriteupsFailed": "导出 Writeup 失败",
+          "exportLeaderboardFailed": "导出排行榜失败"
         }
       },
       "cheats": {
@@ -2804,8 +2806,10 @@
       }
     },
     "scoreboard": {
+      "export": "导出排行榜",
       "toast": {
-        "fetchFailed": "获取排行榜失败"
+        "fetchFailed": "获取排行榜失败",
+        "exportFailed": "导出排行榜失败"
       },
       "timeline": {
         "title": "上分曲线",

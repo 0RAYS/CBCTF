@@ -33,6 +33,14 @@ export const getContestScoreboard = (contestId, params = { limit: 20, offset: 0 
   });
 };
 
+export const exportContestScoreboard = (contestId) => {
+  return request({
+    url: `/contests/${contestId}/scoreboard/export`,
+    method: 'GET',
+    responseType: 'blob',
+  });
+};
+
 export const getContestTimeline = (contestId) => {
   return request({
     url: `/contests/${contestId}/timeline`,

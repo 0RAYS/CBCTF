@@ -4,13 +4,20 @@ import ScoreboardRanking from '../../components/features/Scoreboard/ScoreboardRa
 import ScoreboardTable from '../../components/features/Scoreboard/ScoreboardTable';
 import ScoreboardTimeline from '../../components/features/Scoreboard/ScoreboardTimeline';
 import { collectChallenges, toRankingTeam } from '../../components/features/Scoreboard/scoreboardModel.js';
-import { getContestInfo, getContestRank, getContestScoreboard, getContestTimeline } from '../../api/contest';
+import {
+  exportContestScoreboard,
+  getContestInfo,
+  getContestRank,
+  getContestScoreboard,
+  getContestTimeline,
+} from '../../api/contest';
 import { getTeamInfo } from '../../api/game/team';
 import Button from '../../components/common/Button';
 import Pagination from '../../components/common/Pagination';
 import { IconList, IconTable } from '@tabler/icons-react';
 import ScoreboardStats from '../../components/features/Scoreboard/ScoreboardStats';
 import { toast } from '../../utils/toast.js';
+import { downloadBlobResponse } from '../../utils/fileDownload';
 import { useTranslation } from 'react-i18next';
 
 function GameScoreBoardPage() {
@@ -128,31 +135,49 @@ function ContestScoreboard({ contestId }) {
     };
   }, [contestId, timelineVersion]);
 
+  const handleExportLeaderboard = async () => {
+    try {
+      const response = await exportContestScoreboard(contestId);
+      downloadBlobResponse(
+        response,
+        `contest-${contestId}-leaderboard.xlsx`,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+    } catch (error) {
+      toast.danger({ description: error.message || t('game.scoreboard.toast.exportFailed') });
+    }
+  };
+
   return (
     <div className="contest-container mx-auto min-w-0 space-y-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-xl sm:text-3xl font-mono text-neutral-50 tracking-wider">{t('nav.scoreboard')}</h1>
-        <div
-          role="group"
-          aria-label={t('nav.scoreboard')}
-          className="flex items-center gap-2 p-1 bg-black/30 border border-neutral-300/30 rounded-md"
-        >
-          {[
-            { mode: 'ranking', label: t('common.rank'), icon: <IconList size={16} /> },
-            { mode: 'table', label: t('common.scoreboard.headers.challenges'), icon: <IconTable size={16} /> },
-          ].map(({ mode, label, icon }) => (
-            <Button
-              key={mode}
-              variant={viewMode === mode ? 'primary' : 'ghost'}
-              size="sm"
-              align="icon-left"
-              icon={icon}
-              aria-label={label}
-              title={label}
-              aria-pressed={viewMode === mode}
-              onClick={() => setViewMode(mode)}
-            />
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <div
+            role="group"
+            aria-label={t('nav.scoreboard')}
+            className="flex items-center gap-2 p-1 bg-black/30 border border-neutral-300/30 rounded-md"
+          >
+            {[
+              { mode: 'ranking', label: t('common.rank'), icon: <IconList size={16} /> },
+              { mode: 'table', label: t('common.scoreboard.headers.challenges'), icon: <IconTable size={16} /> },
+            ].map(({ mode, label, icon }) => (
+              <Button
+                key={mode}
+                variant={viewMode === mode ? 'primary' : 'ghost'}
+                size="sm"
+                align="icon-left"
+                icon={icon}
+                aria-label={label}
+                title={label}
+                aria-pressed={viewMode === mode}
+                onClick={() => setViewMode(mode)}
+              />
+            ))}
+          </div>
+          <Button variant="outline" size="sm" onClick={handleExportLeaderboard}>
+            {t('game.scoreboard.export')}
+          </Button>
         </div>
       </div>
       <ScoreboardStats {...scoreboardData.stats} />

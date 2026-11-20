@@ -1,14 +1,20 @@
 package router
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+	"CBCTF/internal/xlsx"
 )
 
 func GetTeamRanking(ctx *gin.Context) {
@@ -53,4 +59,30 @@ func GetRankTimeline(ctx *gin.Context) {
 		return
 	}
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetRankTimelineResp(data)))
+}
+
+// ExportScoreboard 导出比赛排行榜为 xlsx，一行一支队伍，含每道题的得分与解题时间。
+func ExportScoreboard(ctx *gin.Context) {
+	contest := middleware.GetContest(ctx)
+	data, ret := service.GetLeaderboardExportView(db.DB.WithContext(ctx.Request.Context()), contest, middleware.IsFullAccess(ctx))
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	file, err := xlsx.LeaderboardWorkbook(data)
+	if err != nil {
+		log.Logger.Warningf("Failed to build leaderboard workbook: %s", err)
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Leaderboard", contest.Name, err))
+		return
+	}
+	buffer, err := file.WriteToBuffer()
+	if err != nil {
+		log.Logger.Warningf("Failed to encode leaderboard workbook: %s", err)
+		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Leaderboard", contest.Name, err))
+		return
+	}
+	filename := "contest-" + strconv.FormatUint(uint64(contest.ID), 10) + "-leaderboard.xlsx"
+	ctx.Writer.Header().Set("File", "true")
+	ctx.Header("Content-Disposition", "attachment; filename=\""+filename+"\"")
+	ctx.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buffer.Bytes())
 }
