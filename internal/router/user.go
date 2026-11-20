@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 )
@@ -131,7 +130,7 @@ func DeleteUser(ctx *gin.Context) {
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 	} else {
-		redis.DeleteUserRBAC(user.ID)
+		invalidateUserRBAC(user.ID)
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 		resp.JSON(ctx, ret)
 	}

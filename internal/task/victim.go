@@ -93,7 +93,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 					log.Logger.Debugf("Start victim skipped: victim_id=%d no longer exists", victim.ID)
 					return nil
 				}
-				return fmt.Errorf("get victim failed: %w", ret)
+				return fmt.Errorf("get victim failed: %w", ret.AsError())
 			}
 			if currentVictim.Status != model.WaitingVictimStatus {
 				log.Logger.Infof("Start victim skipped: victim_id=%d status=%s", victim.ID, currentVictim.Status)
@@ -109,7 +109,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 					log.Logger.Infof("Start victim skipped: victim_id=%d status changed before provisioning", victim.ID)
 					return nil
 				}
-				return fmt.Errorf("update victim failed: %w", ret)
+				return fmt.Errorf("update victim failed: %w", ret.AsError())
 			}
 			claimed = true
 			victim.Status = model.PendingVictimStatus
@@ -133,7 +133,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 				}
 				persistedFrpcPods, ret := podRepo.CreateBatch(frpcPodRecords)
 				if !ret.OK {
-					return fmt.Errorf("create frpc pod failed: %w", ret)
+					return fmt.Errorf("create frpc pod failed: %w", ret.AsError())
 				}
 				victim.Pods = append(append([]model.Pod(nil), victim.Pods[:basePodCount]...), persistedFrpcPods...)
 			}
@@ -145,7 +145,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 				ExposedEndpoints: &victim.ExposedEndpoints,
 			})
 			if !ret.OK {
-				return fmt.Errorf("update victim after start failed: %w", ret)
+				return fmt.Errorf("update victim after start failed: %w", ret.AsError())
 			}
 			log.Logger.Infof(
 				"Victim resources submitted: victim_id=%d user_id=%d team_id=%d challenge_id=%d endpoints=%d exposed_endpoints=%d",
@@ -186,7 +186,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 			if ret.Msg == i18n.Model.NotFound {
 				return nil
 			}
-			return fmt.Errorf("get victim failed: %w", ret)
+			return fmt.Errorf("get victim failed: %w", ret.AsError())
 		}
 		if len(payload.Victim.ExposedEndpoints) > 0 && len(victim.ExposedEndpoints) == 0 {
 			victim.ExposedEndpoints = payload.Victim.ExposedEndpoints
@@ -197,7 +197,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 		log.Logger.Infof("Stopping victim: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
 		ret = k8s.StopVictim(ctx, victim)
 		if !ret.OK {
-			return fmt.Errorf("stop victim failed: %w", ret)
+			return fmt.Errorf("stop victim failed: %w", ret.AsError())
 		}
 		if _, err := EnqueueLoadTrafficTask(victim); err != nil {
 			log.Logger.Warningf(
@@ -217,7 +217,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 			return model.SuccessRetVal()
 		})
 		if !ret.OK {
-			return fmt.Errorf("stop victim cleanup failed: %w", ret)
+			return fmt.Errorf("stop victim cleanup failed: %w", ret.AsError())
 		}
 		log.Logger.Infof("Victim stopped: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
 		return nil

@@ -164,7 +164,9 @@ func ForgotPassword(ctx *gin.Context) {
 		return
 	}
 	// 无论邮箱是否存在均返回成功，防止用户枚举
-	service.SendPasswordResetEmail(db.DB.WithContext(ctx.Request.Context()), form)
+	if ret := service.SendPasswordResetEmail(db.DB.WithContext(ctx.Request.Context()), form); !ret.OK {
+		log.Logger.Warningf("Failed to send password reset email: %v", ret)
+	}
 	resp.JSON(ctx, model.SuccessRetVal())
 }
 

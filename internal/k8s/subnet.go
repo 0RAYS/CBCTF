@@ -49,18 +49,6 @@ func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.
 	return subnet, model.SuccessRetVal()
 }
 
-func GetSubnet(ctx context.Context, name string) (*kubeovnv1.Subnet, model.RetVal) {
-	subnet, err := ovnClient.KubeovnV1().Subnets().Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, model.FailRetVal(i18n.K8S.NotFound, "Subnet", name, nil)
-		}
-		log.Logger.Warningf("Failed to get Subnet %s: %s", name, err)
-		return nil, model.FailRetVal(i18n.K8S.GetError, "Subnet", name, err)
-	}
-	return subnet, model.SuccessRetVal()
-}
-
 func DeleteSubnetCollection(ctx context.Context, labels map[string]string) model.RetVal {
 	options, ret := deleteCollectionOptions("Subnet", labels)
 	if !ret.OK {

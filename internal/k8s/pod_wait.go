@@ -91,7 +91,7 @@ func waitPodReady(ctx context.Context, created *corev1.Pod) (*corev1.Pod, error)
 			var ret model.RetVal
 			pod, ret = GetPod(ctx, created.Name)
 			if !ret.OK {
-				return nil, fmt.Errorf("pod %s was deleted or unavailable: %w", created.Name, ret)
+				return nil, fmt.Errorf("pod %s was deleted or unavailable: %w", created.Name, ret.AsError())
 			}
 		}
 		if pod.UID != created.UID {

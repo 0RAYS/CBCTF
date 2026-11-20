@@ -125,7 +125,7 @@ func buildVictimSpecSourceChallenge(challenge model.Challenge) victimSpecSource 
 	return source
 }
 
-func buildVictimSpec(tx *gorm.DB, victim model.Victim, source victimSpecSource) (model.VictimSpec, model.RetVal) {
+func buildVictimSpec(_ *gorm.DB, victim model.Victim, source victimSpecSource) (model.VictimSpec, model.RetVal) {
 	spec := model.VictimSpec{
 		Pods:            make([]model.PodSpec, 0, len(source.Template.Pods)),
 		NetworkPolicies: source.NetworkPolicies,

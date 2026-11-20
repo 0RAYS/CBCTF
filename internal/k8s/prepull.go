@@ -99,7 +99,7 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 	}
 	nodes, ret := ListSchedulableNodes(ctx)
 	if !ret.OK {
-		return ret
+		return ret.AsError()
 	}
 	if len(nodes) == 0 {
 		return fmt.Errorf("no schedulable nodes for image warmup")
@@ -182,7 +182,7 @@ func PrepullImages(ctx context.Context, images, selectedNodes []string, pullPoli
 				ServiceAccountName: runtimeServiceAccount(),
 			})
 			if !ret.OK {
-				failures = append(failures, fmt.Errorf("create warmup job node=%s images=%v: %w", node.Name, chunk, ret))
+				failures = append(failures, fmt.Errorf("create warmup job node=%s images=%v: %w", node.Name, chunk, ret.AsError()))
 				continue
 			}
 			submitted++

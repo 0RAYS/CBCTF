@@ -47,21 +47,6 @@ func CreateNetAttachDef(ctx context.Context, options CreateNetAttachDefOptions) 
 	return netAttachDef, model.SuccessRetVal()
 }
 
-func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*netattv1.NetworkAttachmentDefinition, model.RetVal) {
-	if len(namespace) == 0 {
-		namespace = append(namespace, globalNamespace)
-	}
-	netAttachDef, err := netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace[0]).Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, model.FailRetVal(i18n.K8S.NotFound, "NetworkAttachmentDefinition", name, nil)
-		}
-		log.Logger.Warningf("Failed to get NetworkAttachmentDefinition %s: %s", name, err)
-		return nil, model.FailRetVal(i18n.K8S.GetError, "NetworkAttachmentDefinition", name, err)
-	}
-	return netAttachDef, model.SuccessRetVal()
-}
-
 func DeleteNetAttachDefCollection(ctx context.Context, namespace string, labels map[string]string) model.RetVal {
 	if namespace == "" {
 		return model.FailRetVal(i18n.K8S.DeleteError, "NetworkAttachmentDefinition", "", errMissingNamespace)

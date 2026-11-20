@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 )
 
@@ -45,6 +46,9 @@ func createVictimRoot(ctx context.Context, victim model.Victim, kind string) (co
 	})
 	if !ret.OK {
 		return ctx, ret
+	}
+	if root == nil {
+		return ctx, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", victimRootName(victim.ID, kind), errMissingConfigMap)
 	}
 	return withResourceOwner(ctx, metav1.OwnerReference{
 		APIVersion: "v1",

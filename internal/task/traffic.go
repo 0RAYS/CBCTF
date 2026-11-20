@@ -43,7 +43,7 @@ func HandleLoadTrafficTask(ctx context.Context, t *asynq.Task) error {
 	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "traffic", victim.ID, func() error {
 		ret := LoadTraffic(ctx, db.TaskDB, victim)
 		if !ret.OK {
-			return fmt.Errorf("load traffic failed: %w", ret)
+			return fmt.Errorf("load traffic failed: %w", ret.AsError())
 		}
 		return nil
 	})

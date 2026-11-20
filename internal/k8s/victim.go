@@ -137,7 +137,10 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Networks:    networks,
 				})
 				if !ret.OK {
-					return ret
+					return ret.AsError()
+				}
+				if vm == nil {
+					return model.FailRetVal(i18n.K8S.CreateError, "VirtualMachine", pod.Name, errMissingVMObject).AsError()
 				}
 				endpointsMutex.Lock()
 				victim.Resources.UIDs[pod.Name] = string(vm.UID)
@@ -198,11 +201,15 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				containers = append(containers, tmp)
 			}
 			if len(fileData) > 0 {
+				cmName := victimResourceName("vol", victim.ID, pod.Spec.Key)
 				cm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-					Name: victimResourceName("vol", victim.ID, pod.Spec.Key), Labels: labels, Data: fileData,
+					Name: cmName, Labels: labels, Data: fileData,
 				})
 				if !ret.OK {
-					return ret
+					return ret.AsError()
+				}
+				if cm == nil {
+					return model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", cmName, errMissingConfigMap).AsError()
 				}
 				volumes = append(volumes, corev1.Volume{Name: "challenge-files", ConfigMap: &corev1.ConfigMapVolumeSource{Name: cm.Name}})
 			}
@@ -219,22 +226,29 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 
 			p, ret := CreatePod(ctx, pOptions)
 			if !ret.OK {
-				return ret
+				return ret.AsError()
+			}
+			if p == nil {
+				return model.FailRetVal(i18n.K8S.CreateError, "Pod", pod.Name, errMissingPodObject).AsError()
 			}
 			endpointsMutex.Lock()
 			victim.Resources.UIDs[pod.Name] = string(p.UID)
 			endpointsMutex.Unlock()
 
 			if len(pod.Spec.ServicePorts) > 0 {
+				serviceName := victimResourceName("svc", victim.ID, pod.Spec.Key)
 				service, ret := CreateService(ctx, CreateServiceOptions{
 					ClusterIP: victim.Spec.FrpEnabled,
-					Name:      victimResourceName("svc", victim.ID, pod.Spec.Key),
+					Name:      serviceName,
 					Ports:     pod.Spec.ServicePorts,
 					Labels:    labels,
 					Selector:  podLabels,
 				})
 				if !ret.OK {
-					return ret
+					return ret.AsError()
+				}
+				if service == nil {
+					return model.FailRetVal(i18n.K8S.CreateError, "Service", serviceName, errMissingServiceObject).AsError()
 				}
 				endpointsMutex.Lock()
 				for _, port := range service.Spec.Ports {
@@ -300,7 +314,7 @@ func createVictimNetworkResources(
 			Policies: policies,
 		})
 		if !ret.OK {
-			return ret
+			return ret.AsError()
 		}
 		log.Logger.Debugf("Created victim network policy: victim_id=%d network_policy=%s", victim.ID, name)
 		return nil
@@ -345,6 +359,10 @@ func createVictimNetworkResources(
 		_ = wg.Wait()
 		return nil, nil, nil, ret
 	}
+	if vpc == nil {
+		_ = wg.Wait()
+		return nil, nil, nil, model.FailRetVal(i18n.K8S.CreateError, "VPC", victim.Spec.NetworkPlan.Name, errMissingVPCObject)
+	}
 	subnetCtx := withResourceOwner(wg.Context(), metav1.OwnerReference{APIVersion: "kubeovn.io/v1", Kind: "Vpc", Name: vpc.Name, UID: vpc.UID})
 
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
@@ -361,7 +379,7 @@ func createVictimNetworkResources(
 				Labels: labels,
 			})
 			if !ret.OK {
-				return ret
+				return ret.AsError()
 			}
 			log.Logger.Debugf("Created victim net attach def: victim_id=%d net_attach_def=%s", victim.ID, subnet.NetAttachDef.Name)
 			return nil
@@ -378,7 +396,7 @@ func createVictimNetworkResources(
 				NetAttachDef: subnet.NetAttachDef.Name,
 			})
 			if !ret.OK {
-				return ret
+				return ret.AsError()
 			}
 			log.Logger.Debugf("Created victim subnet: victim_id=%d subnet=%s", victim.ID, subnet.Name)
 			return nil

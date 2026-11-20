@@ -143,7 +143,9 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	finishCtx, finishCancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 	defer finishCancel()
 	generatorRepo := db.InitGeneratorRepo(db.TaskDB.WithContext(finishCtx))
-	generatorRepo.UpdateStatus(generator.ID, ret.OK, time.Now())
+	if statusRet := generatorRepo.UpdateStatus(generator.ID, ret.OK, time.Now()); !statusRet.OK {
+		log.Logger.Warningf("Failed to record attachment outcome: generator_id=%d reason=%v", generator.ID, statusRet)
+	}
 	if !ret.OK {
 		if ret.Msg == i18n.Model.NotFound || ret.Msg == i18n.K8S.NotFound {
 			unregisterCtx, unregisterCancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -152,7 +154,7 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 			}
 			unregisterCancel()
 			if deleteRet := generatorRepo.Delete(generator.ID); !deleteRet.OK {
-				return fmt.Errorf("generate attachment failed: %w; delete unavailable generator failed: %w", ret, deleteRet)
+				return fmt.Errorf("generate attachment failed: %w; delete unavailable generator failed: %w", ret.AsError(), deleteRet.AsError())
 			}
 		}
 		return taskResourceError("generate attachment failed", ret)

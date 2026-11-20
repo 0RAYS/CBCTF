@@ -1,6 +1,7 @@
 package model
 
 import (
+	"maps"
 	"strings"
 	"time"
 
@@ -254,8 +255,6 @@ func copyStringMap(source map[string]string) map[string]string {
 		return nil
 	}
 	result := make(map[string]string, len(source))
-	for key, value := range source {
-		result[key] = value
-	}
+	maps.Copy(result, source)
 	return result
 }

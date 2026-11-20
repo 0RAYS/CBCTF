@@ -11,6 +11,9 @@ func TestWarmupOnlyExcludesFailedNodes(t *testing.T) {
 		t.Fatal("healthy workloads must not carry affinity")
 	}
 	affinity := excludedNodeAffinity([]string{"worker-b", "worker-a"})
+	if affinity == nil || affinity.NodeAffinity == nil {
+		t.Fatal("failed nodes must be excluded")
+	}
 	node := affinity.NodeAffinity
 	if len(node.PreferredDuringSchedulingIgnoredDuringExecution) != 0 {
 		t.Fatal("unexpected positive preference")

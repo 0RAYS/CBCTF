@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"context"
-	"slices"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,22 +46,6 @@ func ListSchedulableNodes(ctx context.Context) ([]*corev1.Node, model.RetVal) {
 		}
 	}
 	return nodes, model.SuccessRetVal()
-}
-
-func ListNodeImages(ctx context.Context) (map[string][]string, model.RetVal) {
-	nodes, ret := ListSchedulableNodes(ctx)
-	if !ret.OK {
-		return nil, ret
-	}
-	images := make(map[string][]string)
-	for _, node := range nodes {
-		images[node.Name] = make([]string, 0)
-		for name := range nodeImageSet(node) {
-			images[node.Name] = append(images[node.Name], name)
-		}
-		slices.Sort(images[node.Name])
-	}
-	return images, model.SuccessRetVal()
 }
 
 // nodeImageSet is the canonical inventory used for both display and pre-pull

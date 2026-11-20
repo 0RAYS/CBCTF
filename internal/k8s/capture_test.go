@@ -70,7 +70,7 @@ func TestCaptureContainerRunsOutsideRootAndKeepsCapabilities(t *testing.T) {
 	if securityContext.Capabilities == nil {
 		t.Fatal("capture needs an explicit capability set")
 	}
-	if !slices.Contains(securityContext.Capabilities.Drop, corev1.Capability("ALL")) {
+	if !slices.Contains(securityContext.Capabilities.Drop, "ALL") {
 		t.Fatalf("capture must drop all capabilities, got %v", securityContext.Capabilities.Drop)
 	}
 	for _, capability := range []corev1.Capability{"NET_RAW", "BPF", "PERFMON", "SETUID", "SETGID", "SETPCAP"} {
