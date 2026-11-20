@@ -150,18 +150,11 @@ func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 }
 
 func applyCountOptions(tx *gorm.DB, options CountOptions) *gorm.DB {
-	if conditions := options.Conditions; len(conditions) > 0 {
-		tx = tx.Where(conditions)
-	}
-	if search := options.Search; len(search) > 0 {
-		for key, value := range search {
-			tx = tx.Where(fmt.Sprintf("%s ILIKE ?", key), "%"+value+"%")
-		}
-	}
-	if options.Deleted {
-		tx = tx.Unscoped()
-	}
-	return tx
+	return applyGetOptions(tx, GetOptions{
+		Conditions: options.Conditions,
+		Search:     options.Search,
+		Deleted:    options.Deleted,
+	})
 }
 
 func (b *BaseRepo[M]) Get(options GetOptions) (M, model.RetVal) {
