@@ -6,13 +6,23 @@ import { DateTimeInput, Input, Modal, Textarea } from '../../components/common';
 import CRUDModalFooter from '../../components/common/CRUDModalFooter';
 import DeleteConfirmation from '../../components/common/DeleteConfirmation';
 import { createContest, deleteContest, getContestList, updateContestPicture } from '../../api/admin/contest';
+import { formatDateForInput } from '../../components/features/Admin/Contests/editor/contestForm.js';
 import { useTranslation } from 'react-i18next';
 
-const getTomorrowDateTime = () => {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow.toISOString().slice(0, 16);
-};
+const CONTEST_DURATION_HOURS = 48;
+
+// The picker edits local calendar fields, so the default must be rendered in local time too.
+const defaultStartTime = () => formatDateForInput(new Date(Date.now() + 24 * 60 * 60 * 1000));
+
+const defaultCreateForm = () => ({
+  name: '',
+  description: '',
+  captcha: '',
+  prefix: 'CBCTF',
+  size: 4,
+  start: defaultStartTime(),
+  duration: CONTEST_DURATION_HOURS,
+});
 
 function ContestsManagement() {
   const [contests, setContests] = useState([]);
@@ -22,15 +32,7 @@ function ContestsManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mode, setMode] = useState('create'); // 'create' | 'delete'
   const [selectedContest, setSelectedContest] = useState(null);
-  const [createForm, setCreateForm] = useState({
-    name: '',
-    description: '',
-    captcha: '',
-    prefix: 'CBCTF',
-    size: 4,
-    start: getTomorrowDateTime(),
-    duration: 24,
-  });
+  const [createForm, setCreateForm] = useState(defaultCreateForm);
 
   const fileInputRef = useRef(null);
   const pageSize = 10;
@@ -61,15 +63,7 @@ function ContestsManagement() {
 
   const handleCreateClick = () => {
     setMode('create');
-    setCreateForm({
-      name: '',
-      description: '',
-      captcha: '',
-      prefix: 'CBCTF',
-      size: 4,
-      start: getTomorrowDateTime(),
-      duration: 24,
-    });
+    setCreateForm(defaultCreateForm());
     setIsModalOpen(true);
   };
 
