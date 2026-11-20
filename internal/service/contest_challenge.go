@@ -85,13 +85,7 @@ func buildSourceFileName(tx *gorm.DB, source model.GeneratorSource, teamID uint)
 	if !ret.OK {
 		return ""
 	}
-	record, _ := db.InitFileRepo(tx).Get(db.GetOptions{
-		Conditions: map[string]any{
-			"model":    model.Name(source),
-			"model_id": source.SourceID(),
-			"type":     model.ChallengeFileType,
-		},
-	})
+	record, _ := sourceFileRecord(tx, source)
 	filename := model.AttachmentFileName
 	if string(record.Path) == path && record.Filename != "" {
 		filename = record.Filename

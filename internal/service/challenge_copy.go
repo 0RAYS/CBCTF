@@ -71,13 +71,7 @@ func copyChallengeFiles(tx *gorm.DB, challenge model.Challenge, contestChallenge
 	default:
 		source, target = challenge.StaticPath(), contestChallenge.StaticPath()
 	}
-	sourceRecord, sourceRet := db.InitFileRepo(tx).Get(db.GetOptions{
-		Conditions: map[string]any{
-			"model":    model.Name(challenge),
-			"model_id": challenge.ID,
-			"type":     model.ChallengeFileType,
-		},
-	})
+	sourceRecord, sourceRet := sourceFileRecord(tx, challenge)
 	if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
 		log.Logger.Warningf("Failed to create contest challenge dir: contest_challenge_id=%d error=%v", contestChallenge.ID, err)
 		return model.SuccessRetVal()

@@ -26,13 +26,7 @@ func BuildChallengeView(tx *gorm.DB, challenge model.Challenge) view.ChallengeVi
 		result.DockerCompose = Template2Yaml(challenge.Template, challenge.ChallengeFlags)
 	}
 
-	file, ret := db.InitFileRepo(tx).Get(db.GetOptions{
-		Conditions: map[string]any{
-			"model":    model.Name(challenge),
-			"model_id": challenge.ID,
-			"type":     model.ChallengeFileType,
-		},
-	})
+	file, ret := sourceFileRecord(tx, challenge)
 	result.FileName = file.Filename
 	if !ret.OK && ret.Msg != i18n.Model.NotFound {
 		result.Unavailable = []string{"file"}

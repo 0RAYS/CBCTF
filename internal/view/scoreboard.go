@@ -1,6 +1,8 @@
 package view
 
 import (
+	"slices"
+	"strings"
 	"time"
 
 	"CBCTF/internal/model"
@@ -10,6 +12,37 @@ type ScoreboardSolvedStateView struct {
 	Category string
 	Solved   int64
 	All      int64
+}
+
+// BuildSolvedStateViews 按题目分类统计解题数量，两组 flag 都需预加载 ContestChallenge
+func BuildSolvedStateViews(solved []model.ContestFlag, all []model.ContestFlag) []ScoreboardSolvedStateView {
+	categories := make(map[uint]string)
+	for _, v := range all {
+		categories[v.ContestChallengeID] = v.ContestChallenge.Category
+	}
+	allCount := make(map[string]int64)
+	for _, v := range all {
+		allCount[v.ContestChallenge.Category] += 1
+	}
+	solvedCount := make(map[string]int64)
+	for _, flag := range solved {
+		solvedCount[categories[flag.ContestChallengeID]] += 1
+	}
+	data := make([]ScoreboardSolvedStateView, 0)
+	for category, total := range allCount {
+		if _, ok := solvedCount[category]; !ok {
+			solvedCount[category] = 0
+		}
+		data = append(data, ScoreboardSolvedStateView{
+			Category: category,
+			Solved:   solvedCount[category],
+			All:      total,
+		})
+	}
+	slices.SortFunc(data, func(a, b ScoreboardSolvedStateView) int {
+		return strings.Compare(a.Category, b.Category)
+	})
+	return data
 }
 
 type TeamRankingView struct {
