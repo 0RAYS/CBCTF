@@ -13,7 +13,9 @@ type NodeImageDetection struct {
 	Unverified []string `json:"unverified"`
 }
 
-// ImageDetection is the last detection result of one scope.
+// ImageDetection is the detection result of the common cache. Every run
+// merges into it, so the system-wide view and the contest views read the same
+// results.
 type ImageDetection struct {
 	DetectedAt time.Time            `json:"detected_at"`
 	Nodes      []NodeImageDetection `json:"nodes"`
