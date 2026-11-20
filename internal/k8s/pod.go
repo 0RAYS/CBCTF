@@ -108,11 +108,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 func GetPod(ctx context.Context, name string) (*corev1.Pod, model.RetVal) {
 	pod, err := kubeClient.CoreV1().Pods(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, model.FailRetVal(i18n.K8S.NotFound, "Pod", name, nil)
-		}
-		log.Logger.Warningf("Failed to get Pod %s: %s", name, err)
-		return nil, model.FailRetVal(i18n.K8S.GetError, "Pod", name, err)
+		return nil, getFailed("Pod", name, err)
 	}
 	return pod, model.SuccessRetVal()
 }
