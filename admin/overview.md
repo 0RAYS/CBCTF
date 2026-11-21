@@ -61,17 +61,17 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 
 **比赛管理**
 
-| 页面         | 说明                         |
-| ---------- | -------------------------- |
-| Settings   | 比赛基础信息、时间、规则、奖项等           |
-| Notices    | 比赛公告                       |
-| Challenges | 比赛题目和比赛内 Flag              |
-| Scoreboard | 排行榜和排名时间线                  |
-| Teams      | 队伍、成员、提交、Flag、Writeup、靶机历史 |
-| Images     | 检测比赛题目镜像并预热                |
-| Victims    | 比赛内靶机预热、查看和停止              |
-| Generators | 比赛内动态附件生成器管理               |
-| Cheats     | 作弊检测记录                     |
+| 页面          | 说明                         |
+| ----------- | -------------------------- |
+| Settings    | 比赛基础信息、时间、规则、奖项等           |
+| Notices     | 比赛公告                       |
+| Challenges  | 比赛题目和比赛内 Flag              |
+| Leaderboard | 排行榜和排名时间线                  |
+| Teams       | 队伍、成员、提交、Flag、Writeup、靶机历史 |
+| Images      | 检测比赛题目镜像并预热                |
+| Victims     | 比赛内靶机预热、查看和停止              |
+| Generators  | 比赛内动态附件生成器管理               |
+| Cheats      | 作弊检测记录                     |
 
 
 ## 角色和权限

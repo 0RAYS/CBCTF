@@ -21,24 +21,27 @@
 
 以下为新建任务记录时的默认值。管理员保存的启动时执行设置会保留，服务器重启不会用默认值覆盖它。
 
-| 任务名称                   | 用途                    | 默认间隔  | 启动时执行 |
-| ---------------------- | --------------------- | ----- | ----- |
-| `WarmChallengeImages`  | 预热未结束比赛题目的镜像，复查拉取失败节点 | 15 分钟 | 关闭    |
-| `CloseTimeoutVictims`  | 关闭超时靶机                | 1 分钟  | 开启    |
-| `CloseUnCtrlVictims`   | 清理失控靶机                | 10 分钟 | 开启    |
-| `SyncFrpsPortLocks`    | 校准 FRPS 端口占用缓存        | 10 分钟 | 关闭    |
-| `ClearEmptyTeam`       | 清理没有成员的空队伍            | 5 分钟  | 开启    |
-| `UpdateFlagScore`      | 重算 Flag 分数与解题人数       | 5 分钟  | 开启    |
-| `UpdateUserRanking`    | 刷新用户得分与排名             | 3 小时  | 开启    |
-| `UpdateTeamRanking`    | 刷新队伍得分与排名             | 5 分钟  | 开启    |
-| `StopUnCtrlGenerator`  | 清理失控附件生成器 Pod         | 10 分钟 | 开启    |
-| `ClearSubmissionMutex` | 清理解题提交锁缓存             | 10 分钟 | 关闭    |
-| `CheckCheat`           | 扫描比赛作弊事件              | 10 分钟 | 开启    |
-| `ClearCheatMutex`      | 清理作弊检测锁缓存             | 10 分钟 | 关闭    |
-| `ClearJoinTeamMutes`   | 清理队伍加入锁缓存             | 10 分钟 | 关闭    |
-| `ReindexPostgres`      | 并发重建 PostgreSQL 索引    | 24 小时 | 关闭    |
+| 任务名称                   | 用途                         | 默认间隔  | 启动时执行 |
+| ---------------------- | -------------------------- | ----- | ----- |
+| `WarmChallengeImages`  | 预热未结束比赛题目的镜像，复查拉取失败节点      | 15 分钟 | 关闭    |
+| `CloseTimeoutVictims`  | 关闭超时靶机                     | 1 分钟  | 开启    |
+| `CloseUnCtrlVictims`   | 清理失控靶机                     | 10 分钟 | 开启    |
+| `SyncFrpsPortLocks`    | 校准 FRPS 端口占用缓存             | 10 分钟 | 关闭    |
+| `ClearEmptyTeam`       | 清理没有成员的空队伍                 | 5 分钟  | 开启    |
+| `UpdateFlagScore`      | 重算 Flag 分数与解题人数            | 5 分钟  | 开启    |
+| `UpdateUserRanking`    | 刷新用户得分与排名                  | 3 小时  | 开启    |
+| `UpdateTeamRanking`    | 刷新队伍得分与排名                  | 5 分钟  | 开启    |
+| `StopUnCtrlGenerator`  | 清理失控附件生成器 Pod              | 10 分钟 | 开启    |
+| `ClearSubmissionMutex` | 清理解题提交锁缓存                  | 10 分钟 | 关闭    |
+| `CheckCheat`           | 扫描比赛作弊事件                   | 10 分钟 | 开启    |
+| `ClearCheatMutex`      | 清理作弊检测锁缓存                  | 10 分钟 | 关闭    |
+| `ClearJoinTeamMutes`   | 清理队伍加入锁缓存                  | 10 分钟 | 关闭    |
+| `ReindexPostgres`      | 并发重建 PostgreSQL 索引         | 24 小时 | 关闭    |
+| `DetectImages`         | 检测题库与未结束比赛题目的镜像状态，刷新镜像检测缓存 | 30 分钟 | 关闭    |
 
 系统指标和日志采集自动运行，无需在此页面设置。
+
+镜像检测的结果保存在一份通用缓存中，系统级镜像页与各比赛的镜像页读取同一份结果，各自只显示关心的镜像。每次检测只更新它探测到的镜像，其余镜像保留上一次的结果。
 
 ## 检查执行结果
 
