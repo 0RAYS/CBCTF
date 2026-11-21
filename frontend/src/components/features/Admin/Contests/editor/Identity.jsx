@@ -66,7 +66,7 @@ export default function Identity({ contest, onChange, errors, onImageUpload }) {
           onChange={upload}
         />
       </fieldset>
-      <h3 className="text-xl font-mono text-neutral-50">{t('admin.contests.editor.sections.advanced')}</h3>
+      <h3 className="text-lg font-mono text-neutral-50">{t('admin.contests.editor.sections.advanced')}</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           ['prefix', 'flagPrefix', 'text'],

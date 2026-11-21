@@ -47,7 +47,7 @@ function ChallengeTypes() {
 
   return (
     <div className="py-14 md:py-20 px-4 md:px-8 bg-neutral-800/20 border-y border-neutral-700/40">
-      <div className="w-full max-w-[1200px] mx-auto">
+      <div className="page-container">
         <motion.div
           className="mb-10"
           initial={{ opacity: 0, y: 16 }}

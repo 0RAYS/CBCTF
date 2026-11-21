@@ -105,7 +105,7 @@ export default function ContestVictimStart({ contestId, onStarted }) {
         <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4 min-h-[460px] flex flex-col">
           <div className="flex items-center gap-2 mb-3">
             <IconPlayerPlay size={18} className="text-neutral-400" />
-            <h3 className="text-base font-mono text-neutral-50">{t('admin.contests.containers.quickActions.title')}</h3>
+            <h3 className="text-lg font-mono text-neutral-50">{t('admin.contests.containers.quickActions.title')}</h3>
           </div>
           <div className="flex flex-col gap-4 flex-1 min-h-0">
             <div className="border border-neutral-300/20 rounded-md bg-black/10 p-4">

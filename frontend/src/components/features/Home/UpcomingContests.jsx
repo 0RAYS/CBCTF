@@ -11,7 +11,7 @@ function UpcomingContests({ contests = [], isLoading }) {
 
   return (
     <div className="py-16 md:py-24 px-4 md:px-8">
-      <div className="w-full max-w-[1200px] mx-auto">
+      <div className="page-container">
         <motion.div
           className="mb-10"
           initial={{ opacity: 0, y: 16 }}

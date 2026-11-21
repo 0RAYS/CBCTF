@@ -91,7 +91,7 @@ function GameList({ games = [], onGameAction, user }) {
   const pageGames = games.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto">
+    <div className="page-container">
       <div className="space-y-3">
         {pageGames.map((game) => (
           <GameCard key={game.id} game={game} onGameAction={onGameAction} user={user} />

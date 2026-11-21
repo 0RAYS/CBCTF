@@ -60,7 +60,7 @@ function ResetPassword() {
         <div className="relative flex justify-center mb-8">
           <div className="absolute -top-[3px] -right-[3px] w-[10px] h-[10px] border-t border-r border-neutral-300" />
           <div className="absolute -bottom-[3px] -left-[3px] w-[10px] h-[10px] border-b border-l border-neutral-300" />
-          <h1 className="text-neutral-50 text-2xl font-mono tracking-wider">{t('auth.resetPassword.title')}</h1>
+          <h1 className="text-2xl font-mono text-neutral-50 tracking-wider">{t('auth.resetPassword.title')}</h1>
         </div>
 
         <AnimatePresence mode="wait">

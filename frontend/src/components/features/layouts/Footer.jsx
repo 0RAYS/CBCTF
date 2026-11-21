@@ -51,13 +51,13 @@ function Footer({ copyright, icp, links, fixed = true }) {
       transition={{ duration: 0.2 }}
     >
       <div
-        className={`min-h-[60px] max-w-[1200px] mx-auto px-4 md:px-8 flex flex-col sm:flex-row items-center justify-between ${fixed ? 'gap-2 py-2 sm:py-0' : 'gap-3 py-3'}`}
+        className={`min-h-[60px] px-4 md:px-8 flex flex-col sm:flex-row items-center justify-between ${fixed ? 'gap-2 py-2 sm:py-0' : 'gap-3 py-3'}`}
       >
         <div className="relative flex items-center">
           <div className="absolute left-0 top-0 w-[100px] h-[1px] bg-gradient-to-r from-neutral-300/60 to-transparent hidden sm:block"></div>
           <div className="absolute left-0 bottom-0 w-[60px] h-[1px] bg-gradient-to-r from-neutral-300/60 to-transparent hidden sm:block"></div>
 
-          <div className="min-w-0 flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 sm:ml-8">
+          <div className="min-w-0 flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1">
             <span className="text-neutral-300 text-xs tracking-wider font-mono">{resolvedCopyright}</span>
             {resolvedIcp && (
               <>
@@ -84,7 +84,7 @@ function Footer({ copyright, icp, links, fixed = true }) {
             <div className="absolute right-0 top-0 w-[80px] h-[1px] bg-gradient-to-l from-neutral-300/60 to-transparent hidden sm:block"></div>
             <div className="absolute right-0 bottom-0 w-[40px] h-[1px] bg-gradient-to-l from-neutral-300/60 to-transparent hidden sm:block"></div>
 
-            <div className="min-w-0 flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1 sm:mr-8">
+            <div className="min-w-0 flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1">
               {resolvedLinks.map((link, index) => renderLink(link, index))}
             </div>
           </div>

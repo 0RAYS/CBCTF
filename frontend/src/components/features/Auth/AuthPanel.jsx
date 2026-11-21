@@ -310,7 +310,7 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
           <div className="absolute -top-[3px] -right-[3px] w-[10px] h-[10px] border-t border-r border-neutral-300" />
           <div className="absolute -bottom-[3px] -left-[3px] w-[10px] h-[10px] border-b border-l border-neutral-300" />
           <motion.h1
-            className="text-neutral-50 text-2xl font-mono tracking-wider"
+            className="text-2xl font-mono text-neutral-50 tracking-wider"
             key={isLogin ? 'login' : 'register'}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

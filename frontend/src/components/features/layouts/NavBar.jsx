@@ -55,7 +55,7 @@ function NavBar({
   return (
     <>
       <div
-        className={`fixed top-0 left-0 w-full h-[80px] flex items-center justify-between gap-3 px-3 sm:px-6 lg:px-8 bg-neutral-900/70 backdrop-blur-[4px] border-b border-neutral-700/60 z-40 ${className}`}
+        className={`fixed top-0 left-0 w-full h-[80px] flex items-center justify-between gap-3 px-4 md:px-8 bg-neutral-900/70 backdrop-blur-[4px] border-b border-neutral-700/60 z-40 ${className}`}
       >
         <div className="flex min-w-0 flex-1 items-center">
           <div className="relative min-w-0 w-44 sm:w-52 max-w-full">

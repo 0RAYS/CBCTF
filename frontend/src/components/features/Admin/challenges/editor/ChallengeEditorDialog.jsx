@@ -80,7 +80,7 @@ export default function ChallengeEditorDialog({
             <div className="mx-auto w-20 h-20 bg-red-400/20 rounded-full flex items-center justify-center mb-6">
               <IconTrash size={40} className="text-red-400" />
             </div>
-            <h3 className="text-2xl font-mono text-neutral-50 mb-4">{t('admin.challengeModal.delete.title')}</h3>
+            <h3 className="text-lg font-mono text-neutral-50 mb-4">{t('admin.challengeModal.delete.title')}</h3>
             <p className="text-neutral-400 font-mono text-lg mb-2">{t('admin.challengeModal.delete.prompt')}</p>
             <p className="text-red-400 font-mono text-sm">{t('admin.challengeModal.delete.warning')}</p>
             {usages.length > 0 && (

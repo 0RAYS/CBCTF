@@ -9,7 +9,7 @@ function StatsSection({ stats, isLoading }) {
 
   return (
     <div className="py-10 px-4 md:px-8 border-y border-neutral-700/50">
-      <div className="w-full max-w-[1200px] mx-auto">
+      <div className="page-container">
         <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-neutral-700/50">
           {isLoading
             ? Array.from({ length: 4 }).map((_, index) => (

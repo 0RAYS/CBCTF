@@ -38,7 +38,7 @@ function GameNoticePage() {
     return (
       <div className="contest-container mx-auto">
         <Card className="space-y-4" aria-busy={status === 'loading'}>
-          <h1 className="font-mono text-lg text-neutral-50">{t('nav.notice')}</h1>
+          <h1 className="text-xl sm:text-3xl font-mono text-neutral-50 tracking-wider">{t('nav.notice')}</h1>
           {status === 'error' ? (
             <>
               <p role="alert" className="text-neutral-300">

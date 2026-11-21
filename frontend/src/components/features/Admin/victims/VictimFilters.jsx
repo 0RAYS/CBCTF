@@ -24,7 +24,7 @@ export function VictimFilters({ scope, filters, onResetFilters, onFilterChange }
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <IconFilter size={18} className="text-neutral-400" />
-            <h3 className="text-base font-mono text-neutral-50">{t(`${translationKey}.filters.title`)}</h3>
+            <h3 className="text-lg font-mono text-neutral-50">{t(`${translationKey}.filters.title`)}</h3>
           </div>
           <Button
             variant="ghost"
