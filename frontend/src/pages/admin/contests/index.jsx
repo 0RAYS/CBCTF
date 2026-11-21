@@ -20,7 +20,12 @@ export default function AdminContestDetail() {
     getContestInfo(Number(id))
       .then((response) => {
         if (!cancelled && response.code === 200) {
-          setLoaded({ id, draft: createContestDraft(response.data), paused: !!response.data.paused });
+          setLoaded({
+            id,
+            draft: createContestDraft(response.data),
+            paused: !!response.data.paused,
+            leaderboardHidden: !!response.data.leaderboard_hidden,
+          });
         }
       })
       .catch((error) => {
@@ -60,7 +65,7 @@ export default function AdminContestDetail() {
   return loaded?.id === id ? (
     <div className="space-y-6">
       <ContestControl
-        contest={{ id: Number(id), paused: loaded.paused }}
+        contest={{ id: Number(id), paused: loaded.paused, leaderboardHidden: loaded.leaderboardHidden }}
         onChange={(patch) => setLoaded((previous) => ({ ...previous, ...patch }))}
       />
       <ContestEditor

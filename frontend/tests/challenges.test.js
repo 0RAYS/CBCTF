@@ -187,8 +187,24 @@ test('contest overview preserves time boundaries, seconds conversion and team to
   assert.equal(overview.duration, 1);
   assert.equal(overview.prefix, 'flag');
   assert.equal(overview.teams, 10);
-  assert.deepEqual(overview.team, { score: 42, rank: 0, solved: 3 });
+  assert.deepEqual(overview.team, { score: 42, rank: null, solved: 3 });
+  assert.equal(overview.leaderboardHidden, false);
   assert.equal(overview.totalChallenges, 7);
+});
+
+test('contest overview reports the leaderboard blackout and keeps the server rank when it is sent', () => {
+  const start = Date.parse('2026-09-10T00:00:00Z');
+  const contest = {
+    start: new Date(start).toISOString(),
+    duration: 3600,
+    prefix: 'flag',
+    teams: 10,
+    leaderboard_hidden: true,
+  };
+  const team = { score: 42, rank: 3, solved: [] };
+  const overview = getContestOverview(contest, team, start);
+  assert.equal(overview.leaderboardHidden, true);
+  assert.deepEqual(overview.team, { score: 42, rank: 3, solved: 0 });
 });
 
 test('countdown formatting retains hours and floors fractional seconds', () => {

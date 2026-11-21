@@ -25,16 +25,17 @@ type Cheat struct {
 }
 
 type Contest struct {
-	CaptchaWrong    string
-	DuplicateMember string
-	IsComing        string
-	IsRunning       string
-	IsPaused        string
-	IsOver          string
-	NotRunning      string
-	GetError        string
-	DeleteError     string
-	NotFound        string
+	CaptchaWrong      string
+	DuplicateMember   string
+	IsComing          string
+	IsRunning         string
+	IsPaused          string
+	IsOver            string
+	NotRunning        string
+	LeaderboardHidden string
+	GetError          string
+	DeleteError       string
+	NotFound          string
 }
 
 type ContestChallenge struct {
@@ -280,16 +281,17 @@ var Model = struct {
 		DeleteError: "model.cheat.deleteError",
 	},
 	Contest: Contest{
-		CaptchaWrong:    "model.contest.captchaWrong",
-		DuplicateMember: "model.contest.duplicateMember",
-		IsComing:        "model.contest.isComing",
-		IsRunning:       "model.contest.isRunning",
-		IsPaused:        "model.contest.isPaused",
-		IsOver:          "model.contest.isOver",
-		NotRunning:      "model.contest.notRunning",
-		GetError:        "model.contest.getError",
-		DeleteError:     "model.contest.deleteError",
-		NotFound:        "model.contest.notFound",
+		CaptchaWrong:      "model.contest.captchaWrong",
+		DuplicateMember:   "model.contest.duplicateMember",
+		IsComing:          "model.contest.isComing",
+		IsRunning:         "model.contest.isRunning",
+		IsPaused:          "model.contest.isPaused",
+		IsOver:            "model.contest.isOver",
+		NotRunning:        "model.contest.notRunning",
+		LeaderboardHidden: "model.contest.leaderboardHidden",
+		GetError:          "model.contest.getError",
+		DeleteError:       "model.contest.deleteError",
+		NotFound:          "model.contest.notFound",
 	},
 	ContestChallenge: ContestChallenge{
 		GetError:    "model.contestChallenge.getError",

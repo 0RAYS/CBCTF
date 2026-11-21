@@ -294,9 +294,16 @@
         "resume": "恢复比赛",
         "pausedHint": "比赛已暂停：题目无法访问，剩余时间保持不变。",
         "runningHint": "比赛进行中：剩余时间持续倒数。",
+        "blackout": {
+          "label": "排行榜黑灯",
+          "help": "对选手隐藏排行榜以及所有队伍名次。",
+          "toggle": "开启黑灯"
+        },
         "toast": {
           "paused": "比赛已暂停",
           "resumed": "比赛已恢复",
+          "blackoutEnabled": "已对选手隐藏排行榜",
+          "blackoutDisabled": "排行榜已对选手显示",
           "failed": "切换比赛状态失败"
         }
       },
@@ -2830,6 +2837,11 @@
     },
     "leaderboard": {
       "showHiddenTeams": "显示隐藏队伍",
+      "hidden": {
+        "title": "排行榜暂时隐藏",
+        "description": "主办方已隐藏排行榜，恢复后将继续显示分数与名次。",
+        "rank": "名次已被主办方隐藏"
+      },
       "toast": {
         "fetchFailed": "获取排行榜失败"
       },

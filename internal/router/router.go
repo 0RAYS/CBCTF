@@ -111,9 +111,9 @@ func Init() *gin.Engine {
 	contest := auth.Group("/contests/:contestID", middleware.SetContest)
 	{
 		contest.GET("", GetContest)
-		contest.GET("/leaderboard", GetTeamRanking)
-		contest.GET("/leaderboard/challenges", GetLeaderboardMatrix)
-		contest.GET("/leaderboard/timeline", GetRankTimeline)
+		contest.GET("/leaderboard", middleware.CheckLeaderboardVisible, GetTeamRanking)
+		contest.GET("/leaderboard/challenges", middleware.CheckLeaderboardVisible, GetLeaderboardMatrix)
+		contest.GET("/leaderboard/timeline", middleware.CheckLeaderboardVisible, GetRankTimeline)
 		contest.POST("/teams/join", middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam)
 		contest.POST("/teams/create", middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam)
 
@@ -359,6 +359,7 @@ func Init() *gin.Engine {
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
 			adminContest.PUT("/pause", UpdateContestPause)
+			adminContest.PUT("/leaderboard", UpdateContestLeaderboard)
 			adminContest.POST("/picture", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("contest"))
 			adminContest.GET("/leaderboard", GetTeamRanking)
 			adminContest.GET("/leaderboard/challenges", GetLeaderboardMatrix)

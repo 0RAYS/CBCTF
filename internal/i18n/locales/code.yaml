@@ -41,6 +41,7 @@ model:
     isPaused: "400"
     isOver: "400"
     notRunning: "400"
+    leaderboardHidden: "403"
     getError: "500"
     deleteError: "500"
     notFound: "404"

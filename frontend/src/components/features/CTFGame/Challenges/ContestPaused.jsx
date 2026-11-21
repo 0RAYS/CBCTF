@@ -23,9 +23,11 @@ function ContestPaused({ onViewLeaderboard }) {
         </p>
       </div>
       <div className="flex justify-center gap-4 pt-6">
-        <Button variant="primary" size="lg" onClick={onViewLeaderboard}>
-          {t('game.contestPaused.actions.viewLeaderboard')}
-        </Button>
+        {onViewLeaderboard && (
+          <Button variant="primary" size="lg" onClick={onViewLeaderboard}>
+            {t('game.contestPaused.actions.viewLeaderboard')}
+          </Button>
+        )}
       </div>
     </Card>
   );

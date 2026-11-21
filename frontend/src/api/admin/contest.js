@@ -103,6 +103,14 @@ export function updateContestPause(contestId, paused) {
   });
 }
 
+export function updateContestLeaderboard(contestId, hidden) {
+  return request({
+    url: `/admin/contests/${contestId}/leaderboard`,
+    method: 'PUT',
+    data: { hidden },
+  });
+}
+
 export function getContestTeams(contestId, params = { limit: 20, offset: 0 }) {
   return request({
     url: `/admin/contests/${contestId}/teams`,
