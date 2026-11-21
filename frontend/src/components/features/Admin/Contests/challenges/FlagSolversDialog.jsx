@@ -8,6 +8,9 @@ import { useUserDetailDialog } from '@/components/features/Admin/details/useUser
 import { useTeamDetailDialog } from '@/components/features/Admin/details/useTeamDetailDialog';
 import TruncatedText from '@/components/common/TruncatedText';
 
+// User and team split the table; rank, score and solved-at keep their fixed widths.
+const FLEX_COLUMN_WIDTH = '50%';
+
 function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, flagId }) {
   const { t } = useTranslation();
   const [solvers, setSolvers] = useState([]);
@@ -48,7 +51,7 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
         size="lg"
         title={t('admin.contests.challengeModal.solversModal.title', { index: flagIndex + 1 })}
       >
-        <div className="p-4 max-h-[60vh] overflow-auto">
+        <div className="p-4 max-h-[60vh] overflow-y-auto table-scroll">
           {loading ? (
             <p className="text-center text-sm font-mono text-neutral-400 py-8">{t('common.loading')}</p>
           ) : solvers.length === 0 ? (
@@ -56,16 +59,16 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
               {t('admin.contests.challengeModal.solversModal.empty')}
             </p>
           ) : (
-            <table className="w-full min-w-[640px] table-fixed text-sm font-mono">
+            <table className="table-adaptive text-sm font-mono" style={{ '--table-min-width': '640px' }}>
               <thead>
                 <tr className="border-b border-neutral-700 text-neutral-400">
                   <th className="text-left py-2 pr-4 w-12" scope="col">
                     {t('common.rank')}
                   </th>
-                  <th className="text-left py-2 pr-4" scope="col">
+                  <th className="text-left py-2 pr-4" scope="col" style={{ width: FLEX_COLUMN_WIDTH }}>
                     {t('admin.contests.challengeModal.solversModal.columns.user')}
                   </th>
-                  <th className="text-left py-2 pr-4" scope="col">
+                  <th className="text-left py-2 pr-4" scope="col" style={{ width: FLEX_COLUMN_WIDTH }}>
                     {t('admin.contests.challengeModal.solversModal.columns.team')}
                   </th>
                   <th className="text-right py-2 pr-4 w-28" scope="col">

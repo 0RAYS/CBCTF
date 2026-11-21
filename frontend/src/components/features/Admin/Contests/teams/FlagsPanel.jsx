@@ -71,12 +71,7 @@ export default function FlagsPanel({ flags = [], loading }) {
                 {challenge.type && <Chip label={challenge.type} />}
                 {challenge.hidden && <StatusTag type="warning" text={label('hidden')} />}
               </div>
-              <List
-                className="[&_table]:min-w-[960px]"
-                columns={columns}
-                data={challenge.flags || []}
-                renderCell={renderCell}
-              />
+              <List minWidth={960} columns={columns} data={challenge.flags || []} renderCell={renderCell} />
             </Card>
           ))}
         </div>

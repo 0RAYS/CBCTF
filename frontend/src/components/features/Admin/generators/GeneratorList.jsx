@@ -8,7 +8,11 @@ import { isGeneratorStoppable } from '@/components/features/Admin/generators/gen
 import TruncatedText from '@/components/common/TruncatedText';
 import { CHECKBOX_INPUT_CLASS } from '@/components/common/Checkbox';
 
-const COLUMN_WIDTHS = [48, 80, 200, 256, 112, 176, 96, 184, 96, 184, 128, 88];
+const CHECKBOX_WIDTH = 48;
+const ACTIONS_WIDTH = 88;
+const COLUMN_WIDTHS = [80, 200, 256, 112, 176, 96, 184, 96, 184, 128];
+const FLEX_WIDTH = COLUMN_WIDTHS.reduce((a, b) => a + b, 0);
+const TABLE_WIDTH = FLEX_WIDTH + CHECKBOX_WIDTH + ACTIONS_WIDTH;
 
 const STATUS_STYLES = {
   waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
@@ -57,19 +61,21 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
       ) : generators.length === 0 ? (
         <EmptyState title={text('noGenerators')} description={text('noGeneratorsDesc')} />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="table-scroll">
           <table
-            className="w-full table-fixed text-sm text-neutral-300"
-            style={{ minWidth: COLUMN_WIDTHS.reduce((a, b) => a + b, 0) }}
+            className="table-adaptive text-sm text-neutral-300"
+            style={{ '--table-min-width': `${TABLE_WIDTH}px` }}
           >
             <colgroup>
+              <col style={{ width: CHECKBOX_WIDTH }} />
               {COLUMN_WIDTHS.map((width, index) => (
-                <col key={index} style={{ width }} />
+                <col key={index} style={{ width: `${((width / FLEX_WIDTH) * 100).toFixed(4)}%` }} />
               ))}
+              <col style={{ width: ACTIONS_WIDTH }} />
             </colgroup>
             <thead>
               <tr className="bg-black/40">
-                <th className="p-4 text-left font-mono w-10" scope="col">
+                <th className="p-4 text-left font-mono" scope="col">
                   <input
                     type="checkbox"
                     className={CHECKBOX_INPUT_CLASS}

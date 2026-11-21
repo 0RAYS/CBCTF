@@ -8,6 +8,9 @@ import RowActions from '@/components/common/RowActions';
 import TruncatedText from '@/components/common/TruncatedText';
 import { CHECKBOX_INPUT_CLASS } from '@/components/common/Checkbox';
 
+const CHECKBOX_WIDTH = 48;
+const ACTIONS_WIDTH = 176;
+
 export function VictimTable({
   t,
   translationKey,
@@ -38,7 +41,9 @@ export function VictimTable({
   VictimStatusBadge,
 }) {
   const stoppableCount = containers.filter(isVictimStoppable).length;
-  const columnWidths = [48, 80, ...(!contestId ? [100] : []), 180, 180, 180, 256, 176, 136, 136, 176];
+  const columnWidths = [80, ...(!contestId ? [100] : []), 180, 180, 180, 256, 176, 136, 136];
+  const flexWidth = columnWidths.reduce((a, b) => a + b, 0);
+  const tableWidth = flexWidth + CHECKBOX_WIDTH + ACTIONS_WIDTH;
   const getRowActions = (container) => [
     {
       key: 'graph',
@@ -103,12 +108,14 @@ export function VictimTable({
         </div>
 
         {contextMenu.menu}
-        <div className="overflow-x-auto">
-          <table className="w-full table-fixed" style={{ minWidth: columnWidths.reduce((a, b) => a + b, 0) }}>
+        <div className="table-scroll">
+          <table className="table-adaptive" style={{ '--table-min-width': `${tableWidth}px` }}>
             <colgroup>
+              <col style={{ width: CHECKBOX_WIDTH }} />
               {columnWidths.map((width, index) => (
-                <col key={index} style={{ width }} />
+                <col key={index} style={{ width: `${((width / flexWidth) * 100).toFixed(4)}%` }} />
               ))}
+              <col style={{ width: ACTIONS_WIDTH }} />
             </colgroup>
             <thead>
               <tr className="bg-black/40">

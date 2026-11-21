@@ -49,7 +49,7 @@ export default function WriteupsPanel({
         </Card>
       ) : (
         <List
-          className="[&_table]:min-w-[800px]"
+          minWidth={800}
           columns={columns}
           data={writeups}
           renderCell={renderCell}

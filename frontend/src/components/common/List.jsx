@@ -9,7 +9,7 @@ import TruncatedText from '@/components/common/TruncatedText';
 const INTERACTIVE_SELECTOR =
   'button, a, input, select, textarea, label, [role="button"], [role="checkbox"], [contenteditable="true"], [data-row-interactive]';
 
-/** 通用列表/表格组件；minWidth 是表格最小宽度, 窄屏时表格区域内横向滚动 */
+/** 通用列表/表格组件；表格填满容器宽度，容器过窄时保留 minWidth 自然宽度并横向滚动 */
 function List({
   columns = [],
   data = [],
@@ -31,8 +31,8 @@ function List({
   const contextMenu = useContextMenu(data, getRowActions, loading);
   const columnCount = columns.length + (actionsColumn ? 1 : 0);
   const actionsWidth = actionsColumn?.width || 136;
-  // Existing admin columns use percentage weights that often total less than 100.
-  // Reserve the action width, then distribute the remaining space proportionally.
+  // Admin columns use percentage weights that often total less than 100; the browser
+  // shrinks them to the space the pixel action column leaves free.
   const columnWeight =
     actionsColumn && columns.every((column) => /^\d+(\.\d+)?%$/.test(column.width))
       ? columns.reduce((total, column) => total + parseFloat(column.width), 0)
@@ -69,8 +69,8 @@ function List({
   return (
     <div className={`min-w-0 ${className}`}>
       {contextMenu.menu}
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed" style={{ minWidth }}>
+      <div className="table-scroll">
+        <table className="table-adaptive" style={{ '--table-min-width': `${minWidth}px` }}>
           <thead>
             <tr className="bg-black/40">
               {columns.map((column, index) => (
