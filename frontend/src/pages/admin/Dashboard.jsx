@@ -8,6 +8,16 @@ import { startVisiblePolling } from '@/utils/visiblePolling.js';
 
 const ReactECharts = lazy(() => import('@/components/common/EChart'));
 
+// ECharts 需要字面量色值，取自 tailwind.config.js 的设计 token
+const AXIS_LINE = '#2a2a2a';
+const AXIS_LABEL = '#8a8a8a';
+const SPLIT_LINE = '#1a1a1a';
+const SERIES_COLORS = {
+  cpu: '#597ef7',
+  memory: '#4ade80',
+  disk: '#facc15',
+};
+
 function Dashboard() {
   const [status, setStatus] = useState(null);
   // loading 仅覆盖首次请求，轮询只更新 status
@@ -63,16 +73,16 @@ function Dashboard() {
         data: status.metrics.map((item) => new Date(item.timestamp).toLocaleTimeString()),
         axisLine: {
           lineStyle: {
-            color: '#ccc',
+            color: AXIS_LINE,
           },
         },
         axisLabel: {
-          color: '#666',
+          color: AXIS_LABEL,
         },
         splitLine: {
           show: true,
           lineStyle: {
-            color: '#e0e0e0',
+            color: SPLIT_LINE,
             type: 'dashed',
             width: 1,
           },
@@ -82,16 +92,16 @@ function Dashboard() {
         type: 'value',
         axisLine: {
           lineStyle: {
-            color: '#ccc',
+            color: AXIS_LINE,
           },
         },
         axisLabel: {
-          color: '#666',
+          color: AXIS_LABEL,
         },
         splitLine: {
           show: true,
           lineStyle: {
-            color: '#e0e0e0',
+            color: SPLIT_LINE,
             type: 'dashed',
             width: 1,
           },
@@ -104,10 +114,10 @@ function Dashboard() {
           data: status.metrics.map((item) => item.cpu),
           smooth: true,
           lineStyle: {
-            color: '#8884d8',
+            color: SERIES_COLORS.cpu,
           },
           itemStyle: {
-            color: '#8884d8',
+            color: SERIES_COLORS.cpu,
           },
           symbol: 'none',
         },
@@ -117,10 +127,10 @@ function Dashboard() {
           data: status.metrics.map((item) => item.mem),
           smooth: true,
           lineStyle: {
-            color: '#82ca9d',
+            color: SERIES_COLORS.memory,
           },
           itemStyle: {
-            color: '#82ca9d',
+            color: SERIES_COLORS.memory,
           },
           symbol: 'none',
         },
@@ -130,10 +140,10 @@ function Dashboard() {
           data: status.metrics.map((item) => item.disk),
           smooth: true,
           lineStyle: {
-            color: '#ffc658',
+            color: SERIES_COLORS.disk,
           },
           itemStyle: {
-            color: '#ffc658',
+            color: SERIES_COLORS.disk,
           },
           symbol: 'none',
         },
@@ -146,22 +156,20 @@ function Dashboard() {
   }
 
   return (
-    <div className="p-4">
-      <AdminDashboard
-        status={status}
-        chartContent={
-          <div style={{ width: '100%', height: '450px' }}>
-            <Suspense
-              fallback={
-                <div className="flex h-full items-center justify-center text-neutral-400">{t('common.loading')}</div>
-              }
-            >
-              <ReactECharts option={getChartOption()} style={{ height: '100%', width: '100%' }} />
-            </Suspense>
-          </div>
-        }
-      />
-    </div>
+    <AdminDashboard
+      status={status}
+      chartContent={
+        <div className="h-[450px] w-full">
+          <Suspense
+            fallback={
+              <div className="flex h-full items-center justify-center text-neutral-400">{t('common.loading')}</div>
+            }
+          >
+            <ReactECharts option={getChartOption()} style={{ height: '100%', width: '100%' }} />
+          </Suspense>
+        </div>
+      }
+    />
   );
 }
 

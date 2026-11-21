@@ -36,10 +36,10 @@ export default function TrafficControls({ playback, isFetching, onRefresh, onDow
     totalDuration,
   } = playback;
   return (
-    <div className="rounded-2xl border border-neutral-600 bg-black/20 px-4 py-3">
+    <div className="rounded-md border border-neutral-600 bg-black/20 px-4 py-3">
       <div className="grid gap-2">
         <div>
-          <div className="flex items-center justify-between text-[11px] text-neutral-400">
+          <div className="flex items-center justify-between text-xs text-neutral-400">
             <span>{t('admin.contests.trafficGraph.controls.timeShift')}</span>
             <span className="font-mono text-geek-400">
               {t('admin.contests.trafficGraph.hero.windowAt', {
@@ -61,7 +61,7 @@ export default function TrafficControls({ playback, isFetching, onRefresh, onDow
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="mr-1 text-[11px] text-neutral-400" htmlFor="traffic-graph-slice-ms">
+          <label className="mr-1 text-xs text-neutral-400" htmlFor="traffic-graph-slice-ms">
             {t('admin.contests.trafficGraph.controls.timeSlice')}
           </label>
           <div className="w-[132px]">
@@ -76,7 +76,7 @@ export default function TrafficControls({ playback, isFetching, onRefresh, onDow
               onKeyDown={(event) => {
                 if (event.key === 'Enter') event.currentTarget.blur();
               }}
-              className="!h-8 !border-neutral-600 !bg-black/20 !px-3 text-[11px] font-mono"
+              className="!h-8 !border-neutral-600 !bg-black/20 !px-3 text-xs font-mono"
             />
           </div>
           <Chip

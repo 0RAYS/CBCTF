@@ -7,10 +7,10 @@ export default function TrafficTimeline({ timeline, windowInfo, setShift }) {
   const { t } = useTranslation();
   const peakTimeline = Math.max(1, ...timeline.map((bucket) => bucket.bytes || 0));
   return (
-    <Card padding="sm" className="rounded-2xl border-neutral-600 bg-neutral-900">
+    <Card padding="sm" className="rounded-md border-neutral-600 bg-neutral-900">
       <div className="flex items-center justify-between gap-2">
         <div className="text-sm font-mono text-neutral-300">{t('admin.contests.trafficGraph.timeline.title')}</div>
-        <div className="text-[11px] font-mono text-neutral-500">
+        <div className="text-xs font-mono text-neutral-500">
           {t('admin.contests.trafficGraph.hero.windowAt', {
             start: formatDurationMs(windowInfo.start),
             end: formatDurationMs(windowInfo.end),
@@ -45,7 +45,7 @@ export default function TrafficTimeline({ timeline, windowInfo, setShift }) {
               );
             })}
           </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-neutral-500">
+          <div className="mt-2 flex items-center justify-between text-xs font-mono text-neutral-500">
             <span>
               {timeline[0]
                 ? t('admin.contests.trafficGraph.timeline.at', { value: formatDurationMs(timeline[0].timestamp_ms) })

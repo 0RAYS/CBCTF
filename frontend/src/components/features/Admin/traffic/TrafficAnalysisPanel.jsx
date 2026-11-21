@@ -119,7 +119,7 @@ export default function TrafficAnalysisPanel({
   };
 
   return (
-    <Card className="min-w-0 rounded-2xl border-neutral-600 bg-neutral-900" padding="sm">
+    <Card className="min-w-0 rounded-md border-neutral-600 bg-neutral-900" padding="sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="font-semibold">{label('title')}</h3>

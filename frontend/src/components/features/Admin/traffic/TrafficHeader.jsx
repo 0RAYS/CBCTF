@@ -29,10 +29,10 @@ export default function TrafficHeader({ topology, container }) {
   }, []);
 
   return (
-    <div className="rounded-2xl border border-neutral-600 bg-black/20 px-4 py-3">
+    <div className="rounded-md border border-neutral-600 bg-black/20 px-4 py-3">
       <div className="flex flex-col gap-3">
         <div className="min-w-0">
-          <div className="text-[11px] uppercase tracking-[0.24em] text-geek-400/80">
+          <div className="text-xs uppercase tracking-[0.24em] text-geek-400/80">
             {t('admin.contests.trafficGraph.hero.kicker')}
           </div>
           <div className="mt-1 text-lg font-['Maple_UI'] text-white">

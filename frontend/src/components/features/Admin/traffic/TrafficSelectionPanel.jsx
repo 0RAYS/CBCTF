@@ -12,12 +12,12 @@ function ProcessList({ processes }) {
   if (!processes?.length) return null;
   return (
     <div className="mt-3 rounded-lg border border-neutral-700 bg-black/20 px-2 py-2">
-      <div className="text-[11px] text-neutral-500">{t('admin.contests.trafficGraph.panel.processes')}</div>
+      <div className="text-xs text-neutral-500">{t('admin.contests.trafficGraph.panel.processes')}</div>
       <div className="mt-2 grid gap-1.5">
         {processes.slice(0, 3).map((process, index) => (
           <div
             key={`${formatProcessLabel(process)}-${index}`}
-            className="flex items-center justify-between gap-2 text-[11px] font-mono"
+            className="flex items-center justify-between gap-2 text-xs font-mono"
           >
             <span className="min-w-0 truncate text-neutral-100">{formatProcessLabel(process) || '--'}</span>
             <span className="shrink-0 text-geek-400">{formatBytes(process.bytes)}</span>
@@ -31,15 +31,15 @@ function ProcessList({ processes }) {
 export default function TrafficSelectionPanel({ selectedEdge, selectedNode }) {
   const { t } = useTranslation();
   return (
-    <Card padding="sm" className="rounded-2xl border-neutral-600 bg-neutral-900">
+    <Card padding="sm" className="rounded-md border-neutral-600 bg-neutral-900">
       <div className="grid gap-2">
-        <div className="rounded-xl border border-neutral-600 bg-black/20 p-3">
+        <div className="rounded-lg border border-neutral-600 bg-black/20 p-3">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <div className="text-xs font-mono text-neutral-300">
                 {t('admin.contests.trafficGraph.panel.selectedFlow')}
               </div>
-              <div className="mt-1 truncate text-[11px] text-neutral-500">
+              <div className="mt-1 truncate text-xs text-neutral-500">
                 {selectedEdge
                   ? `${selectedEdge.source} -> ${selectedEdge.target}`
                   : t('admin.contests.trafficGraph.panel.selectedFlowHint')}
@@ -56,7 +56,7 @@ export default function TrafficSelectionPanel({ selectedEdge, selectedNode }) {
           </div>
           {selectedEdge ? (
             <>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] font-mono">
+              <div className="mt-3 grid grid-cols-3 gap-2 text-xs font-mono">
                 <div className="rounded-lg border border-neutral-700 bg-black/20 px-2 py-1.5">
                   <div className="text-neutral-500">{t('admin.contests.trafficGraph.panel.edgeBytes')}</div>
                   <div className="mt-1 text-geek-400">{formatBytes(selectedEdge.bytes)}</div>
@@ -76,14 +76,14 @@ export default function TrafficSelectionPanel({ selectedEdge, selectedNode }) {
             </>
           ) : null}
         </div>
-        <div className="rounded-xl border border-neutral-600 bg-black/20 p-3">
+        <div className="rounded-lg border border-neutral-600 bg-black/20 p-3">
           <div className="text-xs font-mono text-neutral-300">
             {t('admin.contests.trafficGraph.panel.selectedNode')}
           </div>
           {selectedNode ? (
             <>
-              <div className="mt-1 truncate text-[11px] text-white">{selectedNode.label || selectedNode.ip}</div>
-              <div className="mt-1 truncate text-[11px] text-neutral-500">
+              <div className="mt-1 truncate text-xs text-white">{selectedNode.label || selectedNode.ip}</div>
+              <div className="mt-1 truncate text-xs text-neutral-500">
                 {selectedNode.service ? `${selectedNode.service} / ${selectedNode.ip}` : selectedNode.ip}
               </div>
               {(selectedNode.services || []).length > 1 ? (
@@ -99,7 +99,7 @@ export default function TrafficSelectionPanel({ selectedEdge, selectedNode }) {
                   ))}
                 </div>
               ) : null}
-              <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] font-mono">
+              <div className="mt-3 grid grid-cols-3 gap-2 text-xs font-mono">
                 <div className="rounded-lg border border-neutral-700 bg-black/20 px-2 py-1.5">
                   <div className="text-neutral-500">{t('admin.contests.trafficGraph.panel.nodeTraffic')}</div>
                   <div className="mt-1 text-geek-400">{formatBytes(selectedNode.bytes)}</div>
