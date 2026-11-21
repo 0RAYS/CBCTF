@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { IconChevronDown } from '@tabler/icons-react';
 
 function HintItem({ hint, index }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -22,9 +23,12 @@ function HintItem({ hint, index }) {
             {isExpanded ? t('game.challengeModal.hint.hide') : t('game.challengeModal.hint.show')}
           </span>
         </div>
-        <span className="text-neutral-400 text-[10px]" aria-hidden="true">
-          {'\u25bc'}
-        </span>
+        <IconChevronDown
+          size={14}
+          stroke={1.5}
+          aria-hidden="true"
+          className={`text-neutral-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+        />
       </button>
       <div hidden={!isExpanded}>
         <div className="p-3 border-t border-neutral-300/10">

@@ -1,16 +1,12 @@
 import { useTranslation } from 'react-i18next';
+import { IconMoodEmpty } from '@tabler/icons-react';
 
 /** EmptyState — zero-data placeholder */
 function EmptyState({ icon, title, description, hint, action, className = '' }) {
   const { t } = useTranslation();
   const resolvedTitle = title ?? t('common.noData');
 
-  const defaultIcon = (
-    <svg className="w-10 h-10 text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path strokeLinecap="round" d="M3 9h18M9 21V9" />
-    </svg>
-  );
+  const defaultIcon = <IconMoodEmpty size={40} stroke={1} className="text-neutral-600" />;
 
   return (
     <div className={`flex flex-col items-center justify-center py-14 px-6 ${className}`}>

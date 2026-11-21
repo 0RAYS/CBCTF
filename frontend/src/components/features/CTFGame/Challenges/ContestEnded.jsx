@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { IconTrophy } from '@tabler/icons-react';
 import { Button, Card } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 import WriteupUpload from '@/components/features/CTFGame/Writeup/WriteupUpload';
@@ -17,7 +18,7 @@ function ContestEnded({ contestInfo, onViewLeaderboard, onUploadWriteup, onViewC
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: 'spring' }}
           >
-            <span className="text-3xl">🏆</span>
+            <IconTrophy size={32} stroke={1.5} className="text-yellow-400" />
           </motion.div>
           <h2 className="text-2xl font-mono text-neutral-50">
             {t('game.contestEnded.titlePrefix')}{' '}

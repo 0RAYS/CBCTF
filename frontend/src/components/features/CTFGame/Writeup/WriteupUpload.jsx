@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { useState } from 'react';
+import { IconFileText, IconFileTypeDoc, IconFileTypeDocx, IconFileTypePdf } from '@tabler/icons-react';
 import { Card } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 
@@ -68,7 +69,7 @@ function WriteupUpload({ onUploadWriteup, writeups = [] }) {
             }}
           />
           <div className="flex flex-col items-center justify-center space-y-2">
-            <span className="text-2xl">📄</span>
+            <IconFileText size={32} stroke={1.5} className="text-neutral-400" />
             <span className="text-neutral-300 font-mono">{t('game.contestEnded.writeups.dropzone')}</span>
             <span className="text-neutral-400 text-sm">{t('game.contestEnded.writeups.supports')}</span>
           </div>
@@ -87,8 +88,16 @@ function WriteupUpload({ onUploadWriteup, writeups = [] }) {
               {writeups.map((file) => (
                 <div key={file.id} className="p-3 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="text-xl">
-                      {file.suffix === '.pdf' ? '📕' : file.suffix === '.docx' || file.suffix === '.doc' ? '📘' : '📄'}
+                    <div className="text-neutral-400">
+                      {file.suffix === '.pdf' ? (
+                        <IconFileTypePdf size={20} stroke={1.5} />
+                      ) : file.suffix === '.docx' ? (
+                        <IconFileTypeDocx size={20} stroke={1.5} />
+                      ) : file.suffix === '.doc' ? (
+                        <IconFileTypeDoc size={20} stroke={1.5} />
+                      ) : (
+                        <IconFileText size={20} stroke={1.5} />
+                      )}
                     </div>
                     <div>
                       <div className="text-neutral-50 font-mono text-sm">{file.filename}</div>

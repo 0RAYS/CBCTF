@@ -254,14 +254,7 @@ function AdminChallenge({
         emptyContent={
           isSearchMode ? (
             <div className="flex flex-col items-center justify-center space-y-2">
-              <svg className="w-12 h-12 text-neutral-300/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+              <IconSearch size={48} stroke={1.5} className="text-neutral-300/30" />
               <span className="font-mono text-neutral-400">{t('admin.challenge.empty.search')}</span>
             </div>
           ) : undefined
