@@ -79,6 +79,6 @@ func syncFrpsPortLocksTask() model.RetVal {
 	if !ret.OK {
 		return ret
 	}
-	log.Logger.Infof("FRPS port locks reconciled: active_victims=%d kept_ports=%d removed_keys=%d", len(victims), keptPorts, removedKeys)
+	log.Logger.Debugf("FRPS port locks reconciled: active_victims=%d kept_ports=%d removed_keys=%d", len(victims), keptPorts, removedKeys)
 	return model.SuccessRetVal()
 }
