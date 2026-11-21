@@ -6,6 +6,7 @@ import Modal from '@/components/common/Modal';
 import ComposeEditor from '@/components/features/Admin/challenges/editor/ComposeEditor.jsx';
 import useComposeGuide from '@/components/features/Admin/challenges/editor/useComposeGuide.js';
 import ChallengeFlagPanel from '@/components/features/Admin/challenges/editor/ChallengeFlagPanel.jsx';
+import ContestSearchSelect from '@/components/features/Admin/challenges/ContestSearchSelect';
 import {
   inputBaseClass,
   selectClass,
@@ -31,7 +32,6 @@ export default function ChallengeEditorDialog({
     network_policies: [],
   },
   categories = [],
-  contests = [],
   contestLocked = false,
   flagVersion = 0,
   onClose,
@@ -70,9 +70,9 @@ export default function ChallengeEditorDialog({
       hidden: isEditMode ? challenge.hidden : contestId !== 0,
     });
   };
-  const contestName = contests.find((contest) => contest.id === Number(challenge.contest_id || 0))?.name;
   const contestLabel =
-    contestName || (challenge.contest_id ? `#${challenge.contest_id}` : t('admin.challengeModal.contest.unassigned'));
+    challenge.contest_name ||
+    (challenge.contest_id ? `#${challenge.contest_id}` : t('admin.challengeModal.contest.unassigned'));
 
   return (
     <Modal
@@ -182,22 +182,15 @@ export default function ChallengeEditorDialog({
                     <label className="block text-sm font-mono text-neutral-400 mb-1">
                       {t('admin.challengeModal.labels.contest')}
                     </label>
-                    {contestLocked ? (
+                    {isEditMode || contestLocked ? (
                       <div className={`${selectClass} flex items-center`}>{contestLabel}</div>
                     ) : (
-                      <select
+                      <ContestSearchSelect
                         value={String(challenge.contest_id || 0)}
-                        onChange={(e) => changeContest(e.target.value)}
-                        className={selectClass}
-                        disabled={isEditMode}
-                      >
-                        <option value="0">{t('admin.challengeModal.contest.unassigned')}</option>
-                        {contests.map((contest) => (
-                          <option key={contest.id} value={contest.id}>
-                            {contest.name}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={changeContest}
+                        allowUnassigned
+                        selectedName={challenge.contest_name || ''}
+                      />
                     )}
                   </div>
                   <div>

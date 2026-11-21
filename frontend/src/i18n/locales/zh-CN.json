@@ -1273,9 +1273,11 @@
         "test": "测试题目",
         "copy": "复制到比赛"
       },
-      "contestFilter": {
+      "contestSearch": {
+        "placeholder": "搜索比赛...",
         "all": "全部比赛",
-        "unassigned": "未归属比赛"
+        "selected": "当前选择",
+        "empty": "没有匹配的比赛"
       },
       "copy": {
         "title": "复制题目",

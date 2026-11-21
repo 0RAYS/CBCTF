@@ -18,7 +18,6 @@ import {
   updateChallenge,
   uploadChallengeFile,
 } from '@/api/admin/challenge';
-import { getContestList } from '@/api/admin/contest';
 import { useDebounce } from '@/hooks';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '@/config/challenges';
@@ -31,7 +30,6 @@ function ChallengesManagement() {
   const [selectedType, setSelectedType] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [categories, setCategories] = useState([]);
-  const [contests, setContests] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [mode, setMode] = useState('add'); // 'add' | 'edit' | 'delete'
@@ -149,16 +147,6 @@ function ChallengesManagement() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    getContestList({ limit: 100, offset: 0 })
-      .then((response) => {
-        if (response.code === 200) setContests(response.data?.contests || []);
-      })
-      .catch(() => {
-        // 比赛列表加载失败不阻断题库浏览
-      });
-  }, []);
 
   useEffect(() => {
     fetchCategories();
@@ -408,7 +396,6 @@ function ChallengesManagement() {
         mode={mode}
         challenge={editChallenge}
         categories={categories}
-        contests={contests}
         flagVersion={flagVersion}
         onClose={handleCloseModal}
         onSubmit={handleSubmitChallenge}
@@ -419,9 +406,9 @@ function ChallengesManagement() {
       />
 
       <ChallengeCopyDialog
+        key={copyTarget?.id || 'none'}
         isOpen={!!copyTarget}
         challenge={copyTarget}
-        contests={contests}
         contestId={copyContest}
         onContestChange={setCopyContest}
         onClose={() => setCopyTarget(null)}

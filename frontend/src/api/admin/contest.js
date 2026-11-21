@@ -1,12 +1,13 @@
 import request from '@/api/request';
 
-export function getContestList({ limit = 6, offset = 0 }) {
+export function getContestList({ limit = 6, offset = 0, name = '' } = {}) {
   return request({
     url: '/admin/contests',
     method: 'GET',
     params: {
       limit,
       offset,
+      ...(name.trim() ? { name: name.trim() } : {}),
     },
   });
 }

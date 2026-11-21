@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { Button, Modal } from '@/components/common';
+import ContestSearchSelect from '@/components/features/Admin/challenges/ContestSearchSelect';
 
 export default function ChallengeCopyDialog({
   isOpen = false,
   challenge,
-  contests = [],
   contestId = 0,
   onContestChange,
   onClose,
@@ -36,18 +36,12 @@ export default function ChallengeCopyDialog({
       <label className="block text-sm font-mono text-neutral-400 mb-1">
         {t('admin.challengeModal.labels.contest')}
       </label>
-      <select
+      <ContestSearchSelect
         value={String(contestId || 0)}
-        onChange={(e) => onContestChange(Number(e.target.value))}
-        className="select-custom select-custom-lg w-full"
-      >
-        <option value="0">{t('admin.challengeModal.contest.unassigned')}</option>
-        {contests.map((contest) => (
-          <option key={contest.id} value={contest.id}>
-            {contest.name}
-          </option>
-        ))}
-      </select>
+        onChange={(value) => onContestChange(Number(value))}
+        allowUnassigned
+        selectedName={challenge?.contest_name || ''}
+      />
       <p className="text-xs font-mono text-neutral-500 mt-3">{t('admin.challenge.copy.notice')}</p>
     </Modal>
   );

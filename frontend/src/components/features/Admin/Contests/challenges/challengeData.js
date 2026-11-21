@@ -5,7 +5,7 @@ export function challengeQuery({
   category = 'all',
   name = '',
   description = '',
-  contest = 'all',
+  contestName = '',
 }) {
   return {
     limit: pageSize,
@@ -14,7 +14,7 @@ export function challengeQuery({
     ...(category !== 'all' ? { category } : {}),
     ...(name.trim() ? { name: name.trim() } : {}),
     ...(description.trim() ? { description: description.trim() } : {}),
-    ...(contest !== 'all' ? { contest_id: Number(contest) } : {}),
+    ...(contestName.trim() ? { contest_name: contestName.trim() } : {}),
   };
 }
 
