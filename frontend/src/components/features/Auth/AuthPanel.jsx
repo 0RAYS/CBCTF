@@ -39,7 +39,7 @@ function CaptchaField({ captcha, value, onChange, onRefresh, error, disabled }) 
       </div>
       <button
         type="button"
-        className="text-xs text-neutral-500 hover:text-[#597ef7]"
+        className="text-xs text-neutral-500 hover:text-geek-400"
         onClick={onRefresh}
         disabled={disabled}
       >
@@ -448,7 +448,7 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
             <div className="flex justify-end">
               <button
                 type="button"
-                className="text-xs text-neutral-400 hover:text-[#597ef7] font-mono transition-colors"
+                className="text-xs text-neutral-400 hover:text-geek-400 font-mono transition-colors"
                 onClick={() => setForgotOpen(true)}
               >
                 {t('auth.forgotPassword.link')}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { IconClockPlay, IconPlayerPlay, IconUsers } from '@tabler/icons-react';
-import { Button } from '@/components/common';
+import { Button, Input } from '@/components/common';
 import { getContestTeams, startContestVictims } from '@/api/admin/contest';
 import { toast } from '@/utils/toast';
 import { buildVictimStartPayload, estimateVictimTeams } from '@/components/features/Admin/victims/victimPayload';
@@ -97,18 +97,6 @@ export default function ContestVictimStart({ contestId, onStarted }) {
       {startAction.result && startAction.result.status !== 'success' ? (
         <p className="text-xs text-amber-200">{t('admin.batch.randomRetryHint')}</p>
       ) : null}
-      <style>{`
-        .slider::-webkit-slider-thumb {
-          appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #597ef7;
-          cursor: pointer; border: 2px solid #1f2937; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .slider::-moz-range-thumb {
-          height: 12px; width: 12px; border-radius: 50%; background: #597ef7;
-          cursor: pointer; border: 2px solid #1f2937; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .slider::-webkit-slider-track { background: transparent; }
-        .slider::-moz-range-track { background: transparent; }
-      `}</style>
       <motion.div
         className="grid grid-cols-1 gap-6 items-stretch"
         initial={{ opacity: 0, y: 10 }}
@@ -141,10 +129,8 @@ export default function ContestVictimStart({ contestId, onStarted }) {
                     max="100"
                     value={randomTeamPercentage}
                     onChange={(event) => setRandomTeamPercentage(Number.parseInt(event.target.value, 10))}
-                    className="w-full h-1 bg-neutral-700 rounded-lg appearance-none cursor-pointer slider"
-                    style={{
-                      background: `linear-gradient(to right, #597ef7 0%, #597ef7 ${randomTeamPercentage}%, #374151 ${randomTeamPercentage}%, #374151 100%)`,
-                    }}
+                    className="w-full accent-geek-400"
+                    aria-label={t('admin.contests.containers.quickActions.randomTeams')}
                   />
                 </div>
               </div>
@@ -167,13 +153,13 @@ export default function ContestVictimStart({ contestId, onStarted }) {
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <input
+                <Input
                   type="number"
                   min="1"
                   step="1"
+                  size="sm"
                   value={victimDurationInput}
                   onChange={(event) => setVictimDurationInput(event.target.value)}
-                  className="w-full h-9 px-3 bg-black/20 border border-neutral-300/30 rounded-md text-sm text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 transition-all duration-200"
                 />
                 <span className="text-xs font-mono text-neutral-400 whitespace-nowrap">
                   {t('admin.contests.containers.quickActions.durationUnit')}

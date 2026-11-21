@@ -3,6 +3,14 @@ import { useTranslation } from 'react-i18next';
 
 const ReactECharts = lazy(() => import('@/components/common/EChart'));
 
+// ECharts 需要字面量色值，取自 tailwind.config.js 的设计 token
+const AXIS_LINE = '#2a2a2a';
+const AXIS_LABEL = '#8a8a8a';
+const SPLIT_LINE = '#1a1a1a';
+const TOOLTIP_TEXT = '#d9d9d9';
+const ACCENT = '#597ef7';
+const HANDLE = 'rgba(251, 146, 60, 0.9)';
+
 /**
  * 分数曲线预览图表（支持拖拽控制点调整 decay）
  * Static 无控制点；Linear 沿曲线拖动改变下降速率；Exponential 自由拖动并由 (x, y) 反算 decay；score 与 minScore 仅通过输入框调整
@@ -143,11 +151,11 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
         shape: { cx: 0, cy: 0, r: 4 },
         position: [px[0], px[1]],
         style: {
-          fill: 'rgba(247, 147, 89, 0.9)',
-          stroke: '#fff',
+          fill: HANDLE,
+          stroke: '#f9f9f9',
           lineWidth: 1.5,
           shadowBlur: 4,
-          shadowColor: 'rgba(247, 147, 89, 0.5)',
+          shadowColor: 'rgba(251, 146, 60, 0.5)',
         },
         cursor: 'grab',
         draggable: true,
@@ -182,7 +190,7 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
         borderWidth: 1,
         borderRadius: 6,
         textStyle: {
-          color: '#fff',
+          color: TOOLTIP_TEXT,
           fontSize: 11,
           fontFamily: '"Maple Mono", "Source Han Sans SC", ui-monospace, monospace',
         },
@@ -190,8 +198,8 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
           const p = params[0];
           return (
             `<div style="font-family:'Maple Mono','Source Han Sans SC',ui-monospace,monospace;font-size:11px">` +
-            `<span style="color:#9CA3AF">Solvers:</span> ${p.value[0]}<br/>` +
-            `<span style="color:#9CA3AF">Score:</span> <span style="color:#597ef7;font-weight:bold">${p.value[1]}</span>` +
+            `<span style="color:${AXIS_LABEL}">Solvers:</span> ${p.value[0]}<br/>` +
+            `<span style="color:${AXIS_LABEL}">Score:</span> <span style="color:${ACCENT};font-weight:bold">${p.value[1]}</span>` +
             `</div>`
           );
         },
@@ -200,28 +208,28 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
         type: 'value',
         name: t('admin.contests.challengeModal.labels.solvers'),
         nameTextStyle: {
-          color: '#6B7280',
+          color: AXIS_LABEL,
           fontSize: 10,
           fontFamily: '"Maple Mono", "Source Han Sans SC", ui-monospace, monospace',
         },
         min: 0,
         max: maxSolvers,
-        axisLine: { lineStyle: { color: '#374151' } },
-        axisLabel: { color: '#6B7280', fontSize: 10, fontFamily: 'monospace' },
-        splitLine: { lineStyle: { color: '#1F2937', type: 'dashed' } },
+        axisLine: { lineStyle: { color: AXIS_LINE } },
+        axisLabel: { color: AXIS_LABEL, fontSize: 10, fontFamily: 'monospace' },
+        splitLine: { lineStyle: { color: SPLIT_LINE, type: 'dashed' } },
       },
       yAxis: {
         type: 'value',
         name: t('admin.contests.challengeModal.labels.initialScore'),
         nameTextStyle: {
-          color: '#6B7280',
+          color: AXIS_LABEL,
           fontSize: 10,
           fontFamily: '"Maple Mono", "Source Han Sans SC", ui-monospace, monospace',
         },
         min: (value) => Math.max(0, Math.floor(value.min * 0.9)),
-        axisLine: { lineStyle: { color: '#374151' } },
-        axisLabel: { color: '#6B7280', fontSize: 10, fontFamily: 'monospace' },
-        splitLine: { lineStyle: { color: '#1F2937', type: 'dashed' } },
+        axisLine: { lineStyle: { color: AXIS_LINE } },
+        axisLabel: { color: AXIS_LABEL, fontSize: 10, fontFamily: 'monospace' },
+        splitLine: { lineStyle: { color: SPLIT_LINE, type: 'dashed' } },
       },
       series: [
         {
@@ -231,7 +239,7 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
           smooth: scoreType === 2,
           showSymbol: false,
           lineStyle: {
-            color: '#597ef7',
+            color: ACCENT,
             width: 2,
           },
           areaStyle: {

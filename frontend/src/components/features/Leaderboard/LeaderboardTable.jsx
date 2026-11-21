@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { IconCheck } from '@tabler/icons-react';
 import { Avatar, Card, Pagination, ScrollingText } from '@/components/common';
 import Loading from '@/components/common/Loading';
 import { useTranslation } from 'react-i18next';
@@ -115,17 +116,17 @@ function LeaderboardTable({
               ))}
             </colgroup>
             <thead>
-              <tr className="bg-neutral-800/60">
+              <tr className="bg-black/40">
                 <th
                   scope="col"
-                  className="sticky left-0 z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
+                  className="sticky left-0 z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-400 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
                   style={{ width: 'var(--lb-rank-width)', minWidth: 'var(--lb-rank-width)' }}
                 >
                   <TruncatedText>{t('common.leaderboard.headers.rank')}</TruncatedText>
                 </th>
                 <th
                   scope="col"
-                  className="z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
+                  className="z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-400 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
                   style={{
                     position: detailPosition,
                     width: 'var(--lb-team-width)',
@@ -137,7 +138,7 @@ function LeaderboardTable({
                 </th>
                 <th
                   scope="col"
-                  className="z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase whitespace-nowrap border-r border-neutral-600/40"
+                  className="z-10 bg-neutral-800 p-3 text-center text-[10px] text-neutral-400 font-mono tracking-[0.18em] uppercase whitespace-nowrap border-r border-neutral-600/40"
                   style={{
                     position: detailPosition,
                     width: 'var(--lb-score-width)',
@@ -164,7 +165,7 @@ function LeaderboardTable({
                 ))}
               </tr>
 
-              <tr className="bg-neutral-800/40 border-t border-neutral-600/40">
+              <tr className="bg-black/30 border-t border-neutral-600/40">
                 <th
                   className="sticky left-0 z-10 bg-neutral-800 p-2 border-r border-neutral-600/40"
                   style={{ width: 'var(--lb-rank-width)', minWidth: 'var(--lb-rank-width)' }}
@@ -199,7 +200,7 @@ function LeaderboardTable({
                         style={{ width: `${colWidth}px` }}
                         title={challenge.name}
                       >
-                        <span className="block max-w-full truncate">{challenge.name}</span>
+                        <TruncatedText>{challenge.name}</TruncatedText>
                       </th>
                     );
                   })
@@ -211,7 +212,7 @@ function LeaderboardTable({
               {teams.map((team, teamIndex) => (
                 <motion.tr
                   key={team.id}
-                  className="border-t border-neutral-300/10 hover:bg-neutral-300/5"
+                  className="border-t border-neutral-300/10 hover:bg-black/40"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: teamIndex * 0.05 }}
@@ -264,13 +265,9 @@ function LeaderboardTable({
                     const solved = teamChallengeIndexes[teamIndex].get(challenge.id)?.solved > 0;
 
                     return (
-                      <td
-                        key={challenge.id}
-                        className="group/cell p-3 text-center border-r border-neutral-300/30"
-                        style={{ width: '80px' }}
-                      >
+                      <td key={challenge.id} className="group/cell p-3 text-center border-r border-neutral-300/30">
                         <div
-                          className="transition-transform duration-200 group-hover/cell:scale-110 flex items-center justify-center font-mono text-lg"
+                          className="transition-transform duration-200 group-hover/cell:scale-110 flex items-center justify-center font-mono"
                           title={`${team.name} - ${challenge.name}: ${
                             solved
                               ? t('game.leaderboardTable.status.solved')
@@ -278,9 +275,9 @@ function LeaderboardTable({
                           }`}
                         >
                           {solved ? (
-                            <span className="text-green-500">✓</span>
+                            <IconCheck size={18} stroke={2} className="text-green-400" />
                           ) : (
-                            <span className="text-neutral-600">•</span>
+                            <span className="text-neutral-500">•</span>
                           )}
                         </div>
                       </td>
