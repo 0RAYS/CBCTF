@@ -109,6 +109,11 @@ func ExportLeaderboard(ctx *gin.Context) {
 		resp.JSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Leaderboard", contest.Name, err))
 		return
 	}
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			log.Logger.Warningf("Failed to close leaderboard workbook: %s", closeErr)
+		}
+	}()
 	buffer, err := file.WriteToBuffer()
 	if err != nil {
 		log.Logger.Warningf("Failed to encode leaderboard workbook: %s", err)

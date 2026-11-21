@@ -33,7 +33,7 @@ func sourceFileRecord(tx *gorm.DB, source model.GeneratorSource) (model.File, mo
 
 // teamScopedFlagValues 返回队伍持有的 flag 值，scope 限定了队伍 flag 指向的
 // flag，idColumn 指明队伍 flag 关联的 flag 表字段。
-func teamScopedFlagValues(tx *gorm.DB, teamID uint, scope *gorm.DB, idColumn string) ([]string, model.RetVal) {
+func teamScopedFlagValues(teamID uint, scope *gorm.DB, idColumn string) ([]string, model.RetVal) {
 	teamFlags, _, ret := db.InitTeamFlagRepo(scope).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"team_id": teamID},
 		Sort:       []string{idColumn + " ASC"},
@@ -76,7 +76,7 @@ func sourceFlagValues(tx *gorm.DB, source model.GeneratorSource, teamID uint) ([
 		if len(ids) == 0 {
 			return nil, model.SuccessRetVal()
 		}
-		return teamScopedFlagValues(tx, teamID, tx.Where("contest_flag_id IN (?)", ids), "contest_flag_id")
+		return teamScopedFlagValues(teamID, tx.Where("contest_flag_id IN (?)", ids), "contest_flag_id")
 	}
 	flags, _, ret := db.InitChallengeFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"challenge_id": source.SourceChallengeID()},
@@ -93,5 +93,5 @@ func sourceFlagValues(tx *gorm.DB, source model.GeneratorSource, teamID uint) ([
 		return values, model.SuccessRetVal()
 	}
 	ids := tx.Model(&model.ChallengeFlag{}).Select("id").Where("challenge_id = ?", source.SourceChallengeID())
-	return teamScopedFlagValues(tx, teamID, tx.Where("challenge_flag_id IN (?)", ids), "challenge_flag_id")
+	return teamScopedFlagValues(teamID, tx.Where("challenge_flag_id IN (?)", ids), "challenge_flag_id")
 }
