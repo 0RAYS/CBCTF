@@ -17,7 +17,7 @@ func GetContest(ctx *gin.Context) {
 }
 
 func GetContests(ctx *gin.Context) {
-	var form dto.ListModelsForm
+	var form dto.GetContestsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return

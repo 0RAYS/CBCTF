@@ -9,6 +9,12 @@ import (
 	"CBCTF/internal/model"
 )
 
+// GetContestsForm 描述比赛列表查询，Name 按比赛名称模糊匹配。
+type GetContestsForm struct {
+	ListModelsForm
+	Name string `form:"name" json:"name"`
+}
+
 type CreateContestForm struct {
 	Name        string           `form:"name" json:"name" binding:"required"`
 	Description string           `form:"description" json:"description"`
