@@ -21,12 +21,8 @@ function ContestDetail({ contest, handleJoinContest }) {
         transition={{ duration: 0.3 }}
       >
         <div
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: `url(${contest.image})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
+          className="absolute inset-0 opacity-30 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${contest.image})` }}
         />
 
         <div className="relative min-w-0 p-4 md:p-8 flex flex-col gap-8">
@@ -139,7 +135,7 @@ function ContestDetail({ contest, handleJoinContest }) {
                   <span className="text-xl font-mono">{prize.amount}</span>
                 </motion.div>
                 <motion.div
-                  className="text-neutral-400 text-sm prose prose-invert prose-sm max-w-none"
+                  className="text-neutral-400 text-sm prose prose-sm max-w-none"
                   animate={{
                     opacity: hoveredPrize === index ? 0.9 : 1,
                     transition: { duration: 0.2, delay: 0.1 },

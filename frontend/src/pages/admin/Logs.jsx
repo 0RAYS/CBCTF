@@ -122,7 +122,7 @@ function AdminLogs() {
 
   return (
     <div className="w-full mx-auto">
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
         <label className="flex items-center gap-2 text-sm text-neutral-300">
           <span>{t('admin.logs.levelFilter')}</span>
           <select

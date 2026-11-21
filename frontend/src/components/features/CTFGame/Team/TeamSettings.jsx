@@ -74,7 +74,7 @@ function TeamSettings({
         <div className="mb-6">
           <div className="text-neutral-400 text-sm mb-2">{t('game.team.settings.description')}</div>
           <div className="p-3 bg-neutral-900 rounded-md">
-            <MarkdownContent className="text-neutral-300 text-sm prose prose-invert prose-sm max-w-none min-w-0 [overflow-wrap:anywhere]">
+            <MarkdownContent className="text-neutral-300 text-sm prose prose-sm max-w-none min-w-0 [overflow-wrap:anywhere]">
               {team.description || t('game.team.settings.noDescription')}
             </MarkdownContent>
           </div>

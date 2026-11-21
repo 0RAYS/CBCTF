@@ -44,7 +44,7 @@ function GameCard({ game, onGameAction, user }) {
         </div>
       )}
 
-      <div className="min-w-0 flex-1 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="min-w-0 flex-1 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
             <h3 className="min-w-0 break-words text-base font-mono text-neutral-50 tracking-wide">{game.title}</h3>

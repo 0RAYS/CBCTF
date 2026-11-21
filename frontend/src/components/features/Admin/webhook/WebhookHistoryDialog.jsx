@@ -41,7 +41,7 @@ export default function WebhookHistoryDialog({ history, onClose }) {
         {history.error && (
           <div>
             <p className="text-neutral-300 text-sm font-medium mb-2">{t('admin.webhook.history.error')}</p>
-            <div className="bg-red-900/20 border border-red-700 rounded-lg p-3">
+            <div className="bg-red-400/10 border border-red-400/30 rounded-md p-3">
               <pre className="text-red-300 text-sm whitespace-pre-wrap break-words font-mono">{history.error}</pre>
             </div>
           </div>

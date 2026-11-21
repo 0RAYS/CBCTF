@@ -10,7 +10,7 @@ const components = {
 
 function MarkdownContent({ children, className = '' }) {
   return (
-    <div className={`prose prose-invert max-w-none ${className}`}>
+    <div className={`prose max-w-none ${className}`}>
       <ReactMarkdown remarkPlugins={plugins} components={components}>
         {children || ''}
       </ReactMarkdown>

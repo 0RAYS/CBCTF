@@ -27,7 +27,7 @@ function OpenTestDialog({ challenge, onClose }) {
     >
       <section className="space-y-1.5 min-w-0">
         <h3 className="text-neutral-400 font-mono text-sm">{t('admin.challenge.testModal.sections.description')}</h3>
-        <MarkdownContent className="text-neutral-50 prose-invert prose-sm max-w-none">
+        <MarkdownContent className="text-neutral-50 prose-sm max-w-none">
           {challenge?.description || ''}
         </MarkdownContent>
       </section>

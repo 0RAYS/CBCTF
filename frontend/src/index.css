@@ -25,14 +25,16 @@
 }
 
 :root {
+  /* Accent — geek-400, the single highlight color of the platform */
+  --accent: #597ef7;
   --scrollbar-size: 10px;
   --scrollbar-radius: 999px;
   /* Scrollbar — geek-blue thumb on dark gray track */
   --scrollbar-track:        rgba(15, 15, 15, 0.9);
   --scrollbar-track-border: rgba(179, 179, 179, 0.08);
-  --scrollbar-thumb:        rgba(89, 126, 247, 0.35);
-  --scrollbar-thumb-hover:  rgba(89, 126, 247, 0.55);
-  --scrollbar-thumb-active: rgba(89, 126, 247, 0.72);
+  --scrollbar-thumb:        color-mix(in srgb, var(--accent) 35%, transparent);
+  --scrollbar-thumb-hover:  color-mix(in srgb, var(--accent) 55%, transparent);
+  --scrollbar-thumb-active: color-mix(in srgb, var(--accent) 72%, transparent);
   /* Base surface */
   --surface-base:   #0a0a0a;
   --surface-raised: #0f0f0f;
@@ -53,12 +55,12 @@ body {
 }
 
 ::selection {
-  background: rgba(89, 126, 247, 0.3);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
   color: #f9f9f9;
 }
 
 :where(button, a, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid #597ef7;
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -205,7 +207,7 @@ body {
   .prose a:hover { text-decoration-color: currentColor; }
 
   .prose blockquote {
-    border-inline-start: 2px solid #597ef7;
+    border-inline-start: 2px solid var(--accent);
     padding-inline-start: 1em;
     color: #b3b3b3;
   }
@@ -244,7 +246,7 @@ body {
 
   .prose-sm { font-size: 0.875rem; }
   .prose .contains-task-list { list-style: none; padding-inline-start: 0; }
-  .prose .task-list-item input { margin-inline-end: 0.5em; accent-color: #597ef7; }
+  .prose .task-list-item input { margin-inline-end: 0.5em; accent-color: var(--accent); }
   
   /* 自定义下拉框容器样式 */
   .dropdown-custom {

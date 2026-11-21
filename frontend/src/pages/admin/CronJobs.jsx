@@ -231,29 +231,28 @@ function CronJobs() {
 
   return (
     <div className="w-full mx-auto">
-      <div className="rounded-md bg-neutral-900 overflow-hidden p-6">
-        <List
-          minWidth={1500}
-          data={cronJobs}
-          columns={columns}
-          renderCell={renderCell}
-          getRowActions={(cronJob) => [
-            {
-              key: 'edit',
-              label: t('common.edit'),
-              icon: <IconEdit size={18} />,
-              onClick: () => openEditModal(cronJob),
-            },
-          ]}
-          onRowClick={openEditModal}
-          loading={loading}
-          empty={cronJobs.length === 0}
-          emptyContent={t('admin.cronjobs.empty')}
-        />
+      <List
+        minWidth={1500}
+        data={cronJobs}
+        columns={columns}
+        renderCell={renderCell}
+        getRowActions={(cronJob) => [
+          {
+            key: 'edit',
+            label: t('common.edit'),
+            icon: <IconEdit size={18} />,
+            onClick: () => openEditModal(cronJob),
+          },
+        ]}
+        onRowClick={openEditModal}
+        loading={loading}
+        empty={cronJobs.length === 0}
+        emptyContent={t('admin.cronjobs.empty')}
+      />
 
-        {totalCount > PAGE_SIZE && (
+      {totalCount > PAGE_SIZE && (
+        <div className="mt-6">
           <Pagination
-            className="mt-4"
             current={currentPage}
             total={Math.ceil(totalCount / PAGE_SIZE)}
             onChange={setCurrentPage}
@@ -261,8 +260,8 @@ function CronJobs() {
             totalItems={totalCount}
             showJumpTo
           />
-        )}
-      </div>
+        </div>
+      )}
 
       <Modal
         isOpen={isModalOpen}

@@ -150,7 +150,7 @@ export default function TrafficAnalysisPanel({
             {report.truncated ? <span className="text-amber-300">{label('truncated')}</span> : null}
           </div>
           {report.warnings?.length ? (
-            <details className="mt-3 rounded-lg border border-amber-500/30 p-2 text-xs text-amber-200">
+            <details className="mt-3 rounded-lg border border-amber-400/30 p-2 text-xs text-amber-200">
               <summary className="cursor-pointer">{label('warnings', { count: report.warnings.length })}</summary>
               <ul className="mt-2 list-inside list-disc">
                 {report.warnings.map((warning) => (

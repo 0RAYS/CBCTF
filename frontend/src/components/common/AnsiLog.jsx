@@ -51,7 +51,7 @@ const AnsiLog = forwardRef(function AnsiLog(
     el.scrollTop = el.scrollHeight;
   }, [html, loading, scrollToBottom]);
 
-  const baseClass = 'bg-neutral-950 border border-neutral-700 rounded p-3 overflow-auto';
+  const baseClass = 'bg-neutral-900 border border-neutral-700 rounded-md p-3 overflow-auto';
 
   return (
     <div ref={innerRef} className={`${baseClass} ${className}`} onClick={onClick}>
