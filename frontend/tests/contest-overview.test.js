@@ -79,3 +79,10 @@ test('collection normalization is independent and retains image and participant 
   assert.equal(transformContestData({ ...contest, users: null }).participants, null);
   assert.equal(transformContestData({ ...contest, users: 0 }).participants, 0);
 });
+
+test('a paused contest reports the paused status and the server end time', () => {
+  const input = Object.freeze({ ...contest, paused: true, end: '2024-01-01T09:00:00.000Z' });
+  const result = transformContestData(input);
+  assert.equal(result.status, 'paused');
+  assert.equal(result.endTime, '2024-01-01T09:00:00.000Z');
+});

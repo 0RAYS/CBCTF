@@ -283,8 +283,22 @@
       "status": {
         "upcoming": "未开始",
         "running": "进行中",
+        "paused": "已暂停",
         "ended": "已结束",
         "hidden": "隐藏"
+      },
+      "control": {
+        "title": "比赛控制",
+        "help": "暂停进行中的比赛可以冻结计时并禁止选手访问题目。",
+        "pause": "暂停比赛",
+        "resume": "恢复比赛",
+        "pausedHint": "比赛已暂停：题目无法访问，剩余时间保持不变。",
+        "runningHint": "比赛进行中：剩余时间持续倒数。",
+        "toast": {
+          "paused": "比赛已暂停",
+          "resumed": "比赛已恢复",
+          "failed": "切换比赛状态失败"
+        }
       },
       "labels": {
         "startTime": "开始时间",
@@ -2593,6 +2607,7 @@
     "status": {
       "upcoming": "即将开始",
       "active": "进行中",
+      "paused": "已暂停",
       "ended": "已结束"
     },
     "actions": {
@@ -2666,6 +2681,13 @@
       "actions": {
         "viewChallenges": "查看题目",
         "viewFinalLeaderboard": "查看最终排行榜"
+      }
+    },
+    "contestPaused": {
+      "title": "比赛已暂停",
+      "description": "比赛暂时暂停，期间无法访问题目，剩余时间保持不变，恢复比赛后继续计时。",
+      "actions": {
+        "viewLeaderboard": "查看排行榜"
       }
     },
     "statusPanel": {

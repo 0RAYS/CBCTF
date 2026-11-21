@@ -29,7 +29,9 @@ type Contest struct {
 	DuplicateMember string
 	IsComing        string
 	IsRunning       string
+	IsPaused        string
 	IsOver          string
+	NotRunning      string
 	GetError        string
 	DeleteError     string
 	NotFound        string
@@ -282,7 +284,9 @@ var Model = struct {
 		DuplicateMember: "model.contest.duplicateMember",
 		IsComing:        "model.contest.isComing",
 		IsRunning:       "model.contest.isRunning",
+		IsPaused:        "model.contest.isPaused",
 		IsOver:          "model.contest.isOver",
+		NotRunning:      "model.contest.notRunning",
 		GetError:        "model.contest.getError",
 		DeleteError:     "model.contest.deleteError",
 		NotFound:        "model.contest.notFound",

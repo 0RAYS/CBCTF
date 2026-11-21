@@ -26,6 +26,8 @@ type UpdateContestOptions struct {
 	Duration    *time.Duration
 	Blood       *bool
 	Hidden      *bool
+	Paused      *bool
+	PausedAt    *time.Time
 	Victims     *int64
 	Rules       *[]string
 	Prizes      *[]model.Prize
@@ -63,6 +65,12 @@ func (u UpdateContestOptions) Convert2Map() map[string]any {
 	}
 	if u.Hidden != nil {
 		options["hidden"] = *u.Hidden
+	}
+	if u.Paused != nil {
+		options["paused"] = *u.Paused
+	}
+	if u.PausedAt != nil {
+		options["paused_at"] = *u.PausedAt
 	}
 	if u.Victims != nil {
 		options["victims"] = *u.Victims

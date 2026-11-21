@@ -1,12 +1,14 @@
 package service
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
 
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 )
 
@@ -121,4 +123,34 @@ func UpdateContest(tx *gorm.DB, contest model.Contest, form dto.UpdateContestFor
 		Prizes:      form.Prizes,
 		Timelines:   form.Timelines,
 	})
+}
+
+// UpdateContestPause 暂停或恢复比赛。暂停期间选手无法访问题目，暂停的时间在恢复时补回比赛时长。
+func UpdateContestPause(tx *gorm.DB, contest model.Contest, paused bool) (model.Contest, model.RetVal) {
+	repo := db.InitContestRepo(tx)
+	now := time.Now()
+	if paused {
+		if contest.Paused {
+			return contest, model.SuccessRetVal()
+		}
+		if contest.Status() != model.ContestIsRunning {
+			return contest, model.FailRetVal(i18n.Model.Contest.NotRunning, "Contest", fmt.Sprintf("contest_id=%d", contest.ID), nil)
+		}
+		if ret := repo.Update(contest.ID, db.UpdateContestOptions{Paused: &paused, PausedAt: &now}); !ret.OK {
+			return contest, ret
+		}
+	} else {
+		if !contest.Paused {
+			return contest, model.SuccessRetVal()
+		}
+		duration := contest.Duration + now.Sub(contest.PausedAt)
+		if ret := repo.Update(contest.ID, db.UpdateContestOptions{Paused: &paused, Duration: &duration}); !ret.OK {
+			return contest, ret
+		}
+	}
+	updated, ret := repo.GetByID(contest.ID)
+	if !ret.OK {
+		return contest, ret
+	}
+	return updated, model.SuccessRetVal()
 }

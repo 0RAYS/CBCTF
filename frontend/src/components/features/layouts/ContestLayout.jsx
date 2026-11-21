@@ -22,7 +22,7 @@ function ContestLayout() {
     getContestInfo(contestId).then((res) => {
       if (res.code === 200) {
         const contest = res.data;
-        setContestStatus(getContestStatus(contest.start, contest.duration));
+        setContestStatus(contest.paused ? 'paused' : getContestStatus(contest.start, contest.duration));
         setContestPicture(contest.picture || '');
       }
     });
@@ -37,7 +37,7 @@ function ContestLayout() {
       { id: 'notice', label: t('nav.notice') },
     ];
 
-    if (contestStatus && contestStatus !== 'upcoming') {
+    if (contestStatus && contestStatus !== 'upcoming' && contestStatus !== 'paused') {
       tabs.splice(4, 0, { id: 'writeup', label: t('nav.writeup') });
     }
 

@@ -52,3 +52,8 @@ func (f *UpdateContestForm) Validate(_ *gin.Context) model.RetVal {
 	}
 	return model.SuccessRetVal()
 }
+
+// UpdateContestPauseForm 暂停或恢复比赛。
+type UpdateContestPauseForm struct {
+	Paused bool `form:"paused" json:"paused"`
+}

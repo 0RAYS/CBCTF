@@ -4,7 +4,7 @@ import { getChallengeCategories, getChallengeList } from '../../../../../api/cha
 import { toast } from '../../../../../utils/toast';
 import { mapChallengeStatusToViewModel, normalizeCategories } from '../models/challengeViewModel';
 
-export default function useChallengeList(contestId) {
+export default function useChallengeList(contestId, { enabled = true } = {}) {
   const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -33,13 +33,23 @@ export default function useChallengeList(contestId) {
   };
 
   useEffect(() => {
+    if (!enabled) {
+      setCategories([]);
+      return;
+    }
     refreshCategories();
     return () => {
       categoriesRequestRef.current += 1;
     };
-  }, [contestId]);
+  }, [contestId, enabled]);
 
   useEffect(() => {
+    if (!enabled) {
+      setChallenges([]);
+      setTotalCount(0);
+      setIsLoading(false);
+      return;
+    }
     let active = true;
     setIsLoading(true);
     setError(null);
@@ -68,7 +78,7 @@ export default function useChallengeList(contestId) {
     return () => {
       active = false;
     };
-  }, [contestId, currentPage, selectedCategory, unsolvedOnly, revision]);
+  }, [contestId, currentPage, selectedCategory, unsolvedOnly, revision, enabled]);
 
   const refresh = () => setRevision((value) => value + 1);
   const updateChallenge = (challenge) => {

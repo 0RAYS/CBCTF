@@ -20,9 +20,10 @@ const transformContestData = (contests) => {
       id: contest.id,
       title: `${contest.prefix} ${contest.name}`,
       description: contest.description,
-      status: getContestStatus(contest.start, contest.duration),
+      status: contest.paused ? 'paused' : getContestStatus(contest.start, contest.duration),
       startTime,
-      endTime,
+      // The server reports the effective end, which moves while the contest is paused.
+      endTime: contest.end ? new Date(contest.end).toISOString() : endTime,
       image: contest.picture || DEFAULT_CONTEST_IMAGE,
       teamSize: contest.size,
       teamsCount: contest.teams,

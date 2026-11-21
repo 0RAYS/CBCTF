@@ -16,6 +16,8 @@ const (
 	UpdateContestEventType = "update_contest"
 	DeleteContestEventType = "delete_contest"
 
+	UpdateContestPauseEventType = "update_contest_pause"
+
 	CreateChallengeEventType     = "create_challenge"
 	UpdateChallengeEventType     = "update_challenge"
 	DeleteChallengeEventType     = "delete_challenge"
@@ -109,7 +111,7 @@ const (
 var EventTypes = []string{
 	LoginEventType, LogoutEventType, RegisterEventType, OauthLoginEventType,
 	CreateUserEventType, UpdateUserEventType, DeleteUserEventType,
-	CreateContestEventType, UpdateContestEventType, DeleteContestEventType,
+	CreateContestEventType, UpdateContestEventType, DeleteContestEventType, UpdateContestPauseEventType,
 	CreateChallengeEventType, UpdateChallengeEventType, DeleteChallengeEventType, UploadChallengeFileEventType,
 	CreateContestChallengeEventType, UpdateContestChallengeEventType, DeleteContestChallengeEventType,
 	ResetContestChallengeSolvesEventType,

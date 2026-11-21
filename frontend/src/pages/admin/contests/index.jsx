@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from '../../../utils/toast';
 import { getContestInfo, updateContestInfo, updateContestPicture } from '../../../api/admin/contest';
 import ContestEditor from '../../../components/features/Admin/Contests/editor/ContestEditor';
+import ContestControl from '../../../components/features/Admin/Contests/ContestControl';
 import Loading from '../../../components/common/Loading';
 import {
   contestUpdatePayload,
@@ -21,7 +22,9 @@ export default function AdminContestDetail() {
     setLoading(true);
     getContestInfo(Number(id))
       .then((response) => {
-        if (!cancelled && response.code === 200) setLoaded({ id, draft: createContestDraft(response.data) });
+        if (!cancelled && response.code === 200) {
+          setLoaded({ id, draft: createContestDraft(response.data), paused: !!response.data.paused });
+        }
       })
       .catch((error) => {
         if (!cancelled) toast.danger({ description: error.message || t('admin.contests.editor.toast.fetchFailed') });
@@ -58,12 +61,18 @@ export default function AdminContestDetail() {
   }
 
   return loaded?.id === id ? (
-    <ContestEditor
-      key={id}
-      contest={loaded.draft}
-      onSave={save}
-      onImageUpload={upload}
-      onCancel={() => navigate('/admin/contests')}
-    />
+    <div className="space-y-6">
+      <ContestControl
+        contest={{ id: Number(id), paused: loaded.paused }}
+        onChange={(patch) => setLoaded((previous) => ({ ...previous, ...patch }))}
+      />
+      <ContestEditor
+        key={id}
+        contest={loaded.draft}
+        onSave={save}
+        onImageUpload={upload}
+        onCancel={() => navigate('/admin/contests')}
+      />
+    </div>
   ) : null;
 }

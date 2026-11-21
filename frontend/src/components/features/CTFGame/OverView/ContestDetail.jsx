@@ -39,7 +39,9 @@ function ContestDetail({ contest, handleJoinContest }) {
                     ? 'text-yellow-400 border-yellow-400'
                     : contest.status === 'active'
                       ? 'text-green-400 border-green-400'
-                      : 'text-neutral-400 border-neutral-400'
+                      : contest.status === 'paused'
+                        ? 'text-yellow-400 border-yellow-400'
+                        : 'text-neutral-400 border-neutral-400'
                 }`}
               >
                 {t(`game.status.${contest.status}`)}

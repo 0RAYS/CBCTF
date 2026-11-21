@@ -95,6 +95,14 @@ export function updateContestInfo(contestId, data) {
   });
 }
 
+export function updateContestPause(contestId, paused) {
+  return request({
+    url: `/admin/contests/${contestId}/pause`,
+    method: 'PUT',
+    data: { paused },
+  });
+}
+
 export function getContestTeams(contestId, params = { limit: 20, offset: 0 }) {
   return request({
     url: `/admin/contests/${contestId}/teams`,

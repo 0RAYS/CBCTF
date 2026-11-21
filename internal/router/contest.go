@@ -73,3 +73,21 @@ func DeleteContest(ctx *gin.Context) {
 	}
 	resp.JSON(ctx, ret)
 }
+
+// UpdateContestPause 暂停或恢复比赛。
+func UpdateContestPause(ctx *gin.Context) {
+	var form dto.UpdateContestPauseForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestPauseEventType)
+	contest, ret := service.UpdateContestPause(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form.Paused)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	view := service.BuildContestView(db.DB.WithContext(ctx.Request.Context()), contest)
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(view, true)))
+}

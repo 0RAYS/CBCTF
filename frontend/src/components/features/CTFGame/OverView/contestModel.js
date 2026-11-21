@@ -8,9 +8,10 @@ export function transformContestData(apiData) {
     title: `${apiData.prefix} ${apiData.name}`,
     description: apiData.description,
     image: apiData.picture || DEFAULT_CONTEST_IMAGE,
-    status: getContestStatus(apiData.start, apiData.duration),
+    status: apiData.paused ? 'paused' : getContestStatus(apiData.start, apiData.duration),
     startTime,
-    endTime,
+    // The server reports the effective end, which moves while the contest is paused.
+    endTime: apiData.end ? new Date(apiData.end).toISOString() : endTime,
     participants: apiData.users ?? null,
     rules: apiData.rules ?? [],
     prizes: apiData.prizes ?? [],
