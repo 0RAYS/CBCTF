@@ -43,8 +43,11 @@ func BuildContestView(tx *gorm.DB, contest model.Contest) view.ContestView {
 	return result
 }
 
-func ListContests(tx *gorm.DB, form dto.ListModelsForm, admin bool) ([]view.ContestView, int64, model.RetVal) {
+func ListContests(tx *gorm.DB, form dto.GetContestsForm, admin bool) ([]view.ContestView, int64, model.RetVal) {
 	options := db.GetOptions{Sort: []string{"id DESC"}}
+	if form.Name != "" {
+		options.Search = map[string]string{"name": form.Name}
+	}
 	if !admin {
 		options.Conditions = map[string]any{"hidden": false}
 	}
