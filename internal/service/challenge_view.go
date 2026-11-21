@@ -11,8 +11,9 @@ import (
 )
 
 // challengeFilter 把请求参数转换成题库聚合视图的过滤条件。
-func challengeFilter(contestID *uint, t model.ChallengeType, category, name, description string) db.ChallengeFilter {
+func challengeFilter(contestID *uint, contestName string, t model.ChallengeType, category, name, description string) db.ChallengeFilter {
 	filter := db.ChallengeFilter{
+		ContestName: contestName,
 		Type:        t,
 		Category:    category,
 		Name:        name,
@@ -59,7 +60,7 @@ func ListChallengeViews(tx *gorm.DB, form dto.GetChallengesForm) ([]view.Challen
 	challenges, count, ret := db.InitChallengeRepo(tx).ListChallenges(
 		form.Limit,
 		form.Offset,
-		challengeFilter(form.ContestID, form.Type, form.Category, form.Name, form.Description),
+		challengeFilter(form.ContestID, form.ContestName, form.Type, form.Category, form.Name, form.Description),
 	)
 	if !ret.OK {
 		return nil, 0, ret
@@ -72,7 +73,7 @@ func ListChallengeViews(tx *gorm.DB, form dto.GetChallengesForm) ([]view.Challen
 }
 
 func ListChallengeCategories(tx *gorm.DB, form dto.GetCategoriesForm) ([]string, model.RetVal) {
-	return db.InitChallengeRepo(tx).ListCategories(challengeFilter(form.ContestID, form.Type, "", "", ""))
+	return db.InitChallengeRepo(tx).ListCategories(challengeFilter(form.ContestID, form.ContestName, form.Type, "", "", ""))
 }
 
 func GetChallengeWithFlags(tx *gorm.DB, challenge model.Challenge) (model.Challenge, model.RetVal) {

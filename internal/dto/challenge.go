@@ -15,6 +15,8 @@ type GetChallengesForm struct {
 	Description string              `form:"description" json:"description"`
 	// ContestID 为空表示不过滤比赛，0 表示只看不归属比赛的题目。
 	ContestID *uint `form:"contest_id" json:"contest_id"`
+	// ContestName 按比赛名称模糊匹配比赛内的题目。
+	ContestName string `form:"contest_name" json:"contest_name"`
 }
 
 func (f *GetChallengesForm) Validate(ctx *gin.Context) model.RetVal {
@@ -26,8 +28,9 @@ func (f *GetChallengesForm) Validate(ctx *gin.Context) model.RetVal {
 }
 
 type GetCategoriesForm struct {
-	Type      model.ChallengeType `form:"type" json:"type" binding:"omitempty,oneof=static dynamic pods"`
-	ContestID *uint               `form:"contest_id" json:"contest_id"`
+	Type        model.ChallengeType `form:"type" json:"type" binding:"omitempty,oneof=static dynamic pods"`
+	ContestID   *uint               `form:"contest_id" json:"contest_id"`
+	ContestName string              `form:"contest_name" json:"contest_name"`
 }
 
 // GetChallengesInContestForm 描述比赛内选手可见的题目列表。

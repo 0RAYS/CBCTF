@@ -83,6 +83,7 @@ func (c *ChallengeRepo) GetByRandID(randID string, optionsL ...GetOptions) (mode
 type ChallengeFilter struct {
 	ContestID   uint
 	Unbound     bool
+	ContestName string
 	Type        model.ChallengeType
 	Category    string
 	Name        string
@@ -95,6 +96,12 @@ func (f ChallengeFilter) apply(tx *gorm.DB) *gorm.DB {
 		tx = tx.Where("challenges.contest_id IS NULL")
 	} else if f.ContestID != 0 {
 		tx = tx.Where("challenges.contest_id = ?", f.ContestID)
+	}
+	if f.ContestName != "" {
+		tx = tx.Where(
+			"challenges.contest_id IN (SELECT id FROM contests WHERE name ILIKE ? AND deleted_at IS NULL)",
+			"%"+f.ContestName+"%",
+		)
 	}
 	if f.Type != "" {
 		tx = tx.Where("challenges.type = ?", f.Type)
@@ -114,7 +121,7 @@ func (f ChallengeFilter) apply(tx *gorm.DB) *gorm.DB {
 // ListChallenges 返回跨比赛聚合的题目列表。
 func (c *ChallengeRepo) ListChallenges(limit, offset int, filter ChallengeFilter) ([]model.Challenge, int64, model.RetVal) {
 	tx := filter.apply(c.DB.Model(&model.Challenge{}))
-	target := fmt.Sprintf("contest_id=%d,type=%s,category=%s", filter.ContestID, filter.Type, filter.Category)
+	target := fmt.Sprintf("contest_id=%d,contest_name=%s,type=%s,category=%s", filter.ContestID, filter.ContestName, filter.Type, filter.Category)
 
 	var count int64
 	if res := tx.Count(&count); res.Error != nil {
