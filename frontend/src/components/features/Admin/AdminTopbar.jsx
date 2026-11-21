@@ -1,5 +1,6 @@
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import Avatar from '@/components/common/Avatar';
+import { IconMenu2 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
 function AdminTopbar({
@@ -24,11 +25,7 @@ function AdminTopbar({
             className="md:hidden shrink-0 w-9 h-9 border border-neutral-300/30 rounded-md flex items-center justify-center text-neutral-300 hover:text-neutral-100 hover:border-neutral-100 transition-colors"
             aria-label={t('admin.topbar.toggleSidebar')}
           >
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 6H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              <path d="M4 12H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              <path d="M4 18H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <IconMenu2 size={20} stroke={1.5} />
           </button>
         )}
         <div className="min-w-0">

@@ -1,6 +1,15 @@
 import { forwardRef } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import {
+  IconAlertTriangle,
+  IconBolt,
+  IconCheck,
+  IconCircleX,
+  IconDots,
+  IconInfoCircle,
+  IconX,
+} from '@tabler/icons-react';
 import { toastVariants } from '@/config/motion';
 
 const TOAST_CONFIG = {
@@ -8,74 +17,50 @@ const TOAST_CONFIG = {
     container: 'border-geek-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-geek-300 font-mono',
     iconColor: 'text-geek-400',
-    icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />,
+    icon: IconBolt,
   },
   secondary: {
     container: 'border-geek-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-geek-300 font-mono',
     iconColor: 'text-geek-400',
-    icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />,
+    icon: IconBolt,
   },
   success: {
     container: 'border-green-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-green-300 font-mono',
     iconColor: 'text-green-400',
-    icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />,
+    icon: IconCheck,
   },
   warning: {
     container: 'border-amber-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-amber-300 font-mono',
     iconColor: 'text-amber-400',
-    icon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-      />
-    ),
+    icon: IconAlertTriangle,
   },
   danger: {
     container: 'border-red-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-red-300 font-mono',
     iconColor: 'text-red-400',
-    icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />,
+    icon: IconX,
   },
   info: {
     container: 'border-geek-400/50 bg-neutral-800/95 text-neutral-200',
     title: 'text-geek-300 font-mono',
     iconColor: 'text-geek-400',
-    icon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    ),
+    icon: IconInfoCircle,
   },
   default: {
     container: 'border-neutral-500/50 bg-neutral-800/95 text-neutral-300',
     title: 'text-neutral-200 font-mono',
     iconColor: 'text-neutral-400',
-    icon: (
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    ),
+    icon: IconDots,
   },
 };
 
 const ToastIcon = ({ color }) => {
   const config = TOAST_CONFIG[color] || TOAST_CONFIG.default;
-  return (
-    <svg className={`w-5 h-5 ${config.iconColor}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      {config.icon}
-    </svg>
-  );
+  const Icon = config.icon;
+  return <Icon size={20} stroke={2} className={config.iconColor} />;
 };
 
 const Toast = forwardRef(({ id, title, description, color = 'default', onClose, hasCloseButton = true }, ref) => {
@@ -109,13 +94,7 @@ const Toast = forwardRef(({ id, title, description, color = 'default', onClose, 
             className="pointer-events-auto flex-shrink-0 ml-1 text-current opacity-70 hover:opacity-100 transition-opacity focus-visible:ring-2 focus-visible:ring-geek-400 rounded-md p-2"
             aria-label={t('common.closeNotification')}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <IconCircleX size={16} stroke={2} />
           </button>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { IconCheck, IconClipboard, IconRefresh } from '@tabler/icons-react';
 import { Button } from '@/components/common';
 
 export default function InvitationCode({ code, isLeader, onCopyCode, onRefreshCode }) {
@@ -26,7 +27,7 @@ export default function InvitationCode({ code, isLeader, onCopyCode, onRefreshCo
               timer.current = setTimeout(() => setIsCodeCopied(false), 2000);
             }}
           >
-            {isCodeCopied ? '✓' : '📋'}
+            {isCodeCopied ? <IconCheck size={18} stroke={2} /> : <IconClipboard size={18} stroke={1.5} />}
           </Button>
         </div>
         {isLeader && (
@@ -37,7 +38,7 @@ export default function InvitationCode({ code, isLeader, onCopyCode, onRefreshCo
             aria-label={t('common.refresh')}
             onClick={onRefreshCode}
           >
-            ↻
+            <IconRefresh size={18} stroke={1.5} />
           </Button>
         )}
       </div>
