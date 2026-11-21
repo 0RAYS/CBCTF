@@ -17,7 +17,7 @@ English · [简体中文](README.md)
 
 ---
 
-CBCTF is a CTF competition platform maintained by [0RAYS](https://github.com/0rays), built with Go and natively
+CBCTF is a CTF competition platform maintained by [0RAYS](https://github.com/0RAYS), built with Go and natively
 orchestrated on Kubernetes. It supports dynamic attachment generation, dynamic container distribution, hybrid
 container/VM deployments, and network penetration scenario construction.
 
