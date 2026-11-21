@@ -11,6 +11,7 @@ import {
 import TruncatedText from '@/components/common/TruncatedText';
 
 const COLUMN_WIDTHS = [220, 160, 140, 128, 112, 200, 240, 280];
+const TABLE_WIDTH = COLUMN_WIDTHS.reduce((a, b) => a + b, 0);
 
 function StatusBadge({ value }) {
   const style =
@@ -55,14 +56,14 @@ export default function TaskTable({ mode, rows, totalCount, currentPage, onPageC
       ) : rows.length === 0 ? (
         <EmptyState title={t(`admin.tasks.${mode}.empty`)} className="py-20" />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="table-scroll">
           <table
-            className="w-full table-fixed text-sm text-neutral-300"
-            style={{ minWidth: COLUMN_WIDTHS.reduce((a, b) => a + b, 0) }}
+            className="table-adaptive text-sm text-neutral-300"
+            style={{ '--table-min-width': `${TABLE_WIDTH}px` }}
           >
             <colgroup>
               {COLUMN_WIDTHS.map((width, index) => (
-                <col key={index} style={{ width }} />
+                <col key={index} style={{ width: `${((width / TABLE_WIDTH) * 100).toFixed(4)}%` }} />
               ))}
             </colgroup>
             <thead>

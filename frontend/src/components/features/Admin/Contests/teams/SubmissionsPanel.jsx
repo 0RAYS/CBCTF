@@ -56,7 +56,7 @@ export default function SubmissionsPanel({
         </Card>
       ) : (
         <List
-          className="[&_table]:min-w-[960px]"
+          minWidth={960}
           columns={columns}
           data={submissions}
           renderCell={renderCell}

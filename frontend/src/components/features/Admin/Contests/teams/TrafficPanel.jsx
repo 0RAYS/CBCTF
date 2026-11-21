@@ -62,7 +62,7 @@ export default function TrafficPanel({
         </Card>
       ) : (
         <List
-          className="[&_table]:min-w-[900px]"
+          minWidth={900}
           columns={columns}
           data={containers}
           renderCell={renderCell}

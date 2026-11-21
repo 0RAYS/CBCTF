@@ -151,6 +151,24 @@ body {
     @apply h-12 px-4 text-base;
   }
 
+  /* Data tables stretch to the space they get; only on narrow containers do they
+     keep their natural width (--table-min-width) and scroll horizontally. */
+  .table-scroll {
+    container-type: inline-size;
+    overflow-x: auto;
+  }
+
+  .table-adaptive {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  @container (max-width: 40rem) {
+    .table-adaptive {
+      min-width: var(--table-min-width, 0);
+    }
+  }
+
   .contest-container {
     width: 100%;
     max-width: 1400px;

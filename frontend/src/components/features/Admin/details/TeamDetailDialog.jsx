@@ -7,6 +7,9 @@ import TruncatedText from '@/components/common/TruncatedText';
 
 const TABS = ['info', 'flags', 'submissions', 'writeups', 'containers'];
 
+// Member id and role keep their fixed widths; the name takes the rest of the table.
+const MEMBER_NAME_WIDTH = '100%';
+
 function AdminTeamDetailDialog({
   isOpen,
   onClose,
@@ -121,14 +124,17 @@ function AdminTeamDetailDialog({
           </Card>
         ) : (
           <Card variant="default" padding="none" className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[480px] table-fixed">
+            <div className="table-scroll">
+              <table className="table-adaptive" style={{ '--table-min-width': '480px' }}>
                 <thead className="bg-neutral-800/50">
                   <tr>
                     <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider w-25">
                       {t('admin.contests.teams.detail.info.memberId')}
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider">
+                    <th
+                      className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider"
+                      style={{ width: MEMBER_NAME_WIDTH }}
+                    >
                       {t('admin.contests.teams.detail.info.memberName')}
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider w-32">
