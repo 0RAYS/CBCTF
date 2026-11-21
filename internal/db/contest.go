@@ -207,7 +207,7 @@ func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	var ret model.RetVal
-	if ret = InitContestChallengeRepo(c.DB).DeleteByContestID(idL...); !ret.OK {
+	if ret = InitChallengeRepo(c.DB).DeleteByContestID(idL...); !ret.OK {
 		return ret
 	}
 	if ret = InitTeamRepo(c.DB).DeleteByContestID(idL...); !ret.OK {

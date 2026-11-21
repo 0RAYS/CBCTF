@@ -188,10 +188,7 @@ func GetUserRankingViews(tx *gorm.DB, limit, offset int, showHidden bool) ([]vie
 }
 
 func GetTeamRankingViews(tx *gorm.DB, contest model.Contest, limit, offset int, showHidden bool) ([]view.TeamRankingView, int64, model.RetVal) {
-	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
-	})
+	flags, ret := db.InitChallengeFlagRepo(tx).ListForContest(contest.ID)
 	if !ret.OK {
 		return nil, 0, ret
 	}
@@ -207,20 +204,20 @@ func GetTeamRankingViews(tx *gorm.DB, contest model.Contest, limit, offset int, 
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	solvedRows, ret := db.InitContestFlagRepo(tx).GetTeamsSolvedContestFlags(teamIDs...)
+	solvedRows, ret := db.InitChallengeFlagRepo(tx).GetTeamsSolvedChallengeFlags(teamIDs...)
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	solvedMap := make(map[uint][]model.ContestFlag, len(teamIDs))
+	solvedMap := make(map[uint][]model.ChallengeFlag, len(teamIDs))
 	for _, row := range solvedRows {
-		solvedMap[row.TeamID] = append(solvedMap[row.TeamID], row.ContestFlag)
+		solvedMap[row.TeamID] = append(solvedMap[row.TeamID], row.ChallengeFlag)
 	}
 	views := make([]view.TeamRankingView, 0, len(teams))
 	for _, team := range teams {
 		views = append(views, view.TeamRankingView{
 			Team:      team,
 			UserCount: userCountMap[team.ID],
-			Solved:    view.BuildSolvedStateViews(solvedMap[team.ID], contestFlags),
+			Solved:    view.BuildSolvedStateViews(solvedMap[team.ID], flags),
 		})
 	}
 	return views, count, model.SuccessRetVal()
@@ -231,32 +228,29 @@ func GetLeaderboardMatrixViews(tx *gorm.DB, contest model.Contest, limit, offset
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
-	})
+	flags, ret := db.InitChallengeFlagRepo(tx).ListForContest(contest.ID)
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	contestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID, "hidden": false},
 	})
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	challengeMap := make(map[string]model.ContestChallenge)
-	for _, contestChallenge := range contestChallenges {
-		if contestChallenge.Hidden {
+	challengeMap := make(map[string]model.Challenge)
+	for _, challenge := range challenges {
+		if challenge.Hidden {
 			continue
 		}
-		challengeMap[contestChallenge.RandID] = contestChallenge
+		challengeMap[challenge.RandID] = challenge
 	}
 	globalMap := make(map[string]int)
-	for _, contestFlag := range contestFlags {
-		if contestFlag.ContestChallenge.Hidden {
+	for _, flag := range flags {
+		if flag.Challenge.Hidden {
 			continue
 		}
-		globalMap[contestFlag.ContestChallenge.RandID]++
+		globalMap[flag.Challenge.RandID]++
 	}
 	teamMap := make(map[uint]map[string]int)
 	teamIDs := make([]uint, 0, len(teams))
@@ -281,7 +275,7 @@ func GetLeaderboardMatrixViews(tx *gorm.DB, contest model.Contest, limit, offset
 	}
 	for teamID := range teamMap {
 		for _, teamFlag := range teamFlagsMap[teamID] {
-			if teamFlag.ContestChallengeHidden {
+			if teamFlag.ChallengeHidden {
 				continue
 			}
 			if teamFlag.Solved {
@@ -318,7 +312,7 @@ func GetLeaderboardExportView(tx *gorm.DB, contest model.Contest, showHidden boo
 	if !ret.OK {
 		return view.LeaderboardExportView{}, ret
 	}
-	contestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 	})
 	if !ret.OK {
@@ -329,7 +323,7 @@ func GetLeaderboardExportView(tx *gorm.DB, contest model.Contest, showHidden boo
 		return view.LeaderboardExportView{}, ret
 	}
 
-	slices.SortFunc(contestChallenges, func(a, b model.ContestChallenge) int {
+	slices.SortFunc(challenges, func(a, b model.Challenge) int {
 		if order := strings.Compare(a.Category, b.Category); order != 0 {
 			return order
 		}
@@ -359,21 +353,21 @@ func GetLeaderboardExportView(tx *gorm.DB, contest model.Contest, showHidden boo
 			times = make(map[uint]time.Time)
 			solvedAt[submission.TeamID] = times
 		}
-		if earliest, ok := times[submission.ContestChallengeID]; !ok || submission.CreatedAt.Before(earliest) {
-			times[submission.ContestChallengeID] = submission.CreatedAt
+		if earliest, ok := times[submission.ChallengeID]; !ok || submission.CreatedAt.Before(earliest) {
+			times[submission.ChallengeID] = submission.CreatedAt
 		}
 	}
 
 	exportView := view.LeaderboardExportView{
 		ContestName: contest.Name,
-		Challenges:  make([]view.LeaderboardChallengeView, 0, len(contestChallenges)),
+		Challenges:  make([]view.LeaderboardChallengeView, 0, len(challenges)),
 		Teams:       make([]view.LeaderboardTeamView, 0, len(visibleTeams)),
 	}
-	for _, contestChallenge := range contestChallenges {
+	for _, challenge := range challenges {
 		exportView.Challenges = append(exportView.Challenges, view.LeaderboardChallengeView{
-			ID:       contestChallenge.ID,
-			Name:     contestChallenge.Name,
-			Category: contestChallenge.Category,
+			ID:       challenge.ID,
+			Name:     challenge.Name,
+			Category: challenge.Category,
 		})
 	}
 	for _, team := range visibleTeams {

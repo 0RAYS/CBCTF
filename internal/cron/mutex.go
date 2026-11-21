@@ -52,10 +52,18 @@ func clearContestMutexes(
 
 // clearSubmissionMutexTask 定时任务清理flag提交锁 service.SolvedMutex
 func clearSubmissionMutexTask() model.RetVal {
-	contestFlagRepo := db.InitContestFlagRepo(db.CronDB)
+	flagRepo := db.InitChallengeFlagRepo(db.CronDB)
+	challengeRepo := db.InitChallengeRepo(db.CronDB)
 	return clearContestMutexes(&service.SolvedMutex, func(key any) (uint, model.RetVal) {
-		contestFlag, ret := contestFlagRepo.GetByID(key.(uint))
-		return contestFlag.ContestID, ret
+		flag, ret := flagRepo.GetByID(key.(uint))
+		if !ret.OK {
+			return 0, ret
+		}
+		challenge, ret := challengeRepo.GetByID(flag.ChallengeID)
+		if !ret.OK {
+			return 0, ret
+		}
+		return challenge.ContestID.V, model.SuccessRetVal()
 	}, func(contest model.Contest) bool {
 		return !contest.IsRunning()
 	})

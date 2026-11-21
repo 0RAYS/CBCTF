@@ -89,9 +89,8 @@ func TestPrepullQueriesOnlyUnfinishedContestReferences(t *testing.T) {
 		t.Fatalf("upcoming/running/end-time eligibility differs from Contest.IsOver: %v", challenges.vars)
 	}
 	for _, required := range []string{
-		`id IN (SELECT "challenge_id" FROM "contest_challenges"`,
+		`challenges.contest_id IS NULL`,
 		`contest_id IN (`,
-		`"contest_challenges"."deleted_at" IS NULL`,
 		`"challenges"."deleted_at" IS NULL`,
 	} {
 		if !strings.Contains(challenges.sql, required) {

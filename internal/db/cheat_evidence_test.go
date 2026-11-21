@@ -40,16 +40,16 @@ func cheatEvidenceDB(t *testing.T) *gorm.DB {
 		`CREATE TEMP TABLE user_contests (user_id bigint, contest_id bigint) ON COMMIT DROP`,
 		`CREATE TEMP TABLE teams (id bigint PRIMARY KEY, contest_id bigint, deleted_at timestamptz) ON COMMIT DROP`,
 		`CREATE TEMP TABLE requests (id bigserial PRIMARY KEY, ip text, user_id bigint, time timestamptz, method text, path text, status int, latency bigint, user_agent text, deleted_at timestamptz) ON COMMIT DROP`,
-		`CREATE TEMP TABLE submissions (id bigserial PRIMARY KEY, team_id bigint, user_id bigint, contest_id bigint, contest_challenge_id bigint, contest_flag_id bigint, ip text, created_at timestamptz, value text, solved boolean, deleted_at timestamptz) ON COMMIT DROP`,
-		`CREATE TEMP TABLE contest_challenges (id bigint PRIMARY KEY, name text, deleted_at timestamptz) ON COMMIT DROP`,
-		`CREATE TEMP TABLE contest_flags (id bigint PRIMARY KEY, contest_challenge_id bigint, deleted_at timestamptz) ON COMMIT DROP`,
-		`CREATE TEMP TABLE team_flags (id bigint PRIMARY KEY, team_id bigint, contest_flag_id bigint, value text, deleted_at timestamptz) ON COMMIT DROP`,
-		`CREATE TEMP TABLE victims (id bigint PRIMARY KEY, team_id bigint, contest_id bigint, contest_challenge_id bigint, deleted_at timestamptz, created_at timestamptz) ON COMMIT DROP`,
+		`CREATE TEMP TABLE submissions (id bigserial PRIMARY KEY, team_id bigint, user_id bigint, contest_id bigint, challenge_id bigint, challenge_flag_id bigint, ip text, created_at timestamptz, value text, solved boolean, deleted_at timestamptz) ON COMMIT DROP`,
+		`CREATE TEMP TABLE challenges (id bigint PRIMARY KEY, name text, deleted_at timestamptz) ON COMMIT DROP`,
+		`CREATE TEMP TABLE challenge_flags (id bigint PRIMARY KEY, challenge_id bigint, deleted_at timestamptz) ON COMMIT DROP`,
+		`CREATE TEMP TABLE team_flags (id bigint PRIMARY KEY, team_id bigint, challenge_flag_id bigint, value text, deleted_at timestamptz) ON COMMIT DROP`,
+		`CREATE TEMP TABLE victims (id bigint PRIMARY KEY, team_id bigint, contest_id bigint, challenge_id bigint, deleted_at timestamptz, created_at timestamptz) ON COMMIT DROP`,
 		`CREATE TEMP TABLE traffics (id bigserial PRIMARY KEY, victim_id bigint UNIQUE, ips jsonb, accesses jsonb, analysis jsonb, archived boolean DEFAULT false, created_at timestamptz, updated_at timestamptz, deleted_at timestamptz, version bigint) ON COMMIT DROP`,
 		`INSERT INTO users(id) VALUES (1),(2),(3)`,
 		`INSERT INTO user_contests(user_id, contest_id) VALUES (1,10),(2,10),(3,10)`,
 		`INSERT INTO teams(id, contest_id) VALUES (1,10),(2,10)`,
-		`INSERT INTO contest_challenges(id, name) VALUES (100,'web'),(200,'pwn')`,
+		`INSERT INTO challenges(id, name) VALUES (100,'web'),(200,'pwn')`,
 	} {
 		if err = tx.Exec(ddl).Error; err != nil {
 			t.Fatal(err)
@@ -111,7 +111,7 @@ func TestSharedContestUserIPsTraceRequests(t *testing.T) {
 func TestSharedContestUserIPsTraceSubmissions(t *testing.T) {
 	tx := cheatEvidenceDB(t)
 	at := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
-	statement := `INSERT INTO submissions(team_id, user_id, contest_id, contest_challenge_id, ip, created_at, value, solved)
+	statement := `INSERT INTO submissions(team_id, user_id, contest_id, challenge_id, ip, created_at, value, solved)
 		VALUES (1, 1, 10, 100, '8.8.8.8', ?, 'flag{guess}', false)`
 	if err := tx.Exec(statement, at).Error; err != nil {
 		t.Fatal(err)
@@ -138,7 +138,7 @@ func TestSharedContestVictimIPsTraceAccesses(t *testing.T) {
 		{1, 1, 100, 0},
 		{2, 2, 200, 5 * time.Second},
 	} {
-		statement := `INSERT INTO victims(id, team_id, contest_id, contest_challenge_id, created_at) VALUES (?, ?, 10, ?, ?)`
+		statement := `INSERT INTO victims(id, team_id, contest_id, challenge_id, created_at) VALUES (?, ?, 10, ?, ?)`
 		if err := tx.Exec(statement, victim.id, victim.teamID, victim.challenge, at).Error; err != nil {
 			t.Fatal(err)
 		}
@@ -170,17 +170,17 @@ func TestWrongFlagSubmissionsTraceOwner(t *testing.T) {
 	tx := cheatEvidenceDB(t)
 	at := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
 	for _, ddl := range []string{
-		`INSERT INTO contest_flags(id, contest_challenge_id) VALUES (300,100)`,
-		`INSERT INTO team_flags(id, team_id, contest_flag_id, value) VALUES (400,2,300,'flag{real}')`,
+		`INSERT INTO challenge_flags(id, challenge_id) VALUES (300,100)`,
+		`INSERT INTO team_flags(id, team_id, challenge_flag_id, value) VALUES (400,2,300,'flag{real}')`,
 	} {
 		if err := tx.Exec(ddl).Error; err != nil {
 			t.Fatal(err)
 		}
 	}
 	for _, statement := range []string{
-		`INSERT INTO submissions(team_id, user_id, contest_id, contest_challenge_id, contest_flag_id, ip, created_at, value, solved)
+		`INSERT INTO submissions(team_id, user_id, contest_id, challenge_id, challenge_flag_id, ip, created_at, value, solved)
 			VALUES (2,2,10,100,300,'9.9.9.9',?,'flag{real}',true)`,
-		`INSERT INTO submissions(team_id, user_id, contest_id, contest_challenge_id, ip, created_at, value, solved)
+		`INSERT INTO submissions(team_id, user_id, contest_id, challenge_id, ip, created_at, value, solved)
 			VALUES (1,1,10,100,'8.8.8.8',?,'flag{real}',false)`,
 	} {
 		if err := tx.Exec(statement, at).Error; err != nil {
@@ -188,7 +188,7 @@ func TestWrongFlagSubmissionsTraceOwner(t *testing.T) {
 		}
 	}
 
-	rows, ret := InitTeamFlagRepo(tx).ListContestWrongFlagSubmissions(10, at.Add(-time.Hour), at.Add(time.Hour))
+	rows, ret := InitTeamFlagRepo(tx).ListWrongFlagSubmissions(10, at.Add(-time.Hour), at.Add(time.Hour))
 	if !ret.OK || len(rows) != 1 {
 		t.Fatalf("wrong flag submissions: %+v %+v", rows, ret)
 	}

@@ -29,25 +29,36 @@ func TestContestImportDoesNotPublishUncommittedSuccess(t *testing.T) {
 	database.Statement.ConnPool = &failedCommitPool{ConnPool: pool}
 	created := false
 	_ = database.Callback().Create().After("gorm:create").Register("test:create_import", func(tx *gorm.DB) {
-		if value, ok := tx.Statement.Dest.(*model.ContestChallenge); ok {
+		if value, ok := tx.Statement.Dest.(*model.Challenge); ok {
 			value.ID = 1
 			created = true
 			tx.RowsAffected = 1
 		}
 	})
 	_ = database.Callback().Query().After("gorm:query").Register("test:import_rows", func(tx *gorm.DB) {
-		switch dst := tx.Statement.Dest.(type) {
-		case *model.Challenge:
+		dst, ok := tx.Statement.Dest.(*model.Challenge)
+		if !ok {
+			return
+		}
+		for _, value := range tx.Statement.Vars {
+			switch typed := value.(type) {
+			case string:
+				if typed != "one" {
+					continue
+				}
+			case uint:
+				if typed != 1 {
+					continue
+				}
+			default:
+				continue
+			}
 			*dst = model.Challenge{ID: 1, RandID: "one", Type: model.StaticChallengeType}
 			tx.RowsAffected = 1
-		case *model.ContestChallenge:
-			if created {
-				*dst = model.ContestChallenge{ID: 1, ContestID: 1, ChallengeID: 1}
-				tx.RowsAffected = 1
-			}
+			return
 		}
 	})
-	items, failed, ret := CreateContestChallenge(database, model.Contest{ID: 1}, dto.CreateContestChallengeForm{ChallengeIDs: []string{"one", "two"}})
+	items, failed, ret := CopyChallengesToContest(database, model.Contest{ID: 1}, dto.CopyChallengesToContestForm{ChallengeIDs: []string{"one", "two"}})
 	batch, ok := ret.Data.(*model.BatchResult)
 	if ret.OK || !created || len(items) != 0 || len(failed) != 1 || !ok || batch.NotAttempted != 1 {
 		t.Fatalf("commit failure reported success: %+v %v %+v", items, failed, ret)

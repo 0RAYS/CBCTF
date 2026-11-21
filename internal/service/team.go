@@ -193,19 +193,19 @@ func CalcTeamScores(tx *gorm.DB, contestID uint, blood bool, teams ...model.Team
 		return nil, ret
 	}
 
-	rows, ret := db.InitContestFlagRepo(tx).GetTeamsSolvedContestFlags(teamIDL...)
+	rows, ret := db.InitChallengeFlagRepo(tx).GetTeamsSolvedChallengeFlags(teamIDL...)
 	if !ret.OK {
 		return nil, ret
 	}
 
-	contestFlagIDL := make([]uint, 0, len(rows))
+	challengeFlagIDL := make([]uint, 0, len(rows))
 	for _, row := range rows {
-		contestFlagIDL = append(contestFlagIDL, row.ID)
+		challengeFlagIDL = append(challengeFlagIDL, row.ID)
 	}
 
 	bloodRanks := make(map[uint]map[uint]int)
-	if blood && len(contestFlagIDL) > 0 {
-		bloodRanks, ret = db.InitSubmissionRepo(tx).GetBloodRankMap(contestFlagIDL...)
+	if blood && len(challengeFlagIDL) > 0 {
+		bloodRanks, ret = db.InitSubmissionRepo(tx).GetBloodRankMap(challengeFlagIDL...)
 		if !ret.OK {
 			return nil, ret
 		}
@@ -225,7 +225,7 @@ func CalcTeamScores(tx *gorm.DB, contestID uint, blood bool, teams ...model.Team
 		}
 		teamScore := scoreMap[row.TeamID]
 		teamScore.Total += score
-		teamScore.ByChallenge[row.ContestChallengeID] += score
+		teamScore.ByChallenge[row.ChallengeID] += score
 		scoreMap[row.TeamID] = teamScore
 	}
 
@@ -287,17 +287,14 @@ func GetTeammates(tx *gorm.DB, team model.Team, includeCounts bool) ([]view.User
 	return BuildUserViews(tx, users, includeCounts), model.SuccessRetVal()
 }
 
-func GetTeamSolvedFlags(tx *gorm.DB, contest model.Contest, team model.Team) ([]model.ContestFlag, []model.ContestFlag, model.RetVal) {
-	contestFlagRepo := db.InitContestFlagRepo(tx)
-	contestFlagL, _, ret := contestFlagRepo.List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
-	})
+func GetTeamSolvedFlags(tx *gorm.DB, contest model.Contest, team model.Team) ([]model.ChallengeFlag, []model.ChallengeFlag, model.RetVal) {
+	flagRepo := db.InitChallengeFlagRepo(tx)
+	flagL, ret := flagRepo.ListForContest(contest.ID)
 	if !ret.OK {
 		return nil, nil, ret
 	}
-	solvedFlagL, _ := contestFlagRepo.GetTeamSolvedContestFlags(team.ID)
-	return solvedFlagL, contestFlagL, model.SuccessRetVal()
+	solvedFlagL, _ := flagRepo.GetTeamSolvedChallengeFlags(team.ID)
+	return solvedFlagL, flagL, model.SuccessRetVal()
 }
 
 func UpdateTeamCaptcha(tx *gorm.DB, team model.Team, captcha string) model.RetVal {

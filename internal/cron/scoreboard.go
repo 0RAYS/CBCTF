@@ -62,22 +62,22 @@ func updateUserRankingTask() model.RetVal {
 		userIDs[i] = user.ID
 	}
 
-	solvedContestFlags, ret := db.InitContestFlagRepo(db.CronDB).GetUserSolvedContestFlags(userIDs...)
+	solvedFlags, ret := db.InitChallengeFlagRepo(db.CronDB).GetUserSolvedChallengeFlags(userIDs...)
 	if !ret.OK {
 		return ret
 	}
 
-	contestFlagIDSet := make(map[uint]struct{})
-	for _, contestFlag := range solvedContestFlags {
-		contestFlagIDSet[contestFlag.ID] = struct{}{}
+	challengeFlagIDSet := make(map[uint]struct{})
+	for _, flag := range solvedFlags {
+		challengeFlagIDSet[flag.ID] = struct{}{}
 	}
 
-	contestFlagIDL := make([]uint, 0, len(contestFlagIDSet))
-	for contestFlagID := range contestFlagIDSet {
-		contestFlagIDL = append(contestFlagIDL, contestFlagID)
+	challengeFlagIDL := make([]uint, 0, len(challengeFlagIDSet))
+	for challengeFlagID := range challengeFlagIDSet {
+		challengeFlagIDL = append(challengeFlagIDL, challengeFlagID)
 	}
 
-	bloodRankMap, ret := db.InitSubmissionRepo(db.CronDB).GetBloodRankMap(contestFlagIDL...)
+	bloodRankMap, ret := db.InitSubmissionRepo(db.CronDB).GetBloodRankMap(challengeFlagIDL...)
 	if !ret.OK {
 		return ret
 	}
@@ -88,18 +88,18 @@ func updateUserRankingTask() model.RetVal {
 		userSolvedCount[user.ID] = 0
 		userScore[user.ID] = 0
 	}
-	for _, contestFlag := range solvedContestFlags {
-		userSolvedCount[contestFlag.UserID]++
-		score := contestFlag.CurrentScore
-		switch bloodRankMap[contestFlag.ID][contestFlag.TeamID] {
+	for _, flag := range solvedFlags {
+		userSolvedCount[flag.UserID]++
+		score := flag.CurrentScore
+		switch bloodRankMap[flag.ID][flag.TeamID] {
 		case 1:
-			score += contestFlag.Score * model.FirstBloodRate
+			score += flag.Score * model.FirstBloodRate
 		case 2:
-			score += contestFlag.Score * model.SecondBloodRate
+			score += flag.Score * model.SecondBloodRate
 		case 3:
-			score += contestFlag.Score * model.ThirdBloodRate
+			score += flag.Score * model.ThirdBloodRate
 		}
-		userScore[contestFlag.UserID] += score
+		userScore[flag.UserID] += score
 	}
 
 	ret = db.WithTransactionDB(db.CronDB, func(tx *db.Tx) model.RetVal {

@@ -54,11 +54,11 @@ func (t *TrafficRepo) KnownFlags(victim model.Victim) ([]string, model.RetVal) {
 	var values []string
 	var err error
 	var target string
-	if victim.TeamID.Valid && victim.ContestChallengeID.Valid {
-		target = fmt.Sprintf("contest_challenge_id=%d,team_id=%d", victim.ContestChallengeID.V, victim.TeamID.V)
+	if victim.TeamID.Valid {
+		target = fmt.Sprintf("challenge_id=%d,team_id=%d", victim.ChallengeID, victim.TeamID.V)
 		err = t.DB.Model(&model.TeamFlag{}).
-			Joins("JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
-			Where("team_flags.team_id = ? AND contest_flags.contest_challenge_id = ?", victim.TeamID.V, victim.ContestChallengeID.V).
+			Joins("JOIN challenge_flags ON challenge_flags.id = team_flags.challenge_flag_id AND challenge_flags.deleted_at IS NULL").
+			Where("team_flags.team_id = ? AND challenge_flags.challenge_id = ?", victim.TeamID.V, victim.ChallengeID).
 			Pluck("team_flags.value", &values).Error
 	} else {
 		target = fmt.Sprintf("challenge_id=%d", victim.ChallengeID)
@@ -181,14 +181,14 @@ func (t *TrafficRepo) ListSharedContestVictimIPs(contestID uint, start, end time
 
 // ContestVictimAccess 是共享 IP 命中靶机的一次访问观测。
 type ContestVictimAccess struct {
-	SrcIP              string
-	TeamID             uint
-	VictimID           uint
-	ContestChallengeID uint
-	ChallengeName      string
-	ObservedAt         time.Time
-	Source             string
-	Capture            string
+	SrcIP         string
+	TeamID        uint
+	VictimID      uint
+	ChallengeID   uint
+	ChallengeName string
+	ObservedAt    time.Time
+	Source        string
+	Capture       string
 }
 
 // ListContestVictimAccesses 返回给定 IP 命中靶机的访问明细，每个 IP 最多保留 limit 条最早记录。
@@ -203,7 +203,7 @@ func (t *TrafficRepo) ListContestVictimAccesses(contestID uint, ips []string, st
 			SELECT
 				victims.team_id,
 				victims.id AS victim_id,
-				COALESCE(victims.contest_challenge_id, 0) AS contest_challenge_id,
+				COALESCE(victims.challenge_id, 0) AS challenge_id,
 				access->>'ip' AS ip_val,
 				(access->>'time')::timestamptz AS observed_at,
 				access->>'source' AS source,
@@ -228,13 +228,13 @@ func (t *TrafficRepo) ListContestVictimAccesses(contestID uint, ips []string, st
 			r.ip_val AS src_ip,
 			r.team_id,
 			r.victim_id,
-			r.contest_challenge_id,
+			r.challenge_id,
 			r.observed_at,
 			r.source,
 			r.capture,
-			contest_challenges.name AS challenge_name
+			challenges.name AS challenge_name
 		FROM ranked r
-		LEFT JOIN contest_challenges ON contest_challenges.id = r.contest_challenge_id AND contest_challenges.deleted_at IS NULL
+		LEFT JOIN challenges ON challenges.id = r.challenge_id AND challenges.deleted_at IS NULL
 		WHERE r.event_rank <= ?
 		ORDER BY r.src_ip ASC, r.observed_at ASC
 	`, contestID, start, end, ips, limit).Scan(&results)

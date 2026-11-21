@@ -236,10 +236,6 @@ func ChallengeImages(challenge model.Challenge, sidecars ...string) []string {
 	return templateImages(challenge.GeneratorImage, challenge.Template, sidecars...)
 }
 
-func ContestChallengeImages(contestChallenge model.ContestChallenge, sidecars ...string) []string {
-	return templateImages(contestChallenge.GeneratorImage, contestChallenge.Template, sidecars...)
-}
-
 func templateImages(generatorImage string, template model.ChallengeTemplate, sidecars ...string) []string {
 	images := append([]string(nil), sidecars...)
 	images = append(images, generatorImage)

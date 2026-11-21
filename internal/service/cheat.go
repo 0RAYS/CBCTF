@@ -266,33 +266,33 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) model.RetVal {
 // wrongFlagGroup 是同一支队伍针对同一题目重复提交他人 flag 的聚合。
 // 一次提交可能同时命中多支队伍的 flag，因此提交记录按 ID 去重后保存。
 type wrongFlagGroup struct {
-	ContestChallengeID uint
-	ChallengeName      string
-	SubmittingTeamID   uint
-	Value              string
-	MatchedTeamIDs     []uint
-	Submissions        []db.ContestWrongFlagSubmission
-	seen               map[uint]bool
+	ChallengeID      uint
+	ChallengeName    string
+	SubmittingTeamID uint
+	Value            string
+	MatchedTeamIDs   []uint
+	Submissions      []db.WrongFlagSubmission
+	seen             map[uint]bool
 }
 
 func CheckWrongFlag(tx *gorm.DB, contest model.Contest) model.RetVal {
-	rows, ret := db.InitTeamFlagRepo(tx).ListContestWrongFlagSubmissions(contest.ID, contest.Start, contest.End())
+	rows, ret := db.InitTeamFlagRepo(tx).ListWrongFlagSubmissions(contest.ID, contest.Start, contest.End())
 	if !ret.OK {
 		return ret
 	}
 
 	groups := make(map[string]*wrongFlagGroup)
 	for _, row := range rows {
-		key := fmt.Sprintf("%d|%d|%s", row.ContestChallengeID, row.TeamID, row.Value)
+		key := fmt.Sprintf("%d|%d|%s", row.ChallengeID, row.TeamID, row.Value)
 		group, ok := groups[key]
 		if !ok {
 			group = &wrongFlagGroup{
-				ContestChallengeID: row.ContestChallengeID,
-				ChallengeName:      row.ChallengeName,
-				SubmittingTeamID:   row.TeamID,
-				Value:              row.Value,
-				MatchedTeamIDs:     []uint{},
-				seen:               make(map[uint]bool),
+				ChallengeID:      row.ChallengeID,
+				ChallengeName:    row.ChallengeName,
+				SubmittingTeamID: row.TeamID,
+				Value:            row.Value,
+				MatchedTeamIDs:   []uint{},
+				seen:             make(map[uint]bool),
 			}
 			groups[key] = group
 		}
@@ -312,7 +312,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) model.RetVal {
 		if tx.Statement.Context.Err() != nil {
 			return batch.Result(tx.Statement.Context)
 		}
-		key := fmt.Sprintf("%d|%d|%s", group.ContestChallengeID, group.SubmittingTeamID, group.Value)
+		key := fmt.Sprintf("%d|%d|%s", group.ChallengeID, group.SubmittingTeamID, group.Value)
 		if len(group.Submissions) == 0 {
 			batch.Skip(key, "no_submission")
 			continue
@@ -326,7 +326,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) model.RetVal {
 		}
 		challenge := group.ChallengeName
 		if challenge == "" {
-			challenge = "#" + strconv.FormatUint(uint64(group.ContestChallengeID), 10)
+			challenge = "#" + strconv.FormatUint(uint64(group.ChallengeID), 10)
 		}
 		cheat := model.Cheat{
 			ContestID: contest.ID,

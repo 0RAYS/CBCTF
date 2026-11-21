@@ -20,39 +20,38 @@ func Submit(
 	user model.User,
 	team model.Team,
 	contest model.Contest,
-	contestChallenge model.ContestChallenge,
+	challenge model.Challenge,
 	form dto.SubmitFlagForm,
 	ip string,
 ) (model.Submission, model.RetVal) {
 	submissionRepo := db.InitSubmissionRepo(tx)
-	if contestChallenge.Attempt != 0 {
-		if ret := submissionRepo.LockAttemptScope(team.ID, contestChallenge.ID); !ret.OK {
+	if challenge.Attempt != 0 {
+		if ret := submissionRepo.LockAttemptScope(team.ID, challenge.ID); !ret.OK {
 			return model.Submission{}, ret
 		}
-		attempts, ret := CountAttempts(tx, team, contestChallenge)
+		attempts, ret := CountAttempts(tx, team, challenge)
 		if !ret.OK {
 			return model.Submission{}, ret
 		}
-		if contestChallenge.Attempt <= attempts {
-			return model.Submission{}, model.FailRetVal(i18n.Model.Submission.NotAllowed, "Submission", fmt.Sprintf("team_id=%d,contest_challenge_id=%d,attempts=%d", team.ID, contestChallenge.ID, attempts), nil)
+		if challenge.Attempt <= attempts {
+			return model.Submission{}, model.FailRetVal(i18n.Model.Submission.NotAllowed, "Submission", fmt.Sprintf("team_id=%d,challenge_id=%d,attempts=%d", team.ID, challenge.ID, attempts), nil)
 		}
 	}
-	solved, contestFlag, teamFlag, ret := VerifyFlag(tx, team, contestChallenge, form.Flag)
+	solved, challengeFlag, teamFlag, ret := VerifyFlag(tx, team, challenge, form.Flag)
 	if !ret.OK {
 		return model.Submission{}, ret
 	}
 
 	options := model.Submission{
-		ContestChallengeID: contestChallenge.ID,
-		ContestID:          contest.ID,
-		ChallengeID:        contestChallenge.ChallengeID,
-		TeamID:             team.ID,
-		UserID:             user.ID,
-		ContestFlagID:      contestFlag.ID,
-		Value:              form.Flag,
-		Score:              team.Score,
-		Solved:             solved,
-		IP:                 ip,
+		ContestID:       contest.ID,
+		ChallengeID:     challenge.ID,
+		TeamID:          team.ID,
+		UserID:          user.ID,
+		ChallengeFlagID: challengeFlag.ID,
+		Value:           form.Flag,
+		Score:           team.Score,
+		Solved:          solved,
+		IP:              ip,
 	}
 
 	if !solved {
@@ -60,11 +59,11 @@ func Submit(
 		if !createRet.OK {
 			return model.Submission{}, createRet
 		}
-		prometheus.RecordFlagSubmission(contest.ID, string(contestChallenge.Type), false)
+		prometheus.RecordFlagSubmission(contest.ID, string(challenge.Type), false)
 		return submission, model.SuccessRetVal()
 	}
 
-	lockedContestFlag, ret := db.InitContestFlagRepo(tx).GetByIDForUpdate(contestFlag.ID)
+	lockedFlag, ret := db.InitChallengeFlagRepo(tx).GetByIDForUpdate(challengeFlag.ID)
 	if !ret.OK {
 		return model.Submission{}, ret
 	}
@@ -79,12 +78,12 @@ func Submit(
 		if !createRet.OK {
 			return model.Submission{}, createRet
 		}
-		prometheus.RecordFlagSubmission(contest.ID, string(contestChallenge.Type), false)
+		prometheus.RecordFlagSubmission(contest.ID, string(challenge.Type), false)
 		return submission, model.SuccessRetVal()
 	}
 
 	existingSolvers, ret := submissionRepo.Count(db.CountOptions{
-		Conditions: map[string]any{"contest_flag_id": lockedContestFlag.ID, "solved": true},
+		Conditions: map[string]any{"challenge_flag_id": lockedFlag.ID, "solved": true},
 	})
 	if !ret.OK {
 		return model.Submission{}, ret
@@ -111,12 +110,12 @@ func Submit(
 		return model.Submission{}, ret
 	}
 
-	solvers, currentScore, ret := CalcContestFlagState(tx, lockedContestFlag)
+	solvers, currentScore, ret := CalcChallengeFlagState(tx, lockedFlag)
 	if !ret.OK {
 		return model.Submission{}, ret
 	}
-	contestFlagRepo := db.InitContestFlagRepo(tx)
-	if ret = contestFlagRepo.Update(lockedContestFlag.ID, db.UpdateContestFlagOptions{
+	flagRepo := db.InitChallengeFlagRepo(tx)
+	if ret = flagRepo.Update(lockedFlag.ID, db.UpdateChallengeFlagOptions{
 		Solvers:      &solvers,
 		CurrentScore: &currentScore,
 		Last:         &submission.CreatedAt,
@@ -144,28 +143,28 @@ func Submit(
 		return model.Submission{}, ret
 	}
 
-	prometheus.RecordFlagSubmission(contest.ID, string(contestChallenge.Type), true)
+	prometheus.RecordFlagSubmission(contest.ID, string(challenge.Type), true)
 	return submission, model.SuccessRetVal()
 }
 
-func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (int64, model.RetVal) {
+func CountAttempts(tx *gorm.DB, team model.Team, challenge model.Challenge) (int64, model.RetVal) {
 	return db.InitSubmissionRepo(tx).Count(db.CountOptions{
-		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID, "solved": false},
+		Conditions: map[string]any{"team_id": team.ID, "challenge_id": challenge.ID, "solved": false},
 	})
 }
 
 // CheckIfSolved 只有当前生效（active）的 flag 才参与"是否解出"的判定。
-func CheckIfSolved(tx *gorm.DB, team model.Team, contestFlags []model.ContestFlag) (bool, model.RetVal) {
-	if len(contestFlags) == 0 {
+func CheckIfSolved(tx *gorm.DB, team model.Team, flags []model.ChallengeFlag) (bool, model.RetVal) {
+	if len(flags) == 0 {
 		return true, model.SuccessRetVal()
 	}
 	activeCount := 0
-	for _, flag := range contestFlags {
+	for _, flag := range flags {
 		if flag.Active {
 			activeCount++
 		}
 	}
-	solvedCount, ret := db.InitTeamFlagRepo(tx).CountSolvedForChallenge(team.ID, contestFlags[0].ContestChallengeID)
+	solvedCount, ret := db.InitTeamFlagRepo(tx).CountSolvedForChallenge(team.ID, flags[0].ChallengeID)
 	if !ret.OK {
 		return false, ret
 	}

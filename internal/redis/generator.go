@@ -21,8 +21,7 @@ const (
 	generatorLockKeyPrefix         = "generators:locked:"
 	GeneratorKeyTmpl               = generatorKeyPrefix + "%d"
 	GeneratorAttachmentLockKeyTmpl = generatorLockKeyPrefix + "%d"
-	generatorContestSetKeyTmpl     = "generators:contest:%d:challenge:%d"
-	generatorContestChallengeKey   = "generators:contest:%d:contest_challenge:%d"
+	generatorChallengeSetKey       = "generators:challenge:%d"
 	generatorLockTTL               = 5 * time.Minute
 )
 
@@ -95,7 +94,7 @@ func UnregisterGenerator(ctx context.Context, generator model.Generator) error {
 }
 
 func LockAvailableGenerator(ctx context.Context, target model.GeneratorTarget) (model.Generator, string, error) {
-	token := fmt.Sprintf("%d:%d:%d", target.ContestID, target.ContestChallengeID, time.Now().UnixNano())
+	token := fmt.Sprintf("%d:%d", target.ChallengeID, time.Now().UnixNano())
 	result, err := RDB.Eval(
 		ctx,
 		lockAvailableGeneratorScript,
@@ -106,7 +105,7 @@ func LockAvailableGenerator(ctx context.Context, target model.GeneratorTarget) (
 		generatorLockKeyPrefix,
 	).Result()
 	if err != nil {
-		log.Logger.Warningf("Failed to lock available generator: contest_id=%d challenge_id=%d contest_challenge_id=%d err=%v", target.ContestID, target.ChallengeID, target.ContestChallengeID, err)
+		log.Logger.Warningf("Failed to lock available generator: challenge_id=%d err=%v", target.ChallengeID, err)
 		return model.Generator{}, "", err
 	}
 
@@ -155,18 +154,7 @@ func UnlockGeneratorAttachment(ctx context.Context, generatorID uint, token stri
 	return nil
 }
 
-func generatorSetKey(contestID uint, contestValid bool, challengeID uint) string {
-	if !contestValid {
-		contestID = 0
-	}
-	return fmt.Sprintf(generatorContestSetKeyTmpl, contestID, challengeID)
-}
-
-// generatorTargetSetKey 返回生成器池的集合键。
-// 比赛题目使用独立命名空间，避免与题库题目的池互相干扰。
+// generatorTargetSetKey 返回生成器池的集合键，题目 id 全局唯一，池按题目划分。
 func generatorTargetSetKey(target model.GeneratorTarget) string {
-	if target.ContestChallengeID > 0 {
-		return fmt.Sprintf(generatorContestChallengeKey, target.ContestID, target.ContestChallengeID)
-	}
-	return generatorSetKey(target.ContestID, target.ContestID > 0, target.ChallengeID)
+	return fmt.Sprintf(generatorChallengeSetKey, target.ChallengeID)
 }

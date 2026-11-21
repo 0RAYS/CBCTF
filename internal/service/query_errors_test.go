@@ -31,27 +31,27 @@ func TestQueryFailuresDoNotBecomeBusinessStates(t *testing.T) {
 	if err := database.Callback().Query().Before("gorm:query").Register("test:query_failure", func(tx *gorm.DB) { _ = tx.AddError(errors.New("database unavailable")) }); err != nil {
 		t.Fatal(err)
 	}
-	flags := []model.ContestFlag{{ID: 1, ContestChallengeID: 1}}
+	flags := []model.ChallengeFlag{{ID: 1, ChallengeID: 1}}
 	for _, check := range []func() (bool, model.RetVal){
 		func() (bool, model.RetVal) { return CheckIfGenerated(database, model.Team{ID: 1}, flags) },
 		func() (bool, model.RetVal) { return CheckIfSolved(database, model.Team{ID: 1}, flags) },
 		func() (bool, model.RetVal) {
-			contestChallenge, ret := db.InitContestChallengeRepo(database).GetByRandID("missing")
-			return contestChallenge.ID == 1, ret
+			challenge, ret := db.InitChallengeRepo(database).GetByRandID("missing")
+			return challenge.ID == 1, ret
 		},
 	} {
 		if value, ret := check(); ret.OK || value {
 			t.Fatalf("query failure became successful state: %v %+v", value, ret)
 		}
 	}
-	if _, ret := CountAttempts(database, model.Team{ID: 1}, model.ContestChallenge{ID: 1}); ret.OK {
+	if _, ret := CountAttempts(database, model.Team{ID: 1}, model.Challenge{ID: 1}); ret.OK {
 		t.Fatal("query failure became zero attempts")
 	}
 	created := false
 	if err := database.Callback().Create().Before("gorm:create").Register("test:no_create", func(*gorm.DB) { created = true }); err != nil {
 		t.Fatal(err)
 	}
-	_, ret := CreateTeamFlag(database, model.Team{ID: 1}, model.Contest{}, model.ContestChallenge{ContestFlags: flags})
+	_, ret := CreateTeamFlag(database, model.Team{ID: 1}, model.Contest{}, model.Challenge{ChallengeFlags: flags})
 	if ret.OK || created {
 		t.Fatalf("failed lookup triggered flag creation: %+v", ret)
 	}
@@ -67,14 +67,14 @@ func TestFlagLookupFailureIsNotWrongSubmission(t *testing.T) {
 		switch value := tx.Statement.Dest.(type) {
 		case *int64:
 			*value = 1
-		case *[]model.ContestFlag:
-			*value = []model.ContestFlag{{ID: 1}}
+		case *[]model.ChallengeFlag:
+			*value = []model.ChallengeFlag{{ID: 1}}
 		}
 		tx.RowsAffected = 1
 	}); err != nil {
 		t.Fatal(err)
 	}
-	_, _, _, ret := VerifyFlag(database, model.Team{ID: 1}, model.ContestChallenge{ID: 1}, "flag{value}")
+	_, _, _, ret := VerifyFlag(database, model.Team{ID: 1}, model.Challenge{ID: 1}, "flag{value}")
 	if ret.OK || ret.Msg != i18n.Model.TeamFlag.GetError {
 		t.Fatalf("read failed but flag treated as mismatch: %+v", ret)
 	}

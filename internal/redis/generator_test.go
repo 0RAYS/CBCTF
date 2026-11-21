@@ -47,7 +47,7 @@ func TestGeneratorLeaseIntegration(t *testing.T) {
 	id := uint(time.Now().UnixNano())
 	generator := model.Generator{ID: id, ChallengeID: id, Status: model.RunningGeneratorStatus}
 	t.Cleanup(func() {
-		RDB.Del(context.Background(), fmt.Sprintf(GeneratorKeyTmpl, id), fmt.Sprintf(GeneratorAttachmentLockKeyTmpl, id), generatorSetKey(0, false, id))
+		RDB.Del(context.Background(), fmt.Sprintf(GeneratorKeyTmpl, id), fmt.Sprintf(GeneratorAttachmentLockKeyTmpl, id), generatorTargetSetKey(model.NewGeneratorTarget(id)))
 	})
 	if err := RegisterGenerator(ctx, generator); err != nil {
 		t.Fatal(err)

@@ -84,9 +84,9 @@ func GetImages(ctx *gin.Context) {
 	}))
 }
 
-func GetContestChallengeImage(ctx *gin.Context) {
+func GetContestImage(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	targetImages, ret := service.ListContestChallengeImages(db.DB.WithContext(ctx.Request.Context()), contest)
+	targetImages, ret := service.ListContestImages(db.DB.WithContext(ctx.Request.Context()), contest)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -117,10 +117,10 @@ func DetectImages(ctx *gin.Context) {
 	resp.JSON(ctx, ret)
 }
 
-// DetectContestChallengeImages starts a detection run for one contest.
-func DetectContestChallengeImages(ctx *gin.Context) {
+// DetectContestImages starts a detection run for one contest.
+func DetectContestImages(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	targetImages, ret := service.ListContestChallengeImages(db.DB.WithContext(ctx.Request.Context()), contest)
+	targetImages, ret := service.ListContestImages(db.DB.WithContext(ctx.Request.Context()), contest)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -138,7 +138,7 @@ func PullImages(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.PullImageEventType)
-	ret := service.PullContestChallengeImage(ctx.Request.Context(), form)
+	ret := service.PullContestImage(ctx.Request.Context(), form)
 	ctx.Set(middleware.CTXEventSuccessKey, ret.OK)
 	resp.JSON(ctx, ret)
 }

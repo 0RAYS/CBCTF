@@ -16,7 +16,7 @@ func GetTeam(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	tx := db.DB.WithContext(ctx.Request.Context())
 	view := service.BuildTeamView(tx, team)
-	solvedFlagL, contestFlagL, ret := service.GetTeamSolvedFlags(tx, middleware.GetContest(ctx), team)
+	solvedFlagL, allFlagL, ret := service.GetTeamSolvedFlags(tx, middleware.GetContest(ctx), team)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -26,7 +26,7 @@ func GetTeam(ctx *gin.Context) {
 	if !middleware.IsFullAccess(ctx) && middleware.GetContest(ctx).LeaderboardHidden {
 		delete(data, "rank")
 	}
-	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
+	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, allFlagL)
 	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 

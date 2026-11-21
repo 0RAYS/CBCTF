@@ -22,13 +22,27 @@ func updateFlagScoreTask() model.RetVal {
 	if !ret.OK {
 		return ret
 	}
-	ids := make([]uint, 0, len(contests))
+	contestIDs := make([]uint, 0, len(contests))
 	for _, contest := range contests {
 		if contest.EndedWithin(time.Now(), job.Schedule*2) {
-			ids = append(ids, contest.ID)
+			contestIDs = append(contestIDs, contest.ID)
 		}
 	}
-	flags, ret := db.InitContestFlagRepo(root).FindAll(db.GetOptions{Conditions: map[string]any{"contest_id": ids}})
+	challengeIDL := make([]uint, 0)
+	if len(contestIDs) > 0 {
+		challenges, _, ret := db.InitChallengeRepo(root).List(-1, -1, db.GetOptions{
+			Conditions: map[string]any{"contest_id": contestIDs},
+		})
+		if !ret.OK {
+			return ret
+		}
+		for _, challenge := range challenges {
+			challengeIDL = append(challengeIDL, challenge.ID)
+		}
+	}
+	flags, _, ret := db.InitChallengeFlagRepo(root).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challengeIDL},
+	})
 	if !ret.OK {
 		return ret
 	}
@@ -39,19 +53,19 @@ func updateFlagScoreTask() model.RetVal {
 		}
 		ret = db.WithTransactionDB(root, func(tx *db.Tx) model.RetVal {
 			// Share the database row lock with flag submission across replicas.
-			repo := db.InitContestFlagRepo(tx)
+			repo := db.InitChallengeFlagRepo(tx)
 			current, ret := repo.GetByIDForUpdate(flag.ID)
 			if !ret.OK {
 				return ret
 			}
-			solvers, score, ret := service.CalcContestFlagState(tx, current)
+			solvers, score, ret := service.CalcChallengeFlagState(tx, current)
 			if !ret.OK {
 				return ret
 			}
 			if solvers == current.Solvers && score == current.CurrentScore {
 				return model.SuccessRetVal()
 			}
-			return repo.Update(current.ID, db.UpdateContestFlagOptions{CurrentScore: &score, Solvers: &solvers})
+			return repo.Update(current.ID, db.UpdateChallengeFlagOptions{CurrentScore: &score, Solvers: &solvers})
 		})
 		key := fmt.Sprint(flag.ID)
 		if ret.OK {
