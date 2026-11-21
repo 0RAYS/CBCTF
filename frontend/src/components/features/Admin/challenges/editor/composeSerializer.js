@@ -1,4 +1,4 @@
-import { createGuideCloudConfig } from './guideModel.js';
+import { createGuideCloudConfig } from '@/components/features/Admin/challenges/editor/guideModel.js';
 
 const yamlQuote = (value) =>
   `"${String(value ?? '')

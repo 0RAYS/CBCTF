@@ -1,4 +1,4 @@
-import { DEFAULT_CONTEST_IMAGE, getContestStatus, getContestTimeRange } from '../../../../config/contest.js';
+import { DEFAULT_CONTEST_IMAGE, getContestStatus, getContestTimeRange } from '@/config/contest.js';
 
 export function transformContestData(apiData) {
   if (!apiData) return null;

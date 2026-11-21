@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../common';
+import { Button } from '@/components/common';
 
 const emptyPasswords = { currentPassword: '', newPassword: '', confirmPassword: '' };
 

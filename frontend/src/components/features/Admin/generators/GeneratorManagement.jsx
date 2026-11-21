@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconBan, IconCheck, IconPlayerPlay, IconRefresh, IconTrash, IconX } from '@tabler/icons-react';
-import { Button, Pagination, StatCard } from '../../../common';
-import AutoRefreshControl from '../../../common/AutoRefreshControl';
-import GeneratorList from './GeneratorList';
-import GeneratorStartDialog from './GeneratorStartDialog';
-import GeneratorLogDialog from './GeneratorLogDialog';
-import useGeneratorSession from './useGeneratorSession.js';
-import { GENERATOR_PAGE_SIZE, getGeneratorPageStats } from './generatorUtils.js';
-import BatchResultPanel from '../batch/BatchResultPanel.jsx';
+import { Button, Pagination, StatCard } from '@/components/common';
+import AutoRefreshControl from '@/components/common/AutoRefreshControl';
+import GeneratorList from '@/components/features/Admin/generators/GeneratorList';
+import GeneratorStartDialog from '@/components/features/Admin/generators/GeneratorStartDialog';
+import GeneratorLogDialog from '@/components/features/Admin/generators/GeneratorLogDialog';
+import useGeneratorSession from '@/components/features/Admin/generators/useGeneratorSession.js';
+import { GENERATOR_PAGE_SIZE, getGeneratorPageStats } from '@/components/features/Admin/generators/generatorUtils.js';
+import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
 
 export default function GeneratorManagement({ api }) {
   const { t } = useTranslation();

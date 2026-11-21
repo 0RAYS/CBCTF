@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Input, Select } from '../../../common';
-import WebhookHeaders from './WebhookHeaders';
+import { Input, Select } from '@/components/common';
+import WebhookHeaders from '@/components/features/Admin/webhook/WebhookHeaders';
 
 export default function WebhookFields({ form, setForm, mode, events }) {
   const { t } = useTranslation();

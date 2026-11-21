@@ -1,7 +1,7 @@
 import { IconDatabase } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { ConfigSection } from '../fields/ConfigSection';
-import { ConfigField } from '../fields/ConfigField';
+import { ConfigSection } from '@/components/features/Admin/SystemConfig/fields/ConfigSection';
+import { ConfigField } from '@/components/features/Admin/SystemConfig/fields/ConfigField';
 
 export function DatabaseConfigSection({ config }) {
   const { t } = useTranslation();

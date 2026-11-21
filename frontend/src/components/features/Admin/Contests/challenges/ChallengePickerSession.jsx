@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getNotInContestChallengeList } from '../../../../../api/admin/challenge';
-import { addContestChallenge } from '../../../../../api/admin/contest';
-import { toast } from '../../../../../utils/toast';
-import ChallengePickerDialog from './ChallengePickerDialog';
-import { challengeQuery, toggleChallengeSelection } from './challengeData.js';
-import useBatchAction from '../../batch/useBatchAction.js';
-import { remainingBatchIds } from '../../batch/batchModel.js';
+import { getNotInContestChallengeList } from '@/api/admin/challenge';
+import { addContestChallenge } from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
+import ChallengePickerDialog from '@/components/features/Admin/Contests/challenges/ChallengePickerDialog';
+import {
+  challengeQuery,
+  toggleChallengeSelection,
+} from '@/components/features/Admin/Contests/challenges/challengeData.js';
+import useBatchAction from '@/components/features/Admin/batch/useBatchAction.js';
+import { remainingBatchIds } from '@/components/features/Admin/batch/batchModel.js';
 
 export default function ChallengePickerSession({ contestId, categories, onClose, onAdded }) {
   const { t } = useTranslation();

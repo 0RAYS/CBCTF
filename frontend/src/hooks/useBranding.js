@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_BRANDING, mergeBranding, resolveLocalizedText } from '../config/branding';
+import { DEFAULT_BRANDING, mergeBranding, resolveLocalizedText } from '@/config/branding';
 
 export function useBranding() {
   const { i18n, t } = useTranslation();

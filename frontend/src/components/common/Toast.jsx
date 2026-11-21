@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { toastVariants } from '../../config/motion';
+import { toastVariants } from '@/config/motion';
 
 const TOAST_CONFIG = {
   primary: {

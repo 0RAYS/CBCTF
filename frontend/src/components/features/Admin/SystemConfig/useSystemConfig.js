@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useImmerState } from '../../../../hooks/useImmerState';
-import { normalizeConfig } from './configNormalizer';
-import { buildPayload } from './configPayloadBuilder';
-import { restartSystem, updateSystemConfig, uploadGeoCityDB } from '../../../../api/admin/system';
-import { toast } from '../../../../utils/toast';
+import { useImmerState } from '@/hooks/useImmerState';
+import { normalizeConfig } from '@/components/features/Admin/SystemConfig/configNormalizer';
+import { buildPayload } from '@/components/features/Admin/SystemConfig/configPayloadBuilder';
+import { restartSystem, updateSystemConfig, uploadGeoCityDB } from '@/api/admin/system';
+import { toast } from '@/utils/toast';
 
 /** Hook for managing system configuration. */
 export function useSystemConfig(initialConfig, t) {

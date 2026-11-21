@@ -1,7 +1,7 @@
 /** 管理员仪表盘组件 */
 
 import { motion } from 'motion/react';
-import { Card, StatCard } from '../../common';
+import { Card, StatCard } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 
 function AdminDashboard({ status, chartContent, extraContent }) {

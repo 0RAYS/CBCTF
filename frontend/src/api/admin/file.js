@@ -1,4 +1,4 @@
-import request from '../request';
+import request from '@/api/request';
 
 export function getFileList({ limit = 12, offset = 0, type }) {
   return request({

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Input, List, Modal, ModalFooter, Pagination, Textarea } from '../../../common';
+import { Button, Input, List, Modal, ModalFooter, Pagination, Textarea } from '@/components/common';
 
 function AdminNotice({
   notices = [],

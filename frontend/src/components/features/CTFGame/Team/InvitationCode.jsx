@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../../common';
+import { Button } from '@/components/common';
 
 export default function InvitationCode({ code, isLeader, onCopyCode, onRefreshCode }) {
   const { t } = useTranslation();

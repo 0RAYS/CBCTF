@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getContestCheat } from '../../../../api/admin/contest';
-import { toast } from '../../../../utils/toast';
-import { Button, Modal, Spinner } from '../../../common';
+import { getContestCheat } from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
+import { Button, Modal, Spinner } from '@/components/common';
 import {
   CheatEvidenceActors,
   CheatEvidenceSummary,
@@ -10,10 +10,10 @@ import {
   CheatModels,
   CheatStatus,
   CheatVerdict,
-} from './CheatEvidence';
-import { formatDateTime } from './cheatFormat';
-import CheatEvidencePanel from './CheatEvidencePanels';
-import CheatEvidenceTimeline from './CheatEvidenceTimeline';
+} from '@/components/features/Admin/cheats/CheatEvidence';
+import { formatDateTime } from '@/components/features/Admin/cheats/cheatFormat';
+import CheatEvidencePanel from '@/components/features/Admin/cheats/CheatEvidencePanels';
+import CheatEvidenceTimeline from '@/components/features/Admin/cheats/CheatEvidenceTimeline';
 
 export default function CheatEvidenceDialog({ contestId, cheat, onClose, openUserDetail, openTeamDetail }) {
   const { t, i18n } = useTranslation();

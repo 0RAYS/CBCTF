@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Tabs } from '../../components/common';
-import TaskFilters from '../../components/features/Admin/tasks/TaskFilters';
-import TaskTable from '../../components/features/Admin/tasks/TaskTable';
-import useHistoryTasks from '../../components/features/Admin/tasks/useHistoryTasks';
-import useLiveTasks from '../../components/features/Admin/tasks/useLiveTasks';
+import { Tabs } from '@/components/common';
+import TaskFilters from '@/components/features/Admin/tasks/TaskFilters';
+import TaskTable from '@/components/features/Admin/tasks/TaskTable';
+import useHistoryTasks from '@/components/features/Admin/tasks/useHistoryTasks';
+import useLiveTasks from '@/components/features/Admin/tasks/useLiveTasks';
 
 export default function TasksPage() {
   const { t } = useTranslation();

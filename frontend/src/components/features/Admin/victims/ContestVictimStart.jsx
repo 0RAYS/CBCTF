@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { IconClockPlay, IconPlayerPlay, IconUsers } from '@tabler/icons-react';
-import { Button } from '../../../common';
-import { getContestTeams, startContestVictims } from '../../../../api/admin/contest';
-import { toast } from '../../../../utils/toast';
-import { buildVictimStartPayload, estimateVictimTeams } from './victimPayload';
-import useVictimCandidates from './useVictimCandidates';
-import VictimCandidatePicker from './VictimCandidatePicker';
-import { VictimStartDialog } from './VictimStartDialogs';
-import useBatchAction from '../batch/useBatchAction.js';
-import BatchResultPanel from '../batch/BatchResultPanel.jsx';
-import { remainingVictimChallenges } from '../batch/batchModel.js';
+import { Button } from '@/components/common';
+import { getContestTeams, startContestVictims } from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
+import { buildVictimStartPayload, estimateVictimTeams } from '@/components/features/Admin/victims/victimPayload';
+import useVictimCandidates from '@/components/features/Admin/victims/useVictimCandidates';
+import VictimCandidatePicker from '@/components/features/Admin/victims/VictimCandidatePicker';
+import { VictimStartDialog } from '@/components/features/Admin/victims/VictimStartDialogs';
+import useBatchAction from '@/components/features/Admin/batch/useBatchAction.js';
+import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
+import { remainingVictimChallenges } from '@/components/features/Admin/batch/batchModel.js';
 
 export default function ContestVictimStart({ contestId, onStarted }) {
   const { t } = useTranslation();

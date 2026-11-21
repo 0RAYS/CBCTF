@@ -5,12 +5,12 @@ import {
     successfulAssignmentIds,
     toggleVisibleCandidates,
     userUpdatePayload,
-} from '../src/components/features/Admin/rbac/payloads.js';
+} from '@/components/features/Admin/rbac/payloads.js';
 import {
     cheatListParams,
     cheatReviewForm,
     cheatUpdatePayload,
-} from '../src/components/features/Admin/cheats/payloads.js';
+} from '@/components/features/Admin/cheats/payloads.js';
 
 test('user update omits an empty password without mutating the form or dropping false flags', () => {
   const form = Object.freeze({ name: 'user', password: '', hidden: false, verified: false, banned: false });

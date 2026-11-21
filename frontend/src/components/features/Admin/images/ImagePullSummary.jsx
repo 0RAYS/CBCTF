@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { IconServer, IconStack2 } from '@tabler/icons-react';
-import { Card } from '../../../common';
+import { Card } from '@/components/common';
 
 export default function ImagePullSummary({
   scopeKey,

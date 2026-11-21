@@ -15,8 +15,8 @@ import {
   Spinner,
   StatusTag,
   Textarea,
-} from '../../../../common';
-import Checkbox from '../../../../common/Checkbox';
+} from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
 
 function AdminTeams({
   teams = [],

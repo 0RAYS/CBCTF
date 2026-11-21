@@ -7,8 +7,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createInstance } from 'i18next';
 import { Trans } from 'react-i18next';
 import { auditMessages } from '../scripts/i18n-audit.mjs';
-import en from '../src/i18n/locales/en.json' with { type: 'json' };
-import zh from '../src/i18n/locales/zh-CN.json' with { type: 'json' };
+import en from '@/i18n/locales/en.json' with { type: 'json' };
+import zh from '@/i18n/locales/zh-CN.json' with { type: 'json' };
 
 test('translation audit checks JSX, conditional keys, aliases and interpolation without counting comments', () => {
   const report = auditMessages(

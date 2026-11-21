@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import IpLookupDialog from './IpLookupDialog';
-import useIpLookup from './useIpLookup';
+import IpLookupDialog from '@/components/features/Admin/network/IpLookupDialog';
+import useIpLookup from '@/components/features/Admin/network/useIpLookup';
 
 export default function IpLookup({ ip, className = '' }) {
   const { t } = useTranslation();

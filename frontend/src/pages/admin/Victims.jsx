@@ -5,10 +5,10 @@ import {
   getVictims,
   getVictimTraffic,
   stopVictims,
-} from '../../api/admin/victims';
-import { getUserList } from '../../api/admin/user';
-import { getChallengeList } from '../../api/admin/challenge';
-import VictimInventory from '../../components/features/Admin/victims/VictimInventory';
+} from '@/api/admin/victims';
+import { getUserList } from '@/api/admin/user';
+import { getChallengeList } from '@/api/admin/challenge';
+import VictimInventory from '@/components/features/Admin/victims/VictimInventory';
 
 const scope = {
   translationKey: 'admin.victims',

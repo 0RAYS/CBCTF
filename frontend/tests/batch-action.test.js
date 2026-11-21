@@ -13,7 +13,7 @@ const loader = registerHooks({
     return nextResolve(specifier, context);
   },
 });
-const { default: useBatchAction } = await import('../src/components/features/Admin/batch/useBatchAction.js');
+const { default: useBatchAction } = await import('@/components/features/Admin/batch/useBatchAction.js');
 loader.deregister();
 
 const batch = {

@@ -1,9 +1,9 @@
 import { motion } from 'motion/react';
 import { IconEdit, IconFlask, IconPlus, IconSearch, IconTrash, IconUpload } from '@tabler/icons-react';
-import { Button, Chip, Input, Pagination, Spinner } from '../../../components/common';
-import { List } from '../../common';
+import { Button, Chip, Input, Pagination, Spinner } from '@/components/common';
+import { List } from '@/components/common';
 import { useTranslation } from 'react-i18next';
-import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
+import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '@/config/challengeChips';
 
 /** 题目管理组件 */
 function AdminChallenge({

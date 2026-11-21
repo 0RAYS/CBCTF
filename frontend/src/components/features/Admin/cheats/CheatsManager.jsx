@@ -2,17 +2,17 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { IconFilter, IconShieldCheck, IconTrash } from '@tabler/icons-react';
-import { getContestCheats } from '../../../../api/admin/contest';
-import { toast } from '../../../../utils/toast';
-import { Button, StatCard } from '../../../common';
-import { useUserDetailDialog } from '../details/useUserDetailDialog.jsx';
-import { useTeamDetailDialog } from '../details/useTeamDetailDialog.jsx';
-import CheatEvidenceDialog from './CheatEvidenceDialog';
-import CheatReviewDialog from './CheatReviewDialog';
-import CheatActionDialog from './CheatActionDialog';
-import CheatsTable from './CheatsTable';
-import { cheatListParams } from './payloads';
-import BatchResultPanel from '../batch/BatchResultPanel.jsx';
+import { getContestCheats } from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
+import { Button, StatCard } from '@/components/common';
+import { useUserDetailDialog } from '@/components/features/Admin/details/useUserDetailDialog.jsx';
+import { useTeamDetailDialog } from '@/components/features/Admin/details/useTeamDetailDialog.jsx';
+import CheatEvidenceDialog from '@/components/features/Admin/cheats/CheatEvidenceDialog';
+import CheatReviewDialog from '@/components/features/Admin/cheats/CheatReviewDialog';
+import CheatActionDialog from '@/components/features/Admin/cheats/CheatActionDialog';
+import CheatsTable from '@/components/features/Admin/cheats/CheatsTable';
+import { cheatListParams } from '@/components/features/Admin/cheats/payloads';
+import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
 
 export default function CheatsManager({ contestId }) {
   const { t } = useTranslation();

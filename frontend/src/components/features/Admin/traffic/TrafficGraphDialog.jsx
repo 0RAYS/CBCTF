@@ -1,19 +1,19 @@
 import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal } from '../../../common';
-import TrafficCanvas from './TrafficCanvas.jsx';
-import TrafficControls from './TrafficControls.jsx';
-import TrafficHeader from './TrafficHeader.jsx';
-import TrafficRankings from './TrafficRankings.jsx';
-import TrafficSelectionPanel from './TrafficSelectionPanel.jsx';
-import TrafficSummary from './TrafficSummary.jsx';
-import TrafficTimeline from './TrafficTimeline.jsx';
-import { filterTraffic, resolveTrafficSelection } from './trafficPresentation.js';
-import useTrafficPlayback from './useTrafficPlayback.js';
-import useTrafficSession from './useTrafficSession.js';
-import useTrafficAnalysis from './useTrafficAnalysis.js';
-import TrafficAnalysisPanel from './TrafficAnalysisPanel.jsx';
-import TrafficSourceIssues from './TrafficSourceIssues.jsx';
+import { Modal } from '@/components/common';
+import TrafficCanvas from '@/components/features/Admin/traffic/TrafficCanvas.jsx';
+import TrafficControls from '@/components/features/Admin/traffic/TrafficControls.jsx';
+import TrafficHeader from '@/components/features/Admin/traffic/TrafficHeader.jsx';
+import TrafficRankings from '@/components/features/Admin/traffic/TrafficRankings.jsx';
+import TrafficSelectionPanel from '@/components/features/Admin/traffic/TrafficSelectionPanel.jsx';
+import TrafficSummary from '@/components/features/Admin/traffic/TrafficSummary.jsx';
+import TrafficTimeline from '@/components/features/Admin/traffic/TrafficTimeline.jsx';
+import { filterTraffic, resolveTrafficSelection } from '@/components/features/Admin/traffic/trafficPresentation.js';
+import useTrafficPlayback from '@/components/features/Admin/traffic/useTrafficPlayback.js';
+import useTrafficSession from '@/components/features/Admin/traffic/useTrafficSession.js';
+import useTrafficAnalysis from '@/components/features/Admin/traffic/useTrafficAnalysis.js';
+import TrafficAnalysisPanel from '@/components/features/Admin/traffic/TrafficAnalysisPanel.jsx';
+import TrafficSourceIssues from '@/components/features/Admin/traffic/TrafficSourceIssues.jsx';
 
 export default function TrafficGraphDialog({ isOpen, onClose, container, contestId, teamId, fetchTraffic }) {
   const { t } = useTranslation();

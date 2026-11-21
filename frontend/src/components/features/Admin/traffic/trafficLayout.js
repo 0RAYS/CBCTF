@@ -1,4 +1,4 @@
-import { clamp, edgeTone, formatBytes } from './trafficPresentation.js';
+import { clamp, edgeTone, formatBytes } from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 export const VIEWBOX_WIDTH = 1120;
 export const VIEWBOX_HEIGHT = 580;

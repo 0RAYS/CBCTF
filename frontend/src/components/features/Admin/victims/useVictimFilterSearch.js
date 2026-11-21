@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '../../../../utils/toast';
+import { toast } from '@/utils/toast';
 
 export default function useVictimFilterSearch(scope) {
   const { t } = useTranslation();

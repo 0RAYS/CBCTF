@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IconCopy, IconWriting } from '@tabler/icons-react';
-import { Button, Card, Chip, EmptyState, Textarea } from '../../../common';
-import { parseManualImages } from './imageModel';
+import { Button, Card, Chip, EmptyState, Textarea } from '@/components/common';
+import { parseManualImages } from '@/components/features/Admin/images/imageModel';
 
 export default function ManualImagePull({
   scopeKey,

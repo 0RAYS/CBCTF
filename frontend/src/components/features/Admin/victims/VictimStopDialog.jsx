@@ -1,6 +1,6 @@
 import { IconBan } from '@tabler/icons-react';
-import { Button, Modal } from '../../../common';
-import BatchResultPanel from '../batch/BatchResultPanel.jsx';
+import { Button, Modal } from '@/components/common';
+import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
 
 export default function VictimStopDialog({
   t,

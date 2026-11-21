@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IconDownload } from '@tabler/icons-react';
-import { Button, Card, List, Pagination, Spinner } from '../../../../common';
-import { formatFileSize, TEAM_DETAIL_PAGE_SIZE } from './teamDetailData.js';
+import { Button, Card, List, Pagination, Spinner } from '@/components/common';
+import { formatFileSize, TEAM_DETAIL_PAGE_SIZE } from '@/components/features/Admin/Contests/teams/teamDetailData.js';
 
 export default function WriteupsPanel({
   writeups = [],

@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '../../utils/toast';
-import GameList from '../../components/features/Games/GameList';
-import TeamJoinModal from '../../components/features/CTFGame/Team/TeamJoinModal';
-import { getContestList } from '../../api/contest';
+import { toast } from '@/utils/toast';
+import GameList from '@/components/features/Games/GameList';
+import TeamJoinModal from '@/components/features/CTFGame/Team/TeamJoinModal';
+import { getContestList } from '@/api/contest';
 import { useSelector } from 'react-redux';
-import { createTeam, getTeamInfo, joinTeam } from '../../api/game/team';
-import Loading from '../../components/common/Loading';
-import EmptyState from '../../components/common/EmptyState';
-import Button from '../../components/common/Button';
+import { createTeam, getTeamInfo, joinTeam } from '@/api/game/team';
+import Loading from '@/components/common/Loading';
+import EmptyState from '@/components/common/EmptyState';
+import Button from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_CONTEST_IMAGE, getContestStatus, getContestTimeRange } from '../../config/contest';
+import { DEFAULT_CONTEST_IMAGE, getContestStatus, getContestTimeRange } from '@/config/contest';
 
 const transformContestData = (contests) => {
   return contests.map((contest) => {

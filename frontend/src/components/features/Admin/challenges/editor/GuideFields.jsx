@@ -1,6 +1,10 @@
 import { IconPlus, IconTrash } from '@tabler/icons-react';
-import Button from '../../../../common/Button';
-import { inputBaseClass, selectClass, textareaClass } from './editorStyles.js';
+import Button from '@/components/common/Button';
+import {
+  inputBaseClass,
+  selectClass,
+  textareaClass,
+} from '@/components/features/Admin/challenges/editor/editorStyles.js';
 
 export function GuideListHeader({ title, addLabel, onAdd, disabled = false }) {
   return (

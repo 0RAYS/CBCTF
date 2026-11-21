@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getAllWebhookHistory, getWebhookHistory } from '../../../../api/admin/webhook';
-import { toast } from '../../../../utils/toast';
-import AdminWebhookHistory from './AdminWebhookHistory';
-import WebhookHistoryDialog from './WebhookHistoryDialog';
+import { getAllWebhookHistory, getWebhookHistory } from '@/api/admin/webhook';
+import { toast } from '@/utils/toast';
+import AdminWebhookHistory from '@/components/features/Admin/webhook/AdminWebhookHistory';
+import WebhookHistoryDialog from '@/components/features/Admin/webhook/WebhookHistoryDialog';
 
 export default function WebhookHistory({ target }) {
   const { t } = useTranslation();

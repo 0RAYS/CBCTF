@@ -1,11 +1,11 @@
 import { IconBan, IconDownload, IconFileText, IconGraph, IconRefresh, IconTable, IconTrash } from '@tabler/icons-react';
 import { motion } from 'motion/react';
-import { Button, Card, EmptyState, Pagination } from '../../../common';
-import AutoRefreshControl from '../../../common/AutoRefreshControl';
-import Loading from '../../../common/Loading';
-import useContextMenu from '../../../common/useContextMenu';
-import RowActions from '../../../common/RowActions';
-import TruncatedText from '../../../common/TruncatedText';
+import { Button, Card, EmptyState, Pagination } from '@/components/common';
+import AutoRefreshControl from '@/components/common/AutoRefreshControl';
+import Loading from '@/components/common/Loading';
+import useContextMenu from '@/components/common/useContextMenu';
+import RowActions from '@/components/common/RowActions';
+import TruncatedText from '@/components/common/TruncatedText';
 
 export function VictimTable({
   t,

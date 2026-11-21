@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { getOAuthProviders } from '../../../api/oauth';
-import { toast } from '../../../utils/toast';
+import { getOAuthProviders } from '@/api/oauth';
+import { toast } from '@/utils/toast';
 import { useTranslation } from 'react-i18next';
 
 function OAuthLogin() {

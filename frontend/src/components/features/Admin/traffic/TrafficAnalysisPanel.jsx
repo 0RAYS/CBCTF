@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card } from '../../../common';
-import Checkbox from '../../../common/Checkbox.jsx';
-import TrafficSourceIssues from './TrafficSourceIssues.jsx';
-import { ANALYSIS_TABS, evidenceOffset, filterAnalysisRows, victimOverlaps } from './trafficAnalysisModel.js';
-import { formatBytes } from './trafficPresentation.js';
+import { Button, Card } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox.jsx';
+import TrafficSourceIssues from '@/components/features/Admin/traffic/TrafficSourceIssues.jsx';
+import {
+  ANALYSIS_TABS,
+  evidenceOffset,
+  filterAnalysisRows,
+  victimOverlaps,
+} from '@/components/features/Admin/traffic/trafficAnalysisModel.js';
+import { formatBytes } from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 const PREFIX = 'admin.contests.trafficGraph.analysis';
 const PAGE_SIZE = 20;

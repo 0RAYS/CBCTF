@@ -1,4 +1,4 @@
-import request from '../request';
+import request from '@/api/request';
 
 export const getPermissionList = (params = { limit: 50, offset: 0 }) => {
   return request({

@@ -1,4 +1,4 @@
-import { Avatar, Button, Input, List, Pagination, Spinner, StatusTag } from '../../../common';
+import { Avatar, Button, Input, List, Pagination, Spinner, StatusTag } from '@/components/common';
 import { IconEdit, IconEye, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 

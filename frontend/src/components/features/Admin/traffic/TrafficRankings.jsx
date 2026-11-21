@@ -1,6 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { Card } from '../../../common';
-import { formatBytes, formatDurationMs, formatProcessLabel } from './trafficPresentation.js';
+import { Card } from '@/components/common';
+import {
+  formatBytes,
+  formatDurationMs,
+  formatProcessLabel,
+} from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 export default function TrafficRankings({ topology, playback }) {
   const { t, i18n } = useTranslation();

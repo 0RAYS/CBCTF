@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getAllEmailHistory, getEmailHistory } from '../../../../api/admin/email';
-import { toast } from '../../../../utils/toast';
-import AdminEmailHistory from './AdminEmailHistory';
-import EmailHistoryDialog from './EmailHistoryDialog';
+import { getAllEmailHistory, getEmailHistory } from '@/api/admin/email';
+import { toast } from '@/utils/toast';
+import AdminEmailHistory from '@/components/features/Admin/smtp/AdminEmailHistory';
+import EmailHistoryDialog from '@/components/features/Admin/smtp/EmailHistoryDialog';
 
 export default function EmailHistory({ target }) {
   const { t } = useTranslation();

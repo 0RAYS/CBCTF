@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { IconRefresh, IconSearch, IconTimeline, IconTopologyStar3 } from '@tabler/icons-react';
-import { Button, Card, Input, Select } from '../../../common';
-import AutoRefreshControl from '../../../common/AutoRefreshControl';
-import { TASK_STATUSES } from './taskModel';
+import { Button, Card, Input, Select } from '@/components/common';
+import AutoRefreshControl from '@/components/common/AutoRefreshControl';
+import { TASK_STATUSES } from '@/components/features/Admin/tasks/taskModel';
 
 export default function TaskFilters({ mode, state }) {
   const { t } = useTranslation();

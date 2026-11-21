@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Chip } from '../../../common';
-import { ellipsis, resolveVisibleInlineItems } from './trafficPresentation.js';
+import { Chip } from '@/components/common';
+import { ellipsis, resolveVisibleInlineItems } from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 export default function TrafficHeader({ topology, container }) {
   const { t } = useTranslation();

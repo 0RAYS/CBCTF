@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import ModalFooter from './ModalFooter';
+import ModalFooter from '@/components/common/ModalFooter';
 
 /** Standard footer for CRUD modals with cancel and action buttons. */
 function CRUDModalFooter({ mode, onCancel, onSubmit, labels = {}, submitDisabled = false, submitLoading = false }) {

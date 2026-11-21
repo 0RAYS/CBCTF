@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getWebhookList } from '../../api/admin/webhook';
-import { Tabs } from '../../components/common';
-import AdminWebhook from '../../components/features/Admin/webhook/AdminWebhook';
-import WebhookDialog from '../../components/features/Admin/webhook/WebhookDialog';
-import WebhookHistory from '../../components/features/Admin/webhook/WebhookHistory';
-import { toast } from '../../utils/toast';
+import { getWebhookList } from '@/api/admin/webhook';
+import { Tabs } from '@/components/common';
+import AdminWebhook from '@/components/features/Admin/webhook/AdminWebhook';
+import WebhookDialog from '@/components/features/Admin/webhook/WebhookDialog';
+import WebhookHistory from '@/components/features/Admin/webhook/WebhookHistory';
+import { toast } from '@/utils/toast';
 
 export default function WebhookManagement() {
   const { t } = useTranslation();

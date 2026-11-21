@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createWebhook, deleteWebhook, getEvents, updateWebhook } from '../../../../api/admin/webhook';
-import { toast } from '../../../../utils/toast';
-import { Button, Modal } from '../../../common';
-import { buildWebhookPayload, webhookForm } from './payload';
-import WebhookFields from './WebhookFields';
+import { createWebhook, deleteWebhook, getEvents, updateWebhook } from '@/api/admin/webhook';
+import { toast } from '@/utils/toast';
+import { Button, Modal } from '@/components/common';
+import { buildWebhookPayload, webhookForm } from '@/components/features/Admin/webhook/payload';
+import WebhookFields from '@/components/features/Admin/webhook/WebhookFields';
 
 export default function WebhookDialog({ mode, webhook, onClose, onSaved }) {
   const { t } = useTranslation();

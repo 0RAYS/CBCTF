@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { toast } from '../../../../utils/toast';
-import { createUser, deleteUser, getUserList, updateUser, updateUserPicture } from '../../../../api/admin/user';
-import AdminUsers from './AdminUsers';
-import UserForm from './UserForm';
-import { lastAvailablePage, userUpdatePayload } from './payloads';
-import { Modal } from '../../../common';
-import CRUDModalFooter from '../../../common/CRUDModalFooter';
-import { useCRUDModal, useDebounce } from '../../../../hooks';
-import { useUserDetailDialog } from '../details/useUserDetailDialog.jsx';
+import { toast } from '@/utils/toast';
+import { createUser, deleteUser, getUserList, updateUser, updateUserPicture } from '@/api/admin/user';
+import AdminUsers from '@/components/features/Admin/rbac/AdminUsers';
+import UserForm from '@/components/features/Admin/rbac/UserForm';
+import { lastAvailablePage, userUpdatePayload } from '@/components/features/Admin/rbac/payloads';
+import { Modal } from '@/components/common';
+import CRUDModalFooter from '@/components/common/CRUDModalFooter';
+import { useCRUDModal, useDebounce } from '@/hooks';
+import { useUserDetailDialog } from '@/components/features/Admin/details/useUserDetailDialog.jsx';
 import { useTranslation } from 'react-i18next';
 
 function UsersManager() {

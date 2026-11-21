@@ -1,4 +1,4 @@
-import request from '../request';
+import request from '@/api/request';
 
 export const getOAuthProviderList = (params = { limit: 20, offset: 0 }) => {
   return request({

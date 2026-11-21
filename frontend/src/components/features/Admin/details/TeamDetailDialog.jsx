@@ -1,9 +1,9 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Button, Card, EmptyState, Modal } from '../../../common';
-import AdminContestTeamDetail from '../Contests/teams/TeamDetailPanels';
-import { useUserDetailDialog } from './useUserDetailDialog';
-import TruncatedText from '../../../common/TruncatedText';
+import { Avatar, Button, Card, EmptyState, Modal } from '@/components/common';
+import AdminContestTeamDetail from '@/components/features/Admin/Contests/teams/TeamDetailPanels';
+import { useUserDetailDialog } from '@/components/features/Admin/details/useUserDetailDialog';
+import TruncatedText from '@/components/common/TruncatedText';
 
 const TABS = ['info', 'flags', 'submissions', 'writeups', 'containers'];
 

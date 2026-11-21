@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Button, Input } from '../../components/common';
-import { resetPassword } from '../../api/auth';
+import { Button, Input } from '@/components/common';
+import { resetPassword } from '@/api/auth';
 
 function ResetPassword() {
   const { t } = useTranslation();

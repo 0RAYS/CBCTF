@@ -17,16 +17,13 @@ const loader = registerHooks({
   resolve(specifier, context, nextResolve) {
     if (context.parentURL === pageURL) {
       if (
-        ['react', 'react-i18next', '@tabler/icons-react', '../../utils/toast', '../../components/common'].includes(
-          specifier
-        ) ||
+        ['react', 'react-i18next', '@tabler/icons-react', '@/utils/toast', '@/components/common'].includes(specifier) ||
         /\/(useIpLookup|IpLookupDialog)$/.test(specifier)
       ) {
         return { url: helperURL, shortCircuit: true };
       }
-      if (specifier.startsWith('.')) return nextResolve(`${specifier}.js`, context);
     }
-    if (context.parentURL?.endsWith('/api/admin/system.js') && specifier === '../request') {
+    if (context.parentURL?.endsWith('/api/admin/system.js') && specifier === '@/api/request') {
       return { url: requestURL, shortCircuit: true };
     }
     return nextResolve(specifier, context);

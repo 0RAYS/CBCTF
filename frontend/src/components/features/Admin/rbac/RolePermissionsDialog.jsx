@@ -5,10 +5,10 @@ import {
   getPermissionList,
   getRolePermissions,
   revokePermissionFromRole,
-} from '../../../../api/admin/rbac';
-import { toast } from '../../../../utils/toast';
-import { Button, Modal, Pagination, Spinner } from '../../../common';
-import Checkbox from '../../../common/Checkbox';
+} from '@/api/admin/rbac';
+import { toast } from '@/utils/toast';
+import { Button, Modal, Pagination, Spinner } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
 
 export default function RolePermissionsDialog({ role, onClose }) {
   const { t } = useTranslation();

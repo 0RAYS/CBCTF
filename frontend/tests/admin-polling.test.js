@@ -16,8 +16,8 @@ const loader = registerHooks({
   },
 });
 const { default: useGeneratorSession } =
-  await import('../src/components/features/Admin/generators/useGeneratorSession.js');
-const { default: useVictimList } = await import('../src/components/features/Admin/victims/useVictimList.js');
+  await import('@/components/features/Admin/generators/useGeneratorSession.js');
+const { default: useVictimList } = await import('@/components/features/Admin/victims/useVictimList.js');
 loader.deregister();
 
 function deferred() {

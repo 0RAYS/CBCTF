@@ -8,7 +8,7 @@ import {
     resolveEdgeLabels,
     VIEWBOX_HEIGHT,
     VIEWBOX_WIDTH,
-} from '../src/components/features/Admin/traffic/trafficLayout.js';
+} from '@/components/features/Admin/traffic/trafficLayout.js';
 import {
     buildCompactNodeLabel,
     buildCompactNodeMeta,
@@ -22,8 +22,8 @@ import {
     resolveTrafficSelection,
     resolveVisibleInlineItems,
     sanitizeSlice,
-} from '../src/components/features/Admin/traffic/trafficPresentation.js';
-import {createDemoTopology} from '../src/components/features/Admin/traffic/trafficDemo.js';
+} from '@/components/features/Admin/traffic/trafficPresentation.js';
+import {createDemoTopology} from '@/components/features/Admin/traffic/trafficDemo.js';
 
 test('byte formatting preserves units and precision', () => {
   for (const [input, expected] of [

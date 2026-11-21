@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import Avatar from '../../../common/Avatar';
-import { Button, Card } from '../../../common';
+import Avatar from '@/components/common/Avatar';
+import { Button, Card } from '@/components/common';
 
 export default function MembersCard({ leader, members, isLeader, onKickMember }) {
   const { t } = useTranslation();

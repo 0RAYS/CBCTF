@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { toast } from '../../../../utils/toast';
-import { getPermissionList, updatePermission } from '../../../../api/admin/rbac';
-import AdminPermissions from './AdminPermissions';
-import { Button, FormField, Modal, Textarea } from '../../../common';
+import { toast } from '@/utils/toast';
+import { getPermissionList, updatePermission } from '@/api/admin/rbac';
+import AdminPermissions from '@/components/features/Admin/rbac/AdminPermissions';
+import { Button, FormField, Modal, Textarea } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 
 function PermissionsManager() {

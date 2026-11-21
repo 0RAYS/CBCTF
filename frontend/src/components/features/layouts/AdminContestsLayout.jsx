@@ -2,9 +2,9 @@ import { useMemo } from 'react';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import AdminShellLayout from './AdminShellLayout';
-import { getAdminContestNavSections } from '../../../config/adminNavigation';
-import { useBranding } from '../../../hooks/useBranding';
+import AdminShellLayout from '@/components/features/layouts/AdminShellLayout';
+import { getAdminContestNavSections } from '@/config/adminNavigation';
+import { useBranding } from '@/hooks/useBranding';
 
 function AdminContestsLayout() {
   const { id } = useParams();

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { toast } from '../utils/toast';
+import { toast } from '@/utils/toast';
 
 /** Manages CRUD modal state and the create/edit/delete request flow. */
 export function useCRUDModal({

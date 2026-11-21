@@ -1,10 +1,10 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import Loading from './Loading';
-import EmptyState from './EmptyState';
-import useContextMenu from './useContextMenu';
-import RowActions from './RowActions';
-import TruncatedText from './TruncatedText';
+import Loading from '@/components/common/Loading';
+import EmptyState from '@/components/common/EmptyState';
+import useContextMenu from '@/components/common/useContextMenu';
+import RowActions from '@/components/common/RowActions';
+import TruncatedText from '@/components/common/TruncatedText';
 
 const INTERACTIVE_SELECTOR =
   'button, a, input, select, textarea, label, [role="button"], [role="checkbox"], [contenteditable="true"], [data-row-interactive]';

@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import './TopologyPreview.css';
+import '@/components/features/Admin/challenges/editor/TopologyPreview.css';
 
 export default function TopologyPreview({ topology }) {
   const { t } = useTranslation();

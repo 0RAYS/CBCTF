@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import MarkdownContent from '../../common/MarkdownContent';
-import Button from '../../common/Button';
-import Pagination from '../../common/Pagination';
+import MarkdownContent from '@/components/common/MarkdownContent';
+import Button from '@/components/common/Button';
+import Pagination from '@/components/common/Pagination';
 import { useTranslation } from 'react-i18next';
 
 const PAGE_SIZE = 5;

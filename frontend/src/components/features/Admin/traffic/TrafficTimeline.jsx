@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Card } from '../../../common';
-import { clamp, formatBytes, formatDurationMs } from './trafficPresentation.js';
+import { Card } from '@/components/common';
+import { clamp, formatBytes, formatDurationMs } from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 export default function TrafficTimeline({ timeline, windowInfo, setShift }) {
   const { t } = useTranslation();

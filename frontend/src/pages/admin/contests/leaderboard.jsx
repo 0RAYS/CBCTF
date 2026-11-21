@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { toast } from '../../../utils/toast';
+import { toast } from '@/utils/toast';
 import {
   exportContestLeaderboard,
   exportContestWriteups,
@@ -8,17 +8,17 @@ import {
   getContestLeaderboard,
   getContestLeaderboardChallenges,
   getContestLeaderboardTimeline,
-} from '../../../api/admin/contest';
-import { downloadBlobResponse } from '../../../utils/fileDownload';
-import AdminRanking from '../../../components/features/Leaderboard/AdminRanking';
-import LeaderboardTable from '../../../components/features/Leaderboard/LeaderboardTable';
-import LeaderboardTimeline from '../../../components/features/Leaderboard/LeaderboardTimeline';
-import { collectChallenges, toRankingTeam } from '../../../components/features/Leaderboard/leaderboardModel.js';
-import Button from '../../../components/common/Button';
+} from '@/api/admin/contest';
+import { downloadBlobResponse } from '@/utils/fileDownload';
+import AdminRanking from '@/components/features/Leaderboard/AdminRanking';
+import LeaderboardTable from '@/components/features/Leaderboard/LeaderboardTable';
+import LeaderboardTimeline from '@/components/features/Leaderboard/LeaderboardTimeline';
+import { collectChallenges, toRankingTeam } from '@/components/features/Leaderboard/leaderboardModel.js';
+import Button from '@/components/common/Button';
 import { IconList, IconTable } from '@tabler/icons-react';
-import LeaderboardStats from '../../../components/features/Leaderboard/LeaderboardStats.jsx';
+import LeaderboardStats from '@/components/features/Leaderboard/LeaderboardStats.jsx';
 import { useTranslation } from 'react-i18next';
-import { useTeamDetailDialog } from '../../../components/features/Admin/details/useTeamDetailDialog.jsx';
+import { useTeamDetailDialog } from '@/components/features/Admin/details/useTeamDetailDialog.jsx';
 
 function AdminContestLeaderboard(props) {
   const { id } = useParams();

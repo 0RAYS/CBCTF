@@ -1,10 +1,21 @@
 import { useMemo } from 'react';
 import { IconZoomIn, IconZoomOut } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Chip } from '../../../common';
-import { buildLines, buildPositions, CENTER_Y, resolveEdgeLabels, VIEWBOX_WIDTH, ZOOM_STEP } from './trafficLayout.js';
-import { buildCompactNodeLabel, buildCompactNodeMeta, ellipsis } from './trafficPresentation.js';
-import useTopologyViewport from './useTopologyViewport.js';
+import { Button, Card, Chip } from '@/components/common';
+import {
+  buildLines,
+  buildPositions,
+  CENTER_Y,
+  resolveEdgeLabels,
+  VIEWBOX_WIDTH,
+  ZOOM_STEP,
+} from '@/components/features/Admin/traffic/trafficLayout.js';
+import {
+  buildCompactNodeLabel,
+  buildCompactNodeMeta,
+  ellipsis,
+} from '@/components/features/Admin/traffic/trafficPresentation.js';
+import useTopologyViewport from '@/components/features/Admin/traffic/useTopologyViewport.js';
 
 const TOPOLOGY_CANVAS_FIXED_HEIGHT = 'min(800px, calc(100vh - 48px))';
 

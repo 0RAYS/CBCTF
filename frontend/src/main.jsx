@@ -1,14 +1,14 @@
 import { StrictMode } from 'react';
 import { MotionConfig } from 'motion/react';
 import { createRoot } from 'react-dom/client';
-import './index.css';
-import App from './App.jsx';
-import './i18n';
-import { store } from './store';
+import '@/index.css';
+import App from '@/App.jsx';
+import '@/i18n';
+import { store } from '@/store';
 import { Provider } from 'react-redux';
-import ToastProvider from './components/common/ToastProvider';
-import ModalProvider from './components/common/ModalProvider';
-import ErrorBoundary from './components/common/ErrorBoundary';
+import ToastProvider from '@/components/common/ToastProvider';
+import ModalProvider from '@/components/common/ModalProvider';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

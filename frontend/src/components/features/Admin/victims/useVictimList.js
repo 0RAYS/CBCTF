@@ -1,8 +1,12 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '../../../../utils/toast';
-import { startVisiblePolling } from '../../../../utils/visiblePolling.js';
-import { buildVictimListParams, selectPageVictims, toggleVictimSelection } from './victimPayload';
+import { toast } from '@/utils/toast';
+import { startVisiblePolling } from '@/utils/visiblePolling.js';
+import {
+  buildVictimListParams,
+  selectPageVictims,
+  toggleVictimSelection,
+} from '@/components/features/Admin/victims/victimPayload';
 
 export default function useVictimList(scope) {
   const { t } = useTranslation();

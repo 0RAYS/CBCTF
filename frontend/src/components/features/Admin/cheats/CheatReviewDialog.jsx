@@ -1,10 +1,10 @@
 import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { updateContestCheat } from '../../../../api/admin/contest';
-import { toast } from '../../../../utils/toast';
-import { Button, FormField, Modal, Select, Textarea } from '../../../common';
-import Checkbox from '../../../common/Checkbox';
-import { cheatReviewForm, cheatUpdatePayload } from './payloads';
+import { updateContestCheat } from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
+import { Button, FormField, Modal, Select, Textarea } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
+import { cheatReviewForm, cheatUpdatePayload } from '@/components/features/Admin/cheats/payloads';
 
 export default function CheatReviewDialog({ contestId, cheat, onClose, onSaved }) {
   const { t } = useTranslation();

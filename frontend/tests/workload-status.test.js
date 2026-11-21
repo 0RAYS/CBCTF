@@ -12,7 +12,7 @@ const loader = registerHooks({
     return nextResolve(specifier, context);
   },
 });
-const { default: useWorkloadStatus } = await import('../src/components/features/Admin/workloads/useWorkloadStatus.js');
+const { default: useWorkloadStatus } = await import('@/components/features/Admin/workloads/useWorkloadStatus.js');
 loader.deregister();
 
 test('workload status: serialized polling, stale responses, transport abort and error recovery', async (t) => {

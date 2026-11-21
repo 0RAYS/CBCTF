@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createGroup, deleteGroup, getGroupList, getRoleList, updateGroup } from '../../../../api/admin/rbac';
-import { toast } from '../../../../utils/toast';
-import { useCRUDModal } from '../../../../hooks';
-import { Modal } from '../../../common';
-import CRUDModalFooter from '../../../common/CRUDModalFooter';
-import AdminGroups from './AdminGroups';
-import GroupMembersDialog from './GroupMembersDialog';
-import RbacForm from './RbacForm';
-import { lastAvailablePage } from './payloads';
+import { createGroup, deleteGroup, getGroupList, getRoleList, updateGroup } from '@/api/admin/rbac';
+import { toast } from '@/utils/toast';
+import { useCRUDModal } from '@/hooks';
+import { Modal } from '@/components/common';
+import CRUDModalFooter from '@/components/common/CRUDModalFooter';
+import AdminGroups from '@/components/features/Admin/rbac/AdminGroups';
+import GroupMembersDialog from '@/components/features/Admin/rbac/GroupMembersDialog';
+import RbacForm from '@/components/features/Admin/rbac/RbacForm';
+import { lastAvailablePage } from '@/components/features/Admin/rbac/payloads';
 
 export default function GroupsManager() {
   const { t } = useTranslation();

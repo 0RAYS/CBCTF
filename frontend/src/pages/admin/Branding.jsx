@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { motion } from 'motion/react';
-import { Button, Card, Input, Textarea } from '../../components/common';
-import Loading from '../../components/common/Loading';
-import { getAdminBranding, updateAdminBranding, uploadBrandingLogo } from '../../api/admin/branding';
-import { toast } from '../../utils/toast';
-import { useImmerState } from '../../hooks/useImmerState';
-import { mergeBranding } from '../../config/branding';
-import { fetchBranding, setBranding } from '../../store/branding';
+import { Button, Card, Input, Textarea } from '@/components/common';
+import Loading from '@/components/common/Loading';
+import { getAdminBranding, updateAdminBranding, uploadBrandingLogo } from '@/api/admin/branding';
+import { toast } from '@/utils/toast';
+import { useImmerState } from '@/hooks/useImmerState';
+import { mergeBranding } from '@/config/branding';
+import { fetchBranding, setBranding } from '@/store/branding';
 import { useTranslation } from 'react-i18next';
 
 function LocalizedField({ label, value, onChange, placeholderZh, placeholderEn, multiline = false, rows = 3 }) {

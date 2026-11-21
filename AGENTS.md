@@ -34,6 +34,7 @@ CBCTF is a Kubernetes-native CTF platform, not a challenge repo: Go/Gin backend 
 - Trust `frontend/package.json`, not stale `frontend/README.md`: current stack is React 19, Vite 8, Tailwind CSS 4, React Router 7, Redux Toolkit 2, i18next 26, ECharts 6, Monaco, and motion 12.
 - Vite serves the platform under `base: '/platform/'`; the Go router redirects `/` to `/platform` and serves embedded static files at `/platform`.
 - App routing uses `HashRouter`; route definitions are in `frontend/src/routes`, with Redux stores in `frontend/src/store` and API wrappers in `frontend/src/api`.
+- Frontend imports use the `@` alias for `frontend/src` (e.g. `@/components/common`); relative import paths are not used.
 - API wrappers use `frontend/src/api/config.js`; there is no Vite proxy config, and `API_CONFIG.BASE_URL` is currently hardcoded.
 - ESLint runs with `--fix`; Prettier is enforced as warnings with single quotes, semicolons, trailing commas, width 120, and `endOfLine: auto`.
 - Hooks rules are disabled in the current ESLint config; do not assume lint catches invalid hook usage.

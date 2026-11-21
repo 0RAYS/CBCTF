@@ -5,7 +5,7 @@ import {
     hasReachedTarget,
     isInstanceTransitioning,
     normalizeInstanceStatus,
-} from '../src/components/features/Admin/challenges/testing/testSession.js';
+} from '@/components/features/Admin/challenges/testing/testSession.js';
 
 const response = (status, extra = {}) => ({
   code: 200,

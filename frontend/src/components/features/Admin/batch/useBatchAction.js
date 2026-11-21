@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '../../../../utils/toast.js';
-import { batchTone, getBatchResult } from './batchModel.js';
+import { toast } from '@/utils/toast.js';
+import { batchTone, getBatchResult } from '@/components/features/Admin/batch/batchModel.js';
 
 export default function useBatchAction(scopeKey) {
   const { t } = useTranslation();

@@ -8,7 +8,7 @@ import {
     mapChallengeStatusToViewModel,
     normalizeCategories,
     normalizeInstanceStatus,
-} from '../src/components/features/CTFGame/Challenges/models/challengeViewModel.js';
+} from '@/components/features/CTFGame/Challenges/models/challengeViewModel.js';
 
 test('instance status normalization and transition classification', () => {
   for (const status of ['waiting', 'pending', 'terminating', 'running']) {

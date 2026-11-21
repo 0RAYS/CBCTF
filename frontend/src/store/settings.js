@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getPublicConfig } from '../api/settings.js';
+import { getPublicConfig } from '@/api/settings.js';
 
 const initialState = {
   data: {

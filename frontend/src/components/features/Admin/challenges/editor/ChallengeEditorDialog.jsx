@@ -1,10 +1,14 @@
 import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import Button from '../../../../common/Button';
-import Modal from '../../../../common/Modal';
-import ComposeEditor from './ComposeEditor.jsx';
-import useComposeGuide from './useComposeGuide.js';
-import { inputBaseClass, selectClass, textareaClass } from './editorStyles.js';
+import Button from '@/components/common/Button';
+import Modal from '@/components/common/Modal';
+import ComposeEditor from '@/components/features/Admin/challenges/editor/ComposeEditor.jsx';
+import useComposeGuide from '@/components/features/Admin/challenges/editor/useComposeGuide.js';
+import {
+  inputBaseClass,
+  selectClass,
+  textareaClass,
+} from '@/components/features/Admin/challenges/editor/editorStyles.js';
 
 export default function ChallengeEditorDialog({
   isOpen = false,

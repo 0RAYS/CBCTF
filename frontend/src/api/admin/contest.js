@@ -1,4 +1,4 @@
-import request from '../request';
+import request from '@/api/request';
 
 export function getContestList({ limit = 6, offset = 0 }) {
   return request({

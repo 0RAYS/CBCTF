@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { IconUserPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { ConfigSection } from '../fields/ConfigSection';
-import { ConfigField } from '../fields/ConfigField';
-import { getGroupList } from '../../../../../api/admin/rbac';
-import { Select } from '../../../../common';
+import { ConfigSection } from '@/components/features/Admin/SystemConfig/fields/ConfigSection';
+import { ConfigField } from '@/components/features/Admin/SystemConfig/fields/ConfigField';
+import { getGroupList } from '@/api/admin/rbac';
+import { Select } from '@/components/common';
 
 export function RegistrationConfigSection({ config, updateConfig }) {
   const { t } = useTranslation();

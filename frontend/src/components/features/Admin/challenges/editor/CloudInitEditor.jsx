@@ -1,6 +1,17 @@
 import { useTranslation } from 'react-i18next';
-import { createGuideCloudConfig, createGuideGroup, createGuideUser, createGuideWriteFile } from './guideModel.js';
-import { GuideBoolean, GuideInput, GuideListHeader, GuideStringList, IconButton } from './GuideFields.jsx';
+import {
+  createGuideCloudConfig,
+  createGuideGroup,
+  createGuideUser,
+  createGuideWriteFile,
+} from '@/components/features/Admin/challenges/editor/guideModel.js';
+import {
+  GuideBoolean,
+  GuideInput,
+  GuideListHeader,
+  GuideStringList,
+  IconButton,
+} from '@/components/features/Admin/challenges/editor/GuideFields.jsx';
 
 export default function CloudInitEditor({ value, onChange }) {
   const { t } = useTranslation();

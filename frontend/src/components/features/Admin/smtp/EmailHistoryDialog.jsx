@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Button, Modal } from '../../../common';
+import { Button, Modal } from '@/components/common';
 
 export default function EmailHistoryDialog({ email, onClose }) {
   const { t, i18n } = useTranslation();

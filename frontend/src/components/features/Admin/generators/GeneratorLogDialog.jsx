@@ -1,7 +1,7 @@
-import { AnsiLog, Modal } from '../../../common';
-import PodDiagnostics from '../workloads/PodDiagnostics';
-import useWorkloadStatus from '../workloads/useWorkloadStatus';
-import useGeneratorLogs from './useGeneratorLogs.js';
+import { AnsiLog, Modal } from '@/components/common';
+import PodDiagnostics from '@/components/features/Admin/workloads/PodDiagnostics';
+import useWorkloadStatus from '@/components/features/Admin/workloads/useWorkloadStatus';
+import useGeneratorLogs from '@/components/features/Admin/generators/useGeneratorLogs.js';
 
 export default function GeneratorLogDialog({ api, generator, onClose, text, t }) {
   const status = useWorkloadStatus(generator.id, api.status);

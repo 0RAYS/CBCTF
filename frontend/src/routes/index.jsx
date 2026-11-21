@@ -1,9 +1,9 @@
 import { Routes, useLocation } from 'react-router-dom';
-import ErrorBoundary from '../components/common/ErrorBoundary';
-import { MainRoutes } from './mainRoutes';
-import { ContestRoutes } from './contestRoutes';
-import { AdminRoutes } from './adminRoutes';
-import { AdminContestRoutes } from './adminContestRoutes';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
+import { MainRoutes } from '@/routes/mainRoutes';
+import { ContestRoutes } from '@/routes/contestRoutes';
+import { AdminRoutes } from '@/routes/adminRoutes';
+import { AdminContestRoutes } from '@/routes/adminContestRoutes';
 
 const AppRoutes = () => {
   const { pathname } = useLocation();

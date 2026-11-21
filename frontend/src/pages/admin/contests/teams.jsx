@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { toast } from '../../../utils/toast';
-import AdminTeams from '../../../components/features/Admin/Contests/teams/Teams';
+import { toast } from '@/utils/toast';
+import AdminTeams from '@/components/features/Admin/Contests/teams/Teams';
 import {
   deleteTeam,
   getContestTeams,
@@ -9,10 +9,10 @@ import {
   kickTeamMember,
   updateTeamInfo,
   updateTeamPicture,
-} from '../../../api/admin/contest';
+} from '@/api/admin/contest';
 import { useTranslation } from 'react-i18next';
-import { useDebounce } from '../../../hooks/useDebounce';
-import { useTeamDetailDialog } from '../../../components/features/Admin/details/useTeamDetailDialog';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useTeamDetailDialog } from '@/components/features/Admin/details/useTeamDetailDialog';
 
 function ContestTeamsManagement({ id }) {
   const [teams, setTeams] = useState([]);

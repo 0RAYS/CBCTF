@@ -1,5 +1,5 @@
-import LanguageSwitcher from '../../common/LanguageSwitcher';
-import Avatar from '../../common/Avatar';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher';
+import Avatar from '@/components/common/Avatar';
 import { useTranslation } from 'react-i18next';
 
 function AdminTopbar({

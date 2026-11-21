@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import Avatar from '../../common/Avatar';
-import { Button } from '../../common';
+import Avatar from '@/components/common/Avatar';
+import { Button } from '@/components/common';
 
 export default function ProfileSection({ user, onUpdate, onPictureChange, onVerify }) {
   const { t } = useTranslation();

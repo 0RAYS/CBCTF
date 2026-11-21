@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Button, Card, List, Pagination, Spinner, StatusTag } from '../../../../common';
-import IpLookup from '../../network/IpLookup';
-import { TEAM_DETAIL_PAGE_SIZE } from './teamDetailData.js';
+import { Button, Card, List, Pagination, Spinner, StatusTag } from '@/components/common';
+import IpLookup from '@/components/features/Admin/network/IpLookup';
+import { TEAM_DETAIL_PAGE_SIZE } from '@/components/features/Admin/Contests/teams/teamDetailData.js';
 
 export default function SubmissionsPanel({
   submissions = [],

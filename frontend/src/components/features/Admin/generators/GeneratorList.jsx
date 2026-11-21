@@ -1,11 +1,11 @@
 import { motion } from 'motion/react';
 import { IconFileText } from '@tabler/icons-react';
-import { Card, EmptyState } from '../../../common';
-import Loading from '../../../common/Loading';
-import useContextMenu from '../../../common/useContextMenu';
-import RowActions from '../../../common/RowActions';
-import { isGeneratorStoppable } from './generatorUtils.js';
-import TruncatedText from '../../../common/TruncatedText';
+import { Card, EmptyState } from '@/components/common';
+import Loading from '@/components/common/Loading';
+import useContextMenu from '@/components/common/useContextMenu';
+import RowActions from '@/components/common/RowActions';
+import { isGeneratorStoppable } from '@/components/features/Admin/generators/generatorUtils.js';
+import TruncatedText from '@/components/common/TruncatedText';
 
 const COLUMN_WIDTHS = [48, 80, 200, 256, 112, 176, 96, 184, 96, 184, 128, 88];
 

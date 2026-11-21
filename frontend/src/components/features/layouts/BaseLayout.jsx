@@ -1,8 +1,8 @@
-import NavBar from './NavBar';
-import Footer from './Footer';
+import NavBar from '@/components/features/layouts/NavBar';
+import Footer from '@/components/features/layouts/Footer';
 import { useTranslation } from 'react-i18next';
-import { getFooterConfig } from '../../../config/footer';
-import { useBranding } from '../../../hooks/useBranding';
+import { getFooterConfig } from '@/config/footer';
+import { useBranding } from '@/hooks/useBranding';
 
 function BaseLayout({
   children,

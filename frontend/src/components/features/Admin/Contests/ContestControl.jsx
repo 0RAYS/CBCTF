@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
-import { Button, Card } from '../../../common';
-import { toast } from '../../../../utils/toast';
-import { updateContestPause } from '../../../../api/admin/contest';
+import { Button, Card } from '@/components/common';
+import { toast } from '@/utils/toast';
+import { updateContestPause } from '@/api/admin/contest';
 
 export default function ContestControl({ contest, onChange }) {
   const { t } = useTranslation();

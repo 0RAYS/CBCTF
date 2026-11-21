@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { copyableAddress } from '../src/utils/address.js';
+import { copyableAddress } from '@/utils/address.js';
 
 test('the address list keeps the service name and protocol out of the clipboard', () => {
   assert.equal(copyableAddress('web: tcp://127.0.0.1:32206'), '127.0.0.1:32206');

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, Chip, EmptyState, Input, List, Spinner, StatusTag } from '../../../../common';
-import { filterTeamFlags, flagFilterOptions } from './teamDetailData.js';
+import { Card, Chip, EmptyState, Input, List, Spinner, StatusTag } from '@/components/common';
+import { filterTeamFlags, flagFilterOptions } from '@/components/features/Admin/Contests/teams/teamDetailData.js';
 
 export default function FlagsPanel({ flags = [], loading }) {
   const { t } = useTranslation();

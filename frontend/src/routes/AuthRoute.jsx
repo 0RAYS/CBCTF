@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Loading from '../components/common/Loading';
+import Loading from '@/components/common/Loading';
 
 export const UserRoute = ({ children, requiresAuth = true }) => {
   const { isAuthenticated, hasUserAccess, initialized } = useSelector((state) => state.user);

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Button, Input, List, Modal, Pagination } from '../../../common';
-import Checkbox from '../../../common/Checkbox';
-import useGroupMembers from './useGroupMembers';
+import { Button, Input, List, Modal, Pagination } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
+import useGroupMembers from '@/components/features/Admin/rbac/useGroupMembers';
 
 export default function GroupMembersDialog({ group, onClose, onChanged }) {
   const { t } = useTranslation();

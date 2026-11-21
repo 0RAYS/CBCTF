@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
-import { EmptyState, List, Pagination } from '../../../common';
-import { CheatIp, CheatModels, CheatStatus, CheatVerdict } from './CheatEvidence';
+import { EmptyState, List, Pagination } from '@/components/common';
+import { CheatIp, CheatModels, CheatStatus, CheatVerdict } from '@/components/features/Admin/cheats/CheatEvidence';
 
 export default function CheatsTable({
   cheats,

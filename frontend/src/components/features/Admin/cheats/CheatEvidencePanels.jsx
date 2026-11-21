@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { formatDateTime } from './cheatFormat';
+import { formatDateTime } from '@/components/features/Admin/cheats/cheatFormat';
 
 function EvidenceTable({ columns, rows, empty }) {
   if (!rows || rows.length === 0) {

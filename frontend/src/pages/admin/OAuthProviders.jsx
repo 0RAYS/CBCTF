@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getOAuthProviderList } from '../../api/admin/oauth';
-import AdminOAuthProviders from '../../components/features/Admin/oauth/AdminOAuthProviders';
-import OAuthProviderDialog from '../../components/features/Admin/oauth/OAuthProviderDialog';
-import useProviderPicture from '../../components/features/Admin/oauth/useProviderPicture';
-import { toast } from '../../utils/toast';
+import { getOAuthProviderList } from '@/api/admin/oauth';
+import AdminOAuthProviders from '@/components/features/Admin/oauth/AdminOAuthProviders';
+import OAuthProviderDialog from '@/components/features/Admin/oauth/OAuthProviderDialog';
+import useProviderPicture from '@/components/features/Admin/oauth/useProviderPicture';
+import { toast } from '@/utils/toast';
 
 export default function OAuthProvidersManagement() {
   const { t } = useTranslation();

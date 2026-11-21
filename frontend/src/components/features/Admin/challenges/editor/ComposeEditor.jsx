@@ -1,14 +1,19 @@
 import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createGuideService, emptyComposeYaml, getGuideServiceTargets, hasVpcNetworks } from './guideModel.js';
-import { buildNetworkTopology } from './networkPolicy.js';
-import { GuideListHeader } from './GuideFields.jsx';
-import ServiceEditor from './ServiceEditor.jsx';
-import NetworkDefinitionsEditor from './NetworkDefinitionsEditor.jsx';
-import NetworkPolicyEditor from './NetworkPolicyEditor.jsx';
-import TopologyPreview from './TopologyPreview.jsx';
+import {
+  createGuideService,
+  emptyComposeYaml,
+  getGuideServiceTargets,
+  hasVpcNetworks,
+} from '@/components/features/Admin/challenges/editor/guideModel.js';
+import { buildNetworkTopology } from '@/components/features/Admin/challenges/editor/networkPolicy.js';
+import { GuideListHeader } from '@/components/features/Admin/challenges/editor/GuideFields.jsx';
+import ServiceEditor from '@/components/features/Admin/challenges/editor/ServiceEditor.jsx';
+import NetworkDefinitionsEditor from '@/components/features/Admin/challenges/editor/NetworkDefinitionsEditor.jsx';
+import NetworkPolicyEditor from '@/components/features/Admin/challenges/editor/NetworkPolicyEditor.jsx';
+import TopologyPreview from '@/components/features/Admin/challenges/editor/TopologyPreview.jsx';
 
-const Editor = lazy(() => import('../../../../../lib/monacoSetup').then(() => import('@monaco-editor/react')));
+const Editor = lazy(() => import('@/lib/monacoSetup').then(() => import('@monaco-editor/react')));
 
 export default function ComposeEditor({ challenge, onChange, compose }) {
   const { t } = useTranslation();

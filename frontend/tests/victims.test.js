@@ -8,7 +8,7 @@ import {
     selectPageVictims,
     toggleVictimSelection,
     updateChallengeSelection,
-} from '../src/components/features/Admin/victims/victimPayload.js';
+} from '@/components/features/Admin/victims/victimPayload.js';
 
 test('list parameters retain scope filters, paginate and only include deleted when requested', () => {
   const filters = { user_id: '', team_id: '12', challenge_id: '8', limit: 1, offset: 99 };

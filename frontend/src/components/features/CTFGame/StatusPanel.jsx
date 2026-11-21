@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import InfoCard from './InfoCard';
-import NotificationCard from './NotificationCard';
+import InfoCard from '@/components/features/CTFGame/InfoCard';
+import NotificationCard from '@/components/features/CTFGame/NotificationCard';
 import { useTranslation } from 'react-i18next';
 
 /** 比赛状态面板组件 */

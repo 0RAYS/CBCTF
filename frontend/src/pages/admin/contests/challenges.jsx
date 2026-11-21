@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { toast } from '../../../utils/toast';
-import { getContestChallenges, removeContestChallenge } from '../../../api/admin/contest';
-import { getContestChallengeCategories } from '../../../api/admin/challenge';
-import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '../../../config/challenges';
-import ContestChallenges from '../../../components/features/Admin/Contests/challenges/ContestChallenges';
-import ChallengePickerSession from '../../../components/features/Admin/Contests/challenges/ChallengePickerSession';
-import ChallengeEditorDialog from '../../../components/features/Admin/Contests/challenges/ChallengeEditorDialog';
-import { challengeQuery } from '../../../components/features/Admin/Contests/challenges/challengeData.js';
-import { useDebounce } from '../../../hooks/useDebounce';
+import { toast } from '@/utils/toast';
+import { getContestChallenges, removeContestChallenge } from '@/api/admin/contest';
+import { getContestChallengeCategories } from '@/api/admin/challenge';
+import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '@/config/challenges';
+import ContestChallenges from '@/components/features/Admin/Contests/challenges/ContestChallenges';
+import ChallengePickerSession from '@/components/features/Admin/Contests/challenges/ChallengePickerSession';
+import ChallengeEditorDialog from '@/components/features/Admin/Contests/challenges/ChallengeEditorDialog';
+import { challengeQuery } from '@/components/features/Admin/Contests/challenges/challengeData.js';
+import { useDebounce } from '@/hooks/useDebounce';
 
 function ContestChallengeManagement({ contestId }) {
   const { t } = useTranslation();

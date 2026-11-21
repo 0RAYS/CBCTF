@@ -1,9 +1,14 @@
 import { useEffect, useEffectEvent, useReducer, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getTaskHistory } from '../../../../api/admin/task';
-import { toast } from '../../../../utils/toast';
-import { useDebounce } from '../../../../hooks/useDebounce';
-import { createTaskQuery, normalizeTaskPayload, taskQueryParams, taskQueryReducer } from './taskModel';
+import { getTaskHistory } from '@/api/admin/task';
+import { toast } from '@/utils/toast';
+import { useDebounce } from '@/hooks/useDebounce';
+import {
+  createTaskQuery,
+  normalizeTaskPayload,
+  taskQueryParams,
+  taskQueryReducer,
+} from '@/components/features/Admin/tasks/taskModel';
 
 export default function useHistoryTasks(active) {
   const { t } = useTranslation();

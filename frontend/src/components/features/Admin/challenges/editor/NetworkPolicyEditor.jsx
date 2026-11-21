@@ -1,9 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
-import Button from '../../../../common/Button';
-import { GuideField } from './GuideFields.jsx';
-import { selectClass } from './editorStyles.js';
-import { defaultNetworkPolicy, normalizeNetworkPolicy, normalizePolicyRule } from './networkPolicy.js';
+import Button from '@/components/common/Button';
+import { GuideField } from '@/components/features/Admin/challenges/editor/GuideFields.jsx';
+import { selectClass } from '@/components/features/Admin/challenges/editor/editorStyles.js';
+import {
+  defaultNetworkPolicy,
+  normalizeNetworkPolicy,
+  normalizePolicyRule,
+} from '@/components/features/Admin/challenges/editor/networkPolicy.js';
 
 export default function NetworkPolicyEditor({ policies, vpcMode, targets, onChange }) {
   const { t } = useTranslation();

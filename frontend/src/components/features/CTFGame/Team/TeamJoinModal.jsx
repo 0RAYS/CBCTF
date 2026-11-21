@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Modal } from '../../../../components/common';
+import { Button, Modal } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 
 function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {

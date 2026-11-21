@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Loading from '../../../components/common/Loading';
+import Loading from '@/components/common/Loading';
 
 function AdminContestSettings() {
   const { id } = useParams();

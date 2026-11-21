@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getSmtpList } from '../../api/admin/smtp';
-import { Tabs } from '../../components/common';
-import AdminSmtp from '../../components/features/Admin/smtp/AdminSmtp';
-import SmtpDialog from '../../components/features/Admin/smtp/SmtpDialog';
-import EmailHistory from '../../components/features/Admin/smtp/EmailHistory';
-import SmtpTestDialog from '../../components/features/Admin/smtp/SmtpTestDialog';
-import { toast } from '../../utils/toast';
+import { getSmtpList } from '@/api/admin/smtp';
+import { Tabs } from '@/components/common';
+import AdminSmtp from '@/components/features/Admin/smtp/AdminSmtp';
+import SmtpDialog from '@/components/features/Admin/smtp/SmtpDialog';
+import EmailHistory from '@/components/features/Admin/smtp/EmailHistory';
+import SmtpTestDialog from '@/components/features/Admin/smtp/SmtpTestDialog';
+import { toast } from '@/utils/toast';
 
 export default function SmtpManagement() {
   const { t } = useTranslation();

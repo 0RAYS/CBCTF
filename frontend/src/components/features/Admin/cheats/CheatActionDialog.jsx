@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { checkContestCheats, deleteAllContestCheats, deleteContestCheat } from '../../../../api/admin/contest';
-import { toast } from '../../../../utils/toast';
-import { Button, Modal } from '../../../common';
-import useBatchAction from '../batch/useBatchAction.js';
-import BatchResultPanel from '../batch/BatchResultPanel.jsx';
+import { checkContestCheats, deleteAllContestCheats, deleteContestCheat } from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
+import { Button, Modal } from '@/components/common';
+import useBatchAction from '@/components/features/Admin/batch/useBatchAction.js';
+import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
 
 export default function CheatActionDialog({ contestId, action, cheat, onClose, onCompleted }) {
   const { t } = useTranslation();

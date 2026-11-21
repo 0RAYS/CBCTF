@@ -1,5 +1,5 @@
 import { IconPlus, IconX } from '@tabler/icons-react';
-import { Button, Input } from '../../../../common';
+import { Button, Input } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 
 /** Generic list field component with add/remove capabilities. */

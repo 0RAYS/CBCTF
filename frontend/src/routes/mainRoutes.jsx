@@ -1,17 +1,17 @@
 import { lazy } from 'react';
 import { Route } from 'react-router-dom';
-import { UserRoute } from './AuthRoute';
-import { withGuard, withSuspense } from './routeUtils';
-import MainLayout from '../components/features/layouts/MainLayout';
+import { UserRoute } from '@/routes/AuthRoute';
+import { withGuard, withSuspense } from '@/routes/routeUtils';
+import MainLayout from '@/components/features/layouts/MainLayout';
 
-const Login = lazy(() => import('../pages/Login'));
-const OAuthCallback = lazy(() => import('../pages/OAuthCallback'));
-const Home = lazy(() => import('../pages/Home'));
-const Settings = lazy(() => import('../pages/user/Settings'));
-const GamesPage = lazy(() => import('../pages/user/GamesPage'));
-const UserLeaderboardPage = lazy(() => import('../pages/user/UserLeaderboardPage'));
-const ResetPassword = lazy(() => import('../pages/user/ResetPassword'));
-const VerifyEmail = lazy(() => import('../pages/user/VerifyEmail'));
+const Login = lazy(() => import('@/pages/Login'));
+const OAuthCallback = lazy(() => import('@/pages/OAuthCallback'));
+const Home = lazy(() => import('@/pages/Home'));
+const Settings = lazy(() => import('@/pages/user/Settings'));
+const GamesPage = lazy(() => import('@/pages/user/GamesPage'));
+const UserLeaderboardPage = lazy(() => import('@/pages/user/UserLeaderboardPage'));
+const ResetPassword = lazy(() => import('@/pages/user/ResetPassword'));
+const VerifyEmail = lazy(() => import('@/pages/user/VerifyEmail'));
 
 export function MainRoutes() {
   return (

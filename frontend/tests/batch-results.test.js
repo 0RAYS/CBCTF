@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getBatchResult, hasBatchProgress, batchTone, completedBatchIds, remainingBatchIds, remainingGeneratorCounts, remainingVictimChallenges, batchRows } from '../src/components/features/Admin/batch/batchModel.js';
+import { getBatchResult, hasBatchProgress, batchTone, completedBatchIds, remainingBatchIds, remainingGeneratorCounts, remainingVictimChallenges, batchRows } from '@/components/features/Admin/batch/batchModel.js';
 
 test('partial responses are read even with a non-200 business code', () => {
   const batch = { status: 'partial', requested: 3, succeeded: 1, failed: 1, skipped: 0, not_attempted: 1, items: [] };

@@ -1,4 +1,4 @@
-import { normalizePolicyRules } from './networkPolicy.js';
+import { normalizePolicyRules } from '@/components/features/Admin/challenges/editor/networkPolicy.js';
 
 export const buildChallengePayload = (challenge, mode, initialCompose = []) => {
   const payload = {

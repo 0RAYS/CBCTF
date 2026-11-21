@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { clampPanToViewport, getViewportMetrics, MAX_ZOOM, MIN_ZOOM, ZOOM_STEP } from './trafficLayout.js';
-import { clamp } from './trafficPresentation.js';
+import {
+  clampPanToViewport,
+  getViewportMetrics,
+  MAX_ZOOM,
+  MIN_ZOOM,
+  ZOOM_STEP,
+} from '@/components/features/Admin/traffic/trafficLayout.js';
+import { clamp } from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 export default function useTopologyViewport(scopeKey) {
   const canvasRef = useRef(null);

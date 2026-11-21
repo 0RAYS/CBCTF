@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createRole, deleteRole, getRoleList, updateRole } from '../../../../api/admin/rbac';
-import { toast } from '../../../../utils/toast';
-import { useCRUDModal } from '../../../../hooks';
-import { Modal } from '../../../common';
-import CRUDModalFooter from '../../../common/CRUDModalFooter';
-import AdminRoles from './AdminRoles';
-import RolePermissionsDialog from './RolePermissionsDialog';
-import RbacForm from './RbacForm';
-import { lastAvailablePage } from './payloads';
+import { createRole, deleteRole, getRoleList, updateRole } from '@/api/admin/rbac';
+import { toast } from '@/utils/toast';
+import { useCRUDModal } from '@/hooks';
+import { Modal } from '@/components/common';
+import CRUDModalFooter from '@/components/common/CRUDModalFooter';
+import AdminRoles from '@/components/features/Admin/rbac/AdminRoles';
+import RolePermissionsDialog from '@/components/features/Admin/rbac/RolePermissionsDialog';
+import RbacForm from '@/components/features/Admin/rbac/RbacForm';
+import { lastAvailablePage } from '@/components/features/Admin/rbac/payloads';
 
 export default function RolesManager() {
   const { t } = useTranslation();

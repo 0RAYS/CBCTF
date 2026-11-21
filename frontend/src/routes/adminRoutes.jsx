@@ -1,26 +1,26 @@
 import { lazy } from 'react';
 import { Route } from 'react-router-dom';
-import { AdminRoute } from './AuthRoute';
-import { withGuard, withSuspense } from './routeUtils';
-const AdminLayout = lazy(() => import('../components/features/layouts/AdminLayout'));
+import { AdminRoute } from '@/routes/AuthRoute';
+import { withGuard, withSuspense } from '@/routes/routeUtils';
+const AdminLayout = lazy(() => import('@/components/features/layouts/AdminLayout'));
 
-const Dashboard = lazy(() => import('../pages/admin/Dashboard'));
-const ContestsManagement = lazy(() => import('../pages/admin/Contests'));
-const RbacManagement = lazy(() => import('../pages/admin/Rbac'));
-const ChallengesManagement = lazy(() => import('../pages/admin/Challenges'));
-const FilesManagement = lazy(() => import('../pages/admin/Files.jsx'));
-const SystemSettings = lazy(() => import('../pages/admin/System'));
-const OAuthProvidersManagement = lazy(() => import('../pages/admin/OAuthProviders'));
-const SmtpManagement = lazy(() => import('../pages/admin/Smtp'));
-const CronJobsManagement = lazy(() => import('../pages/admin/CronJobs'));
-const WebhookManagement = lazy(() => import('../pages/admin/Webhook'));
-const BrandingManagement = lazy(() => import('../pages/admin/Branding'));
-const TaskManagement = lazy(() => import('../pages/admin/Tasks'));
-const AdminLogs = lazy(() => import('../pages/admin/Logs'));
-const AdminImagesManagement = lazy(() => import('../pages/admin/Images.jsx'));
-const AdminVictims = lazy(() => import('../pages/admin/Victims'));
-const AdminGenerators = lazy(() => import('../pages/admin/Generators'));
-const Settings = lazy(() => import('../pages/user/Settings'));
+const Dashboard = lazy(() => import('@/pages/admin/Dashboard'));
+const ContestsManagement = lazy(() => import('@/pages/admin/Contests'));
+const RbacManagement = lazy(() => import('@/pages/admin/Rbac'));
+const ChallengesManagement = lazy(() => import('@/pages/admin/Challenges'));
+const FilesManagement = lazy(() => import('@/pages/admin/Files.jsx'));
+const SystemSettings = lazy(() => import('@/pages/admin/System'));
+const OAuthProvidersManagement = lazy(() => import('@/pages/admin/OAuthProviders'));
+const SmtpManagement = lazy(() => import('@/pages/admin/Smtp'));
+const CronJobsManagement = lazy(() => import('@/pages/admin/CronJobs'));
+const WebhookManagement = lazy(() => import('@/pages/admin/Webhook'));
+const BrandingManagement = lazy(() => import('@/pages/admin/Branding'));
+const TaskManagement = lazy(() => import('@/pages/admin/Tasks'));
+const AdminLogs = lazy(() => import('@/pages/admin/Logs'));
+const AdminImagesManagement = lazy(() => import('@/pages/admin/Images.jsx'));
+const AdminVictims = lazy(() => import('@/pages/admin/Victims'));
+const AdminGenerators = lazy(() => import('@/pages/admin/Generators'));
+const Settings = lazy(() => import('@/pages/user/Settings'));
 
 const ADMIN_ROUTES = [
   { path: 'dashboard', Component: Dashboard, apiRoute: 'GET /admin/system/status' },

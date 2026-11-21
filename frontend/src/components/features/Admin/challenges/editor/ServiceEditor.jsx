@@ -1,7 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { GuideBoolean, GuideErrors, GuideField, GuideInput, GuideListHeader, IconButton } from './GuideFields.jsx';
-import { selectClass } from './editorStyles.js';
-import CloudInitEditor from './CloudInitEditor.jsx';
+import {
+  GuideBoolean,
+  GuideErrors,
+  GuideField,
+  GuideInput,
+  GuideListHeader,
+  IconButton,
+} from '@/components/features/Admin/challenges/editor/GuideFields.jsx';
+import { selectClass } from '@/components/features/Admin/challenges/editor/editorStyles.js';
+import CloudInitEditor from '@/components/features/Admin/challenges/editor/CloudInitEditor.jsx';
 
 export default function ServiceEditor({ service, serviceIndex, networks, vpcMode, errors, onChange, onRemove }) {
   const { t } = useTranslation();

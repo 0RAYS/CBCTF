@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IconPlus, IconX } from '@tabler/icons-react';
-import { Button, Card, DateTimeInput, Input, Textarea } from '../../../../common';
-import { formatDateForInput } from './contestForm.js';
+import { Button, Card, DateTimeInput, Input, Textarea } from '@/components/common';
+import { formatDateForInput } from '@/components/features/Admin/Contests/editor/contestForm.js';
 
 export default function Timeline({ timeline = [], onChange }) {
   const { t } = useTranslation();

@@ -12,7 +12,7 @@ import {
     taskQueryReducer,
     taskRowKey,
     taskTimestamp,
-} from '../src/components/features/Admin/tasks/taskModel.js';
+} from '@/components/features/Admin/tasks/taskModel.js';
 import {
     buildTargetKey,
     buildTargets,
@@ -29,7 +29,7 @@ import {
     selectedNodeNames,
     toggleDeselectedNode,
     unconfirmedTargetKeys,
-} from '../src/components/features/Admin/images/imageModel.js';
+} from '@/components/features/Admin/images/imageModel.js';
 
 test('partial warmup clears only submitted images on successfully queued nodes', () => {
     const targets = buildTargets(['node-a', 'node-b', 'node-c'], ['app:v1', 'sidecar:v1']);

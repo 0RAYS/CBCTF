@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { toast } from '../../utils/toast';
-import { getSystemLogs } from '../../api/admin/system';
-import { AnsiLog, Button } from '../../components/common';
+import { toast } from '@/utils/toast';
+import { getSystemLogs } from '@/api/admin/system';
+import { AnsiLog, Button } from '@/components/common';
 import { IconRefresh } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import IpLookupDialog from '../../components/features/Admin/network/IpLookupDialog';
-import useIpLookup from '../../components/features/Admin/network/useIpLookup';
-import { injectClickableIps, isPublicIp } from '../../components/features/Admin/network/logIps';
+import IpLookupDialog from '@/components/features/Admin/network/IpLookupDialog';
+import useIpLookup from '@/components/features/Admin/network/useIpLookup';
+import { injectClickableIps, isPublicIp } from '@/components/features/Admin/network/logIps';
 
 const LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'FATAL', 'PANIC'];
 

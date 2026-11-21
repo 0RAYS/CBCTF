@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useState } from 'react';
-import { toast } from '../../../../utils/toast';
-import { getGeneratorResponseData } from './generatorUtils.js';
+import { toast } from '@/utils/toast';
+import { getGeneratorResponseData } from '@/components/features/Admin/generators/generatorUtils.js';
 
 export default function useGeneratorLogs(api, generatorId, text) {
   const [query, setQuery] = useState({ lines: 1000, delay: 0 });

@@ -1,5 +1,5 @@
-import Button from './Button';
-import TruncatedText from './TruncatedText';
+import Button from '@/components/common/Button';
+import TruncatedText from '@/components/common/TruncatedText';
 
 /** The column and context menu share action callbacks, visibility and disabled state. */
 export default function RowActions({ actions }) {

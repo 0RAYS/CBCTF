@@ -1,5 +1,5 @@
-import { hasOpenPort } from './guideModel.js';
-import { parseComposeYamlToGuideConfig } from './composeParser.js';
+import { hasOpenPort } from '@/components/features/Admin/challenges/editor/guideModel.js';
+import { parseComposeYamlToGuideConfig } from '@/components/features/Admin/challenges/editor/composeParser.js';
 
 const ip4Segment = '(\\d|[1-9]\\d|1\\d\\d|2([0-4]\\d|5[0-5]))';
 const ip4Regex = new RegExp(`^(${ip4Segment}\\.){3}${ip4Segment}$`);

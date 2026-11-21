@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { AnsiLog, Modal } from '../../../common';
-import PodDiagnostics from '../workloads/PodDiagnostics';
-import useVictimLogSession from './useVictimLogSession';
+import { AnsiLog, Modal } from '@/components/common';
+import PodDiagnostics from '@/components/features/Admin/workloads/PodDiagnostics';
+import useVictimLogSession from '@/components/features/Admin/victims/useVictimLogSession';
 
 export default function VictimLogDialog({ victim, onClose, loadPods, loadLogs, translationKey }) {
   const { t } = useTranslation();

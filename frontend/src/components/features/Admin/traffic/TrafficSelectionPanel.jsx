@@ -1,6 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { Card, Chip } from '../../../common';
-import { edgeChipClass, ellipsis, formatBytes, formatProcessLabel } from './trafficPresentation.js';
+import { Card, Chip } from '@/components/common';
+import {
+  edgeChipClass,
+  ellipsis,
+  formatBytes,
+  formatProcessLabel,
+} from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 function ProcessList({ processes }) {
   const { t } = useTranslation();

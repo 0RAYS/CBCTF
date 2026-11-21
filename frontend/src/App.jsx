@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { HashRouter as Router } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import AppRoutes from './routes';
-import { fetchAccessibleRoutes, fetchUserInfo, setInitialized } from './store/user';
-import { fetchBranding } from './store/branding';
-import { fetchPublicConfig } from './store/settings.js';
-import BrandingHead from './components/features/Branding/BrandingHead';
+import AppRoutes from '@/routes';
+import { fetchAccessibleRoutes, fetchUserInfo, setInitialized } from '@/store/user';
+import { fetchBranding } from '@/store/branding';
+import { fetchPublicConfig } from '@/store/settings.js';
+import BrandingHead from '@/components/features/Branding/BrandingHead';
 
 function App() {
   const dispatch = useDispatch();

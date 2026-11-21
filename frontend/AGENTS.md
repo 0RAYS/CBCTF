@@ -16,6 +16,7 @@ Frontend is the embedded React app for CBCTF. Trust executable config over stale
 - Routing uses `HashRouter`; route definitions live in `src/routes`.
 - Redux stores live in `src/store`; API wrappers live in `src/api`.
 - API base URL is hardcoded in `src/api/config.js`; there is no Vite proxy config.
+- Imports use the `@` alias for `src` (`@/components/common`), never relative paths. The architecture test rejects relative imports.
 
 ## Code Rules
 

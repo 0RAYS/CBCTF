@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Card } from '../../../components/common';
+import { Card } from '@/components/common';
 
 function InfoCard({
   title,

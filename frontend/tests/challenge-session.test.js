@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { registerHooks } from 'node:module';
 import test from 'node:test';
 import { api, mountHook } from './helpers/challengeSessionHarness.js';
-import { registerToastHandler } from '../src/utils/toast.js';
-import { POLL_TIMEOUT } from '../src/config/workload.js';
+import { registerToastHandler } from '@/utils/toast.js';
+import { POLL_TIMEOUT } from '@/config/workload.js';
 
 const helperURL = new URL('./helpers/challengeSessionHarness.js', import.meta.url).href;
 const loader = registerHooks({
@@ -16,13 +16,15 @@ const loader = registerHooks({
       ) {
         return { url: helperURL, shortCircuit: true };
       }
-      if (specifier === '../models/challengeViewModel') return nextResolve(`${specifier}.js`, context);
+      if (specifier === '@/components/features/CTFGame/Challenges/models/challengeViewModel') {
+        return nextResolve(specifier, context);
+      }
     }
     return nextResolve(specifier, context);
   },
 });
 const { default: useChallengeSession } =
-  await import('../src/components/features/CTFGame/Challenges/hooks/useChallengeSession.js');
+  await import('@/components/features/CTFGame/Challenges/hooks/useChallengeSession.js');
 loader.deregister();
 registerToastHandler(() => {});
 

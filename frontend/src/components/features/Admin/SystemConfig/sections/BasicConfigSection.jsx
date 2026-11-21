@@ -1,9 +1,9 @@
 import { useRef } from 'react';
 import { IconDatabase, IconUpload } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../../../common';
-import { ConfigSection } from '../fields/ConfigSection';
-import { ConfigField } from '../fields/ConfigField';
+import { Button } from '@/components/common';
+import { ConfigSection } from '@/components/features/Admin/SystemConfig/fields/ConfigSection';
+import { ConfigField } from '@/components/features/Admin/SystemConfig/fields/ConfigField';
 
 const sanitizeNumber = (value, fallbackValue = 0) => {
   if (value === '' || value === null || value === undefined) {

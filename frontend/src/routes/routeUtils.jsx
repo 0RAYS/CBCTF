@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import Loading from '../components/common/Loading';
+import Loading from '@/components/common/Loading';
 
 export const withSuspense = (Component) => (
   <Suspense fallback={<Loading />}>

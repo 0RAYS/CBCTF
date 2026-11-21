@@ -7,7 +7,7 @@ import {
     isGeneratorStoppable,
     normalizeStartCount,
     retainStoppableSelection,
-} from '../src/components/features/Admin/generators/generatorUtils.js';
+} from '@/components/features/Admin/generators/generatorUtils.js';
 
 test('start counts normalize empty, negative, fractional and invalid input', () => {
   for (const value of ['', undefined, null, 'invalid', -3, Infinity]) {

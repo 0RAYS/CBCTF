@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { IconEdit } from '@tabler/icons-react';
-import { Button, Input, List, Modal, Pagination } from '../../components/common';
-import Checkbox from '../../components/common/Checkbox';
-import { getCronJobList, updateCronJob } from '../../api/admin/cronjob';
-import { toast } from '../../utils/toast';
+import { Button, Input, List, Modal, Pagination } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
+import { getCronJobList, updateCronJob } from '@/api/admin/cronjob';
+import { toast } from '@/utils/toast';
 import { useTranslation } from 'react-i18next';
 
 const PAGE_SIZE = 20;

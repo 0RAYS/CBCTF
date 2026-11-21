@@ -1,4 +1,4 @@
-import { Button, List, Pagination, StatusTag } from '../../../common';
+import { Button, List, Pagination, StatusTag } from '@/components/common';
 import { IconEdit, IconPlus, IconShield, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 

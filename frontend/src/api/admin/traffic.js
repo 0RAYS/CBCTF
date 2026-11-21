@@ -1,4 +1,4 @@
-import request from '../request';
+import request from '@/api/request';
 
 export const getTrafficAnalysis = ({ contestId, teamId, victimId }, signal) => {
   const scope = contestId && teamId ? `/contests/${contestId}/teams/${teamId}` : '';

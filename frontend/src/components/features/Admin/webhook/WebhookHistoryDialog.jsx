@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Button, Modal } from '../../../common';
+import { Button, Modal } from '@/components/common';
 
 export default function WebhookHistoryDialog({ history, onClose }) {
   const { t } = useTranslation();

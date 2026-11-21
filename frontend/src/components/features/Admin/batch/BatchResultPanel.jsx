@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../../common';
-import { batchRows, batchTone } from './batchModel.js';
+import { Button } from '@/components/common';
+import { batchRows, batchTone } from '@/components/features/Admin/batch/batchModel.js';
 
 const PAGE_SIZE = 20;
 

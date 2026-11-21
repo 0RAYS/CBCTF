@@ -8,12 +8,12 @@ import {
   getContestTeamWriteups,
   getTeamContainers,
   getTeamMembers,
-} from '../../../../api/admin/contest';
-import { toast } from '../../../../utils/toast';
-import { downloadBlobResponse } from '../../../../utils/fileDownload';
-import TeamDetailDialog from './TeamDetailDialog';
-import TrafficGraphDialog from '../traffic/TrafficGraphDialog';
-import { TEAM_DETAIL_PAGE_SIZE } from '../Contests/teams/teamDetailData.js';
+} from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
+import { downloadBlobResponse } from '@/utils/fileDownload';
+import TeamDetailDialog from '@/components/features/Admin/details/TeamDetailDialog';
+import TrafficGraphDialog from '@/components/features/Admin/traffic/TrafficGraphDialog';
+import { TEAM_DETAIL_PAGE_SIZE } from '@/components/features/Admin/Contests/teams/teamDetailData.js';
 
 export default function TeamDetailSession({ team, contestId, onClose }) {
   const routes = useSelector((state) => state.user.routes);

@@ -1,12 +1,12 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
-import Button from '../../common/Button';
-import Card from '../../common/Card';
+import Button from '@/components/common/Button';
+import Card from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
-import { buildTimelineChartData, buildTimelineModel } from './timelineModel.js';
-import { buildTimelineOption, timelineTeamColor } from './timelineOption.js';
-import TruncatedText from '../../common/TruncatedText';
+import { buildTimelineChartData, buildTimelineModel } from '@/components/features/Leaderboard/timelineModel.js';
+import { buildTimelineOption, timelineTeamColor } from '@/components/features/Leaderboard/timelineOption.js';
+import TruncatedText from '@/components/common/TruncatedText';
 
-const ReactECharts = lazy(() => import('../../common/EChart'));
+const ReactECharts = lazy(() => import('@/components/common/EChart'));
 
 /** 分数时间线图表组件 */
 function LeaderboardTimeline({ timelineData = [], loading = false, error = false, onRetry }) {

@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { EmptyState, List, Pagination, StatusTag } from '../../../common';
+import { EmptyState, List, Pagination, StatusTag } from '@/components/common';
 import { IconEye, IconWebhook } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 

@@ -1,9 +1,9 @@
 import { IconCloudComputing } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { ConfigSection } from '../fields/ConfigSection';
-import { ConfigField } from '../fields/ConfigField';
-import { FrpServerField } from '../fields/FrpServerField';
-import { Input } from '../../../../common';
+import { ConfigSection } from '@/components/features/Admin/SystemConfig/fields/ConfigSection';
+import { ConfigField } from '@/components/features/Admin/SystemConfig/fields/ConfigField';
+import { FrpServerField } from '@/components/features/Admin/SystemConfig/fields/FrpServerField';
+import { Input } from '@/components/common';
 
 export function K8sConfigSection({ config, updateConfig }) {
   const { t } = useTranslation();

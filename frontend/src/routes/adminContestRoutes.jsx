@@ -1,19 +1,19 @@
 import { lazy } from 'react';
 import { Route } from 'react-router-dom';
-import { AdminRoute } from './AuthRoute';
-import { withGuard, withSuspense } from './routeUtils';
-const AdminContestsLayout = lazy(() => import('../components/features/layouts/AdminContestsLayout'));
+import { AdminRoute } from '@/routes/AuthRoute';
+import { withGuard, withSuspense } from '@/routes/routeUtils';
+const AdminContestsLayout = lazy(() => import('@/components/features/layouts/AdminContestsLayout'));
 
-const AdminContestDetail = lazy(() => import('../pages/admin/contests/index.jsx'));
-const AdminContestChallenges = lazy(() => import('../pages/admin/contests/challenges'));
-const AdminContestLeaderboard = lazy(() => import('../pages/admin/contests/leaderboard'));
-const AdminContestTeams = lazy(() => import('../pages/admin/contests/teams'));
-const AdminContestSettings = lazy(() => import('../pages/admin/contests/settings'));
-const AdminContestNotices = lazy(() => import('../pages/admin/contests/notice'));
-const AdminContestImagesPull = lazy(() => import('../pages/admin/contests/images-pull.jsx'));
-const ContestContainers = lazy(() => import('../pages/admin/contests/containers'));
-const AdminContestCheats = lazy(() => import('../pages/admin/contests/cheats'));
-const AdminContestGenerators = lazy(() => import('../pages/admin/contests/generators.jsx'));
+const AdminContestDetail = lazy(() => import('@/pages/admin/contests/index.jsx'));
+const AdminContestChallenges = lazy(() => import('@/pages/admin/contests/challenges'));
+const AdminContestLeaderboard = lazy(() => import('@/pages/admin/contests/leaderboard'));
+const AdminContestTeams = lazy(() => import('@/pages/admin/contests/teams'));
+const AdminContestSettings = lazy(() => import('@/pages/admin/contests/settings'));
+const AdminContestNotices = lazy(() => import('@/pages/admin/contests/notice'));
+const AdminContestImagesPull = lazy(() => import('@/pages/admin/contests/images-pull.jsx'));
+const ContestContainers = lazy(() => import('@/pages/admin/contests/containers'));
+const AdminContestCheats = lazy(() => import('@/pages/admin/contests/cheats'));
+const AdminContestGenerators = lazy(() => import('@/pages/admin/contests/generators.jsx'));
 
 const ADMIN_CONTEST_ROUTES = [
   { path: 'challenges', Component: AdminContestChallenges, apiRoute: 'GET /admin/contests/:contestID/challenges' },

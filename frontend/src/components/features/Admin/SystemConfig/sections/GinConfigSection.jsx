@@ -1,8 +1,8 @@
 import { IconServer } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { ConfigSection } from '../fields/ConfigSection';
-import { ConfigField } from '../fields/ConfigField';
-import { ConfigListField } from '../fields/ConfigListField';
+import { ConfigSection } from '@/components/features/Admin/SystemConfig/fields/ConfigSection';
+import { ConfigField } from '@/components/features/Admin/SystemConfig/fields/ConfigField';
+import { ConfigListField } from '@/components/features/Admin/SystemConfig/fields/ConfigListField';
 
 const sanitizeNumber = (value, fallbackValue = 0) => {
   if (value === '' || value === null || value === undefined) {

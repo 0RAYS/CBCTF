@@ -7,10 +7,10 @@ import {
   getContestVictimPods,
   getContestVictims,
   stopContestVictims,
-} from '../../../api/admin/contest';
-import { getUserList } from '../../../api/admin/user';
-import VictimInventory from '../../../components/features/Admin/victims/VictimInventory';
-import ContestVictimStart from '../../../components/features/Admin/victims/ContestVictimStart';
+} from '@/api/admin/contest';
+import { getUserList } from '@/api/admin/user';
+import VictimInventory from '@/components/features/Admin/victims/VictimInventory';
+import ContestVictimStart from '@/components/features/Admin/victims/ContestVictimStart';
 
 export default function ContestContainers() {
   const { id } = useParams();

@@ -1,13 +1,13 @@
-import HeroSection from '../components/features/Home/HeroSection';
+import HeroSection from '@/components/features/Home/HeroSection';
 import { lazy, startTransition, Suspense, useEffect, useState } from 'react';
-import { getStats } from '../api/stats.js';
-import { toast } from '../utils/toast.js';
+import { getStats } from '@/api/stats.js';
+import { toast } from '@/utils/toast.js';
 import { useTranslation } from 'react-i18next';
 
-const StatsSection = lazy(() => import('../components/features/Home/StatsSection'));
-const ChallengeTypes = lazy(() => import('../components/features/Home/ChallengeTypes'));
-const UpcomingContests = lazy(() => import('../components/features/Home/UpcomingContests'));
-const LeaderboardPreview = lazy(() => import('../components/features/Home/LeaderboardPreview'));
+const StatsSection = lazy(() => import('@/components/features/Home/StatsSection'));
+const ChallengeTypes = lazy(() => import('@/components/features/Home/ChallengeTypes'));
+const UpcomingContests = lazy(() => import('@/components/features/Home/UpcomingContests'));
+const LeaderboardPreview = lazy(() => import('@/components/features/Home/LeaderboardPreview'));
 
 const transformUpcomingData = (contests) => {
   return contests.map((contest) => {

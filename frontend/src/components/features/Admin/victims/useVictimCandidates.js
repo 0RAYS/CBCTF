@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getContestChallenges } from '../../../../api/admin/contest';
-import { toast } from '../../../../utils/toast';
-import { updateChallengeSelection } from './victimPayload';
+import { getContestChallenges } from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
+import { updateChallengeSelection } from '@/components/features/Admin/victims/victimPayload';
 
 export default function useVictimCandidates(contestId) {
   const { t } = useTranslation();

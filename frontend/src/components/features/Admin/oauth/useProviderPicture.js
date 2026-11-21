@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { uploadOAuthPicture } from '../../../../api/admin/oauth';
-import { toast } from '../../../../utils/toast';
+import { uploadOAuthPicture } from '@/api/admin/oauth';
+import { toast } from '@/utils/toast';
 
 export default function useProviderPicture(onUploaded) {
   const { t } = useTranslation();

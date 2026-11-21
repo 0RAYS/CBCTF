@@ -6,8 +6,8 @@ import {
   getContestGeneratorStatus,
   startContestGenerators,
   stopContestGenerators,
-} from '../../../api/admin/contest';
-import GeneratorManagement from '../../../components/features/Admin/generators/GeneratorManagement';
+} from '@/api/admin/contest';
+import GeneratorManagement from '@/components/features/Admin/generators/GeneratorManagement';
 
 export default function ContestGenerators() {
   const { id: contestId } = useParams();

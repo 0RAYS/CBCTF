@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
-import { detectContestImages, getContestPullImages, pullContestImages } from '../../../api/admin/contest';
-import ImagesPullManagement from '../../../components/features/Admin/images/ImagesPullManagement.jsx';
+import { detectContestImages, getContestPullImages, pullContestImages } from '@/api/admin/contest';
+import ImagesPullManagement from '@/components/features/Admin/images/ImagesPullManagement.jsx';
 
 function AdminContestImagesPull() {
   const { id } = useParams();

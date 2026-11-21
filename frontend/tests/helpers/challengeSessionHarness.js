@@ -1,5 +1,5 @@
 export { mountHook, useEffect, useRef, useState, useTranslation } from './pollingHookHarness.js';
-export { toast } from '../../src/utils/toast.js';
+export { toast } from '@/utils/toast.js';
 
 export const api = {};
 export const getChallengeStatus = (...args) => api.status(...args);

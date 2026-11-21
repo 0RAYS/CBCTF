@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { IconTrophy } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Modal } from '../../../../common';
-import { getFlagSolvers } from '../../../../../api/admin/challenge';
-import { toast } from '../../../../../utils/toast';
-import { useUserDetailDialog } from '../../details/useUserDetailDialog';
-import { useTeamDetailDialog } from '../../details/useTeamDetailDialog';
-import TruncatedText from '../../../../common/TruncatedText';
+import { Modal } from '@/components/common';
+import { getFlagSolvers } from '@/api/admin/challenge';
+import { toast } from '@/utils/toast';
+import { useUserDetailDialog } from '@/components/features/Admin/details/useUserDetailDialog';
+import { useTeamDetailDialog } from '@/components/features/Admin/details/useTeamDetailDialog';
+import TruncatedText from '@/components/common/TruncatedText';
 
 function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, flagId }) {
   const { t } = useTranslation();

@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconUpload } from '@tabler/icons-react';
-import { Button, Card, Input, Textarea } from '../../../../common';
-import Checkbox from '../../../../common/Checkbox';
+import { Button, Card, Input, Textarea } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
 
 export default function Identity({ contest, onChange, errors, onImageUpload }) {
   const { t } = useTranslation();
