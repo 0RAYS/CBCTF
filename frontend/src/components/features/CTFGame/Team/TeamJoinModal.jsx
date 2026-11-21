@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, Modal } from '@/components/common';
 import { useTranslation } from 'react-i18next';
+import { INPUT_BASE_CLASS, INPUT_BORDER_CLASS } from '@/components/common/Input';
 
 function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
   const [mode, setMode] = useState('select'); // 'select' | 'create' | 'join'
@@ -108,10 +109,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   teamName: e.target.value,
                 }))
               }
-              className="w-full h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4
-                                                text-neutral-50 placeholder-neutral-400
-                                                focus:border-geek-400 focus:shadow-focus
-                                                transition-all duration-200"
+              className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full h-[40px] px-4`}
               placeholder={t('game.team.joinModal.form.teamNamePlaceholder')}
             />
           </div>
@@ -129,10 +127,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   description: e.target.value,
                 }))
               }
-              className="w-full h-[80px] bg-black/20 border border-neutral-300 rounded-md p-4
-                                                text-neutral-50 placeholder-neutral-400
-                                                focus:border-geek-400 focus:shadow-focus
-                                                transition-all duration-200 resize-none"
+              className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full h-[80px] p-4 resize-none`}
               placeholder={t('game.team.joinModal.form.descriptionPlaceholder')}
             />
           </div>
@@ -151,10 +146,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   contestCode: e.target.value,
                 }))
               }
-              className="w-full h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4
-                                                text-neutral-50 placeholder-neutral-400
-                                                focus:border-geek-400 focus:shadow-focus
-                                                transition-all duration-200"
+              className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full h-[40px] px-4`}
               placeholder={t('game.team.joinModal.form.contestCodePlaceholder')}
             />
           </div>
@@ -197,10 +189,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   teamName: e.target.value,
                 }))
               }
-              className="w-full h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4
-                                                text-neutral-50 placeholder-neutral-400
-                                                focus:border-geek-400 focus:shadow-focus
-                                                transition-all duration-200"
+              className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full h-[40px] px-4`}
               placeholder={t('game.team.joinModal.form.teamNamePlaceholder')}
             />
           </div>
@@ -219,10 +208,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   teamCode: e.target.value,
                 }))
               }
-              className="w-full h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4
-                                                text-neutral-50 placeholder-neutral-400
-                                                focus:border-geek-400 focus:shadow-focus
-                                                transition-all duration-200"
+              className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full h-[40px] px-4`}
               placeholder={t('game.team.joinModal.form.inviteCodePlaceholder')}
             />
           </div>

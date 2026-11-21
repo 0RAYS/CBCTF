@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
 
 export default function SmtpFields({ form, setForm, mode }) {
   const { t } = useTranslation();
@@ -49,10 +50,11 @@ export default function SmtpFields({ form, setForm, mode }) {
           required={creating}
         />
       </div>
-      <label className="flex items-center text-neutral-300">
-        <input type="checkbox" checked={form.on} onChange={(e) => change('on', e.target.checked)} className="mr-2" />
-        {t('admin.smtp.form.enable')}
-      </label>
+      <Checkbox
+        checked={form.on}
+        onChange={(e) => change('on', e.target.checked)}
+        label={t('admin.smtp.form.enable')}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '@/config/challengeChips';
 import { VictimCandidateDialog } from '@/components/features/Admin/victims/VictimStartDialogs';
+import { INPUT_BASE_CLASS, INPUT_BORDER_CLASS } from '@/components/common/Input';
 
 export default function VictimCandidatePicker({ candidates }) {
   const { t } = useTranslation();
@@ -53,7 +54,7 @@ export default function VictimCandidatePicker({ candidates }) {
                 value={challengeSearch}
                 onChange={(event) => candidates.changeSearch(event.target.value)}
                 placeholder={t('admin.contests.containers.quickActions.searchPlaceholder')}
-                className="w-full h-7 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 transition-all duration-200"
+                className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full h-7 pl-7 pr-2 text-xs placeholder-neutral-500`}
               />
             </div>
           </div>

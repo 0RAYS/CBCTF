@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common';
+import { INPUT_BASE_CLASS, INPUT_BORDER_CLASS } from '@/components/common/Input';
 
 const emptyPasswords = { currentPassword: '', newPassword: '', confirmPassword: '' };
 
@@ -58,7 +59,7 @@ export default function PasswordSection({ user, onPasswordChange, onDelete }) {
                   value={values[name]}
                   onChange={(e) => setValues((prev) => ({ ...prev, [name]: e.target.value }))}
                   onBlur={handleBlur}
-                  className={`w-full p-3 bg-neutral-900 border rounded-md text-neutral-50 font-mono focus:outline-none transition-all duration-200 ${errors[name] ? 'border-red-400 focus:border-red-400 focus:shadow-error' : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-focus'}`}
+                  className={`${INPUT_BASE_CLASS} w-full p-3 ${errors[name] ? 'border-red-400 focus:border-red-400 focus:shadow-error' : INPUT_BORDER_CLASS}`}
                   required
                 />
                 <motion.div

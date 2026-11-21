@@ -5,6 +5,7 @@ import { Button, Card, Chip, EmptyState, Modal, Pagination, Spinner } from '@/co
 import Checkbox from '@/components/common/Checkbox';
 import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '@/config/challengeChips';
+import { INPUT_BASE_CLASS, INPUT_BORDER_CLASS } from '@/components/common/Input';
 
 /** 赛事赛题选择弹窗组件 */
 function AdminContestChallengeSelector({
@@ -34,8 +35,7 @@ function AdminContestChallengeSelector({
 }) {
   const { t } = useTranslation();
 
-  const inputBaseClass =
-    'w-full bg-black/20 border border-neutral-300/30 rounded-md p-3 text-neutral-50 font-mono focus:border-geek-400 focus:outline-none transition-colors duration-200';
+  const inputBaseClass = `${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full p-3`;
 
   if (!isOpen) return null;
 

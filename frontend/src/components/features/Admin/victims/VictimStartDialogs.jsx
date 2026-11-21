@@ -2,6 +2,8 @@ import { IconPlayerPlay, IconSearch } from '@tabler/icons-react';
 import { Button, Chip, Modal, Pagination } from '@/components/common';
 import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
 import { Trans } from 'react-i18next';
+import { CHECKBOX_INPUT_CLASS } from '@/components/common/Checkbox';
+import { INPUT_BASE_CLASS, INPUT_BORDER_CLASS } from '@/components/common/Input';
 
 export function VictimStartDialog({
   t,
@@ -152,7 +154,7 @@ export function VictimCandidateDialog({
             value={challengeSearch}
             onChange={(e) => onChallengeSearchChange(e.target.value)}
             placeholder={t('admin.contests.containers.quickActions.searchPlaceholder')}
-            className="w-full h-10 pl-10 pr-3 bg-black/20 border border-neutral-300/30 rounded-md text-sm text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 transition-all duration-200"
+            className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full h-10 pl-10 pr-3 text-sm placeholder-neutral-500`}
           />
         </div>
 
@@ -252,7 +254,7 @@ function ChallengeDetailRow({
             type="checkbox"
             checked={selected}
             onChange={(e) => onChange(e.target.checked)}
-            className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
+            className={CHECKBOX_INPUT_CLASS}
           />
           {t('admin.contests.containers.modals.selectChallenge')}
         </label>

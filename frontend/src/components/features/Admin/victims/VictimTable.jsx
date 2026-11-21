@@ -6,6 +6,7 @@ import Loading from '@/components/common/Loading';
 import useContextMenu from '@/components/common/useContextMenu';
 import RowActions from '@/components/common/RowActions';
 import TruncatedText from '@/components/common/TruncatedText';
+import { CHECKBOX_INPUT_CLASS } from '@/components/common/Checkbox';
 
 export function VictimTable({
   t,
@@ -116,7 +117,7 @@ export function VictimTable({
                     type="checkbox"
                     checked={stoppableCount > 0 && selectedContainers.length === stoppableCount}
                     onChange={onSelectAll}
-                    className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
+                    className={CHECKBOX_INPUT_CLASS}
                     aria-label={t('common.selectAll')}
                   />
                 </th>
@@ -162,7 +163,7 @@ export function VictimTable({
                         checked={selectedContainers.includes(container.id)}
                         disabled={!isVictimStoppable(container)}
                         onChange={() => onContainerSelect(container.id)}
-                        className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
+                        className={CHECKBOX_INPUT_CLASS}
                         aria-label={t(`${translationKey}.table.selectContainer`, {
                           id: container.id,
                           defaultValue: String(container.id),

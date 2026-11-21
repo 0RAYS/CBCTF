@@ -4,6 +4,7 @@ import { createOAuthProvider, deleteOAuthProvider, updateOAuthProvider } from '@
 import { getGroupList } from '@/api/admin/rbac';
 import { toast } from '@/utils/toast';
 import { Button, Modal, Select } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
 import { buildOAuthPayload, oauthForm } from '@/components/features/Admin/oauth/payload';
 import OAuthProtocolFields from '@/components/features/Admin/oauth/OAuthProtocolFields';
 import OAuthClaimFields from '@/components/features/Admin/oauth/OAuthClaimFields';
@@ -85,15 +86,11 @@ export default function OAuthProviderDialog({ mode, provider, onClose, onSaved }
               ...groups.map((group) => ({ value: group.id, label: group.name })),
             ]}
           />
-          <label className="flex items-center text-neutral-300">
-            <input
-              type="checkbox"
-              checked={form.on}
-              onChange={(e) => change('on', e.target.checked)}
-              className="mr-2"
-            />
-            {t('admin.oauthProviders.form.enable')}
-          </label>
+          <Checkbox
+            checked={form.on}
+            onChange={(e) => change('on', e.target.checked)}
+            label={t('admin.oauthProviders.form.enable')}
+          />
         </div>
       )}
     </Modal>

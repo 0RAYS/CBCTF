@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common';
+import { INPUT_BASE_CLASS, INPUT_BORDER_CLASS } from '@/components/common/Input';
 
 export default function FlagForm({
   challenge,
@@ -31,7 +32,7 @@ export default function FlagForm({
           aria-describedby={flagError ? 'challenge-flag-error' : undefined}
           onChange={(event) => onChange(event.target.value)}
           placeholder={`${prefix}{...}`}
-          className="min-w-0 w-full sm:flex-1 h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4 text-neutral-50 placeholder-neutral-400 focus:border-geek-400 focus:shadow-focus transition-colors duration-200"
+          className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} min-w-0 w-full sm:flex-1 h-[40px] px-4`}
         />
         <Button
           type="submit"

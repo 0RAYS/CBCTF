@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Button } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 import useVictimFilterSearch from '@/components/features/Admin/victims/useVictimFilterSearch';
+import { INPUT_BASE_CLASS, INPUT_BORDER_CLASS } from '@/components/common/Input';
 
 export function VictimFilters({ scope, filters, onResetFilters, onFilterChange }) {
   const { t } = useTranslation();
@@ -143,7 +144,7 @@ function SearchFilter({ label, placeholder, icon, results, loading, containerRef
           type="text"
           placeholder={placeholder}
           onChange={(e) => onSearch(e.target.value)}
-          className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
+          className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full h-8 pl-7 pr-2 text-xs placeholder-neutral-500`}
         />
         {loading && (
           <div className="absolute right-2 top-1/2 transform -translate-y-1/2">

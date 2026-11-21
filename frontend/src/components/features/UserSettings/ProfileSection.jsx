@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import Avatar from '@/components/common/Avatar';
 import { Button } from '@/components/common';
+import { INPUT_BASE_CLASS, INPUT_BORDER_CLASS } from '@/components/common/Input';
 
 export default function ProfileSection({ user, onUpdate, onPictureChange, onVerify }) {
   const { t } = useTranslation();
@@ -51,7 +52,7 @@ export default function ProfileSection({ user, onUpdate, onPictureChange, onVeri
             name="name"
             type="text"
             defaultValue={user.name}
-            className="w-full p-3 bg-neutral-900 border border-neutral-300/30 rounded-md text-neutral-50 font-mono focus:outline-none focus:border-geek-400"
+            className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full p-3`}
           />
         </div>
         <div>
@@ -62,7 +63,7 @@ export default function ProfileSection({ user, onUpdate, onPictureChange, onVeri
               name="email"
               type="email"
               defaultValue={user.email}
-              className="min-w-0 w-full flex-1 p-3 bg-neutral-900 border border-neutral-300/30 rounded-md text-neutral-50 font-mono focus:outline-none focus:border-geek-400"
+              className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} min-w-0 w-full flex-1 p-3`}
             />
             {!user.emailVerified && onVerify && (
               <Button variant="outline" size="sm" className="shrink-0 w-full sm:w-auto" onClick={onVerify}>
@@ -77,7 +78,7 @@ export default function ProfileSection({ user, onUpdate, onPictureChange, onVeri
             name="description"
             defaultValue={user.description}
             rows={4}
-            className="w-full p-3 bg-neutral-900 border border-neutral-300/30 rounded-md text-neutral-50 focus:outline-none focus:border-geek-400"
+            className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full p-3`}
           />
         </div>
         <div className="flex justify-end pt-4 border-t border-neutral-300/30">
