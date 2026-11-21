@@ -70,7 +70,6 @@ func applyTeamChallenge(
 	tx *gorm.DB,
 	user model.User,
 	team model.Team,
-	contest model.Contest,
 	contestChallenge model.ContestChallenge,
 	apply func(*gorm.DB) ([]model.TeamFlag, model.RetVal),
 ) model.RetVal {
@@ -230,13 +229,13 @@ func ListTeamFlagViews(tx *gorm.DB, team model.Team) ([]view.TeamFlagChallengeVi
 }
 
 func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) model.RetVal {
-	return applyTeamChallenge(tx, user, team, contest, contestChallenge, func(tx2 *gorm.DB) ([]model.TeamFlag, model.RetVal) {
+	return applyTeamChallenge(tx, user, team, contestChallenge, func(tx2 *gorm.DB) ([]model.TeamFlag, model.RetVal) {
 		return CreateTeamFlag(tx2, team, contest, contestChallenge)
 	})
 }
 
 func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) model.RetVal {
-	ret := applyTeamChallenge(tx, user, team, contest, contestChallenge, func(tx2 *gorm.DB) ([]model.TeamFlag, model.RetVal) {
+	ret := applyTeamChallenge(tx, user, team, contestChallenge, func(tx2 *gorm.DB) ([]model.TeamFlag, model.RetVal) {
 		return UpdateTeamFlag(tx2, team, contest, contestChallenge)
 	})
 	if !ret.OK {

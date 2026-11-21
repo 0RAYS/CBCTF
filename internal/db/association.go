@@ -33,7 +33,7 @@ func deleteAssociation[M any](tx *gorm.DB, name, where string, args []any, targe
 
 // deleteAssociationByField removes the join table rows selected by run and
 // reports the failure with the ids in the target.
-func deleteAssociationByField[M any](tx *gorm.DB, name, field string, ids []uint, errKey string, run func() *gorm.DB) model.RetVal {
+func deleteAssociationByField(name, field string, ids []uint, errKey string, run func() *gorm.DB) model.RetVal {
 	if len(ids) == 0 {
 		return model.SuccessRetVal()
 	}
@@ -48,7 +48,7 @@ func deleteAssociationByField[M any](tx *gorm.DB, name, field string, ids []uint
 
 // deleteAssociationIDs removes the join table rows of the given ids.
 func deleteAssociationIDs[M any](tx *gorm.DB, name, field string, ids []uint, errKey string) model.RetVal {
-	return deleteAssociationByField[M](tx, name, field, ids, errKey, func() *gorm.DB {
+	return deleteAssociationByField(name, field, ids, errKey, func() *gorm.DB {
 		return tx.Where(field+" IN ?", ids).Delete(new(M))
 	})
 }
@@ -87,7 +87,7 @@ func DeleteUserContestByUserID(tx *gorm.DB, userIDL ...uint) model.RetVal {
 
 // DeleteUserContestByTeamID 按队伍删除参赛关系，队伍与比赛的关系由队伍自身决定。
 func DeleteUserContestByTeamID(tx *gorm.DB, teamIDL ...uint) model.RetVal {
-	return deleteAssociationByField[model.UserContest](tx, "UserContest", "team", teamIDL, i18n.Model.UserContest.DeleteError, func() *gorm.DB {
+	return deleteAssociationByField("UserContest", "team", teamIDL, i18n.Model.UserContest.DeleteError, func() *gorm.DB {
 		return tx.Exec(`
 			DELETE FROM user_contests
 			USING user_teams, teams
