@@ -14,29 +14,28 @@ var (
 )
 
 type Contest struct {
-	Teams             []Team             `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Users             []User             `gorm:"many2many:user_contests;" json:"-"`
-	Notices           []Notice           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	ContestFlags      []ContestFlag      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Submissions       []Submission       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Name              string             `gorm:"type:varchar(255);uniqueIndex:idx_contests_name_active,where:deleted_at IS NULL;not null" json:"name"`
-	Description       string             `json:"description"`
-	Captcha           string             `json:"captcha"`
-	Picture           FileURL            `json:"picture"`
-	Prefix            string             `gorm:"default:'flag'" json:"prefix"`
-	Size              int                `gorm:"default:4" json:"size"`
-	Start             time.Time          `gorm:"not null" json:"start"`
-	Duration          time.Duration      `json:"duration"`
-	Blood             bool               `gorm:"default:true" json:"blood"`
-	Hidden            bool               `gorm:"default:true;index" json:"hidden"`
-	Paused            bool               `gorm:"default:false" json:"paused"`
-	PausedAt          time.Time          `gorm:"default:null" json:"-"`
-	LeaderboardHidden bool               `gorm:"default:false" json:"leaderboard_hidden"`
-	Victims           int64              `gorm:"default:1" json:"victims"`
-	Rules             []string           `gorm:"serializer:json;type:jsonb;default:'[]'" json:"rules"`
-	Prizes            []Prize            `gorm:"serializer:json;type:jsonb;default:'[]'" json:"prizes"`
-	Timelines         []Timeline         `gorm:"serializer:json;type:jsonb;default:'[]'" json:"timelines"`
+	Teams             []Team        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Users             []User        `gorm:"many2many:user_contests;" json:"-"`
+	Notices           []Notice      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Challenges        []Challenge   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions       []Submission  `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Name              string        `gorm:"type:varchar(255);uniqueIndex:idx_contests_name_active,where:deleted_at IS NULL;not null" json:"name"`
+	Description       string        `json:"description"`
+	Captcha           string        `json:"captcha"`
+	Picture           FileURL       `json:"picture"`
+	Prefix            string        `gorm:"default:'flag'" json:"prefix"`
+	Size              int           `gorm:"default:4" json:"size"`
+	Start             time.Time     `gorm:"not null" json:"start"`
+	Duration          time.Duration `json:"duration"`
+	Blood             bool          `gorm:"default:true" json:"blood"`
+	Hidden            bool          `gorm:"default:true;index" json:"hidden"`
+	Paused            bool          `gorm:"default:false" json:"paused"`
+	PausedAt          time.Time     `gorm:"default:null" json:"-"`
+	LeaderboardHidden bool          `gorm:"default:false" json:"leaderboard_hidden"`
+	Victims           int64         `gorm:"default:1" json:"victims"`
+	Rules             []string      `gorm:"serializer:json;type:jsonb;default:'[]'" json:"rules"`
+	Prizes            []Prize       `gorm:"serializer:json;type:jsonb;default:'[]'" json:"prizes"`
+	Timelines         []Timeline    `gorm:"serializer:json;type:jsonb;default:'[]'" json:"timelines"`
 	BaseModel
 }
 

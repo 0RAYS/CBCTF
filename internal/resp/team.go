@@ -7,8 +7,8 @@ import (
 	"CBCTF/internal/view"
 )
 
-// GetSolvedStateResp 按题目分类统计解题数量，两组 flag 都需预加载 ContestChallenge
-func GetSolvedStateResp(solved []model.ContestFlag, all []model.ContestFlag) []gin.H {
+// GetSolvedStateResp 按题目分类统计解题数量，两组 flag 都需预加载 Challenge
+func GetSolvedStateResp(solved []model.ChallengeFlag, all []model.ChallengeFlag) []gin.H {
 	return GetSolvedStateViewResp(view.BuildSolvedStateViews(solved, all))
 }
 

@@ -14,19 +14,19 @@ type LeaderboardSolvedStateView struct {
 	All      int64
 }
 
-// BuildSolvedStateViews 按题目分类统计解题数量，两组 flag 都需预加载 ContestChallenge
-func BuildSolvedStateViews(solved []model.ContestFlag, all []model.ContestFlag) []LeaderboardSolvedStateView {
+// BuildSolvedStateViews 按题目分类统计解题数量，两组 flag 都需预加载 Challenge
+func BuildSolvedStateViews(solved []model.ChallengeFlag, all []model.ChallengeFlag) []LeaderboardSolvedStateView {
 	categories := make(map[uint]string)
 	for _, v := range all {
-		categories[v.ContestChallengeID] = v.ContestChallenge.Category
+		categories[v.ChallengeID] = v.Challenge.Category
 	}
 	allCount := make(map[string]int64)
 	for _, v := range all {
-		allCount[v.ContestChallenge.Category] += 1
+		allCount[v.Challenge.Category] += 1
 	}
 	solvedCount := make(map[string]int64)
 	for _, flag := range solved {
-		solvedCount[categories[flag.ContestChallengeID]] += 1
+		solvedCount[categories[flag.ChallengeID]] += 1
 	}
 	data := make([]LeaderboardSolvedStateView, 0)
 	for category, total := range allCount {

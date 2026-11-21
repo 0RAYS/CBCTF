@@ -22,10 +22,12 @@ model:
     emptyImage: "400"
     getError: "500"
     deleteError: "500"
+    notFound: "404"
   challengeFlag:
     invalidType: "400"
     getError: "500"
     deleteError: "500"
+    notFound: "404"
   cronJob:
     getError: "500"
   cheat:
@@ -42,14 +44,6 @@ model:
     isOver: "400"
     notRunning: "400"
     leaderboardHidden: "403"
-    getError: "500"
-    deleteError: "500"
-    notFound: "404"
-  contestChallenge:
-    getError: "500"
-    deleteError: "500"
-  contestFlag:
-    invalidType: "400"
     getError: "500"
     deleteError: "500"
     notFound: "404"

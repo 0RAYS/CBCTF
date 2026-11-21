@@ -2,6 +2,7 @@ package model
 
 import (
 	"crypto/sha256"
+	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -27,19 +28,26 @@ const (
 	GeneratorFileName  = "generator.zip"
 )
 
-// Challenge 题库中的挑战
+// Challenge 题目。
+// 题目在比赛中创建，ContestID 为空表示不归属任何比赛。
+// 复制出的题目彼此独立，没有关联关系。
 type Challenge struct {
-	ChallengeFlags    []ChallengeFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Submissions       []Submission       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	RandID            string             `gorm:"type:varchar(36);uniqueIndex:idx_challenges_rand_id_active,where:deleted_at IS NULL;not null" json:"rand_id"`
-	Name              string             `gorm:"index" json:"name"`
-	Description       string             `json:"description"`
-	Category          string             `gorm:"index" json:"category"`
-	Type              ChallengeType      `gorm:"index" json:"type"`
-	GeneratorImage    string             `json:"generator_image"`
-	NetworkPolicies   NetworkPolicies    `gorm:"type:jsonb" json:"network_policies"`
-	Template          ChallengeTemplate  `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
+	ChallengeFlags  []ChallengeFlag   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions     []Submission      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	RandID          string            `gorm:"type:varchar(36);uniqueIndex:idx_challenges_rand_id_active,where:deleted_at IS NULL;not null" json:"rand_id"`
+	ContestID       sql.Null[uint]    `gorm:"index" json:"contest_id"`
+	Contest         Contest           `json:"-"`
+	Name            string            `gorm:"index" json:"name"`
+	Description     string            `json:"description"`
+	Category        string            `gorm:"index" json:"category"`
+	Type            ChallengeType     `gorm:"index" json:"type"`
+	Hidden          bool              `gorm:"index" json:"hidden"`
+	Attempt         int64             `json:"attempt"`
+	Hints           []string          `gorm:"serializer:json;type:jsonb;default:'[]'" json:"hints"`
+	Tags            []string          `gorm:"serializer:json;type:jsonb;default:'[]'" json:"tags"`
+	GeneratorImage  string            `json:"generator_image"`
+	NetworkPolicies NetworkPolicies   `gorm:"type:jsonb" json:"network_policies"`
+	Template        ChallengeTemplate `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
 	BaseModel
 }
 

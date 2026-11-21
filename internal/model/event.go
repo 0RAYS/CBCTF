@@ -24,14 +24,11 @@ const (
 	UpdateChallengeEventType     = "update_challenge"
 	DeleteChallengeEventType     = "delete_challenge"
 	UploadChallengeFileEventType = "upload_challenge_file"
+	CopyChallengeEventType       = "copy_challenge"
 
-	CreateContestChallengeEventType = "create_contest_challenge"
-	UpdateContestChallengeEventType = "update_contest_challenge"
-	DeleteContestChallengeEventType = "delete_contest_challenge"
+	ResetChallengeSolvesEventType = "reset_challenge_solves"
 
-	ResetContestChallengeSolvesEventType = "reset_contest_challenge_solves"
-
-	UpdateContestChallengeFlagEventType = "update_contest_challenge_flag"
+	UpdateChallengeFlagEventType = "update_challenge_flag"
 
 	UpdateCheatEventType      = "update_cheat"
 	DeleteCheatEventType      = "delete_cheat"
@@ -117,10 +114,9 @@ var EventTypes = []string{
 	CreateUserEventType, UpdateUserEventType, DeleteUserEventType,
 	CreateContestEventType, UpdateContestEventType, DeleteContestEventType, UpdateContestPauseEventType,
 	UpdateContestLeaderboardEventType,
-	CreateChallengeEventType, UpdateChallengeEventType, DeleteChallengeEventType, UploadChallengeFileEventType,
-	CreateContestChallengeEventType, UpdateContestChallengeEventType, DeleteContestChallengeEventType,
-	ResetContestChallengeSolvesEventType,
-	UpdateContestChallengeFlagEventType,
+	CreateChallengeEventType, UpdateChallengeEventType, DeleteChallengeEventType, UploadChallengeFileEventType, CopyChallengeEventType,
+	ResetChallengeSolvesEventType,
+	UpdateChallengeFlagEventType,
 	UpdateCheatEventType, DeleteCheatEventType, DeleteAllCheatEventType, ManualCheckCheatEventType,
 	CreateNoticeEventType, UpdateNoticeEventType, DeleteNoticeEventType,
 	CreateOauthEventType, UpdateOauthEventType, DeleteOauthEventType,

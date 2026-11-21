@@ -22,10 +22,12 @@ model:
     emptyImage: "Challenge image is required"
     getError: "Failed to load challenge: {{.Error}}"
     deleteError: "Failed to delete challenge: {{.Error}}"
+    notFound: "Challenge not found"
   challengeFlag:
     invalidType: "Invalid challenge flag type"
     getError: "Failed to load challenge flag: {{.Error}}"
     deleteError: "Failed to delete challenge flag: {{.Error}}"
+    notFound: "Challenge flag not found"
   cronJob:
     getError: "Failed to load scheduled task: {{.Error}}"
   cheat:
@@ -45,14 +47,6 @@ model:
     getError: "Failed to load contest: {{.Error}}"
     deleteError: "Failed to delete contest: {{.Error}}"
     notFound: "Contest not found"
-  contestChallenge:
-    getError: "Failed to load contest challenge: {{.Error}}"
-    deleteError: "Failed to delete contest challenge: {{.Error}}"
-  contestFlag:
-    invalidType: "Invalid contest flag type"
-    getError: "Failed to load contest flag: {{.Error}}"
-    deleteError: "Failed to delete contest flag: {{.Error}}"
-    notFound: "Contest flag not found"
   docker:
     invalidComposeYaml: "Invalid Compose configuration: {{.Error}}"
     deleteError: "Failed to delete container configuration: {{.Error}}"
