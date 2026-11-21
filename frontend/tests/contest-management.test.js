@@ -162,15 +162,14 @@ test("challenge queries retain filters across pages and omit all/blank filters",
     limit: 10,
     offset: 0,
   });
-  assert.deepEqual(challengeQuery({ contest: "3" }), {
+  assert.deepEqual(challengeQuery({ contestName: " final " }), {
     limit: 10,
     offset: 0,
-    contest_id: 3,
+    contest_name: "final",
   });
-  assert.deepEqual(challengeQuery({ contest: "0" }), {
+  assert.deepEqual(challengeQuery({ contestName: " " }), {
     limit: 10,
     offset: 0,
-    contest_id: 0,
   });
 });
 
