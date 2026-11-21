@@ -198,4 +198,7 @@ func TestWrongFlagSubmissionsTraceOwner(t *testing.T) {
 	if !rows[0].MatchedSolvedAt.Equal(at) {
 		t.Fatalf("expected the legitimate solve time, got %+v", rows[0].MatchedSolvedAt)
 	}
+	if rows[0].MatchedUserID != 2 {
+		t.Fatalf("expected the legitimate solver, got %+v", rows[0].MatchedUserID)
+	}
 }
