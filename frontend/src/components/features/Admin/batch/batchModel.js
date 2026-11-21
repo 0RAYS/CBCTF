@@ -17,10 +17,12 @@ export function batchTone(batch) {
   return batch.status === 'partial' || batch.status === 'cancelled' || hasBatchProgress(batch) ? 'warning' : 'danger';
 }
 
+export function completedBatchIds(batch) {
+  return batch.items.filter((item) => ['success', 'skipped'].includes(item.status)).map((item) => item.id);
+}
+
 export function remainingBatchIds(ids, batch) {
-  const completed = new Set(
-    batch.items.filter((item) => ['success', 'skipped'].includes(item.status)).map((item) => item.id)
-  );
+  const completed = new Set(completedBatchIds(batch));
   return ids.filter((id) => !completed.has(String(id)));
 }
 
