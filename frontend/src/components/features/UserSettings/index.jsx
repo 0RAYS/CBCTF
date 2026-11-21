@@ -40,7 +40,7 @@ export default function UserSettings({
                   <Button
                     key={section.id}
                     variant="ghost"
-                    align="icon-left-text-center"
+                    align="icon-left"
                     icon={<span className="text-xl">{section.icon}</span>}
                     textColor={
                       section.id === 'logout'

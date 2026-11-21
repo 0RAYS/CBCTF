@@ -101,7 +101,7 @@ function ContestChallenges({ contestId }) {
           <div>
             <div className="mb-4">
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 onClick={() => {
                   setShowChallengesAfterEnd(false);
