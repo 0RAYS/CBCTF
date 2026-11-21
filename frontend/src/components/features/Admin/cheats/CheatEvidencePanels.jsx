@@ -57,7 +57,7 @@ function SameWebIPPanel({ evidence, language }) {
             { key: 'actors', label: t('admin.contests.cheats.evidence.actor') },
           ]}
           rows={(web.challenges || []).map((challenge) => ({
-            name: challenge.name || `#${challenge.contest_challenge_id}`,
+            name: challenge.name || `#${challenge.challenge_id}`,
             actors: (challenge.actor_ids || []).map((id) => `User-${id}`).join(', ') || '-',
           }))}
         />
@@ -97,7 +97,7 @@ function SameWebIPPanel({ evidence, language }) {
             at: formatDateTime(submission.at, language),
             team: `Team-${submission.team_id}`,
             user: `User-${submission.user_id}`,
-            challenge: submission.challenge_name || `#${submission.contest_challenge_id}`,
+            challenge: submission.challenge_name || `#${submission.challenge_id}`,
             value: submission.value,
           }))}
         />

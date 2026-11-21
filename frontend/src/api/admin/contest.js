@@ -54,36 +54,14 @@ export function getContestChallenges(contestId, params = { limit: 20, offset: 0 
   });
 }
 
-export function addContestChallenge(contestId, challenge_ids) {
+export function copyChallengesToContest(contestId, challengeIds) {
   return request({
     url: `/admin/contests/${contestId}/challenges`,
     method: 'POST',
     noToast: true,
     data: {
-      challenge_ids: challenge_ids,
+      challenge_ids: challengeIds,
     },
-  });
-}
-
-export function updateContestChallenge(contestId, challengeId, data) {
-  return request({
-    url: `/admin/contests/${contestId}/challenges/${challengeId}`,
-    method: 'PUT',
-    data,
-  });
-}
-
-export function removeContestChallenge(contestId, challengeId) {
-  return request({
-    url: `/admin/contests/${contestId}/challenges/${challengeId}`,
-    method: 'DELETE',
-  });
-}
-
-export function resetContestChallengeSolves(contestId, challengeId) {
-  return request({
-    url: `/admin/contests/${contestId}/challenges/${challengeId}/reset-solves`,
-    method: 'POST',
   });
 }
 

@@ -7,12 +7,15 @@ import {
     validateContestDraft,
 } from "@/components/features/Admin/Contests/editor/contestForm.js";
 import {
-    challengeDraft,
     challengeQuery,
-    flagUpdatePayload,
-    isFlagDirty,
     toggleChallengeSelection,
 } from "@/components/features/Admin/Contests/challenges/challengeData.js";
+import {
+    applyChallengeType,
+    challengeDraft,
+    flagUpdatePayload,
+    isFlagDirty,
+} from "@/components/features/Admin/challenges/editor/challengeData.js";
 import {
     containerStatus,
     filterTeamFlags,
@@ -159,6 +162,16 @@ test("challenge queries retain filters across pages and omit all/blank filters",
     limit: 10,
     offset: 0,
   });
+  assert.deepEqual(challengeQuery({ contest: "3" }), {
+    limit: 10,
+    offset: 0,
+    contest_id: 3,
+  });
+  assert.deepEqual(challengeQuery({ contest: "0" }), {
+    limit: 10,
+    offset: 0,
+    contest_id: 0,
+  });
 });
 
 test("picker selection persists across pages and toggles by identity", () => {
@@ -173,25 +186,40 @@ test("picker selection persists across pages and toggles by identity", () => {
   ]);
 });
 
-test("challenge draft clones hints/tags without carrying pool or flag fields", () => {
+test("challenge draft clones hints/tags and normalizes ownership and flags", () => {
   const original = {
     name: "Challenge",
     hidden: true,
+    contest_id: 7,
     tags: ["web"],
     hints: ["hint"],
-    flags: [{ id: 1 }],
+    flags: [{ id: 1, value: "static{a}" }],
   };
   const draft = challengeDraft(original);
   draft.tags.push("draft");
   draft.hints[0] = "draft";
+  draft.flags[0].value = "draft";
   assert.deepEqual(original.tags, ["web"]);
   assert.deepEqual(original.hints, ["hint"]);
-  assert.equal("flags" in draft, false);
+  assert.equal(original.flags[0].value, "static{a}");
+  assert.equal(draft.contest_id, 7);
+  assert.equal(draft.hidden, true);
   assert.equal(draft.attempt, 0);
   assert.deepEqual(challengeDraft({}).tags, []);
+  assert.deepEqual(challengeDraft({}).flags, []);
 });
 
-test("flag payload contains only writable fields and preserves zeroes", () => {
+test("challenge type changes reset the flag list to match the new type", () => {
+  const previous = { type: "static", flags: [{ id: 1, value: "static{a}" }] };
+  assert.deepEqual(applyChallengeType(previous, { ...previous, type: "pods" }).flags, []);
+  assert.deepEqual(applyChallengeType({ type: "pods", flags: [] }, { type: "static", flags: [] }).flags, [
+    { id: 0, value: "" },
+  ]);
+  const unchanged = { type: "static", flags: [{ id: 1, value: "static{a}" }] };
+  assert.deepEqual(applyChallengeType(unchanged, { ...unchanged }).flags, [{ id: 1, value: "static{a}" }]);
+});
+
+test("flag payload contains only writable scoring fields and preserves zeroes", () => {
   const flag = {
     id: 3,
     value: "",
@@ -204,7 +232,6 @@ test("flag payload contains only writable fields and preserves zeroes", () => {
     blood: [1, 2, 3],
   };
   assert.deepEqual(flagUpdatePayload(flag), {
-    value: "",
     score: 0,
     score_type: 0,
     decay: 0,
@@ -215,7 +242,6 @@ test("flag payload contains only writable fields and preserves zeroes", () => {
     false,
   );
   for (const [field, value] of Object.entries({
-    value: "flag",
     score: 100,
     score_type: 1,
     decay: 20,

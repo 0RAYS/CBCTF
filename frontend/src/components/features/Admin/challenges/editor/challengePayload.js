@@ -6,7 +6,13 @@ export const buildChallengePayload = (challenge, mode, initialCompose = []) => {
     description: challenge.description,
     category: challenge.category,
     type: challenge.type,
+    hidden: !!challenge.hidden,
+    attempt: Number(challenge.attempt) || 0,
+    hints: (challenge.hints || []).filter((hint) => hint !== ''),
+    tags: (challenge.tags || []).filter((tag) => tag !== ''),
   };
+  if (mode === 'add') payload.contest_id = challenge.contest_id || 0;
+
   let flags;
   if (challenge.type === 'pods') flags = [];
   else if (mode === 'add') flags = challenge.flags.map((flag) => (typeof flag === 'string' ? flag : flag.value || ''));

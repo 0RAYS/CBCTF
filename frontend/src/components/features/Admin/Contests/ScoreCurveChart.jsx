@@ -167,9 +167,9 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
 
   const curveLabels = useMemo(
     () => ({
-      0: t('admin.contests.challengeModal.scoreCurve.static'),
-      1: t('admin.contests.challengeModal.scoreCurve.linear'),
-      2: t('admin.contests.challengeModal.scoreCurve.log'),
+      0: t('admin.challengeModal.scoreCurve.static'),
+      1: t('admin.challengeModal.scoreCurve.linear'),
+      2: t('admin.challengeModal.scoreCurve.log'),
     }),
     [t]
   );
@@ -206,7 +206,7 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
       },
       xAxis: {
         type: 'value',
-        name: t('admin.contests.challengeModal.labels.solvers'),
+        name: t('admin.challengeModal.labels.solvers'),
         nameTextStyle: {
           color: AXIS_LABEL,
           fontSize: 10,
@@ -220,7 +220,7 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
       },
       yAxis: {
         type: 'value',
-        name: t('admin.contests.challengeModal.labels.initialScore'),
+        name: t('admin.challengeModal.labels.initialScore'),
         nameTextStyle: {
           color: AXIS_LABEL,
           fontSize: 10,

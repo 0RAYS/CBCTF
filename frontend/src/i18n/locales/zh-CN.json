@@ -401,67 +401,9 @@
           }
         }
       },
-      "challengeModal": {
-        "titleEdit": "编辑赛题",
-        "sections": {
-          "basic": "基本信息",
-          "flags": "Flag设置",
-          "tags": "标签设置",
-          "hints": "提示设置"
-        },
-        "labels": {
-          "name": "题目名称",
-          "description": "题目描述",
-          "attempts": "尝试次数",
-          "hidden": "隐藏题目",
-          "flagValueHint": "格式: static{value} | uuid{} | leet{value}",
-          "generation": "第 {{generation}} 代",
-          "archived": "已归档",
-          "flagChangeNote": "修改 flag 模板会保留已有解题记录，未解出的队伍会自动拿到新答案。",
-          "sourceChallenge": "复制自题库题目 #{{id}}，比赛副本相互独立。",
-          "scoreCurve": "分数曲线",
-          "initialScore": "初始分值",
-          "currentScore": "当前分值",
-          "decay": "衰减值",
-          "minScore": "最低分值",
-          "solvers": "解出人数"
-        },
-        "placeholders": {
-          "name": "输入题目名称",
-          "description": "输入题目描述内容",
-          "flagValue": "输入Flag值",
-          "tag": "标签 {{index}}",
-          "hint": "提示 {{index}}"
-        },
-        "scoreCurve": {
-          "static": "静态分值",
-          "linear": "线性衰减",
-          "log": "指数衰减"
-        },
-        "actions": {
-          "viewSolvers": "查看解题队伍",
-          "addTag": "添加标签",
-          "addHint": "添加提示",
-          "add": "添加赛题",
-          "resetSolves": "重置解题记录"
-        },
-        "resetSolves": {
-          "title": "重置本题解题记录",
-          "description": "将清空本题所有队伍的解题记录，并重算队伍分数与排名。此操作不可撤销。",
-          "confirm": "确认重置"
-        },
-        "solversModal": {
-          "title": "Flag #{{index}} 解题队伍",
-          "columns": {
-            "user": "用户",
-            "team": "队伍",
-            "solvedAt": "解题时间"
-          },
-          "empty": "暂无解题记录"
-        }
-      },
       "challengeSelector": {
-        "title": "选择赛题",
+        "title": "复制赛题",
+        "notice": "选中的赛题会以独立副本的形式复制到本场比赛。",
         "search": {
           "placeholder": "搜索赛题...",
           "descPlaceholder": "按描述搜索..."
@@ -476,7 +418,7 @@
         "selectedPrefix": "已选择 ",
         "selectedSuffix": " 个赛题",
         "actions": {
-          "confirmAdd": "确认添加"
+          "confirmCopy": "确认复制"
         }
       },
       "trafficGraph": {
@@ -1016,18 +958,19 @@
         "hidden": "隐藏",
         "attemptsLabel": "尝试次数:",
         "solves": "{{count}} 解",
+        "actions": {
+          "newInContest": "新建题目",
+          "copyFromLibrary": "从题库复制"
+        },
         "toast": {
           "fetchListFailed": "获取题目列表失败",
           "fetchPoolFailed": "获取题库列表失败",
-          "addSuccess": "添加题目成功",
-          "addFailed": "添加题目失败",
+          "copySuccess": "复制题目成功",
+          "copyFailed": "复制题目失败",
           "updateSuccess": "更新题目成功",
           "updateFailed": "更新题目失败",
           "removeSuccess": "移出题目成功",
-          "removeFailed": "移出题目失败",
-          "updateFlagSuccess": "更新题目flag成功",
-          "resetSolvesSuccess": "已重置 {{teams}} 支队伍、{{submissions}} 条提交记录",
-          "resetSolvesFailed": "重置解题记录失败"
+          "removeFailed": "移出题目失败"
         }
       },
       "leaderboard": {
@@ -1317,6 +1260,7 @@
     "challenge": {
       "table": {
         "name": "题目",
+        "contest": "所属比赛",
         "category": "分类",
         "type": "类型",
         "flags": "Flag",
@@ -1326,7 +1270,18 @@
       "actions": {
         "add": "添加题目",
         "upload": "上传附件",
-        "test": "测试题目"
+        "test": "测试题目",
+        "copy": "复制到比赛"
+      },
+      "contestFilter": {
+        "all": "全部比赛",
+        "unassigned": "未归属比赛"
+      },
+      "copy": {
+        "title": "复制题目",
+        "description": "副本是一道独立的题目，与源题目不共享任何状态。",
+        "confirm": "复制",
+        "notice": "复制出的题目默认隐藏，计分参数回到默认值，不带解题记录。"
       },
       "search": {
         "label": "搜索题目",
@@ -1360,7 +1315,8 @@
         "updateFailed": "更新题目失败",
         "deleteSuccess": "删除题目成功",
         "deleteFailed": "删除题目失败",
-        "deleteKeepsContestCopies": "{{count}} 个比赛题目副本与解题记录不受影响"
+        "copySuccess": "复制题目成功",
+        "copyFailed": "复制题目失败"
       },
       "testModal": {
         "title": "测试",
@@ -1407,14 +1363,16 @@
       "delete": {
         "title": "确认删除题目",
         "prompt": "确定删除此题目吗？",
-        "warning": "此操作不可撤销, 请谨慎操作",
-        "usageNotice": "该题库题已被 {{count}} 个比赛题目引用。比赛题目是独立副本，删除题库题不会影响正在进行的比赛与解题记录。",
-        "usageItem": "{{contest}} · {{name}}（已解出 {{solvers}} 队）"
+        "warning": "此操作不可撤销, 请谨慎操作"
       },
       "sections": {
         "basic": "基本信息",
+        "ownership": "归属与发布",
         "generator": "生成器镜像",
         "flags": "Flag设置",
+        "scoring": "计分设置",
+        "tags": "标签设置",
+        "hints": "提示设置",
         "podsNotice": "容器配置",
         "containers": "容器设置"
       },
@@ -1423,19 +1381,72 @@
         "category": "题目分类",
         "type": "题目类型",
         "description": "题目描述",
-        "generatorImage": "Generator镜像地址"
+        "generatorImage": "Generator镜像地址",
+        "contest": "所属比赛",
+        "hidden": "隐藏题目",
+        "attempts": "尝试次数",
+        "flagValueHint": "格式: static{value} | uuid{} | leet{value}",
+        "generation": "第 {{generation}} 代",
+        "archived": "已归档",
+        "flagChangeNote": "修改 flag 模板会保留已有解题记录，未解出的队伍会自动拿到新答案。",
+        "scoreCurve": "分数曲线",
+        "initialScore": "初始分值",
+        "currentScore": "当前分值",
+        "decay": "衰减值",
+        "minScore": "最低分值",
+        "solvers": "解出人数"
       },
       "placeholders": {
         "name": "输入题目名称",
         "category": "请选择分类",
         "description": "输入题目描述内容",
         "generatorImage": "输入Generator镜像地址",
-        "flag": "Flag {{index}}"
+        "flag": "Flag {{index}}",
+        "flagValue": "输入Flag值",
+        "tag": "标签 {{index}}",
+        "hint": "提示 {{index}}"
+      },
+      "scoreCurve": {
+        "static": "静态分值",
+        "linear": "线性衰减",
+        "log": "指数衰减"
       },
       "actions": {
         "addFlag": "添加Flag",
+        "addTag": "添加标签",
+        "addHint": "添加提示",
         "add": "添加题目",
-        "confirmDelete": "确认删除"
+        "confirmDelete": "确认删除",
+        "viewSolvers": "查看解题队伍",
+        "resetSolves": "重置解题记录"
+      },
+      "resetSolves": {
+        "title": "重置本题解题记录",
+        "description": "将清空本题所有队伍的解题记录，并重算队伍分数与排名。此操作不可撤销。",
+        "confirm": "确认重置"
+      },
+      "solversModal": {
+        "title": "Flag #{{index}} 解题队伍",
+        "columns": {
+          "user": "用户",
+          "team": "队伍",
+          "solvedAt": "解题时间"
+        },
+        "empty": "暂无解题记录"
+      },
+      "scoring": {
+        "empty": "本题没有 Flag"
+      },
+      "contest": {
+        "unassigned": "未归属比赛",
+        "lockedHint": "题目保持所属比赛。如需在其他比赛复用，请复制该题目。"
+      },
+      "toast": {
+        "fetchFlagsFailed": "获取题目 Flag 失败",
+        "updateFlagSuccess": "题目 Flag 更新成功",
+        "updateFlagFailed": "更新题目 Flag 失败",
+        "resetSolvesSuccess": "已重置 {{teams}} 支队伍、{{submissions}} 条提交记录",
+        "resetSolvesFailed": "重置解题记录失败"
       },
       "podsNotice": {
         "flagFormat": "flag格式: {{format}}",
@@ -1807,14 +1818,13 @@
           "admin:smtp": "SMTP",
           "admin:cronjob": "定时任务",
           "admin:webhook": "Webhook",
-          "admin:challenge": "题库",
+          "admin:challenge": "题目",
+          "admin:challenge:flag": "题目 Flag",
           "admin:contest": "比赛",
           "admin:team": "比赛队伍",
           "admin:team_writeup": "队伍 Writeup",
           "admin:notice": "比赛公告",
           "admin:cheat": "作弊检测",
-          "admin:contest_challenge": "比赛题目",
-          "admin:contest_challenge_flag": "比赛 Flag",
           "admin:image": "全局镜像",
           "admin:contest_image": "比赛镜像",
           "admin:victim": "全局靶机",

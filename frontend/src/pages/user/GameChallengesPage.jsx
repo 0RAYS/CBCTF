@@ -15,7 +15,7 @@ import useContestWriteups from '@/components/features/CTFGame/Writeup/useContest
 import Loading from '@/components/common/Loading';
 import { Button, EmptyState } from '@/components/common';
 
-function ContestChallenges({ contestId }) {
+function ChallengeList({ contestId }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [showChallengesAfterEnd, setShowChallengesAfterEnd] = useState(false);
@@ -140,5 +140,5 @@ function ContestChallenges({ contestId }) {
 
 export default function GameChallengesPage() {
   const { contestId } = useParams();
-  return <ContestChallenges key={contestId} contestId={contestId} />;
+  return <ChallengeList key={contestId} contestId={contestId} />;
 }

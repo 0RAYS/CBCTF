@@ -17,7 +17,7 @@ export default function TrafficPanel({
   const columns = [
     ['id', 'containerId'],
     ['user_id', 'userId'],
-    ['contest_challenge_name', 'challengeName'],
+    ['challenge_name', 'challengeName'],
     ['start', 'startTime'],
     ['duration', 'duration'],
     ['status', 'status'],
