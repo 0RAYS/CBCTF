@@ -6,7 +6,8 @@ import {
   getGuideServiceTargets,
   hasVpcNetworks,
 } from '@/components/features/Admin/challenges/editor/guideModel.js';
-import { buildNetworkTopology } from '@/components/features/Admin/challenges/editor/networkPolicy.js';
+import { buildNetworkContext } from '@/components/features/Admin/challenges/editor/networkPolicy.js';
+import { buildNetworkTopology } from '@/components/features/Admin/challenges/editor/networkTopology.js';
 import { GuideListHeader } from '@/components/features/Admin/challenges/editor/GuideFields.jsx';
 import ServiceEditor from '@/components/features/Admin/challenges/editor/ServiceEditor.jsx';
 import NetworkDefinitionsEditor from '@/components/features/Admin/challenges/editor/NetworkDefinitionsEditor.jsx';
@@ -138,6 +139,7 @@ export default function ComposeEditor({ challenge, onChange, compose }) {
             policies={challenge.network_policies || []}
             vpcMode={vpcMode}
             targets={getGuideServiceTargets(guideConfig)}
+            context={buildNetworkContext(guideConfig)}
             onChange={(policies) => onChange({ ...challenge, network_policies: policies })}
           />
           <div className="2xl:sticky 2xl:top-0">

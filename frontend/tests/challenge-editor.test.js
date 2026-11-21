@@ -17,10 +17,13 @@ import {
 } from '@/components/features/Admin/challenges/editor/composeValidation.js';
 import {buildChallengePayload} from '@/components/features/Admin/challenges/editor/challengePayload.js';
 import {
-    buildNetworkTopology,
+    buildNetworkContext,
     defaultNetworkPolicy,
     normalizeNetworkPolicy,
+    policyAllowsEgressIp,
+    resolvePolicies,
 } from '@/components/features/Admin/challenges/editor/networkPolicy.js';
+import { buildNetworkTopology } from '@/components/features/Admin/challenges/editor/networkTopology.js';
 
 const service = (overrides = {}) => ({
   ...createGuideService(),
@@ -320,12 +323,52 @@ test('policy normalization accepts persisted uppercase rules without mutating in
   const original = structuredClone(policy);
   assert.deepEqual(normalizeNetworkPolicy(policy), {
     service: 'web',
+    allow_internet: false,
+    egress_cidrs: [],
+    allow_external: null,
+    peers: [],
     from: [{ cidr: '10.1.0.0/24', except: ['10.1.0.2'] }],
     to: [],
   });
   assert.deepEqual(policy, original);
-  assert.equal(defaultNetworkPolicy({ service: 'web' }).service, 'web');
-  assert.equal(defaultNetworkPolicy().to[0].except.length, 4);
+  assert.equal(defaultNetworkPolicy('web').service, 'web');
+  assert.equal(defaultNetworkPolicy('web').allow_internet, false);
+  assert.equal(defaultNetworkPolicy('web').allow_external, true);
+});
+
+test('policy resolution denies egress by default and keeps legacy CIDR semantics', () => {
+  const targets = [
+    { label: 'web', service: 'web' },
+    { label: 'db', service: 'db' },
+  ];
+  const [fallback] = resolvePolicies([], targets);
+  assert.equal(fallback.allow_internet, false);
+  assert.equal(fallback.allow_external, true);
+  const [legacy] = resolvePolicies([{ service: 'web', to: [{ cidr: '10.0.0.0/8' }] }], targets);
+  assert.equal(legacy.allow_internet, false);
+  assert.equal(legacy.allow_external, true);
+  assert.deepEqual(legacy.to, [{ cidr: '10.0.0.0/8', except: [] }]);
+  const [legacyInbound] = resolvePolicies([{ service: 'web', from: [{ cidr: '10.1.0.0/24' }] }], targets);
+  assert.equal(legacyInbound.allow_external, false);
+  assert.equal(legacyInbound.restrict_ingress, true);
+});
+
+test('peer interconnection is symmetric and scoped to the declaring container', () => {
+  const targets = [
+    { label: 'web', service: 'web' },
+    { label: 'db', service: 'db' },
+  ];
+  const resolved = resolvePolicies(
+    [
+      { service: 'web', allow_internet: true, allow_external: true, peers: ['db'] },
+      { service: 'db', allow_internet: false, allow_external: false, peers: [] },
+    ],
+    targets
+  );
+  assert.deepEqual(resolved[0].peers, ['db']);
+  assert.deepEqual(resolved[1].peers, ['web']);
+  assert.equal(resolved[1].allow_internet, false);
+  assert.equal(resolved[1].allow_external, false);
 });
 
 for (const direction of ['from', 'to', 'both']) {
@@ -342,7 +385,7 @@ for (const direction of ['from', 'to', 'both']) {
     const topology = buildNetworkTopology(config, policies);
     assert.deepEqual(topology, buildNetworkTopology(config, normalized));
     assert.equal(topology.connections.length, 2);
-    assert.ok(topology.connections.every((connection) => connection.allowed === (direction === 'from')));
+    assert.ok(topology.connections.every((connection) => connection.allowed));
     assert.deepEqual(policies, original);
   });
 }
@@ -353,7 +396,7 @@ test('topology accepts a nil policy collection serialized as JSON null', () => {
   assert.deepEqual(buildNetworkTopology(config, null), buildNetworkTopology(config, []));
 });
 
-test('topology combines outbound and inbound policy, exceptions and target names', () => {
+test('topology follows NIC lanes, peer rules and internet egress', () => {
   const config = vpcConfig();
   config.services[0].containerName = 'frontend';
   config.services.push(service({ name: 'db', networks: [{ name: 'lan', ipv4Address: '10.1.0.3' }] }));
@@ -361,19 +404,62 @@ test('topology combines outbound and inbound policy, exceptions and target names
     { label: 'frontend', service: 'frontend' },
     { label: 'db', service: 'db' },
   ]);
-  let policies = [{ service: 'frontend', to: [{ CIDR: '0.0.0.0/0', Except: [] }] }];
-  let topology = buildNetworkTopology(config, policies);
-  assert.equal(topology.connections[0].allowed, true);
-  assert.equal(topology.connections[1].reasonKey, 'outboundBlocked');
+  const policies = [
+    { service: 'frontend', allow_internet: true, allow_external: true, peers: ['db'] },
+    { service: 'db', allow_internet: false, allow_external: true, peers: ['frontend'] },
+  ];
+  const topology = buildNetworkTopology(config, policies);
+  assert.deepEqual(topology.lanes.map((lane) => lane.name), ['lan']);
+  assert.equal(topology.connections.length, 2);
+  assert.ok(topology.connections.every((connection) => connection.allowed));
   assert.deepEqual(topology.connections[0].networks, ['lan']);
-  policies.push({ service: 'db', from: [{ cidr: '10.1.0.0/24', except: ['10.1.0.2/32'] }] });
-  assert.equal(buildNetworkTopology(config, policies).connections[0].reasonKey, 'inboundBlocked');
-  policies = [{ service: 'frontend', to: [{ cidr: '0.0.0.0/0', except: ['10.0.0.0/8'] }] }];
-  assert.equal(buildNetworkTopology(config, policies).connections[0].reasonKey, 'outboundBlocked');
-  topology = buildNetworkTopology(sharedConfig());
-  assert.equal(topology.nodes[0].x, 50);
-  assert.equal(topology.nodes[0].y, 50);
-  assert.deepEqual(topology.connections, []);
+  assert.equal(topology.egress.length, 2);
+  assert.equal(topology.egress[0].allowed, true);
+  assert.equal(topology.egress[1].allowed, false);
+  const blocked = buildNetworkTopology(config, [{ service: 'frontend', allow_internet: true, allow_external: true }]);
+  assert.equal(blocked.connections[0].reasonKey, 'allowed');
+  const shared = buildNetworkTopology(sharedConfig());
+  assert.equal(shared.nodes[0].x, 50);
+  assert.deepEqual(shared.connections, []);
+  assert.equal(shared.egress[0].allowed, false);
+});
+
+test('containers on the same subnet are interconnected without an explicit peer', () => {
+  const config = vpcConfig();
+  config.services.push(service({ name: 'db', networks: [{ name: 'lan', ipv4Address: '10.1.0.3' }] }));
+  const context = buildNetworkContext(config);
+  assert.deepEqual(context.subnetPeers.web, ['db']);
+  assert.deepEqual(context.subnetPeers.db, ['web']);
+  const topology = buildNetworkTopology(config, []);
+  assert.ok(topology.connections.every((connection) => connection.allowed));
+});
+
+test('containers on different subnets stay isolated until they are peered', () => {
+  const config = vpcConfig();
+  config.networks.push({ name: 'dmz', subnet: '10.2.0.0/24', gateway: '10.2.0.1' });
+  config.services.push(service({ name: 'db', networks: [{ name: 'dmz', ipv4Address: '10.2.0.3' }] }));
+  const context = buildNetworkContext(config);
+  assert.deepEqual(context.subnetPeers.web, []);
+  assert.deepEqual(context.vpcCIDRs, ['10.1.0.0/24', '10.2.0.0/24']);
+  const isolated = buildNetworkTopology(config, []);
+  assert.ok(isolated.connections.every((connection) => !connection.allowed));
+  assert.equal(isolated.connections[0].reasonKey, 'outboundBlocked');
+  const peered = buildNetworkTopology(config, [{ service: 'web', peers: ['db'] }]);
+  assert.ok(peered.connections.every((connection) => connection.allowed));
+});
+
+test('internet egress covers public addresses only and extra ranges unlock private ones', () => {
+  const targets = [{ label: 'web', service: 'web' }];
+  const context = buildNetworkContext(vpcConfig());
+  const [publicPolicy] = resolvePolicies([{ service: 'web', allow_internet: true }], targets, context);
+  assert.equal(policyAllowsEgressIp(publicPolicy, '8.8.8.8', context), true);
+  assert.equal(policyAllowsEgressIp(publicPolicy, '10.5.0.1', context), false);
+  const [privatePolicy] = resolvePolicies(
+    [{ service: 'web', allow_internet: true, egress_cidrs: ['10.5.0.0/16'] }],
+    targets,
+    context
+  );
+  assert.equal(policyAllowsEgressIp(privatePolicy, '10.5.0.1', context), true);
 });
 
 for (const type of ['static', 'dynamic']) {
@@ -424,7 +510,17 @@ test('pods payload omits unchanged Compose, preserves handwritten text exactly a
   assert.equal(created.docker_compose, yaml);
   assert.equal(Object.hasOwn(created, 'flags'), false);
   assert.equal(Object.hasOwn(updated, 'docker_compose'), false);
-  assert.deepEqual(updated.network_policies, [{ from: [{ cidr: '10.1.0.0/24', except: [] }], to: [] }]);
+  assert.deepEqual(updated.network_policies, [
+    {
+      service: 'web',
+      allow_internet: false,
+      egress_cidrs: [],
+      allow_external: null,
+      peers: [],
+      from: [{ cidr: '10.1.0.0/24', except: [] }],
+      to: [],
+    },
+  ]);
   assert.equal(
     buildChallengePayload({ ...challenge, docker_compose: `${yaml}\n` }, 'edit', original).docker_compose,
     `${yaml}\n`
@@ -434,22 +530,46 @@ test('pods payload omits unchanged Compose, preserves handwritten text exactly a
   assert.equal(buildChallengePayload({ ...challenge, docker_compose: '' }, 'add').docker_compose, '');
 });
 
-test('VPC payload includes policy service even when Compose is omitted from update', () => {
+test('policy payload keeps the service and the semantic fields even when Compose is omitted from update', () => {
   const yaml = buildGuidedComposeYaml(vpcConfig());
   const challenge = {
     id: 1,
     type: 'pods',
     docker_compose: yaml,
     network_policies: [
-      { service: 'web', from: [], to: [{ CIDR: '0.0.0.0/0', Except: ['10.0.0.0/8'] }] },
+      {
+        service: 'web',
+        allow_internet: true,
+        egress_cidrs: ['10.1.0.0/16'],
+        allow_external: false,
+        peers: ['db'],
+        from: [],
+        to: [{ CIDR: '0.0.0.0/0', Except: ['10.0.0.0/8'] }],
+      },
       { from: null, to: null },
     ],
   };
   const payload = buildChallengePayload(challenge, 'edit', [{ id: 1, value: yaml }]);
   assert.equal(Object.hasOwn(payload, 'docker_compose'), false);
   assert.deepEqual(payload.network_policies, [
-    { service: 'web', from: [], to: [{ cidr: '0.0.0.0/0', except: ['10.0.0.0/8'] }] },
-    { service: '', from: [], to: [] },
+    {
+      service: 'web',
+      allow_internet: true,
+      egress_cidrs: ['10.1.0.0/16'],
+      allow_external: false,
+      peers: ['db'],
+      from: [],
+      to: [{ cidr: '0.0.0.0/0', except: ['10.0.0.0/8'] }],
+    },
+    {
+      service: '',
+      allow_internet: false,
+      egress_cidrs: [],
+      allow_external: null,
+      peers: [],
+      from: [],
+      to: [],
+    },
   ]);
 });
 

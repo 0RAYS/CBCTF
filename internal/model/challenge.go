@@ -87,10 +87,16 @@ func (c Challenge) AttachmentPath(teamID uint) string {
 	}
 }
 
+// NetworkPolicy 描述单个容器的网络策略。
+// AllowInternet 与 AllowExternal 为 nil 表示条目没有声明这一项，沿用旧的 CIDR 规则语义。
 type NetworkPolicy struct {
-	Service string           `json:"service"`
-	From    []*netv1.IPBlock `json:"from"`
-	To      []*netv1.IPBlock `json:"to"`
+	Service       string           `json:"service"`
+	AllowInternet *bool            `json:"allow_internet,omitempty"`
+	EgressCIDRs   []string         `json:"egress_cidrs,omitempty"`
+	AllowExternal *bool            `json:"allow_external,omitempty"`
+	Peers         []string         `json:"peers,omitempty"`
+	From          []*netv1.IPBlock `json:"from"`
+	To            []*netv1.IPBlock `json:"to"`
 }
 
 type NetworkPolicies []NetworkPolicy
@@ -105,12 +111,24 @@ func (n NetworkPolicies) DeepCopy() NetworkPolicies {
 	result := make(NetworkPolicies, 0, len(n))
 	for _, policy := range n {
 		result = append(result, NetworkPolicy{
-			Service: policy.Service,
-			From:    copyIPBlocks(policy.From),
-			To:      copyIPBlocks(policy.To),
+			Service:       policy.Service,
+			AllowInternet: copyBool(policy.AllowInternet),
+			EgressCIDRs:   append([]string(nil), policy.EgressCIDRs...),
+			AllowExternal: copyBool(policy.AllowExternal),
+			Peers:         append([]string(nil), policy.Peers...),
+			From:          copyIPBlocks(policy.From),
+			To:            copyIPBlocks(policy.To),
 		})
 	}
 	return result
+}
+
+func copyBool(value *bool) *bool {
+	if value == nil {
+		return nil
+	}
+	copied := *value
+	return &copied
 }
 
 func copyIPBlocks(blocks []*netv1.IPBlock) []*netv1.IPBlock {
@@ -153,6 +171,13 @@ func (n NetworkPolicies) Value() (driver.Value, error) {
 	for i, policy := range n {
 		n[i].From = tidy(policy.From)
 		n[i].To = tidy(policy.To)
+		n[i].EgressCIDRs = slices.DeleteFunc(policy.EgressCIDRs, func(cidr string) bool {
+			_, err := netip.ParsePrefix(cidr)
+			return err != nil
+		})
+		n[i].Peers = slices.DeleteFunc(policy.Peers, func(peer string) bool {
+			return peer == ""
+		})
 	}
 	return json.Marshal(n)
 }

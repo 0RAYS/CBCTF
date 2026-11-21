@@ -1423,27 +1423,17 @@
         "category": "题目分类",
         "type": "题目类型",
         "description": "题目描述",
-        "generatorImage": "Generator镜像地址",
-        "networkPolicy": "网络策略",
-        "policy": "策略 {{index}}",
-        "policyTarget": "策略目标容器",
-        "allowInbound": "允许入站",
-        "allowOutbound": "允许出站",
-        "excludeList": "排除列表"
+        "generatorImage": "Generator镜像地址"
       },
       "placeholders": {
         "name": "输入题目名称",
         "category": "请选择分类",
         "description": "输入题目描述内容",
         "generatorImage": "输入Generator镜像地址",
-        "policyTarget": "请选择目标容器",
         "flag": "Flag {{index}}"
       },
       "actions": {
         "addFlag": "添加Flag",
-        "addPolicy": "添加策略",
-        "addRule": "添加规则",
-        "addExclude": "添加排除",
         "add": "添加题目",
         "confirmDelete": "确认删除"
       },
@@ -1469,6 +1459,43 @@
         "noNetworkMerge": "无自定义网络时, services 共享一个 Pod 并使用 127.0.0.1 进行通信",
         "containerNetwork": "配置网络后, services 按 ipv4_address 分 Pod 运行"
       },
+      "networkPolicy": {
+        "title": "网络策略",
+        "sharedMode": {
+          "tag": "共享 Pod 网络",
+          "hint": "所有容器运行在同一个 Pod 中，通过 127.0.0.1 互通。下面的出网规则对该 Pod 的所有容器生效。",
+          "cardTitle": "Pod 出网策略"
+        },
+        "vpcMode": {
+          "tag": "Kube-OVN VPC",
+          "hint": "每个容器独占一个 Pod 并使用静态 IP。默认禁止出网，同一 subnet 的容器默认互通，跨 subnet 需要手动勾选互通。"
+        },
+        "egress": {
+          "internet": "允许访问公网",
+          "publicScope": "0.0.0.0/0，已排除私有网段",
+          "ranges": "额外允许的出网范围",
+          "noRanges": "未添加额外范围，私网不可达。",
+          "scopeHint": "所有模式默认禁止出网。开启后只覆盖公网地址，访问私网需要手动添加范围。"
+        },
+        "peers": {
+          "label": "允许互通",
+          "sameSubnet": "同 subnet 默认互通"
+        },
+        "ingress": {
+          "external": "允许集群外部访问",
+          "externalHint": "开启后集群外的地址可以访问该容器，题目 VPC 内的容器仍按互通规则放行。"
+        },
+        "advanced": {
+          "title": "高级 CIDR 规则",
+          "inbound": "自定义入站 CIDR",
+          "outbound": "自定义出站 CIDR",
+          "except": "排除网段（逗号分隔）"
+        },
+        "actions": {
+          "addRange": "添加范围",
+          "addRule": "添加规则"
+        }
+      },
       "topology": {
         "title": "网络拓扑",
         "subtitle": "绿色表示可通过, 红色表示被策略阻断",
@@ -1477,10 +1504,14 @@
         "empty": "暂无容器节点, 请先添加容器和网络 IP。",
         "noIp": "未配置 IP",
         "crossNetwork": "跨网络",
+        "internet": "公网",
         "reasons": {
           "allowed": "允许通过",
           "outboundBlocked": "出站未放行目标 IP",
-          "inboundBlocked": "入站未放行来源 IP"
+          "inboundBlocked": "入站未放行来源 IP",
+          "sharedNetwork": "共享 Pod 网络，容器之间天然互通",
+          "egressAllowed": "允许出公网",
+          "egressBlocked": "禁止出公网"
         }
       },
       "composeGuide": {

@@ -21,7 +21,7 @@ export default function ChallengeEditorDialog({
     generator_image: '',
     flags: [''],
     docker_compose: '',
-    network_policies: [{ from: [{ cidr: '', except: [''] }], to: [{ cidr: '', except: [''] }] }],
+    network_policies: [],
   },
   usages = [],
   categories = [],

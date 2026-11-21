@@ -1423,27 +1423,17 @@
         "category": "Category",
         "type": "Type",
         "description": "Description",
-        "generatorImage": "Generator Image",
-        "networkPolicy": "Network Policy",
-        "policy": "Policy {{index}}",
-        "policyTarget": "Policy Target Container",
-        "allowInbound": "Allow Inbound",
-        "allowOutbound": "Allow Outbound",
-        "excludeList": "Exclude List"
+        "generatorImage": "Generator Image"
       },
       "placeholders": {
         "name": "Enter challenge name",
         "category": "Select category",
         "description": "Enter challenge description",
         "generatorImage": "Enter generator image",
-        "policyTarget": "Select target container",
         "flag": "Flag {{index}}"
       },
       "actions": {
         "addFlag": "Add Flag",
-        "addPolicy": "Add Policy",
-        "addRule": "Add Rule",
-        "addExclude": "Add Exclusion",
         "add": "Add Challenge",
         "confirmDelete": "Confirm Delete"
       },
@@ -1469,6 +1459,43 @@
         "noNetworkMerge": "Without custom networks, services share one Pod and use 127.0.0.1.",
         "containerNetwork": "With networks, services run as separate Pods by ipv4_address."
       },
+      "networkPolicy": {
+        "title": "Network Policy",
+        "sharedMode": {
+          "tag": "Shared pod network",
+          "hint": "All containers share one Pod and reach each other over 127.0.0.1. The egress rules below apply to every container of the Pod.",
+          "cardTitle": "Pod egress policy"
+        },
+        "vpcMode": {
+          "tag": "Kube-OVN VPC",
+          "hint": "Every container runs in its own Pod with a static IP. Egress is denied by default, containers on the same subnet are interconnected, and cross-subnet traffic needs an explicit peer."
+        },
+        "egress": {
+          "internet": "Allow public internet egress",
+          "publicScope": "0.0.0.0/0 with private ranges excluded",
+          "ranges": "Extra allowed egress ranges",
+          "noRanges": "No extra range, private networks stay unreachable.",
+          "scopeHint": "Egress is denied by default in every mode. Enabling it only covers public addresses; add the ranges you need to reach private networks."
+        },
+        "peers": {
+          "label": "Interconnected with",
+          "sameSubnet": "same subnet"
+        },
+        "ingress": {
+          "external": "Allow inbound traffic from outside the challenge",
+          "externalHint": "While enabled, addresses outside the challenge can reach this container; containers inside the challenge VPC still follow the peer rules."
+        },
+        "advanced": {
+          "title": "Advanced CIDR rules",
+          "inbound": "Custom inbound CIDR",
+          "outbound": "Custom outbound CIDR",
+          "except": "Excluded ranges (comma separated)"
+        },
+        "actions": {
+          "addRange": "Add range",
+          "addRule": "Add rule"
+        }
+      },
       "topology": {
         "title": "Network Topology",
         "subtitle": "Green means reachable; red means blocked by policy.",
@@ -1477,10 +1504,14 @@
         "empty": "No container nodes yet. Add containers and network IPs first.",
         "noIp": "No IP configured",
         "crossNetwork": "Cross-network",
+        "internet": "Internet",
         "reasons": {
           "allowed": "Traffic is allowed",
           "outboundBlocked": "Outbound policy does not allow the target IP",
-          "inboundBlocked": "Inbound policy does not allow the source IP"
+          "inboundBlocked": "Inbound policy does not allow the source IP",
+          "sharedNetwork": "Shared pod network, containers always reach each other",
+          "egressAllowed": "Public internet egress is allowed",
+          "egressBlocked": "Public internet egress is blocked"
         }
       },
       "composeGuide": {
