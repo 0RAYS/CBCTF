@@ -125,7 +125,7 @@ export default function ChallengeFlagPanel({ challengeId, contestId, version = 0
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-lg font-mono text-neutral-50">{t('admin.challengeModal.sections.scoring')}</h3>
         <Button
           size="sm"
