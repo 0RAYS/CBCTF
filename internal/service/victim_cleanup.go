@@ -13,11 +13,11 @@ import (
 // Called after the flag transaction commits. Only enqueueing is synchronous;
 // Kubernetes teardown runs in Asynq, so the request-scoped transaction is never
 // handed to an untracked goroutine and this side effect survives a disconnect.
-func queueTeamVictimStop(tx *gorm.DB, teamID, contestChallengeID uint) {
+func queueTeamVictimStop(tx *gorm.DB, teamID, challengeID uint) {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(tx.Statement.Context), 10*time.Second)
 	defer cancel()
 	tx = tx.WithContext(ctx)
-	victim, ret := db.InitVictimRepo(tx).HasAliveVictimByContestChallenge(teamID, contestChallengeID)
+	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(teamID, challengeID)
 	if !ret.OK {
 		return
 	}

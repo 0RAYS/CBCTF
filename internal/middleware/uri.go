@@ -243,29 +243,23 @@ func SetTeamWriteupFile(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// SetAttachmentFile 准备题目附件，比赛内用比赛题目副本的附件，测试模式用题库题目的附件
+// SetAttachmentFile 准备题目附件，测试模式下动态题目先生成一份附件。
 func SetAttachmentFile(test bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var source model.GeneratorSource
-		if contestChallenge := GetContestChallenge(ctx); contestChallenge.ID > 0 {
-			source = contestChallenge
-		} else {
-			challenge := GetChallenge(ctx)
-			if test && challenge.Type == model.DynamicChallengeType {
-				if ret := service.GenTestAttachment(db.DB.WithContext(ctx.Request.Context()), challenge); !ret.OK {
-					resp.AbortJSON(ctx, ret)
-					return
-				}
+		challenge := GetChallenge(ctx)
+		if test && challenge.Type == model.DynamicChallengeType {
+			if ret := service.GenTestAttachment(db.DB.WithContext(ctx.Request.Context()), challenge); !ret.OK {
+				resp.AbortJSON(ctx, ret)
+				return
 			}
-			source = challenge
 		}
-		path, pathRet := service.AttachmentPath(db.DB.WithContext(ctx.Request.Context()), source, GetTeam(ctx).ID)
+		path, pathRet := service.AttachmentPath(db.DB.WithContext(ctx.Request.Context()), challenge, GetTeam(ctx).ID)
 		if !pathRet.OK {
 			resp.AbortJSON(ctx, pathRet)
 			return
 		}
 		record, ret := db.InitFileRepo(db.DB.WithContext(ctx.Request.Context())).Get(db.GetOptions{
-			Conditions: map[string]any{"model": model.Name(source), "model_id": source.SourceID(), "type": model.ChallengeFileType}},
+			Conditions: map[string]any{"model": model.Name(challenge), "model_id": challenge.ID, "type": model.ChallengeFileType}},
 		)
 		if ret.OK && string(record.Path) == path {
 			ctx.Set("File", record)
@@ -301,6 +295,18 @@ func SetChallenge(ctx *gin.Context) {
 	if !loadByRandID(ctx, "Challenge", "challengeID", "Challenge", "challenge_id", db.InitChallengeRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
+	challenge := GetChallenge(ctx)
+	// 比赛内的题目必须归属该比赛，隐藏题目对选手不可见。
+	if contest := GetContest(ctx); contest.ID != 0 {
+		if !challenge.ContestID.Valid || challenge.ContestID.V != contest.ID {
+			resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Challenge.NotFound, "Challenge", fmt.Sprintf("challenge_id=%d", challenge.ID), nil))
+			return
+		}
+		if challenge.Hidden && !IsFullAccess(ctx) {
+			resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Challenge.NotFound, "Challenge", fmt.Sprintf("challenge_id=%d", challenge.ID), nil))
+			return
+		}
+	}
 	ctx.Next()
 }
 
@@ -308,42 +314,20 @@ func GetChallenge(ctx *gin.Context) model.Challenge {
 	return getResource[model.Challenge](ctx, "Challenge")
 }
 
-func SetContestChallenge(ctx *gin.Context) {
-	if !loadByRandID(ctx, "ContestChallenge", "challengeID", "Challenge", "challenge_id", db.InitContestChallengeRepo(db.DB.WithContext(ctx.Request.Context())), db.GetOptions{
-		Conditions: map[string]any{"contest_id": GetContest(ctx).ID},
-	}) {
+func SetChallengeFlag(ctx *gin.Context) {
+	if !loadByID(ctx, "ChallengeFlag", "flagID", "ChallengeFlag", "challenge_flag_id", db.InitChallengeFlagRepo(db.DB.WithContext(ctx.Request.Context()))) {
 		return
 	}
-	contestChallenge := GetContestChallenge(ctx)
-	if contestChallenge.Hidden && !IsFullAccess(ctx) {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.Contest.NotFound, "ContestChallenge", fmt.Sprintf("contest_challenge_id=%d", contestChallenge.ID), nil))
-		return
-	}
-	ctx.Next()
-}
-
-func GetContestChallenge(ctx *gin.Context) model.ContestChallenge {
-	return getResource[model.ContestChallenge](ctx, "ContestChallenge")
-}
-
-func SetContestFlag(ctx *gin.Context) {
-	if !loadByID(ctx, "ContestFlag", "flagID", "ContestFlag", "contest_flag_id", db.InitContestFlagRepo(db.DB.WithContext(ctx.Request.Context()))) {
-		return
-	}
-	contestFlag := GetContestFlag(ctx)
-	if contest := GetContest(ctx); contest.ID != 0 && contestFlag.ContestID != contest.ID {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.ContestFlag.NotFound, "ContestFlag", fmt.Sprintf("contest_flag_id=%d", contestFlag.ID), nil))
-		return
-	}
-	if contestChallenge := GetContestChallenge(ctx); contestChallenge.ID != 0 && contestFlag.ContestChallengeID != contestChallenge.ID {
-		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.ContestFlag.NotFound, "ContestFlag", fmt.Sprintf("contest_flag_id=%d", contestFlag.ID), nil))
+	flag := GetChallengeFlag(ctx)
+	if challenge := GetChallenge(ctx); challenge.ID != 0 && flag.ChallengeID != challenge.ID {
+		resp.AbortJSON(ctx, model.FailRetVal(i18n.Model.ChallengeFlag.NotFound, "ChallengeFlag", fmt.Sprintf("challenge_flag_id=%d", flag.ID), nil))
 		return
 	}
 	ctx.Next()
 }
 
-func GetContestFlag(ctx *gin.Context) model.ContestFlag {
-	return getResource[model.ContestFlag](ctx, "ContestFlag")
+func GetChallengeFlag(ctx *gin.Context) model.ChallengeFlag {
+	return getResource[model.ChallengeFlag](ctx, "ChallengeFlag")
 }
 
 func SetGenerator(ctx *gin.Context) {

@@ -65,15 +65,15 @@ func buildSameWebIPEvidence(ip string, users []db.ContestSharedIPUser, userTeams
 			continue
 		}
 		evidence.Web.Submissions = append(evidence.Web.Submissions, model.CheatFlagSubmission{
-			SubmissionID:       submission.SubmissionID,
-			TeamID:             submission.TeamID,
-			UserID:             submission.UserID,
-			ContestChallengeID: submission.ContestChallengeID,
-			ChallengeName:      submission.ChallengeName,
-			IP:                 submission.IP,
-			At:                 submission.SubmittedAt,
-			Value:              submission.Value,
-			Solved:             submission.Solved,
+			SubmissionID:  submission.SubmissionID,
+			TeamID:        submission.TeamID,
+			UserID:        submission.UserID,
+			ChallengeID:   submission.ChallengeID,
+			ChallengeName: submission.ChallengeName,
+			IP:            submission.IP,
+			At:            submission.SubmittedAt,
+			Value:         submission.Value,
+			Solved:        submission.Solved,
 		})
 		evidence.Timeline = append(evidence.Timeline, model.CheatTimelineItem{
 			At:        submission.SubmittedAt,
@@ -81,14 +81,14 @@ func buildSameWebIPEvidence(ip string, users []db.ContestSharedIPUser, userTeams
 			ActorKind: model.CheatActorKindUser,
 			ActorID:   submission.UserID,
 			Target:    submission.ChallengeName,
-			TargetID:  submission.ContestChallengeID,
+			TargetID:  submission.ChallengeID,
 			Value:     submission.Value,
 			Detail:    fmt.Sprintf("Team-%d", submission.TeamID),
 		})
-		ref, ok := challenges[submission.ContestChallengeID]
+		ref, ok := challenges[submission.ChallengeID]
 		if !ok {
-			ref = &model.CheatChallengeRef{ContestChallengeID: submission.ContestChallengeID, Name: submission.ChallengeName}
-			challenges[submission.ContestChallengeID] = ref
+			ref = &model.CheatChallengeRef{ChallengeID: submission.ChallengeID, Name: submission.ChallengeName}
+			challenges[submission.ChallengeID] = ref
 		}
 		if !slices.Contains(ref.ActorIDs, submission.UserID) {
 			ref.ActorIDs = append(ref.ActorIDs, submission.UserID)
@@ -98,7 +98,7 @@ func buildSameWebIPEvidence(ip string, users []db.ContestSharedIPUser, userTeams
 		evidence.Web.Challenges = append(evidence.Web.Challenges, *ref)
 	}
 	slices.SortFunc(evidence.Web.Challenges, func(a, b model.CheatChallengeRef) int {
-		return cmp.Compare(a.ContestChallengeID, b.ContestChallengeID)
+		return cmp.Compare(a.ChallengeID, b.ChallengeID)
 	})
 
 	sortCheatTimeline(evidence.Timeline)
@@ -175,18 +175,18 @@ func buildSameVictimIPEvidence(ip string, teams []db.TeamVictimIP, accesses []db
 			ActorKind: model.CheatActorKindTeam,
 			ActorID:   access.TeamID,
 			Target:    access.ChallengeName,
-			TargetID:  access.ContestChallengeID,
+			TargetID:  access.ChallengeID,
 			Detail:    fmt.Sprintf("Victim-%d", access.VictimID),
 		})
 		ref, ok := victims[access.VictimID]
 		if !ok {
 			ref = &model.CheatVictimRef{
-				VictimID:           access.VictimID,
-				TeamID:             access.TeamID,
-				ContestChallengeID: access.ContestChallengeID,
-				ChallengeName:      access.ChallengeName,
-				FirstSeen:          access.ObservedAt,
-				LastSeen:           access.ObservedAt,
+				VictimID:      access.VictimID,
+				TeamID:        access.TeamID,
+				ChallengeID:   access.ChallengeID,
+				ChallengeName: access.ChallengeName,
+				FirstSeen:     access.ObservedAt,
+				LastSeen:      access.ObservedAt,
 			}
 			victims[access.VictimID] = ref
 		}
@@ -219,12 +219,12 @@ func buildWrongFlagEvidence(group *wrongFlagGroup) model.CheatEvidence {
 		ReasonType: model.ReasonTypeWrongFlagType,
 		Subject:    group.Value,
 		Flag: &model.CheatFlagEvidence{
-			ContestChallengeID: group.ContestChallengeID,
-			ChallengeName:      group.ChallengeName,
-			SubmittingTeamID:   group.SubmittingTeamID,
-			MatchedTeamIDs:     group.MatchedTeamIDs,
-			MatchedValues:      []string{group.Value},
-			Owners:             []model.CheatFlagOwner{},
+			ChallengeID:      group.ChallengeID,
+			ChallengeName:    group.ChallengeName,
+			SubmittingTeamID: group.SubmittingTeamID,
+			MatchedTeamIDs:   group.MatchedTeamIDs,
+			MatchedValues:    []string{group.Value},
+			Owners:           []model.CheatFlagOwner{},
 		},
 	}
 	owners := make(map[uint]*model.CheatFlagOwner)
@@ -263,15 +263,15 @@ func buildWrongFlagEvidence(group *wrongFlagGroup) model.CheatEvidence {
 	firstSeen, lastSeen := time.Time{}, time.Time{}
 	for _, row := range group.Submissions {
 		evidence.Flag.Submissions = append(evidence.Flag.Submissions, model.CheatFlagSubmission{
-			SubmissionID:       row.SubmissionID,
-			TeamID:             row.TeamID,
-			UserID:             row.UserID,
-			ContestChallengeID: row.ContestChallengeID,
-			ChallengeName:      row.ChallengeName,
-			IP:                 row.IP,
-			At:                 row.CreatedAt,
-			Value:              row.Value,
-			Solved:             false,
+			SubmissionID:  row.SubmissionID,
+			TeamID:        row.TeamID,
+			UserID:        row.UserID,
+			ChallengeID:   row.ChallengeID,
+			ChallengeName: row.ChallengeName,
+			IP:            row.IP,
+			At:            row.CreatedAt,
+			Value:         row.Value,
+			Solved:        false,
 		})
 		evidence.Timeline = append(evidence.Timeline, model.CheatTimelineItem{
 			At:        row.CreatedAt,
@@ -279,7 +279,7 @@ func buildWrongFlagEvidence(group *wrongFlagGroup) model.CheatEvidence {
 			ActorKind: model.CheatActorKindUser,
 			ActorID:   row.UserID,
 			Target:    row.ChallengeName,
-			TargetID:  row.ContestChallengeID,
+			TargetID:  row.ChallengeID,
 			Value:     row.Value,
 			Detail:    fmt.Sprintf("Team-%d", row.TeamID),
 		})
@@ -300,7 +300,7 @@ func buildWrongFlagEvidence(group *wrongFlagGroup) model.CheatEvidence {
 			ActorKind: model.CheatActorKindTeam,
 			ActorID:   owner.TeamID,
 			Target:    group.ChallengeName,
-			TargetID:  group.ContestChallengeID,
+			TargetID:  group.ChallengeID,
 			Value:     owner.Value,
 			Detail:    fmt.Sprintf("Team-%d", owner.TeamID),
 		})

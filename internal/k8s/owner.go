@@ -74,7 +74,7 @@ func ListVictimRoots(ctx context.Context) ([]model.Victim, error) {
 			continue
 		}
 		ids := make(map[string]uint)
-		for _, key := range []string{"victim_id", "user_id", "team_id", "contest_id", "challenge_id", "contest_challenge_id"} {
+		for _, key := range []string{"victim_id", "user_id", "team_id", "contest_id", "challenge_id"} {
 			id, err := strconv.ParseUint(root.Labels[key], 10, 32)
 			if err != nil {
 				return nil, fmt.Errorf("invalid %s on root %s", key, root.Name)
@@ -90,7 +90,6 @@ func ListVictimRoots(ctx context.Context) ([]model.Victim, error) {
 		victim := model.Victim{
 			ID:          ids["victim_id"],
 			UserID:      ids["user_id"],
-			ChallengeID: ids["challenge_id"],
 			TeamID: sql.Null[uint]{
 				V:     ids["team_id"],
 				Valid: ids["team_id"] > 0,
@@ -98,10 +97,6 @@ func ListVictimRoots(ctx context.Context) ([]model.Victim, error) {
 			ContestID: sql.Null[uint]{
 				V:     ids["contest_id"],
 				Valid: ids["contest_id"] > 0,
-			},
-			ContestChallengeID: sql.Null[uint]{
-				V:     ids["contest_challenge_id"],
-				Valid: ids["contest_challenge_id"] > 0,
 			},
 		}
 		if err := json.Unmarshal([]byte(root.Data["network_plan"]), &victim.Spec.NetworkPlan); err != nil {

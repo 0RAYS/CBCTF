@@ -32,9 +32,6 @@ func GeneratorLabels(generator model.Generator, tags ...map[string]string) map[s
 		"challenge_id": strconv.Itoa(int(generator.ChallengeID)),
 		"generator_id": strconv.Itoa(int(generator.ID)),
 	}
-	if generator.ContestChallengeID.Valid {
-		labels["contest_challenge_id"] = strconv.Itoa(int(generator.ContestChallengeID.V))
-	}
 	if len(tags) > 0 {
 		maps.Copy(labels, tags[0])
 	}

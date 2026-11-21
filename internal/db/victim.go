@@ -96,16 +96,6 @@ func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, mod
 	return v.Get(options)
 }
 
-// HasAliveVictimByContestChallenge 按比赛题目查找存活的靶机。
-// 同一题库题目允许在同场比赛多次加入，靶机唯一性以比赛题目为准。
-func (v *VictimRepo) HasAliveVictimByContestChallenge(teamID, contestChallengeID uint) (model.Victim, model.RetVal) {
-	options := GetOptions{Conditions: map[string]any{"team_id": nil, "contest_challenge_id": contestChallengeID}}
-	if teamID > 0 {
-		options.Conditions["team_id"] = teamID
-	}
-	return v.Get(options)
-}
-
 func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
 	if len(idL) == 0 {
 		return model.SuccessRetVal()

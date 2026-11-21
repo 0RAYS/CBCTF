@@ -21,21 +21,12 @@ import (
 )
 
 // resolveGeneratorSource 按 rand_id 解析生成器来源。
-// 比赛内使用比赛题目副本，题库题目只在测试模式下使用。
 func resolveGeneratorSource(tx *gorm.DB, contestID uint, randID string) (model.GeneratorSourceSnapshot, model.RetVal) {
+	options := db.GetOptions{}
 	if contestID > 0 {
-		contestChallenge, ret := db.InitContestChallengeRepo(tx).GetByRandID(randID, db.GetOptions{
-			Conditions: map[string]any{"contest_id": contestID},
-		})
-		if !ret.OK {
-			return model.GeneratorSourceSnapshot{}, ret
-		}
-		if contestChallenge.Type != model.DynamicChallengeType {
-			return model.GeneratorSourceSnapshot{}, model.FailRetVal(i18n.Model.Challenge.InvalidType, "ContestChallenge", fmt.Sprintf("rand_id=%s,type=%s", randID, contestChallenge.Type), nil)
-		}
-		return model.NewContestChallengeSource(contestChallenge), model.SuccessRetVal()
+		options.Conditions = map[string]any{"contest_id": contestID}
 	}
-	challenge, ret := db.InitChallengeRepo(tx).GetByRandID(randID)
+	challenge, ret := db.InitChallengeRepo(tx).GetByRandID(randID, options)
 	if !ret.OK {
 		return model.GeneratorSourceSnapshot{}, ret
 	}
@@ -65,14 +56,13 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 			continue
 		}
 		generator, ret := generatorRepo.Create(model.Generator{
-			WorkerToken:        utils.RandHexStr(64),
-			Image:              source.SourceImage(),
-			ChallengeID:        source.SourceChallengeID(),
-			ChallengeName:      source.SourceName(),
-			ContestChallengeID: sql.Null[uint]{V: source.SourceContestChallengeID(), Valid: source.SourceContestChallengeID() > 0},
-			ContestID:          sql.Null[uint]{V: source.SourceContestID(), Valid: source.SourceContestID() > 0},
-			Name:               fmt.Sprintf("gen-%d-%d-%s", source.SourceContestID(), source.SourceID(), utils.RandHexStr(6)),
-			Status:             model.WaitingGeneratorStatus,
+			WorkerToken:   utils.RandHexStr(64),
+			Image:         source.SourceImage(),
+			ChallengeID:   source.ChallengeID,
+			ChallengeName: source.SourceName(),
+			ContestID:     sql.Null[uint]{V: source.SourceContestID(), Valid: source.SourceContestID() > 0},
+			Name:          fmt.Sprintf("gen-%d-%d-%s", source.SourceContestID(), source.SourceID(), utils.RandHexStr(6)),
+			Status:        model.WaitingGeneratorStatus,
 		})
 		if !ret.OK {
 			batch.Fail(key, "create", ret)
@@ -189,15 +179,9 @@ func GetGenerator(tx *gorm.DB, source model.GeneratorSource) (model.Generator, s
 	}
 	if errors.Is(err, redis.ErrGeneratorPoolEmpty) {
 		options := db.GetOptions{Conditions: map[string]any{
-			"status": model.RunningGeneratorStatus,
+			"status":       model.RunningGeneratorStatus,
+			"challenge_id": target.ChallengeID,
 		}}
-		if target.ContestChallengeID > 0 {
-			options.Conditions["contest_challenge_id"] = target.ContestChallengeID
-			options.Conditions["contest_id"] = target.ContestID
-		} else {
-			options.Conditions["challenge_id"] = target.ChallengeID
-			options.Conditions["contest_id"] = nil
-		}
 		generators, _, ret := db.InitGeneratorRepo(tx).List(-1, -1, options)
 		if !ret.OK {
 			return model.Generator{}, "", ret
@@ -222,11 +206,8 @@ func GetGenerator(tx *gorm.DB, source model.GeneratorSource) (model.Generator, s
 }
 
 // generatorTargetDesc renders the generator pool key a lookup used, so a
-// failure states which challenge or contest copy was searched.
+// failure states which challenge was searched.
 func generatorTargetDesc(target model.GeneratorTarget) string {
-	if target.ContestChallengeID > 0 {
-		return fmt.Sprintf("contest_id=%d,contest_challenge_id=%d", target.ContestID, target.ContestChallengeID)
-	}
 	return fmt.Sprintf("challenge_id=%d", target.ChallengeID)
 }
 

@@ -75,12 +75,12 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	return ret
 }
 
-func GetTestChallengeStatus(tx *gorm.DB, challenge model.Challenge) view.ContestChallengeStatusView {
-	return view.ContestChallengeStatusView{
+func GetTestChallengeStatus(tx *gorm.DB, challenge model.Challenge) view.ChallengeStatusView {
+	return view.ChallengeStatusView{
 		Attempts: 0,
 		Init:     true,
 		Solved:   false,
-		Remote:   GetVictimStatus(tx, 0, 0, challenge.ID, challenge.Type),
+		Remote:   GetVictimStatus(tx, 0, challenge.ID, challenge.Type),
 		FileName: buildSourceFileName(tx, challenge, 0),
 	}
 }

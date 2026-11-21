@@ -41,14 +41,20 @@ func ChallengeImages(challenge model.Challenge) []string {
 	return k8s.ChallengeImages(challenge, challengeSidecarImages(challenge.Type)...)
 }
 
-func ContestChallengeImages(contestChallenge model.ContestChallenge) []string {
-	return k8s.ContestChallengeImages(contestChallenge, challengeSidecarImages(contestChallenge.Type)...)
-}
-
-func warmContestChallengeImages(contestChallenge model.ContestChallenge) {
-	if err := task.EnqueuePrepullTask(ContestChallengeImages(contestChallenge)); err != nil {
-		log.Logger.Warningf("Failed to enqueue image warmup: contest_challenge_id=%d error=%v", contestChallenge.ID, err)
+// ListContestImages 返回某场比赛题目用到的镜像。
+func ListContestImages(tx *gorm.DB, contest model.Contest) ([]string, model.RetVal) {
+	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+	})
+	if !ret.OK {
+		return nil, ret
 	}
+	images := make([]string, 0)
+	for _, challenge := range challenges {
+		images = append(images, ChallengeImages(challenge)...)
+	}
+	slices.Sort(images)
+	return slices.Compact(images), model.SuccessRetVal()
 }
 
 // ListChallengeImages covers the whole library, including challenges not yet
@@ -102,7 +108,7 @@ func DetectionImages(tx *gorm.DB, now time.Time) ([]string, model.RetVal) {
 		return nil, ret
 	}
 	for _, contest := range contests {
-		contestImages, ret := ListContestChallengeImages(tx, contest)
+		contestImages, ret := ListContestImages(tx, contest)
 		if !ret.OK {
 			return nil, ret
 		}
@@ -142,7 +148,7 @@ func LoadImageDetection(ctx context.Context) *model.ImageDetection {
 	return detection
 }
 
-func PullContestChallengeImage(ctx context.Context, form dto.PullImageForm) model.RetVal {
+func PullContestImage(ctx context.Context, form dto.PullImageForm) model.RetVal {
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 	if form.PullPolicy == string(corev1.PullNever) {

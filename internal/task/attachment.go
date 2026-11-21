@@ -33,10 +33,10 @@ type GenAttachmentPayload struct {
 func EnqueueGenAttachmentTask(userID uint, source model.GeneratorSourceSnapshot, teamID uint, teamFlags []model.TeamFlag) error {
 	teamFlags = slices.Clone(teamFlags)
 	slices.SortFunc(teamFlags, func(a, b model.TeamFlag) int {
-		if a.ContestFlagID < b.ContestFlagID {
+		if a.ChallengeFlagID < b.ChallengeFlagID {
 			return -1
 		}
-		if a.ContestFlagID > b.ContestFlagID {
+		if a.ChallengeFlagID > b.ChallengeFlagID {
 			return 1
 		}
 		return 0

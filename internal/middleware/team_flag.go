@@ -14,29 +14,29 @@ import (
 )
 
 // checkTeamFlagState aborts the request when the team flag state of the
-// current contest challenge differs from the expected one.
+// current challenge differs from the expected one.
 func checkTeamFlagState(
 	ctx *gin.Context,
 	expected bool,
 	msg string,
-	check func(*gorm.DB, model.Team, []model.ContestFlag) (bool, model.RetVal),
+	check func(*gorm.DB, model.Team, []model.ChallengeFlag) (bool, model.RetVal),
 ) {
 	team := GetTeam(ctx)
-	contestChallenge := GetContestChallenge(ctx)
-	contestFlags, _, ret := db.InitContestFlagRepo(db.DB.WithContext(ctx.Request.Context())).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+	challenge := GetChallenge(ctx)
+	flags, _, ret := db.InitChallengeFlagRepo(db.DB.WithContext(ctx.Request.Context())).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID},
 	})
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	state, ret := check(db.DB.WithContext(ctx.Request.Context()), team, contestFlags)
+	state, ret := check(db.DB.WithContext(ctx.Request.Context()), team, flags)
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
 	if state == expected {
-		resp.AbortJSON(ctx, model.FailRetVal(msg, "TeamFlag", fmt.Sprintf("team_id=%d,contest_challenge_id=%d", team.ID, contestChallenge.ID), nil))
+		resp.AbortJSON(ctx, model.FailRetVal(msg, "TeamFlag", fmt.Sprintf("team_id=%d,challenge_id=%d", team.ID, challenge.ID), nil))
 		return
 	}
 	ctx.Next()

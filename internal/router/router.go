@@ -136,41 +136,41 @@ func Init() *gin.Engine {
 		}
 
 		contest.GET("/challenges",
-			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetContestChallenges,
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetChallengesInContest,
 		)
 		contest.GET("/challenges/categories",
-			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetContestChallengeCategories,
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetChallengeCategoriesInContest,
 		)
-		contestChallenge := contest.Group(
+		challenge := contest.Group(
 			"/challenges/:challengeID",
-			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, middleware.SetContestChallenge,
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, middleware.SetChallenge,
 		)
 		{
-			contestChallenge.GET("", GetContestChallengeStatus)
-			contestChallenge.POST("/init",
+			challenge.GET("", GetChallengeStatus)
+			challenge.POST("/init",
 				middleware.RateLimit("init_flag", 1, time.Minute),
 				middleware.ContestIsRunning, middleware.CheckSolved, InitTeamFlag,
 			)
-			contestChallenge.GET("/attachment",
+			challenge.GET("/attachment",
 				middleware.RateLimit("download_attachment", 10, time.Minute),
 				middleware.SetAttachmentFile(false), DownloadFile(model.DownloadAttachmentEventType),
 			)
-			contestChallenge.POST("/reset",
+			challenge.POST("/reset",
 				middleware.RateLimit("init_flag", 1, time.Minute),
 				middleware.ContestIsRunning, middleware.CheckIfGenerated, middleware.CheckSolved, ResetTeamFlag,
 			)
-			contestChallenge.POST("/start",
+			challenge.POST("/start",
 				middleware.CheckChallengeType(model.PodsChallengeType),
 				middleware.RateLimit("start_victim", 1, time.Minute), middleware.CheckTeamVictimCount, middleware.CheckIfGenerated, StartVictim,
 			)
-			contestChallenge.POST("/extend",
+			challenge.POST("/extend",
 				middleware.CheckChallengeType(model.PodsChallengeType), middleware.ContestIsRunning,
 				middleware.CheckIfGenerated, ExtendVictimDuration,
 			)
-			contestChallenge.POST("/stop",
+			challenge.POST("/stop",
 				middleware.CheckChallengeType(model.PodsChallengeType), middleware.CheckIfGenerated, StopVictim,
 			)
-			contestChallenge.POST("/submit",
+			challenge.POST("/submit",
 				middleware.RateLimit("submit_flag", 1, time.Second),
 				middleware.ContestIsRunning, middleware.CheckIfGenerated, middleware.CheckSolved, SubmitFlag,
 			)
@@ -295,13 +295,25 @@ func Init() *gin.Engine {
 		adminChallenge := admin.Group("/challenges/:challengeID", middleware.SetChallenge)
 		{
 			adminChallenge.GET("", GetChallenge)
-			adminChallenge.GET("/usages", GetChallengeUsages)
 			adminChallenge.GET("/download",
 				middleware.SetChallengeFile, DownloadFile(model.DownloadAttachmentEventType),
 			)
 			adminChallenge.PUT("", UpdateChallenge)
 			adminChallenge.DELETE("", DeleteChallenge)
+			adminChallenge.POST("/copy", CopyChallenge)
+			adminChallenge.POST("/reset-solves", ResetChallengeSolves)
 			adminChallenge.POST("/upload", middleware.LimitUploadSize(challengeMaxBytes), UploadChallenge)
+
+			adminChallengeFlag := adminChallenge.Group("/flags")
+			{
+				adminChallengeFlag.GET("", GetChallengeFlags)
+				adminChallengeFlagID := adminChallengeFlag.Group("/:flagID", middleware.SetChallengeFlag)
+				{
+					adminChallengeFlagID.GET("", GetChallengeFlag)
+					adminChallengeFlagID.PUT("", UpdateChallengeFlag)
+					adminChallengeFlagID.GET("/solvers", GetChallengeFlagSolvers)
+				}
+			}
 
 			adminChallengeTest := adminChallenge.Group("/test")
 			{
@@ -419,32 +431,14 @@ func Init() *gin.Engine {
 				adminContestCheat.DELETE("", DeleteCheat(false))
 			}
 
-			adminContest.GET("/challenges", GetAllContestChallenges)
-			adminContest.GET("/challenges/others", GetAvailableChallenges)
-			adminContest.GET("/challenges/categories", GetContestChallengeCategories)
-			adminContest.POST("/challenges", AddContestChallenge)
-			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetContestChallenge)
-			{
-				adminContestChallenge.GET("", GetAdminContestChallenge)
-				adminContestChallenge.PUT("", UpdateContestChallenge)
-				adminContestChallenge.DELETE("", DeleteContestChallenge)
-				adminContestChallenge.POST("/reset-solves", ResetContestChallengeSolves)
-
-				//不允许后期创建和删除
-				adminContestChallenge.GET("/flags", GetContestFlags)
-				adminContestFlag := adminContestChallenge.Group("/flags/:flagID", middleware.SetContestFlag)
-				{
-					adminContestFlag.GET("", ReadContestFlag)
-					adminContestFlag.PUT("", UpdateContestFlag)
-					adminContestFlag.GET("/solvers", GetContestFlagSolvers)
-				}
-			}
+			adminContest.GET("/challenges", GetAllChallengesInContest)
+			adminContest.POST("/challenges", CopyChallengesToContest)
 
 			adminContestImages := adminContest.Group("/images")
 			{
-				adminContestImages.GET("", GetContestChallengeImage)
+				adminContestImages.GET("", GetContestImage)
 				adminContestImages.POST("", middleware.RateLimit("warmup_images", 5, time.Minute), PullImages)
-				adminContestImages.POST("/detect", middleware.RateLimit("detect_images", 5, time.Minute), DetectContestChallengeImages)
+				adminContestImages.POST("/detect", middleware.RateLimit("detect_images", 5, time.Minute), DetectContestImages)
 			}
 
 			adminContestVictims := adminContest.Group("/victims")

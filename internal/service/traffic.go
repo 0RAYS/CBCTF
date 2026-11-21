@@ -836,7 +836,7 @@ func availableTrafficSlices(totalDuration int64) []int64 {
 }
 
 func buildTrafficCenterLabel(victim model.Victim) string {
-	if victim.ContestChallengeID.Valid && victim.ContestChallengeID.V > 0 {
+	if victim.ChallengeID > 0 {
 		return "Victim #" + strconv.FormatUint(uint64(victim.ID), 10)
 	}
 	return "Instance #" + strconv.FormatUint(uint64(victim.ID), 10)

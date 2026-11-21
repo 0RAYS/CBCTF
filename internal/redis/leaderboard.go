@@ -50,6 +50,7 @@ func readRanking[T any](ctx context.Context, key string) ([]T, model.RetVal) {
 func UpdateTeamRanking(ctx context.Context, contestID uint, teams []model.Team) model.RetVal {
 	return writeRanking(ctx, fmt.Sprintf("ranking:contest:%d", contestID), teams)
 }
+
 // GetTeamRanking 返回完整的队伍排名快照，隐藏队伍需要在分页前剔除。
 func GetTeamRanking(ctx context.Context, contestID uint) ([]model.Team, model.RetVal) {
 	return readRanking[model.Team](ctx, fmt.Sprintf("ranking:contest:%d", contestID))
@@ -57,6 +58,7 @@ func GetTeamRanking(ctx context.Context, contestID uint) ([]model.Team, model.Re
 func UpdateUserRanking(ctx context.Context, users []model.User) model.RetVal {
 	return writeRanking(ctx, "ranking:users", users)
 }
+
 // GetUserRanking 返回完整的用户排名快照，隐藏用户需要在分页前剔除。
 func GetUserRanking(ctx context.Context) ([]model.User, model.RetVal) {
 	return readRanking[model.User](ctx, "ranking:users")

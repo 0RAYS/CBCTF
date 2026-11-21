@@ -29,8 +29,7 @@ func VictimLabels(victim model.Victim, tags ...map[string]string) map[string]str
 		"user_id":              strconv.Itoa(int(victim.UserID)),
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
-		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
-		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
+		"challenge_id": strconv.Itoa(int(victim.ChallengeID)),
 	}
 	if len(tags) > 0 {
 		maps.Copy(labels, tags[0])

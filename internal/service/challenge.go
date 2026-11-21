@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net"
@@ -8,6 +9,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/compose-spec/compose-go/v2/types"
 	"gorm.io/gorm"
@@ -426,14 +428,27 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 	var result model.Challenge
 	ret := db.WithTransactionDB(tx, func(tx *gorm.DB) model.RetVal {
 		challengeRepo, challengeFlagRepo := db.InitChallengeRepo(tx), db.InitChallengeFlagRepo(tx)
+		hidden := form.ContestID != 0
+		if form.Hidden != nil {
+			hidden = *form.Hidden
+		}
+		var attempt int64
+		if form.Attempt != nil {
+			attempt = *form.Attempt
+		}
 		options := model.Challenge{
 			RandID:          utils.UUID(),
+			ContestID:       sql.Null[uint]{V: form.ContestID, Valid: form.ContestID > 0},
 			Name:            form.Name,
 			Description:     form.Description,
 			Type:            form.Type,
 			Category:        form.Category,
 			GeneratorImage:  form.GeneratorImage,
 			NetworkPolicies: form.NetworkPolicies,
+			Hidden:          hidden,
+			Attempt:         attempt,
+			Hints:           form.Hints,
+			Tags:            form.Tags,
 		}
 		var podFlagOptions []model.ChallengeFlag
 		if form.Type == model.PodsChallengeType {
@@ -451,10 +466,7 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 		switch form.Type {
 		case model.StaticChallengeType, model.DynamicChallengeType:
 			for _, flag := range form.Flags {
-				if _, ret = challengeFlagRepo.Create(model.ChallengeFlag{
-					ChallengeID: challenge.ID,
-					Value:       flag,
-				}); !ret.OK {
+				if _, ret = challengeFlagRepo.Create(newChallengeFlag(challenge.ID, flag)); !ret.OK {
 					return ret
 				}
 			}
@@ -477,10 +489,33 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 	return result, ret
 }
 
+// newChallengeFlag 返回带默认计分参数的 flag。
+func newChallengeFlag(challengeID uint, value string) model.ChallengeFlag {
+	return model.ChallengeFlag{
+		ChallengeID:  challengeID,
+		Value:        value,
+		Generation:   1,
+		Active:       true,
+		Score:        1000,
+		CurrentScore: 1000,
+		Decay:        100,
+		MinScore:     100,
+		ScoreType:    model.StaticScoreType,
+		Last:         time.Now(),
+	}
+}
+
 func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChallengeForm) model.RetVal {
 	challenge, ret := GetChallengeWithFlags(tx, challenge)
 	if !ret.OK {
 		return ret
+	}
+	contest := model.Contest{}
+	if challenge.ContestID.Valid {
+		contest, ret = db.InitContestRepo(tx).GetByID(challenge.ContestID.V)
+		if !ret.OK {
+			return ret
+		}
 	}
 	return db.WithTransactionDB(tx, func(tx *gorm.DB) (result model.RetVal) {
 		defer func() {
@@ -492,31 +527,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 		}()
 		switch challenge.Type {
 		case model.StaticChallengeType, model.DynamicChallengeType:
-			oldChallengeFlagID := make([]uint, 0)
-			for _, flag := range challenge.ChallengeFlags {
-				oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
-			}
-			challengeFlagRepo := db.InitChallengeFlagRepo(tx)
-			for _, flag := range form.Flags {
-				if slices.Contains(oldChallengeFlagID, flag.ID) {
-					if ret := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
-						Value: &flag.Value,
-					}); !ret.OK {
-						return ret
-					}
-					oldChallengeFlagID = slices.DeleteFunc(oldChallengeFlagID, func(id uint) bool {
-						return id == flag.ID
-					})
-				} else {
-					if _, ret := challengeFlagRepo.Create(model.ChallengeFlag{
-						ChallengeID: challenge.ID,
-						Value:       flag.Value,
-					}); !ret.OK {
-						return ret
-					}
-				}
-			}
-			if ret := challengeFlagRepo.Delete(oldChallengeFlagID...); !ret.OK {
+			if ret := syncChallengeFlags(tx, contest, challenge, form.Flags); !ret.OK {
 				return ret
 			}
 			return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
@@ -524,6 +535,10 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 				Description:    form.Description,
 				Category:       form.Category,
 				GeneratorImage: form.GeneratorImage,
+				Hidden:         form.Hidden,
+				Attempt:        form.Attempt,
+				Hints:          form.Hints,
+				Tags:           form.Tags,
 			})
 		case model.PodsChallengeType:
 			if form.DockerCompose != nil {
@@ -537,6 +552,10 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 					Category:        form.Category,
 					NetworkPolicies: form.NetworkPolicies,
 					Template:        &template,
+					Hidden:          form.Hidden,
+					Attempt:         form.Attempt,
+					Hints:           form.Hints,
+					Tags:            form.Tags,
 				}); !ret.OK {
 					return ret
 				}
@@ -547,9 +566,61 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 				Description:     form.Description,
 				Category:        form.Category,
 				NetworkPolicies: form.NetworkPolicies,
+				Hidden:          form.Hidden,
+				Attempt:         form.Attempt,
+				Hints:           form.Hints,
+				Tags:            form.Tags,
 			})
 		default:
 			return model.FailRetVal(i18n.Model.Challenge.InvalidType, "Challenge", fmt.Sprintf("challenge_id=%d,type=%s", challenge.ID, challenge.Type), nil)
 		}
 	})
+}
+
+// syncChallengeFlags 让题目的 flag 集合与提交结果保持一致。
+// 值变化时保留 flag id 并推进代次，未解出队伍的答案按新模板重新渲染。
+func syncChallengeFlags(tx *gorm.DB, contest model.Contest, challenge model.Challenge, flags []struct {
+	ID    uint   `form:"id" json:"id"`
+	Value string `form:"value" json:"value"`
+}) model.RetVal {
+	repo := db.InitChallengeFlagRepo(tx)
+	existing := make(map[uint]model.ChallengeFlag, len(challenge.ChallengeFlags))
+	for _, flag := range challenge.ChallengeFlags {
+		existing[flag.ID] = flag
+	}
+	kept := make(map[uint]struct{}, len(flags))
+	for _, flag := range flags {
+		old, ok := existing[flag.ID]
+		if !ok {
+			if _, ret := repo.Create(newChallengeFlag(challenge.ID, flag.Value)); !ret.OK {
+				return ret
+			}
+			continue
+		}
+		kept[flag.ID] = struct{}{}
+		if old.Value == flag.Value {
+			continue
+		}
+		generation := old.Generation + 1
+		value := flag.Value
+		if ret := repo.Update(old.ID, db.UpdateChallengeFlagOptions{
+			Value:      &value,
+			Generation: &generation,
+		}); !ret.OK {
+			return ret
+		}
+		if contest.ID == 0 {
+			continue
+		}
+		if ret := RerenderTeamFlagValues(tx, contest, old.ID, value); !ret.OK {
+			return ret
+		}
+	}
+	removed := make([]uint, 0)
+	for id := range existing {
+		if _, ok := kept[id]; !ok {
+			removed = append(removed, id)
+		}
+	}
+	return repo.Delete(removed...)
 }

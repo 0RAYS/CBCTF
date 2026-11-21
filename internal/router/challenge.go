@@ -15,15 +15,6 @@ import (
 	"CBCTF/internal/service"
 )
 
-func GetChallenge(ctx *gin.Context) {
-	challenge, ret := service.GetChallengeWithFlags(db.DB.WithContext(ctx.Request.Context()), middleware.GetChallenge(ctx))
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(service.BuildChallengeView(db.DB.WithContext(ctx.Request.Context()), challenge))))
-}
-
 func GetChallenges(ctx *gin.Context) {
 	var form dto.GetChallengesForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
@@ -42,24 +33,6 @@ func GetChallenges(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "challenges": data}))
 }
 
-func GetAvailableChallenges(ctx *gin.Context) {
-	var form dto.GetChallengesForm
-	if ret := dto.Bind(ctx, &form); !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	challenges, count, ret := service.ListAvailableChallenges(db.DB.WithContext(ctx.Request.Context()), form)
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	data := make([]gin.H, 0)
-	for _, challenge := range challenges {
-		data = append(data, resp.GetSimpleChallengeResp(challenge))
-	}
-	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "challenges": data}))
-}
-
 func GetChallengeCategories(ctx *gin.Context) {
 	var form dto.GetCategoriesForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
@@ -72,6 +45,15 @@ func GetChallengeCategories(ctx *gin.Context) {
 		return
 	}
 	resp.JSON(ctx, model.SuccessRetVal(categories))
+}
+
+func GetChallenge(ctx *gin.Context) {
+	challenge, ret := service.GetChallengeWithFlags(db.DB.WithContext(ctx.Request.Context()), middleware.GetChallenge(ctx))
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(service.BuildChallengeView(db.DB.WithContext(ctx.Request.Context()), challenge))))
 }
 
 func CreateChallenge(ctx *gin.Context) {
@@ -114,12 +96,6 @@ func UpdateChallenge(ctx *gin.Context) {
 func DeleteChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteChallengeEventType)
 	challenge := middleware.GetChallenge(ctx)
-	// 题库题目删除不影响比赛题目副本，这里先统计引用数量，供前端提示。
-	usageCount, usageRet := service.CountChallengeUsages(db.DB.WithContext(ctx.Request.Context()), challenge)
-	if !usageRet.OK {
-		resp.JSON(ctx, usageRet)
-		return
-	}
 	ret := service.DeleteChallenge(db.DB.WithContext(ctx.Request.Context()), challenge)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
@@ -131,20 +107,39 @@ func DeleteChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(gin.H{"contest_challenge_count": usageCount}))
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
-// GetChallengeUsages 返回引用了该题库题目的比赛题目实例，用于在修改或删除题库题目前提示其影响范围。
-func GetChallengeUsages(ctx *gin.Context) {
-	challenge := middleware.GetChallenge(ctx)
-	usages, ret := service.ListChallengeUsages(db.DB.WithContext(ctx.Request.Context()), challenge)
+// CopyChallenge 把题目复制成目标比赛下的一道新题，副本与源题互不关联。
+func CopyChallenge(ctx *gin.Context) {
+	var form dto.CopyChallengeForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventTypeKey, model.CopyChallengeEventType)
+	source, ret := service.GetChallengeWithFlags(db.DB.WithContext(ctx.Request.Context()), middleware.GetChallenge(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	data := make([]gin.H, 0, len(usages))
-	for _, usage := range usages {
-		data = append(data, resp.GetChallengeUsageResp(usage))
+	challenge, ret := service.CopyChallenge(db.DB.WithContext(ctx.Request.Context()), source, form.ContestID)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
 	}
-	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": len(data), "usages": data}))
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(service.BuildChallengeView(db.DB.WithContext(ctx.Request.Context()), challenge))))
+}
+
+// ResetChallengeSolves 清空题目的解题记录并重算分数与排名。
+func ResetChallengeSolves(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.ResetChallengeSolvesEventType)
+	ret := service.ResetChallengeSolves(db.DB.WithContext(ctx.Request.Context()), middleware.GetChallenge(ctx))
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	resp.JSON(ctx, ret)
 }

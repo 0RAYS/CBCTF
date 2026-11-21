@@ -50,7 +50,7 @@ func InitTeamFlag(ctx *gin.Context) {
 		middleware.GetSelf(ctx),
 		middleware.GetTeam(ctx),
 		middleware.GetContest(ctx),
-		middleware.GetContestChallenge(ctx),
+		middleware.GetChallenge(ctx),
 	)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
@@ -67,7 +67,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 		middleware.GetSelf(ctx),
 		middleware.GetTeam(ctx),
 		middleware.GetContest(ctx),
-		middleware.GetContestChallenge(ctx),
+		middleware.GetChallenge(ctx),
 	)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
