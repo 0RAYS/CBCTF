@@ -128,10 +128,10 @@ function AdminLogs() {
           <select
             value={level}
             onChange={handleLevelChange}
-            className="rounded-md border border-neutral-300/20 bg-black/30 px-3 py-2 text-sm text-neutral-100 outline-none focus:border-primary-400"
+            className="rounded-md border border-neutral-300/20 bg-black/30 px-3 py-2 text-sm text-neutral-100 outline-none focus:border-geek-400"
           >
             {LOG_LEVELS.map((item) => (
-              <option key={item} value={item} className="bg-neutral-950 text-neutral-100">
+              <option key={item} value={item}>
                 {item}
               </option>
             ))}
