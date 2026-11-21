@@ -22,10 +22,12 @@ model:
     emptyImage: "题目镜像不能为空"
     getError: "读取题目失败：{{.Error}}"
     deleteError: "删除题目失败：{{.Error}}"
+    notFound: "题目不存在"
   challengeFlag:
     invalidType: "题目 Flag 类型无效"
     getError: "读取题目 Flag 失败：{{.Error}}"
     deleteError: "删除题目 Flag 失败：{{.Error}}"
+    notFound: "题目 Flag 不存在"
   cronJob:
     getError: "读取定时任务失败：{{.Error}}"
   cheat:
@@ -45,14 +47,6 @@ model:
     getError: "读取比赛失败：{{.Error}}"
     deleteError: "删除比赛失败：{{.Error}}"
     notFound: "比赛不存在"
-  contestChallenge:
-    getError: "读取比赛题目失败：{{.Error}}"
-    deleteError: "删除比赛题目失败：{{.Error}}"
-  contestFlag:
-    invalidType: "比赛 Flag 类型无效"
-    getError: "读取比赛 Flag 失败：{{.Error}}"
-    deleteError: "删除比赛 Flag 失败：{{.Error}}"
-    notFound: "比赛 Flag 不存在"
   docker:
     invalidComposeYaml: "Compose 配置无效：{{.Error}}"
     deleteError: "删除容器配置失败：{{.Error}}"

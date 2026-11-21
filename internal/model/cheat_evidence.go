@@ -91,22 +91,22 @@ type CheatRequest struct {
 
 // CheatChallengeRef 是判定涉及的题目副本及其使用者。
 type CheatChallengeRef struct {
-	ContestChallengeID uint   `json:"contest_challenge_id"`
-	Name               string `json:"name"`
-	ActorIDs           []uint `json:"actor_ids"`
+	ChallengeID uint   `json:"challenge_id"`
+	Name        string `json:"name"`
+	ActorIDs    []uint `json:"actor_ids"`
 }
 
 // CheatFlagSubmission 是一次 flag 提交记录。
 type CheatFlagSubmission struct {
-	SubmissionID       uint      `json:"submission_id"`
-	TeamID             uint      `json:"team_id"`
-	UserID             uint      `json:"user_id"`
-	ContestChallengeID uint      `json:"contest_challenge_id"`
-	ChallengeName      string    `json:"challenge_name"`
-	IP                 string    `json:"ip"`
-	At                 time.Time `json:"at"`
-	Value              string    `json:"value"`
-	Solved             bool      `json:"solved"`
+	SubmissionID  uint      `json:"submission_id"`
+	TeamID        uint      `json:"team_id"`
+	UserID        uint      `json:"user_id"`
+	ChallengeID   uint      `json:"challenge_id"`
+	ChallengeName string    `json:"challenge_name"`
+	IP            string    `json:"ip"`
+	At            time.Time `json:"at"`
+	Value         string    `json:"value"`
+	Solved        bool      `json:"solved"`
 }
 
 // CheatVictimEvidence 保存共享 IP 背后的靶机访问记录。
@@ -117,13 +117,13 @@ type CheatVictimEvidence struct {
 
 // CheatVictimRef 是被访问的靶机及其所属队伍与题目。
 type CheatVictimRef struct {
-	VictimID           uint      `json:"victim_id"`
-	TeamID             uint      `json:"team_id"`
-	ContestChallengeID uint      `json:"contest_challenge_id"`
-	ChallengeName      string    `json:"challenge_name"`
-	AccessCount        int64     `json:"access_count"`
-	FirstSeen          time.Time `json:"first_seen"`
-	LastSeen           time.Time `json:"last_seen"`
+	VictimID      uint      `json:"victim_id"`
+	TeamID        uint      `json:"team_id"`
+	ChallengeID   uint      `json:"challenge_id"`
+	ChallengeName string    `json:"challenge_name"`
+	AccessCount   int64     `json:"access_count"`
+	FirstSeen     time.Time `json:"first_seen"`
+	LastSeen      time.Time `json:"last_seen"`
 }
 
 // CheatVictimAccess 是一次靶机访问观测。
@@ -137,13 +137,13 @@ type CheatVictimAccess struct {
 
 // CheatFlagEvidence 保存误用他人 flag 的提交证据。
 type CheatFlagEvidence struct {
-	ContestChallengeID uint                  `json:"contest_challenge_id"`
-	ChallengeName      string                `json:"challenge_name"`
-	SubmittingTeamID   uint                  `json:"submitting_team_id"`
-	MatchedTeamIDs     []uint                `json:"matched_team_ids"`
-	MatchedValues      []string              `json:"matched_values"`
-	Owners             []CheatFlagOwner      `json:"owners"`
-	Submissions        []CheatFlagSubmission `json:"submissions"`
+	ChallengeID      uint                  `json:"challenge_id"`
+	ChallengeName    string                `json:"challenge_name"`
+	SubmittingTeamID uint                  `json:"submitting_team_id"`
+	MatchedTeamIDs   []uint                `json:"matched_team_ids"`
+	MatchedValues    []string              `json:"matched_values"`
+	Owners           []CheatFlagOwner      `json:"owners"`
+	Submissions      []CheatFlagSubmission `json:"submissions"`
 }
 
 // CheatFlagOwner 是被冒用的 flag 的合法持有者及其解题时间。

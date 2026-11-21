@@ -25,25 +25,23 @@ const (
 
 // Victim 靶机实例
 type Victim struct {
-	Start            time.Time        `gorm:"default:null" json:"start"`
-	Status           string           `gorm:"index" json:"status"`
-	Resources        VictimResources  `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
-	Pods             []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Endpoints        Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
-	ExposedEndpoints Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
-	Spec             VictimSpec       `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
-	ContestChallenge ContestChallenge `json:"-"`
-	Team             Team             `json:"-"`
-	Contest          Contest          `json:"-"`
-	User             User             `json:"-"`
-	Challenge        Challenge        `json:"-"`
+	Start            time.Time       `gorm:"default:null" json:"start"`
+	Status           string          `gorm:"index" json:"status"`
+	Resources        VictimResources `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
+	Pods             []Pod           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Endpoints        Endpoints       `gorm:"default:null;type:jsonb" json:"-"`
+	ExposedEndpoints Endpoints       `gorm:"default:null;type:jsonb" json:"-"`
+	Spec             VictimSpec      `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
+	Team             Team            `json:"-"`
+	Contest          Contest         `json:"-"`
+	User             User            `json:"-"`
+	Challenge        Challenge       `json:"-"`
 	BaseModel
-	ContestID          sql.Null[uint] `gorm:"index" json:"contest_id"`
-	ContestChallengeID sql.Null[uint] `gorm:"index" json:"contest_challenge_id"`
-	TeamID             sql.Null[uint] `gorm:"index" json:"team_id"`
-	ChallengeID        uint           `gorm:"index" json:"challenge_id"`
-	UserID             uint           `gorm:"index" json:"user_id"`
-	Duration           time.Duration  `json:"duration"`
+	ContestID   sql.Null[uint] `gorm:"index" json:"contest_id"`
+	TeamID      sql.Null[uint] `gorm:"index" json:"team_id"`
+	ChallengeID uint           `gorm:"index" json:"challenge_id"`
+	UserID      uint           `gorm:"index" json:"user_id"`
+	Duration    time.Duration  `json:"duration"`
 }
 
 func (v Victim) TrafficBasePath() string {

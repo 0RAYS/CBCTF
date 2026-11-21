@@ -39,16 +39,6 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Table:        "contests",
 		UniqueFields: []string{"id", "name"},
 	},
-	reflect.TypeFor[ContestChallenge](): {
-		Name:         "ContestChallenge",
-		Table:        "contest_challenges",
-		UniqueFields: []string{"id", "rand_id"},
-	},
-	reflect.TypeFor[ContestFlag](): {
-		Name:         "ContestFlag",
-		Table:        "contest_flags",
-		UniqueFields: []string{"id"},
-	},
 	reflect.TypeFor[CronJob](): {
 		Name:         "CronJob",
 		Table:        "cron_jobs",
@@ -139,7 +129,7 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Name:          "TeamFlag",
 		Table:         "team_flags",
 		UniqueFields:  []string{"id"},
-		UniqueIndexes: [][]string{{"team_id", "contest_flag_id"}},
+		UniqueIndexes: [][]string{{"team_id", "challenge_flag_id"}},
 	},
 	reflect.TypeFor[Traffic](): {
 		Name:         "Traffic",

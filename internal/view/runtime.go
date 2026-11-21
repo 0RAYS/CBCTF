@@ -13,16 +13,16 @@ type VictimStatusView struct {
 	Status    string
 }
 
-type ContestChallengeView struct {
-	ContestChallenge model.ContestChallenge
-	Attempts         int64
-	Init             bool
-	Solved           bool
-	Remote           VictimStatusView
-	FileName         string
+type ChallengeRuntimeView struct {
+	Challenge model.Challenge
+	Attempts  int64
+	Init      bool
+	Solved    bool
+	Remote    VictimStatusView
+	FileName  string
 }
 
-type ContestChallengeStatusView struct {
+type ChallengeStatusView struct {
 	Attempts int64
 	Init     bool
 	Solved   bool
@@ -30,7 +30,7 @@ type ContestChallengeStatusView struct {
 	FileName string
 }
 
-type ContestFlagSolverView struct {
+type FlagSolverView struct {
 	UserID   uint
 	UserName string
 	TeamID   uint

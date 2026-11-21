@@ -120,15 +120,9 @@ const (
 	PermAdminCheatDelete = "admin:cheat:delete"
 	PermAdminCheatList   = "admin:cheat:list"
 
-	PermAdminContestChallengeCreate = "admin:contest_challenge:create"
-	PermAdminContestChallengeRead   = "admin:contest_challenge:read"
-	PermAdminContestChallengeUpdate = "admin:contest_challenge:update"
-	PermAdminContestChallengeDelete = "admin:contest_challenge:delete"
-	PermAdminContestChallengeList   = "admin:contest_challenge:list"
-
-	PermAdminContestChallengeFlagList   = "admin:contest_challenge_flag:list"
-	PermAdminContestChallengeFlagRead   = "admin:contest_challenge_flag:read"
-	PermAdminContestChallengeFlagUpdate = "admin:contest_challenge_flag:update"
+	PermAdminChallengeFlagList   = "admin:challenge:flag:list"
+	PermAdminChallengeFlagRead   = "admin:challenge:flag:read"
+	PermAdminChallengeFlagUpdate = "admin:challenge:flag:update"
 
 	PermAdminImagePull        = "admin:image:pull"
 	PermAdminContestImagePull = "admin:contest_image:pull"
@@ -284,18 +278,24 @@ var RoutePermissions = map[string]string{
 	"GET /admin/webhook/:webhookID/history": PermAdminWebhookList,
 
 	// /admin/challenges
-	"GET /admin/challenges":                              PermAdminChallengeList,
-	"GET /admin/challenges/categories":                   PermAdminChallengeList,
-	"POST /admin/challenges":                             PermAdminChallengeCreate,
-	"GET /admin/challenges/:challengeID":                 PermAdminChallengeRead,
-	"GET /admin/challenges/:challengeID/download":        PermAdminChallengeRead,
-	"PUT /admin/challenges/:challengeID":                 PermAdminChallengeUpdate,
-	"DELETE /admin/challenges/:challengeID":              PermAdminChallengeDelete,
-	"POST /admin/challenges/:challengeID/upload":         PermAdminChallengeUpdate,
-	"GET /admin/challenges/:challengeID/test":            PermAdminChallengeTest,
-	"GET /admin/challenges/:challengeID/test/attachment": PermAdminChallengeTest,
-	"POST /admin/challenges/:challengeID/test/start":     PermAdminChallengeTest,
-	"POST /admin/challenges/:challengeID/test/stop":      PermAdminChallengeTest,
+	"GET /admin/challenges":                                    PermAdminChallengeList,
+	"GET /admin/challenges/categories":                         PermAdminChallengeList,
+	"POST /admin/challenges":                                   PermAdminChallengeCreate,
+	"GET /admin/challenges/:challengeID":                       PermAdminChallengeRead,
+	"GET /admin/challenges/:challengeID/download":              PermAdminChallengeRead,
+	"PUT /admin/challenges/:challengeID":                       PermAdminChallengeUpdate,
+	"DELETE /admin/challenges/:challengeID":                    PermAdminChallengeDelete,
+	"POST /admin/challenges/:challengeID/upload":               PermAdminChallengeUpdate,
+	"POST /admin/challenges/:challengeID/copy":                 PermAdminChallengeCreate,
+	"POST /admin/challenges/:challengeID/reset-solves":         PermAdminChallengeUpdate,
+	"GET /admin/challenges/:challengeID/flags":                 PermAdminChallengeFlagList,
+	"GET /admin/challenges/:challengeID/flags/:flagID":         PermAdminChallengeFlagRead,
+	"PUT /admin/challenges/:challengeID/flags/:flagID":         PermAdminChallengeFlagUpdate,
+	"GET /admin/challenges/:challengeID/flags/:flagID/solvers": PermAdminChallengeFlagList,
+	"GET /admin/challenges/:challengeID/test":                  PermAdminChallengeTest,
+	"GET /admin/challenges/:challengeID/test/attachment":       PermAdminChallengeTest,
+	"POST /admin/challenges/:challengeID/test/start":           PermAdminChallengeTest,
+	"POST /admin/challenges/:challengeID/test/stop":            PermAdminChallengeTest,
 
 	"GET /admin/victims":                            PermAdminVictimControl,
 	"DELETE /admin/victims":                         PermAdminVictimControl,
@@ -366,17 +366,8 @@ var RoutePermissions = map[string]string{
 	"DELETE /admin/contests/:contestID/cheats/:cheatID": PermAdminCheatDelete,
 
 	// /admin/contests/:contestID/challenges
-	"GET /admin/contests/:contestID/challenges":                                    PermAdminContestChallengeList,
-	"GET /admin/contests/:contestID/challenges/others":                             PermAdminChallengeList,
-	"GET /admin/contests/:contestID/challenges/categories":                         PermAdminContestChallengeList,
-	"POST /admin/contests/:contestID/challenges":                                   PermAdminContestChallengeCreate,
-	"GET /admin/contests/:contestID/challenges/:challengeID":                       PermAdminContestChallengeRead,
-	"PUT /admin/contests/:contestID/challenges/:challengeID":                       PermAdminContestChallengeUpdate,
-	"DELETE /admin/contests/:contestID/challenges/:challengeID":                    PermAdminContestChallengeDelete,
-	"GET /admin/contests/:contestID/challenges/:challengeID/flags":                 PermAdminContestChallengeFlagList,
-	"GET /admin/contests/:contestID/challenges/:challengeID/flags/:flagID":         PermAdminContestChallengeFlagRead,
-	"PUT /admin/contests/:contestID/challenges/:challengeID/flags/:flagID":         PermAdminContestChallengeFlagUpdate,
-	"GET /admin/contests/:contestID/challenges/:challengeID/flags/:flagID/solvers": PermAdminContestChallengeFlagList,
+	"GET /admin/contests/:contestID/challenges":  PermAdminChallengeList,
+	"POST /admin/contests/:contestID/challenges": PermAdminChallengeCreate,
 
 	// /admin/contests/:contestID/images
 	"GET /admin/contests/:contestID/images":         PermAdminContestImagePull,
@@ -536,15 +527,9 @@ var Permissions = []Permission{
 	{Name: PermAdminCheatDelete, Resource: "admin:cheat", Operation: "delete", Description: "删除作弊记录"},
 	{Name: PermAdminCheatList, Resource: "admin:cheat", Operation: "list", Description: "查看作弊记录列表"},
 
-	{Name: PermAdminContestChallengeCreate, Resource: "admin:contest_challenge", Operation: "create", Description: "创建比赛题目关联"},
-	{Name: PermAdminContestChallengeRead, Resource: "admin:contest_challenge", Operation: "read", Description: "查看比赛题目关联详情"},
-	{Name: PermAdminContestChallengeUpdate, Resource: "admin:contest_challenge", Operation: "update", Description: "更新比赛题目关联"},
-	{Name: PermAdminContestChallengeDelete, Resource: "admin:contest_challenge", Operation: "delete", Description: "删除比赛题目关联"},
-	{Name: PermAdminContestChallengeList, Resource: "admin:contest_challenge", Operation: "list", Description: "查看比赛题目关联列表"},
-
-	{Name: PermAdminContestChallengeFlagList, Resource: "admin:contest_challenge_flag", Operation: "list", Description: "查看比赛题目 Flag 列表"},
-	{Name: PermAdminContestChallengeFlagRead, Resource: "admin:contest_challenge_flag", Operation: "read", Description: "查看比赛题目 Flag 详情"},
-	{Name: PermAdminContestChallengeFlagUpdate, Resource: "admin:contest_challenge_flag", Operation: "update", Description: "更新比赛题目 Flag"},
+	{Name: PermAdminChallengeFlagList, Resource: "admin:challenge:flag", Operation: "list", Description: "查看题目 Flag 列表"},
+	{Name: PermAdminChallengeFlagRead, Resource: "admin:challenge:flag", Operation: "read", Description: "查看题目 Flag 详情"},
+	{Name: PermAdminChallengeFlagUpdate, Resource: "admin:challenge:flag", Operation: "update", Description: "更新题目 Flag"},
 
 	{Name: PermAdminImagePull, Resource: "admin:image", Operation: "pull", Description: "拉取镜像"},
 

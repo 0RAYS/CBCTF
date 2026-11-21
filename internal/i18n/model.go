@@ -5,12 +5,14 @@ type Challenge struct {
 	EmptyImage  string
 	GetError    string
 	DeleteError string
+	NotFound    string
 }
 
 type ChallengeFlag struct {
 	InvalidType string
 	GetError    string
 	DeleteError string
+	NotFound    string
 }
 
 type CronJob struct {
@@ -36,18 +38,6 @@ type Contest struct {
 	GetError          string
 	DeleteError       string
 	NotFound          string
-}
-
-type ContestChallenge struct {
-	GetError    string
-	DeleteError string
-}
-
-type ContestFlag struct {
-	InvalidType string
-	GetError    string
-	DeleteError string
-	NotFound    string
 }
 
 type Docker struct {
@@ -225,8 +215,6 @@ var Model = struct {
 	ChallengeFlag     ChallengeFlag
 	Cheat             Cheat
 	Contest           Contest
-	ContestChallenge  ContestChallenge
-	ContestFlag       ContestFlag
 	CronJob           CronJob
 	Docker            Docker
 	Email             Email
@@ -267,11 +255,13 @@ var Model = struct {
 		EmptyImage:  "model.challenge.emptyImage",
 		GetError:    "model.challenge.getError",
 		DeleteError: "model.challenge.deleteError",
+		NotFound:    "model.challenge.notFound",
 	},
 	ChallengeFlag: ChallengeFlag{
 		InvalidType: "model.challengeFlag.invalidType",
 		GetError:    "model.challengeFlag.getError",
 		DeleteError: "model.challengeFlag.deleteError",
+		NotFound:    "model.challengeFlag.notFound",
 	},
 	CronJob: CronJob{
 		GetError: "model.cronJob.getError",
@@ -294,16 +284,6 @@ var Model = struct {
 		GetError:          "model.contest.getError",
 		DeleteError:       "model.contest.deleteError",
 		NotFound:          "model.contest.notFound",
-	},
-	ContestChallenge: ContestChallenge{
-		GetError:    "model.contestChallenge.getError",
-		DeleteError: "model.contestChallenge.deleteError",
-	},
-	ContestFlag: ContestFlag{
-		InvalidType: "model.contestFlag.invalidType",
-		GetError:    "model.contestFlag.getError",
-		DeleteError: "model.contestFlag.deleteError",
-		NotFound:    "model.contestFlag.notFound",
 	},
 	Docker: Docker{
 		InvalidComposeYaml: "model.docker.invalidComposeYaml",

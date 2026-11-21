@@ -2,7 +2,7 @@ package dto
 
 import "CBCTF/internal/model"
 
-type UpdateContestFlagForm struct {
+type UpdateChallengeFlagForm struct {
 	Value     *string          `form:"value" json:"value" binding:"omitempty,min=1"`
 	Score     *float64         `form:"score" json:"score" binding:"omitempty,gte=0"`
 	Decay     *float64         `form:"decay" json:"decay" binding:"omitempty,gte=0"`
