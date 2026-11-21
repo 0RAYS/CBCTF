@@ -1,7 +1,7 @@
 import { IconPlayerPlay } from '@tabler/icons-react';
-import { Button, Modal } from '../../../common';
-import { normalizeStartCount } from './generatorUtils.js';
-import BatchResultPanel from '../batch/BatchResultPanel.jsx';
+import { Button, Modal } from '@/components/common';
+import { normalizeStartCount } from '@/components/features/Admin/generators/generatorUtils.js';
+import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
 
 export default function GeneratorStartDialog({
   challenges,

@@ -1,4 +1,4 @@
-import { getContestStatus, getContestTimeRange } from '../../../../../config/contest.js';
+import { getContestStatus, getContestTimeRange } from '@/config/contest.js';
 
 export function createContestDraft(data) {
   if (!data)

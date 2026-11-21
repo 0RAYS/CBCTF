@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import ContestDetail from '../../components/features/CTFGame/OverView/ContestDetail';
-import { transformContestData } from '../../components/features/CTFGame/OverView/contestModel.js';
-import { toast } from '../../utils/toast';
-import { getContestInfo } from '../../api/contest';
-import Loading from '../../components/common/Loading';
+import ContestDetail from '@/components/features/CTFGame/OverView/ContestDetail';
+import { transformContestData } from '@/components/features/CTFGame/OverView/contestModel.js';
+import { toast } from '@/utils/toast';
+import { getContestInfo } from '@/api/contest';
+import Loading from '@/components/common/Loading';
 import { useTranslation } from 'react-i18next';
 
 function GameDetailPage() {

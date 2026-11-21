@@ -1,8 +1,8 @@
 import { IconFilter, IconSearch, IconTarget, IconUsers } from '@tabler/icons-react';
 import { motion } from 'motion/react';
-import { Button } from '../../../common';
+import { Button } from '@/components/common';
 import { useTranslation } from 'react-i18next';
-import useVictimFilterSearch from './useVictimFilterSearch';
+import useVictimFilterSearch from '@/components/features/Admin/victims/useVictimFilterSearch';
 
 export function VictimFilters({ scope, filters, onResetFilters, onFilterChange }) {
   const { t } = useTranslation();

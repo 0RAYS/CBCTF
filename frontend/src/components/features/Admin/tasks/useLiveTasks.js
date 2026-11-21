@@ -1,16 +1,16 @@
 import { useEffect, useEffectEvent, useReducer, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getLiveTasks } from '../../../../api/admin/task';
-import { toast } from '../../../../utils/toast';
-import { useDebounce } from '../../../../hooks/useDebounce';
-import { startVisiblePolling } from '../../../../utils/visiblePolling.js';
+import { getLiveTasks } from '@/api/admin/task';
+import { toast } from '@/utils/toast';
+import { useDebounce } from '@/hooks/useDebounce';
+import { startVisiblePolling } from '@/utils/visiblePolling.js';
 import {
   createTaskQuery,
   livePollingDelay,
   normalizeTaskPayload,
   taskQueryParams,
   taskQueryReducer,
-} from './taskModel';
+} from '@/components/features/Admin/tasks/taskModel';
 
 export default function useLiveTasks(active) {
   const { t } = useTranslation();

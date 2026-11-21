@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { List } from '../../../common';
-import { formatDateTime } from './cheatFormat';
+import { List } from '@/components/common';
+import { formatDateTime } from '@/components/features/Admin/cheats/cheatFormat';
 
 // actorLabel 展示事件发起方的身份，用户与队伍分开标注。
 function actorLabel(item) {

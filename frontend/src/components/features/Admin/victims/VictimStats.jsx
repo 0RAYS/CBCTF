@@ -1,5 +1,5 @@
 import { IconBan, IconPlayerPlay, IconServer } from '@tabler/icons-react';
-import { StatCard } from '../../../common';
+import { StatCard } from '@/components/common';
 
 export function VictimStats({ stats, t, translationKey, contestId }) {
   return (

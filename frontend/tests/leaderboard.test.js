@@ -5,9 +5,9 @@ import {
   collectChallenges,
   indexTeamChallenges,
   toRankingTeam,
-} from '../src/components/features/Leaderboard/leaderboardModel.js';
-import { buildTimelineChartData, buildTimelineModel } from '../src/components/features/Leaderboard/timelineModel.js';
-import { buildTimelineOption, timelineTeamColor } from '../src/components/features/Leaderboard/timelineOption.js';
+} from '@/components/features/Leaderboard/leaderboardModel.js';
+import { buildTimelineChartData, buildTimelineModel } from '@/components/features/Leaderboard/timelineModel.js';
+import { buildTimelineOption, timelineTeamColor } from '@/components/features/Leaderboard/timelineOption.js';
 
 const times = [0, 1, 2, 3].map((minute) => `2026-09-10T10:0${minute}:00Z`);
 

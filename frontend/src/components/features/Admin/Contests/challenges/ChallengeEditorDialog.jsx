@@ -1,15 +1,19 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconPlus, IconTrash, IconRotateClockwise } from '@tabler/icons-react';
-import { Button, Input, Modal, Spinner, Textarea } from '../../../../common';
-import Checkbox from '../../../../common/Checkbox';
-import ConfirmModal from '../../../../common/ConfirmModal';
-import { getChallengeFlags, updateChallengeFlag } from '../../../../../api/admin/challenge';
-import { resetContestChallengeSolves, updateContestChallenge } from '../../../../../api/admin/contest';
-import { toast } from '../../../../../utils/toast';
-import FlagEditor from './FlagEditor';
-import FlagSolversDialog from './FlagSolversDialog';
-import { challengeDraft, flagUpdatePayload, isFlagDirty } from './challengeData.js';
+import { Button, Input, Modal, Spinner, Textarea } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
+import ConfirmModal from '@/components/common/ConfirmModal';
+import { getChallengeFlags, updateChallengeFlag } from '@/api/admin/challenge';
+import { resetContestChallengeSolves, updateContestChallenge } from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
+import FlagEditor from '@/components/features/Admin/Contests/challenges/FlagEditor';
+import FlagSolversDialog from '@/components/features/Admin/Contests/challenges/FlagSolversDialog';
+import {
+  challengeDraft,
+  flagUpdatePayload,
+  isFlagDirty,
+} from '@/components/features/Admin/Contests/challenges/challengeData.js';
 
 export default function ChallengeEditorDialog({ contestId, challenge, onClose, onSaved }) {
   const { t } = useTranslation();

@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getBranding } from '../api/branding';
-import { DEFAULT_BRANDING, mergeBranding } from '../config/branding';
+import { getBranding } from '@/api/branding';
+import { DEFAULT_BRANDING, mergeBranding } from '@/config/branding';
 
 const brandingSlice = createSlice({
   name: 'branding',

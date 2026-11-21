@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Pagination } from '../../common';
-import LeaderboardRanking from './LeaderboardRanking.jsx';
+import { Pagination } from '@/components/common';
+import LeaderboardRanking from '@/components/features/Leaderboard/LeaderboardRanking.jsx';
 
 /** 管理后台积分榜组件 */
 function AdminRanking({

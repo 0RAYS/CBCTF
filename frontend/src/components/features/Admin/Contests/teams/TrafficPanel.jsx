@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IconDownload, IconGraph } from '@tabler/icons-react';
-import { Button, Card, List, Pagination, Spinner, StatusTag } from '../../../../common';
-import { containerStatus, TEAM_DETAIL_PAGE_SIZE } from './teamDetailData.js';
+import { Button, Card, List, Pagination, Spinner, StatusTag } from '@/components/common';
+import { containerStatus, TEAM_DETAIL_PAGE_SIZE } from '@/components/features/Admin/Contests/teams/teamDetailData.js';
 
 export default function TrafficPanel({
   containers = [],

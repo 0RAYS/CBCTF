@@ -1,6 +1,6 @@
 import { IconActivity, IconArrowDownRight, IconArrowUpRight, IconRoute } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { formatBytes } from './trafficPresentation.js';
+import { formatBytes } from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 export default function TrafficSummary({ summary }) {
   const { t } = useTranslation();

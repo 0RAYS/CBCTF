@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../../../common';
-import SubmissionsPanel from './SubmissionsPanel';
-import WriteupsPanel from './WriteupsPanel';
-import TrafficPanel from './TrafficPanel';
-import FlagsPanel from './FlagsPanel';
+import { Button } from '@/components/common';
+import SubmissionsPanel from '@/components/features/Admin/Contests/teams/SubmissionsPanel';
+import WriteupsPanel from '@/components/features/Admin/Contests/teams/WriteupsPanel';
+import TrafficPanel from '@/components/features/Admin/Contests/teams/TrafficPanel';
+import FlagsPanel from '@/components/features/Admin/Contests/teams/FlagsPanel';
 
 export default function TeamDetailPanels({
   recentSubmissions = [],

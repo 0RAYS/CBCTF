@@ -5,9 +5,9 @@ import {
     cleanHeaders,
     renameHeader,
     webhookForm,
-} from '../src/components/features/Admin/webhook/payload.js';
-import {buildSmtpPayload, smtpForm} from '../src/components/features/Admin/smtp/payload.js';
-import {buildOAuthPayload, oauthForm, parseScopes} from '../src/components/features/Admin/oauth/payload.js';
+} from '@/components/features/Admin/webhook/payload.js';
+import {buildSmtpPayload, smtpForm} from '@/components/features/Admin/smtp/payload.js';
+import {buildOAuthPayload, oauthForm, parseScopes} from '@/components/features/Admin/oauth/payload.js';
 
 test('webhook defaults and editing isolate mutable collections from server data', () => {
   assert.deepEqual(webhookForm(), {

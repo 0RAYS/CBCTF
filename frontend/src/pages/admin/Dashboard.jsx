@@ -1,12 +1,12 @@
 import { lazy, Suspense, useEffect, useEffectEvent, useState } from 'react';
-import { getSystemStatus } from '../../api/admin/system';
-import AdminDashboard from '../../components/features/Admin/AdminDashboard';
-import Loading from '../../components/common/Loading';
-import { toast } from '../../utils/toast.js';
+import { getSystemStatus } from '@/api/admin/system';
+import AdminDashboard from '@/components/features/Admin/AdminDashboard';
+import Loading from '@/components/common/Loading';
+import { toast } from '@/utils/toast.js';
 import { useTranslation } from 'react-i18next';
-import { startVisiblePolling } from '../../utils/visiblePolling.js';
+import { startVisiblePolling } from '@/utils/visiblePolling.js';
 
-const ReactECharts = lazy(() => import('../../components/common/EChart'));
+const ReactECharts = lazy(() => import('@/components/common/EChart'));
 
 function Dashboard() {
   const [status, setStatus] = useState(null);

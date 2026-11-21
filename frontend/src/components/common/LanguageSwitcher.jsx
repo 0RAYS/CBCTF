@@ -1,6 +1,6 @@
 import { IconLanguage } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { setLanguage } from '../../i18n';
+import { setLanguage } from '@/i18n';
 
 const LANGUAGES = {
   'zh-CN': { label: '简体中文', code: '中文' },

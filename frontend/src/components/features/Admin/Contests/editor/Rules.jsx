@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
-import { Button, Card, Input } from '../../../../common';
+import { Button, Card, Input } from '@/components/common';
 
 export default function Rules({ rules = [], onChange }) {
   const { t } = useTranslation();

@@ -1,11 +1,11 @@
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Avatar, Card, Pagination, ScrollingText } from '../../common';
-import Loading from '../../common/Loading';
+import { Avatar, Card, Pagination, ScrollingText } from '@/components/common';
+import Loading from '@/components/common/Loading';
 import { useTranslation } from 'react-i18next';
-import { buildLeaderboardColumns, indexTeamChallenges } from './leaderboardModel.js';
-import useScoreColumnWidth from './useScoreColumnWidth';
-import TruncatedText from '../../common/TruncatedText';
+import { buildLeaderboardColumns, indexTeamChallenges } from '@/components/features/Leaderboard/leaderboardModel.js';
+import useScoreColumnWidth from '@/components/features/Leaderboard/useScoreColumnWidth';
+import TruncatedText from '@/components/common/TruncatedText';
 
 /** 通用表格式积分榜组件 */
 function LeaderboardTable({

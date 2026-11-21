@@ -1,9 +1,9 @@
 import { AnimatePresence, motion, useAnimationControls } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { Button, Input, Modal } from '../../common';
-import OAuthLogin from './OAuthLogin';
+import { Button, Input, Modal } from '@/components/common';
+import OAuthLogin from '@/components/features/Auth/OAuthLogin';
 import { useTranslation } from 'react-i18next';
-import { forgotPassword, getCaptcha } from '../../../api/auth';
+import { forgotPassword, getCaptcha } from '@/api/auth';
 
 function CaptchaField({ captcha, value, onChange, onRefresh, error, disabled }) {
   const { t } = useTranslation();

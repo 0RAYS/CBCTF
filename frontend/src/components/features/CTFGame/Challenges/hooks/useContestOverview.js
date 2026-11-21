@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getContestInfo, getContestNotices } from '../../../../../api/contest';
-import { getTeamInfo, getTeamMembers } from '../../../../../api/game/team';
-import { toast } from '../../../../../utils/toast';
-import { getContestOverview } from '../models/challengeViewModel';
+import { getContestInfo, getContestNotices } from '@/api/contest';
+import { getTeamInfo, getTeamMembers } from '@/api/game/team';
+import { toast } from '@/utils/toast';
+import { getContestOverview } from '@/components/features/CTFGame/Challenges/models/challengeViewModel';
 
 export default function useContestOverview(contestId) {
   const { t } = useTranslation();

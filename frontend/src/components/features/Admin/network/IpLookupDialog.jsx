@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import Modal from '../../../common/Modal';
-import Card from '../../../common/Card';
+import Modal from '@/components/common/Modal';
+import Card from '@/components/common/Card';
 
 const FIELDS = ['ip', 'iso', 'country', 'subdivision', 'city', 'timezone'];
 

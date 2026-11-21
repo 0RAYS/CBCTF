@@ -7,8 +7,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createInstance } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
 import { transformWithOxc } from 'vite';
-import en from '../src/i18n/locales/en.json' with { type: 'json' };
-import zh from '../src/i18n/locales/zh-CN.json' with { type: 'json' };
+import en from '@/i18n/locales/en.json' with { type: 'json' };
+import zh from '@/i18n/locales/zh-CN.json' with { type: 'json' };
 
 const panelURL = new URL('../src/components/features/Admin/batch/BatchResultPanel.jsx', import.meta.url).href;
 const { code } = await transformWithOxc(await readFile(new URL(panelURL), 'utf8'), 'BatchResultPanel.jsx', {
@@ -16,7 +16,7 @@ const { code } = await transformWithOxc(await readFile(new URL(panelURL), 'utf8'
 });
 const loader = registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (context.parentURL === panelURL && specifier === '../../../common') {
+    if (context.parentURL === panelURL && specifier === '@/components/common') {
       return { url: 'data:text/javascript,export const Button = "button";', shortCircuit: true };
     }
     return nextResolve(specifier, context);

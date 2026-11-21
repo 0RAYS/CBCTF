@@ -1,9 +1,9 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import BaseLayout from './BaseLayout';
+import BaseLayout from '@/components/features/layouts/BaseLayout';
 import { useSelector } from 'react-redux';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useBranding } from '../../../hooks/useBranding';
+import { useBranding } from '@/hooks/useBranding';
 
 function MainLayout() {
   const location = useLocation();

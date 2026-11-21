@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getChallengeCategories, getChallengeList } from '../../../../../api/challenge';
-import { toast } from '../../../../../utils/toast';
-import { mapChallengeStatusToViewModel, normalizeCategories } from '../models/challengeViewModel';
+import { getChallengeCategories, getChallengeList } from '@/api/challenge';
+import { toast } from '@/utils/toast';
+import {
+  mapChallengeStatusToViewModel,
+  normalizeCategories,
+} from '@/components/features/CTFGame/Challenges/models/challengeViewModel';
 
 export default function useChallengeList(contestId, { enabled = true } = {}) {
   const { t } = useTranslation();

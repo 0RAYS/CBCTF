@@ -1,5 +1,5 @@
-import Modal from './Modal';
-import ModalFooter from './ModalFooter';
+import Modal from '@/components/common/Modal';
+import ModalFooter from '@/components/common/ModalFooter';
 import { useTranslation } from 'react-i18next';
 
 /** 通用确认模态框（基于通用Modal） */

@@ -1,8 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { Card, EmptyState, Pagination } from '../../../common';
-import Loading from '../../../common/Loading';
-import { formatDateTime, formatPayload, PAGE_SIZE, taskRowKey, taskTimestamp } from './taskModel';
-import TruncatedText from '../../../common/TruncatedText';
+import { Card, EmptyState, Pagination } from '@/components/common';
+import Loading from '@/components/common/Loading';
+import {
+  formatDateTime,
+  formatPayload,
+  PAGE_SIZE,
+  taskRowKey,
+  taskTimestamp,
+} from '@/components/features/Admin/tasks/taskModel';
+import TruncatedText from '@/components/common/TruncatedText';
 
 const COLUMN_WIDTHS = [220, 160, 140, 128, 112, 200, 240, 280];
 

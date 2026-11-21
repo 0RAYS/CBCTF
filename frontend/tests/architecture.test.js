@@ -69,6 +69,8 @@ test('resolver preserves exact casing, extension/index resolution and asset quer
   assert.equal(resolve('tests/entry.js', './helpers/architecture.js?worker&inline'), 'tests/helpers/architecture.js');
   assert.equal(resolve('src/entry.js', './index.css?inline'), 'src/index.css');
   assert.equal(resolve('src/entry.js', './i18n/locales/en.json?raw'), 'src/i18n/locales/en.json');
+  assert.equal(resolve('src/entry.js', '@/i18n/locales/en.json'), 'src/i18n/locales/en.json');
+  assert.equal(resolve('src/entry.js', '@/i18n/locales/En.json'), null);
   assert.equal(resolve('src/entry.js', './main'), 'src/main.jsx');
   assert.equal(resolve('src/entry.js', './store'), 'src/store/index.js');
   assert.equal(resolve('src/entry.js', './missing-file.js'), null);
@@ -101,10 +103,22 @@ test('all src relative imports/re-exports resolve with exact path casing', () =>
   const violations = [...scanErrors];
   for (const [file, imports] of dependencies) {
     for (const { specifier, target, line } of imports) {
-      if (/^\.{1,2}\//.test(specifier) && !target) violations.push(`${file}:${line} -> ${specifier}`);
+      if ((/^\.{1,2}\//.test(specifier) || specifier.startsWith('@/')) && !target) {
+        violations.push(`${file}:${line} -> ${specifier}`);
+      }
     }
   }
   assertNoViolations(violations, 'Unresolved imports or unsupported module syntax (never silently skipped):');
+});
+
+test('src imports use the @ alias instead of relative paths', () => {
+  const violations = [];
+  for (const [file, imports] of dependencies) {
+    for (const { specifier, line } of imports) {
+      if (/^\.{1,2}\//.test(specifier)) violations.push(`${file}:${line} -> ${specifier}`);
+    }
+  }
+  assertNoViolations(violations, 'Relative imports are not allowed, use the @ alias:');
 });
 
 test('common components do not directly depend on admin APIs or business features', () => {

@@ -9,21 +9,21 @@ const requestURL = new URL('./helpers/logRequestHarness.js', import.meta.url).hr
 const loader = registerHooks({
   resolve(specifier, context, nextResolve) {
     if (/\/(useGeneratorLogs|useVictimLogSession)\.js$/.test(context.parentURL ?? '')) {
-      if (['react', 'react-i18next', '../../../../utils/toast'].includes(specifier)) {
+      if (['react', 'react-i18next', '@/utils/toast'].includes(specifier)) {
         return { url: helperURL, shortCircuit: true };
       }
     }
     if (/\/api\/admin\/(generators|victims|contest)\.js$/.test(context.parentURL ?? '')) {
-      if (specifier === '../request') return { url: requestURL, shortCircuit: true };
+      if (specifier === '@/api/request') return { url: requestURL, shortCircuit: true };
     }
     return nextResolve(specifier, context);
   },
 });
-const { default: useGeneratorLogs } = await import('../src/components/features/Admin/generators/useGeneratorLogs.js');
-const { default: useVictimLogSession } = await import('../src/components/features/Admin/victims/useVictimLogSession.js');
-const { getGeneratorLogs } = await import('../src/api/admin/generators.js');
-const { getVictimPods, getVictimPodLogs } = await import('../src/api/admin/victims.js');
-const { getContestVictimPods, getContestVictimPodLogs } = await import('../src/api/admin/contest.js');
+const { default: useGeneratorLogs } = await import('@/components/features/Admin/generators/useGeneratorLogs.js');
+const { default: useVictimLogSession } = await import('@/components/features/Admin/victims/useVictimLogSession.js');
+const { getGeneratorLogs } = await import('@/api/admin/generators.js');
+const { getVictimPods, getVictimPodLogs } = await import('@/api/admin/victims.js');
+const { getContestVictimPods, getContestVictimPodLogs } = await import('@/api/admin/contest.js');
 loader.deregister();
 
 const pods = [

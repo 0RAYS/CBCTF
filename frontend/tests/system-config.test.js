@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { normalizeConfig } from '../src/components/features/Admin/SystemConfig/configNormalizer.js';
-import { buildPayload } from '../src/components/features/Admin/SystemConfig/configPayloadBuilder.js';
+import { normalizeConfig } from '@/components/features/Admin/SystemConfig/configNormalizer.js';
+import { buildPayload } from '@/components/features/Admin/SystemConfig/configPayloadBuilder.js';
 
 test('system config payload covers every backend editable field', () => {
   const dto = readFileSync(new URL('../../internal/dto/setting.go', import.meta.url), 'utf8');

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { createGuideNetwork } from './guideModel.js';
-import { GuideInput, GuideListHeader, IconButton } from './GuideFields.jsx';
+import { createGuideNetwork } from '@/components/features/Admin/challenges/editor/guideModel.js';
+import { GuideInput, GuideListHeader, IconButton } from '@/components/features/Admin/challenges/editor/GuideFields.jsx';
 
 export default function NetworkDefinitionsEditor({ config, errors, onChange }) {
   const { t } = useTranslation();

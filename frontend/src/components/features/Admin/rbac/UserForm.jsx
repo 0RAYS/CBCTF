@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FormField, Input, Textarea } from '../../../common';
-import Checkbox from '../../../common/Checkbox';
+import { FormField, Input, Textarea } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
 
 export default function UserForm({ mode, selectedUser, editForm, setEditForm }) {
   const { t } = useTranslation();

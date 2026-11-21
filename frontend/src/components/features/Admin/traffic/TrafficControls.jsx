@@ -7,8 +7,12 @@ import {
   IconRefresh,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Chip, Input } from '../../../common';
-import { formatDurationMs, INPUT_STEP_MS, MIN_SLICE_MS } from './trafficPresentation.js';
+import { Button, Chip, Input } from '@/components/common';
+import {
+  formatDurationMs,
+  INPUT_STEP_MS,
+  MIN_SLICE_MS,
+} from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 export default function TrafficControls({ playback, isFetching, onRefresh, onDownload }) {
   const { t } = useTranslation();

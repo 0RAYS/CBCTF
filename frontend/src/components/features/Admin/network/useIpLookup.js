@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getIpInfo } from '../../../../api/admin/contest';
-import { toast } from '../../../../utils/toast';
+import { getIpInfo } from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
 
 const CLOSED = { isOpen: false, data: null, loading: false };
 

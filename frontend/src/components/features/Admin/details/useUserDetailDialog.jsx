@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUserInfo } from '../../../../api/admin/user';
-import { toast } from '../../../../utils/toast';
-import AdminUserDetailDialog from './UserDetailDialog';
+import { getUserInfo } from '@/api/admin/user';
+import { toast } from '@/utils/toast';
+import AdminUserDetailDialog from '@/components/features/Admin/details/UserDetailDialog';
 
 export function useUserDetailDialog() {
   const { t } = useTranslation();

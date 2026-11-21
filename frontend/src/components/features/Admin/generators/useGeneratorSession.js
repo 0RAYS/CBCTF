@@ -1,15 +1,20 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import { toast } from '../../../../utils/toast';
+import { toast } from '@/utils/toast';
 import { useTranslation } from 'react-i18next';
-import { startVisiblePolling } from '../../../../utils/visiblePolling.js';
-import { batchTone, getBatchResult, remainingBatchIds, remainingGeneratorCounts } from '../batch/batchModel.js';
+import { startVisiblePolling } from '@/utils/visiblePolling.js';
+import {
+  batchTone,
+  getBatchResult,
+  remainingBatchIds,
+  remainingGeneratorCounts,
+} from '@/components/features/Admin/batch/batchModel.js';
 import {
   expandStartCounts,
   GENERATOR_PAGE_SIZE,
   getGeneratorResponseData,
   isGeneratorStoppable,
   retainStoppableSelection,
-} from './generatorUtils.js';
+} from '@/components/features/Admin/generators/generatorUtils.js';
 
 export default function useGeneratorSession(api, text) {
   const { t } = useTranslation();

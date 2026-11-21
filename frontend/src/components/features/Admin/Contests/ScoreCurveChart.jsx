@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const ReactECharts = lazy(() => import('../../../common/EChart'));
+const ReactECharts = lazy(() => import('@/components/common/EChart'));
 
 /**
  * 分数曲线预览图表（支持拖拽控制点调整 decay）

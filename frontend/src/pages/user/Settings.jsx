@@ -1,10 +1,10 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { activateEmail, deleteAccount, updatePassword, updateUserInfo, uploadPicture } from '../../api/user';
-import { fetchUserInfo, logoutUser } from '../../store/user';
-import { toast } from '../../utils/toast';
-import UserSettings from '../../components/features/UserSettings';
-import Loading from '../../components/common/Loading';
+import { activateEmail, deleteAccount, updatePassword, updateUserInfo, uploadPicture } from '@/api/user';
+import { fetchUserInfo, logoutUser } from '@/store/user';
+import { toast } from '@/utils/toast';
+import UserSettings from '@/components/features/UserSettings';
+import Loading from '@/components/common/Loading';
 import { useTranslation } from 'react-i18next';
 
 function Settings() {

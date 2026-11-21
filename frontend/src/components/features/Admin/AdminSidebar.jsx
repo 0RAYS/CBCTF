@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'motion/react';
-import Button from '../../common/Button';
+import Button from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 
 function AdminSidebar({

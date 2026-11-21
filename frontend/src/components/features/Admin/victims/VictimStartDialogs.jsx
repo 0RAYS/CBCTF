@@ -1,6 +1,6 @@
 import { IconPlayerPlay, IconSearch } from '@tabler/icons-react';
-import { Button, Chip, Modal, Pagination } from '../../../common';
-import BatchResultPanel from '../batch/BatchResultPanel.jsx';
+import { Button, Chip, Modal, Pagination } from '@/components/common';
+import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
 import { Trans } from 'react-i18next';
 
 export function VictimStartDialog({

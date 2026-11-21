@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Tabs } from '../../../common';
-import { BasicConfigSection } from './sections/BasicConfigSection';
-import { GinConfigSection } from './sections/GinConfigSection';
-import { DatabaseConfigSection } from './sections/DatabaseConfigSection';
-import { RedisConfigSection } from './sections/RedisConfigSection';
-import { K8sConfigSection } from './sections/K8sConfigSection';
-import { CheatConfigSection } from './sections/CheatConfigSection';
-import { WebhookConfigSection } from './sections/WebhookConfigSection.jsx';
-import { RegistrationConfigSection } from './sections/RegistrationConfigSection';
+import { Button, Tabs } from '@/components/common';
+import { BasicConfigSection } from '@/components/features/Admin/SystemConfig/sections/BasicConfigSection';
+import { GinConfigSection } from '@/components/features/Admin/SystemConfig/sections/GinConfigSection';
+import { DatabaseConfigSection } from '@/components/features/Admin/SystemConfig/sections/DatabaseConfigSection';
+import { RedisConfigSection } from '@/components/features/Admin/SystemConfig/sections/RedisConfigSection';
+import { K8sConfigSection } from '@/components/features/Admin/SystemConfig/sections/K8sConfigSection';
+import { CheatConfigSection } from '@/components/features/Admin/SystemConfig/sections/CheatConfigSection';
+import { WebhookConfigSection } from '@/components/features/Admin/SystemConfig/sections/WebhookConfigSection.jsx';
+import { RegistrationConfigSection } from '@/components/features/Admin/SystemConfig/sections/RegistrationConfigSection';
 
 const tabs = [
   { key: 'basic', i18nKey: 'admin.system.sections.basic', Component: BasicConfigSection },

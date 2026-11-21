@@ -1,8 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
-import userReducer from './user';
-import appReducer from './app';
-import brandingReducer from './branding';
-import publicConfigReducer from './settings.js';
+import userReducer from '@/store/user';
+import appReducer from '@/store/app';
+import brandingReducer from '@/store/branding';
+import publicConfigReducer from '@/store/settings.js';
 
 export const store = configureStore({
   reducer: {

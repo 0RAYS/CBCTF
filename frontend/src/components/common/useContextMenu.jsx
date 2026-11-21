@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import ContextMenu from './ContextMenu';
+import ContextMenu from '@/components/common/ContextMenu';
 
 /** Shared row bindings for List and bespoke tables. Refreshing data invalidates the open target. */
 export default function useContextMenu(data, getActions, disabled = false) {

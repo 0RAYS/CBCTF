@@ -1,13 +1,13 @@
 import axios from 'axios';
-import { toast } from '../utils/toast';
-import i18n from '../i18n';
-import { API_CONFIG } from './config.js';
+import { toast } from '@/utils/toast';
+import i18n from '@/i18n';
+import { API_CONFIG } from '@/api/config.js';
 
 let nprogressPromise = null;
 
 function loadNProgress() {
   if (!nprogressPromise) {
-    nprogressPromise = import('../utils/nprogress');
+    nprogressPromise = import('@/utils/nprogress');
   }
   return nprogressPromise;
 }
@@ -29,8 +29,8 @@ let requestCount = 0;
 const updateGlobalLoading = (count) => {
   requestCount = Math.max(0, count);
   // 使用动态导入避免循环依赖
-  import('../store').then(({ store }) => {
-    import('../store/app').then(({ setGlobalLoading }) => {
+  import('@/store').then(({ store }) => {
+    import('@/store/app').then(({ setGlobalLoading }) => {
       store.dispatch(setGlobalLoading(requestCount > 0));
     });
   });
@@ -84,8 +84,8 @@ request.interceptors.response.use(
       });
     }
     if (code === 401) {
-      import('../store').then(({ store }) => {
-        import('../store/user').then(({ logout }) => {
+      import('@/store').then(({ store }) => {
+        import('@/store/user').then(({ logout }) => {
           store.dispatch(logout());
         });
       });
@@ -115,8 +115,8 @@ request.interceptors.response.use(
         case 401:
           errorMessage = i18n.t('errors.unauthorized');
           // 使用动态导入避免循环依赖
-          import('../store').then(({ store }) => {
-            import('../store/user').then(({ logout }) => {
+          import('@/store').then(({ store }) => {
+            import('@/store/user').then(({ logout }) => {
               store.dispatch(logout());
             });
           });

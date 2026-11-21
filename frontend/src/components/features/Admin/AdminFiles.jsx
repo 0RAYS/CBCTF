@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { IconDownload, IconFile, IconFileText, IconPhoto, IconTrash } from '@tabler/icons-react';
-import { Button, Pagination } from '../../../components/common';
-import { List } from '../../common';
+import { Button, Pagination } from '@/components/common';
+import { List } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 
 /** 管理后台文件管理组件 */

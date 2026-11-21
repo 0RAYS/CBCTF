@@ -1,4 +1,4 @@
-import { POLL_TIMEOUT } from '../../../../../config/workload.js';
+import { POLL_TIMEOUT } from '@/config/workload.js';
 
 export const normalizeInstanceStatus = (status) => {
   const normalized = typeof status === 'string' ? status.toLowerCase() : '';

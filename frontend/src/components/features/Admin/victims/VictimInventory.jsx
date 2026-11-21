@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '../../../../utils/toast';
-import { downloadBlobResponse } from '../../../../utils/fileDownload';
-import TrafficGraphDialog from '../traffic/TrafficGraphDialog';
-import { VictimFilters } from './VictimFilters';
-import { VictimStats } from './VictimStats';
-import { VictimTable } from './VictimTable';
-import VictimStopDialog from './VictimStopDialog';
-import VictimLogDialog from './VictimLogDialog';
-import VictimStatusBadge from './VictimStatusBadge';
-import useVictimList from './useVictimList';
-import { isVictimStoppable } from './victimPayload';
-import useBatchAction from '../batch/useBatchAction.js';
-import BatchResultPanel from '../batch/BatchResultPanel.jsx';
-import { remainingBatchIds } from '../batch/batchModel.js';
+import { toast } from '@/utils/toast';
+import { downloadBlobResponse } from '@/utils/fileDownload';
+import TrafficGraphDialog from '@/components/features/Admin/traffic/TrafficGraphDialog';
+import { VictimFilters } from '@/components/features/Admin/victims/VictimFilters';
+import { VictimStats } from '@/components/features/Admin/victims/VictimStats';
+import { VictimTable } from '@/components/features/Admin/victims/VictimTable';
+import VictimStopDialog from '@/components/features/Admin/victims/VictimStopDialog';
+import VictimLogDialog from '@/components/features/Admin/victims/VictimLogDialog';
+import VictimStatusBadge from '@/components/features/Admin/victims/VictimStatusBadge';
+import useVictimList from '@/components/features/Admin/victims/useVictimList';
+import { isVictimStoppable } from '@/components/features/Admin/victims/victimPayload';
+import useBatchAction from '@/components/features/Admin/batch/useBatchAction.js';
+import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
+import { remainingBatchIds } from '@/components/features/Admin/batch/batchModel.js';
 
 export default function VictimInventory({ scope, renderQuickActions }) {
   const { t, i18n } = useTranslation();

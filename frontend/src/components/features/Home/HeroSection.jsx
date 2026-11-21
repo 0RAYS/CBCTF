@@ -1,6 +1,6 @@
-import Button from '../../common/Button';
+import Button from '@/components/common/Button';
 import { useNavigate } from 'react-router-dom';
-import { useBranding } from '../../../hooks/useBranding';
+import { useBranding } from '@/hooks/useBranding';
 
 function HeroSection() {
   const navigate = useNavigate();

@@ -5,21 +5,21 @@ import {
     createContestDraft,
     formatDateForInput,
     validateContestDraft,
-} from "../src/components/features/Admin/Contests/editor/contestForm.js";
+} from "@/components/features/Admin/Contests/editor/contestForm.js";
 import {
     challengeDraft,
     challengeQuery,
     flagUpdatePayload,
     isFlagDirty,
     toggleChallengeSelection,
-} from "../src/components/features/Admin/Contests/challenges/challengeData.js";
+} from "@/components/features/Admin/Contests/challenges/challengeData.js";
 import {
     containerStatus,
     filterTeamFlags,
     flagFilterOptions,
     formatFileSize,
     TEAM_DETAIL_PAGE_SIZE,
-} from "../src/components/features/Admin/Contests/teams/teamDetailData.js";
+} from "@/components/features/Admin/Contests/teams/teamDetailData.js";
 
 const contest = {
   name: "Contest",

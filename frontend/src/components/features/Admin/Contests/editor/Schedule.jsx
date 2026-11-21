@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Card, DateTimeInput, Select } from '../../../../common';
-import { formatDateForInput } from './contestForm.js';
+import { Card, DateTimeInput, Select } from '@/components/common';
+import { formatDateForInput } from '@/components/features/Admin/Contests/editor/contestForm.js';
 
 export default function Schedule({ contest, onChange, errors }) {
   const { t } = useTranslation();

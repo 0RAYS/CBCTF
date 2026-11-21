@@ -4,7 +4,7 @@ import {
   evidenceOffset,
   filterAnalysisRows,
   victimOverlaps,
-} from '../src/components/features/Admin/traffic/trafficAnalysisModel.js';
+} from '@/components/features/Admin/traffic/trafficAnalysisModel.js';
 
 test('analysis filtering intersects half-open replay windows and matches reverse flows', () => {
   const startedAt = '2026-01-01T00:00:00Z';

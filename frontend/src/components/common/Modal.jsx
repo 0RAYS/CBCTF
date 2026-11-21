@@ -2,9 +2,9 @@ import { createPortal } from 'react-dom';
 import { useEffect, useId, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { IconX } from '@tabler/icons-react';
-import Button from './Button';
-import { useModalPortal } from './ModalProvider';
-import { backdropVariants, panelVariants } from '../../config/motion';
+import Button from '@/components/common/Button';
+import { useModalPortal } from '@/components/common/ModalProvider';
+import { backdropVariants, panelVariants } from '@/config/motion';
 import { useTranslation } from 'react-i18next';
 
 // Only the topmost dialog handles keyboard input; nested dialogs share the scroll lock.

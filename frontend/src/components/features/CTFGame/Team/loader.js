@@ -1,5 +1,5 @@
-import { getTeamCaptcha, getTeamInfo, getTeamMembers } from '../../../../api/game/team';
-import { mapTeamSettings } from './model';
+import { getTeamCaptcha, getTeamInfo, getTeamMembers } from '@/api/game/team';
+import { mapTeamSettings } from '@/components/features/CTFGame/Team/model';
 
 export async function loadTeamSettings(contestId, kind = 'team') {
   if (kind === 'picture') {

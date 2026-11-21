@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import TruncatedText from '../../common/TruncatedText';
+import TruncatedText from '@/components/common/TruncatedText';
 
 const categoryColors = {
   WEB: 'bg-geek-400',

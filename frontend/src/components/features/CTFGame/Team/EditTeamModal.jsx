@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../../common';
-import Modal from '../../../common/Modal';
+import { Button } from '@/components/common';
+import Modal from '@/components/common/Modal';
 
 /** 编辑队伍模态框 */
 function EditTeamModal({ isOpen, onClose, team, onSave }) {

@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { assignUserToGroup, getGroupAvailableUsers, getGroupUsers, removeUserFromGroup } from '@/api/admin/rbac';
+import { useDebounce } from '@/hooks';
+import { toast } from '@/utils/toast';
 import {
-  assignUserToGroup,
-  getGroupAvailableUsers,
-  getGroupUsers,
-  removeUserFromGroup,
-} from '../../../../api/admin/rbac';
-import { useDebounce } from '../../../../hooks';
-import { toast } from '../../../../utils/toast';
-import { lastAvailablePage, successfulAssignmentIds, toggleVisibleCandidates } from './payloads';
+  lastAvailablePage,
+  successfulAssignmentIds,
+  toggleVisibleCandidates,
+} from '@/components/features/Admin/rbac/payloads';
 
 export default function useGroupMembers(group, onChanged) {
   const { t } = useTranslation();

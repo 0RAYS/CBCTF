@@ -1,4 +1,4 @@
-import request from '../request';
+import request from '@/api/request';
 
 export const getGenerators = (params = {}) => request({ url: '/admin/generators', method: 'GET', params });
 

@@ -1,24 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import LeaderboardRanking from '../../components/features/Leaderboard/LeaderboardRanking';
-import LeaderboardTable from '../../components/features/Leaderboard/LeaderboardTable';
-import LeaderboardTimeline from '../../components/features/Leaderboard/LeaderboardTimeline';
-import { collectChallenges, toRankingTeam } from '../../components/features/Leaderboard/leaderboardModel.js';
+import LeaderboardRanking from '@/components/features/Leaderboard/LeaderboardRanking';
+import LeaderboardTable from '@/components/features/Leaderboard/LeaderboardTable';
+import LeaderboardTimeline from '@/components/features/Leaderboard/LeaderboardTimeline';
+import { collectChallenges, toRankingTeam } from '@/components/features/Leaderboard/leaderboardModel.js';
 import {
   getContestInfo,
   getContestLeaderboard,
   getContestLeaderboardChallenges,
   getContestLeaderboardTimeline,
-} from '../../api/contest';
-import { getTeamInfo } from '../../api/game/team';
-import Button from '../../components/common/Button';
-import Pagination from '../../components/common/Pagination';
+} from '@/api/contest';
+import { getTeamInfo } from '@/api/game/team';
+import Button from '@/components/common/Button';
+import Pagination from '@/components/common/Pagination';
 import { IconList, IconTable } from '@tabler/icons-react';
-import LeaderboardStats from '../../components/features/Leaderboard/LeaderboardStats';
-import { toast } from '../../utils/toast.js';
+import LeaderboardStats from '@/components/features/Leaderboard/LeaderboardStats';
+import { toast } from '@/utils/toast.js';
 import { useTranslation } from 'react-i18next';
-import { useHiddenVisibility } from '../../hooks/useHiddenVisibility.js';
-import Checkbox from '../../components/common/Checkbox';
+import { useHiddenVisibility } from '@/hooks/useHiddenVisibility.js';
+import Checkbox from '@/components/common/Checkbox';
 
 function GameLeaderboardPage() {
   const { contestId } = useParams();

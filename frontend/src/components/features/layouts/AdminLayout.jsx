@@ -2,9 +2,9 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import AdminShellLayout from './AdminShellLayout';
-import { getAdminNavSections } from '../../../config/adminNavigation';
-import { useBranding } from '../../../hooks/useBranding';
+import AdminShellLayout from '@/components/features/layouts/AdminShellLayout';
+import { getAdminNavSections } from '@/config/adminNavigation';
+import { useBranding } from '@/hooks/useBranding';
 
 function AdminLayout() {
   const navigate = useNavigate();

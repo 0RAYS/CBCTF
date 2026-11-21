@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IconServer } from '@tabler/icons-react';
-import { Card, Chip, EmptyState } from '../../../common';
-import { imageState } from './imageModel';
+import { Card, Chip, EmptyState } from '@/components/common';
+import { imageState } from '@/components/features/Admin/images/imageModel';
 
 function ImageList({ images, emptyText }) {
   if (images.length === 0) {

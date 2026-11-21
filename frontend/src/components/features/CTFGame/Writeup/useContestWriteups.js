@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getWriteups, uploadWriteup } from '../../../../api/challenge';
-import { toast } from '../../../../utils/toast';
+import { getWriteups, uploadWriteup } from '@/api/challenge';
+import { toast } from '@/utils/toast';
 
 // Callers own access checks and whether an upload replaces the whole page with loading.
 export default function useContestWriteups(contestId) {

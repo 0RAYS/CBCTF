@@ -1,7 +1,7 @@
 import { IconServer } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { ConfigSection } from '../fields/ConfigSection';
-import { ConfigListField } from '../fields/ConfigListField';
+import { ConfigSection } from '@/components/features/Admin/SystemConfig/fields/ConfigSection';
+import { ConfigListField } from '@/components/features/Admin/SystemConfig/fields/ConfigListField';
 
 export function CheatConfigSection({ config, updateConfig }) {
   const { t } = useTranslation();

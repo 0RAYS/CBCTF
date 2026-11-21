@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getUserLeaderboard } from '../../api/user';
-import { Avatar, List, Pagination } from '../../components/common';
-import Checkbox from '../../components/common/Checkbox';
-import { useHiddenVisibility } from '../../hooks/useHiddenVisibility.js';
-import { toast } from '../../utils/toast.js';
+import { getUserLeaderboard } from '@/api/user';
+import { Avatar, List, Pagination } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
+import { useHiddenVisibility } from '@/hooks/useHiddenVisibility.js';
+import { toast } from '@/utils/toast.js';
 
 const PAGE_SIZE = 20;
 

@@ -1,10 +1,10 @@
 import { IconLoader2 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import Modal from '../../../../common/Modal';
-import MarkdownContent from '../../../../common/MarkdownContent';
-import TestAttachments from './TestAttachments';
-import TestInstancePanel from './TestInstancePanel';
-import useTestSession from './useTestSession';
+import Modal from '@/components/common/Modal';
+import MarkdownContent from '@/components/common/MarkdownContent';
+import TestAttachments from '@/components/features/Admin/challenges/testing/TestAttachments';
+import TestInstancePanel from '@/components/features/Admin/challenges/testing/TestInstancePanel';
+import useTestSession from '@/components/features/Admin/challenges/testing/useTestSession';
 
 function OpenTestDialog({ challenge, onClose }) {
   const { t } = useTranslation();

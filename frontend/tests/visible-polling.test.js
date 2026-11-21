@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { startVisiblePolling } from '../src/utils/visiblePolling.js';
+import { startVisiblePolling } from '@/utils/visiblePolling.js';
 
 function fixture(t, hidden = false) {
   t.mock.timers.enable({ apis: ['setInterval'] });

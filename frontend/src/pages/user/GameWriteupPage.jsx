@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from '../../utils/toast';
-import { getContestInfo } from '../../api/contest';
-import WriteupUpload from '../../components/features/CTFGame/Writeup/WriteupUpload';
-import useContestWriteups from '../../components/features/CTFGame/Writeup/useContestWriteups';
-import Loading from '../../components/common/Loading';
+import { toast } from '@/utils/toast';
+import { getContestInfo } from '@/api/contest';
+import WriteupUpload from '@/components/features/CTFGame/Writeup/WriteupUpload';
+import useContestWriteups from '@/components/features/CTFGame/Writeup/useContestWriteups';
+import Loading from '@/components/common/Loading';
 import { useTranslation } from 'react-i18next';
-import { getContestStatus } from '../../config/contest';
+import { getContestStatus } from '@/config/contest';
 
 function ContestWriteups({ contestId }) {
   const navigate = useNavigate();

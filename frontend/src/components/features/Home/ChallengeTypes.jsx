@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { IconLink, IconLock, IconMicroscope, IconRotateClockwise, IconTerminal2, IconWorld } from '@tabler/icons-react';
-import { useBranding } from '../../../hooks/useBranding';
+import { useBranding } from '@/hooks/useBranding';
 
 function ChallengeTypes() {
   const { t } = useTranslation();

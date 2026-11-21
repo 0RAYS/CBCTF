@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { fetchAccessibleRoutes, fetchUserInfo } from '../store/user';
-import { store } from '../store';
-import { toast } from '../utils/toast';
+import { fetchAccessibleRoutes, fetchUserInfo } from '@/store/user';
+import { store } from '@/store';
+import { toast } from '@/utils/toast';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Spinner } from '../components/common';
-import { exchangeOauthCode } from '../api/oauth';
+import { Spinner } from '@/components/common';
+import { exchangeOauthCode } from '@/api/oauth';
 
 function OAuthCallback() {
   const navigate = useNavigate();

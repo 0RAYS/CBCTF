@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createSmtp, deleteSmtp, updateSmtp } from '../../../../api/admin/smtp';
-import { toast } from '../../../../utils/toast';
-import { Button, Modal } from '../../../common';
-import { buildSmtpPayload, smtpForm } from './payload';
-import SmtpFields from './SmtpFields';
+import { createSmtp, deleteSmtp, updateSmtp } from '@/api/admin/smtp';
+import { toast } from '@/utils/toast';
+import { Button, Modal } from '@/components/common';
+import { buildSmtpPayload, smtpForm } from '@/components/features/Admin/smtp/payload';
+import SmtpFields from '@/components/features/Admin/smtp/SmtpFields';
 
 export default function SmtpDialog({ mode, smtp, onClose, onSaved }) {
   const { t } = useTranslation();

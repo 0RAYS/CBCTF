@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IconUsers } from '@tabler/icons-react';
-import { Button, Chip, Input, Select } from '../../../../common';
-import ScoreCurveChart from '../ScoreCurveChart';
+import { Button, Chip, Input, Select } from '@/components/common';
+import ScoreCurveChart from '@/components/features/Admin/Contests/ScoreCurveChart';
 
 export default function FlagEditor({ flag, index, onChange, onSave, onViewSolvers, disabled, dirty }) {
   const { t } = useTranslation();

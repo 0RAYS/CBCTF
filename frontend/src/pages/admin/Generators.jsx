@@ -4,9 +4,9 @@ import {
   getGeneratorStatus,
   startGenerators,
   stopGenerators,
-} from '../../api/admin/generators';
-import { getChallengeList } from '../../api/admin/challenge';
-import GeneratorManagement from '../../components/features/Admin/generators/GeneratorManagement';
+} from '@/api/admin/generators';
+import { getChallengeList } from '@/api/admin/challenge';
+import GeneratorManagement from '@/components/features/Admin/generators/GeneratorManagement';
 
 const api = {
   list: getGenerators,

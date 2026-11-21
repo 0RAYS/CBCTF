@@ -1,10 +1,10 @@
 import { useEffect, useEffectEvent, useMemo, useReducer, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ImagesPullView from './ImagesPullView';
-import { toast } from '../../../../utils/toast';
-import useBatchAction from '../batch/useBatchAction.js';
-import BatchResultPanel from '../batch/BatchResultPanel.jsx';
-import { completedBatchIds } from '../batch/batchModel.js';
+import ImagesPullView from '@/components/features/Admin/images/ImagesPullView';
+import { toast } from '@/utils/toast';
+import useBatchAction from '@/components/features/Admin/batch/useBatchAction.js';
+import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
+import { completedBatchIds } from '@/components/features/Admin/batch/batchModel.js';
 import {
   buildTargetKey,
   buildTargets,
@@ -16,7 +16,7 @@ import {
   completedImageTargetKeys,
   selectedNodeNames,
   toggleDeselectedNode,
-} from './imageModel';
+} from '@/components/features/Admin/images/imageModel';
 
 const DETECT_POLL_INTERVAL = 2000;
 const DETECT_POLL_TIMEOUT = 5 * 60 * 1000;

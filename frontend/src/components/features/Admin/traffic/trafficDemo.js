@@ -1,4 +1,4 @@
-import { DEFAULT_SLICE_MS } from './trafficPresentation.js';
+import { DEFAULT_SLICE_MS } from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 export const createDemoTopology = (shift = 0, duration = DEFAULT_SLICE_MS, id = 'demo') => {
   const seed = shift % 12;

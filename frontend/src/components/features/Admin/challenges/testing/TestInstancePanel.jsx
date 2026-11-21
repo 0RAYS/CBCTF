@@ -2,9 +2,12 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { IconCheck, IconClipboard, IconLoader2 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import Button from '../../../../common/Button';
-import { copyableAddress } from '../../../../../utils/address';
-import { isInstanceTransitioning, normalizeInstanceStatus } from './testSession';
+import Button from '@/components/common/Button';
+import { copyableAddress } from '@/utils/address';
+import {
+  isInstanceTransitioning,
+  normalizeInstanceStatus,
+} from '@/components/features/Admin/challenges/testing/testSession';
 
 const formatTimeLeft = (seconds) => {
   const hours = Math.floor(seconds / 3600);

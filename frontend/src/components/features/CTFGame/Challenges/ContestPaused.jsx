@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { IconPlayerPause } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card } from '../../../common';
+import { Button, Card } from '@/components/common';
 
 function ContestPaused({ onViewLeaderboard }) {
   const { t } = useTranslation();

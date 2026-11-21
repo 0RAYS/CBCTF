@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import ToastContainer from './ToastContainer';
-import { registerToastHandler, unregisterToastHandler } from '../../utils/toast';
+import ToastContainer from '@/components/common/ToastContainer';
+import { registerToastHandler, unregisterToastHandler } from '@/utils/toast';
 
 let toastIdCounter = 0;
 

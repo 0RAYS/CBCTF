@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getTrafficAnalysis, getTrafficOverlaps } from '../../../../api/admin/traffic.js';
+import { getTrafficAnalysis, getTrafficOverlaps } from '@/api/admin/traffic.js';
 
 export default function useTrafficAnalysis({ isOpen, victimId, contestId, teamId }) {
   const [revision, setRevision] = useState(0);

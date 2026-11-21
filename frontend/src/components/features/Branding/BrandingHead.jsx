@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useBranding } from '../../../hooks/useBranding';
+import { useBranding } from '@/hooks/useBranding';
 
 const resolveRouteTitle = (pathname, t) => {
   const matchers = [

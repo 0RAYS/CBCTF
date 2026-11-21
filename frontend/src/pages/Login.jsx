@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { store } from '../store/index';
-import { login, register } from '../api/auth';
-import { fetchAccessibleRoutes, fetchUserInfo } from '../store/user';
-import { setEffectLoading } from '../store/app';
-import AuthPanel from '../components/features/Auth/AuthPanel';
-import { toast } from '../utils/toast.js';
+import { store } from '@/store/index';
+import { login, register } from '@/api/auth';
+import { fetchAccessibleRoutes, fetchUserInfo } from '@/store/user';
+import { setEffectLoading } from '@/store/app';
+import AuthPanel from '@/components/features/Auth/AuthPanel';
+import { toast } from '@/utils/toast.js';
 import { useTranslation } from 'react-i18next';
 
 function Login() {

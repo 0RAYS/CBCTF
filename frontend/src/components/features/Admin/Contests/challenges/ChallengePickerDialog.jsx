@@ -1,10 +1,10 @@
 import { motion } from 'motion/react';
 import { IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Chip, EmptyState, Modal, Pagination, Spinner } from '../../../../common';
-import Checkbox from '../../../../common/Checkbox';
-import BatchResultPanel from '../../batch/BatchResultPanel.jsx';
-import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../../config/challengeChips';
+import { Button, Card, Chip, EmptyState, Modal, Pagination, Spinner } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
+import BatchResultPanel from '@/components/features/Admin/batch/BatchResultPanel.jsx';
+import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '@/config/challengeChips';
 
 /** 赛事赛题选择弹窗组件 */
 function AdminContestChallengeSelector({

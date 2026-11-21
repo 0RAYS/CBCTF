@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { IconPlus, IconTrash } from '@tabler/icons-react';
-import { Button, Card, Input, Textarea } from '../../../../common';
+import { Button, Card, Input, Textarea } from '@/components/common';
 
 export default function Prizes({ prizes = [], onChange }) {
   const { t } = useTranslation();

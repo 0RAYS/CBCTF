@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconDeviceFloppy } from '@tabler/icons-react';
-import { Button } from '../../../../common';
-import Identity from './Identity';
-import Schedule from './Schedule';
-import Rules from './Rules';
-import Prizes from './Prizes';
-import Timeline from './Timeline';
-import { createContestDraft, validateContestDraft } from './contestForm.js';
+import { Button } from '@/components/common';
+import Identity from '@/components/features/Admin/Contests/editor/Identity';
+import Schedule from '@/components/features/Admin/Contests/editor/Schedule';
+import Rules from '@/components/features/Admin/Contests/editor/Rules';
+import Prizes from '@/components/features/Admin/Contests/editor/Prizes';
+import Timeline from '@/components/features/Admin/Contests/editor/Timeline';
+import { createContestDraft, validateContestDraft } from '@/components/features/Admin/Contests/editor/contestForm.js';
 
 export default function ContestEditor({ contest: initialContest, onSave, onCancel, onImageUpload }) {
   const { t } = useTranslation();

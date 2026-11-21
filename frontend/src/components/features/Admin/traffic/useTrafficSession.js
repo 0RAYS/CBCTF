@@ -1,10 +1,10 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { downloadContainerTraffic, getContestTeamTraffic } from '../../../../api/admin/contest.js';
-import { downloadVictimTraffic } from '../../../../api/admin/victims.js';
-import { downloadBlobResponse } from '../../../../utils/fileDownload';
-import { toast } from '../../../../utils/toast';
-import { sanitizeSlice } from './trafficPresentation.js';
+import { downloadContainerTraffic, getContestTeamTraffic } from '@/api/admin/contest.js';
+import { downloadVictimTraffic } from '@/api/admin/victims.js';
+import { downloadBlobResponse } from '@/utils/fileDownload';
+import { toast } from '@/utils/toast';
+import { sanitizeSlice } from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 export default function useTrafficSession({ isOpen, container, contestId, teamId, fetchTraffic: customFetchTraffic }) {
   const { t } = useTranslation();

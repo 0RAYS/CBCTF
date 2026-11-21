@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../../../common';
+import { Button } from '@/components/common';
 
 export default function FlagForm({
   challenge,

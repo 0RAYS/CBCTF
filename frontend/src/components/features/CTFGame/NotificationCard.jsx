@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Card } from '../../../components/common';
+import { Card } from '@/components/common';
 
 function NotificationCard({ notifications }) {
   notifications = notifications.slice().reverse().slice(0, 3);

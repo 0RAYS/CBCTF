@@ -102,11 +102,15 @@ export function createResolver(root) {
     return false;
   }
   return (importer, specifier) => {
-    if (!/^\.{1,2}\//.test(specifier)) return null;
     // CSS, JSON, images, fonts and Vite ?raw/?url/?worker share file resolution,
     // but only ordinary JS modules participate in synchronous execution cycles.
     const [pathname] = specifier.split(/[?#]/);
-    const base = path.posix.normalize(path.posix.join(path.posix.dirname(importer), pathname));
+    const base = specifier.startsWith('@/')
+      ? path.posix.normalize(path.posix.join('src', pathname.slice(2)))
+      : /^\.{1,2}\//.test(specifier)
+        ? path.posix.normalize(path.posix.join(path.posix.dirname(importer), pathname))
+        : null;
+    if (base === null) return null;
     const candidates = [base, `${base}.js`, `${base}.jsx`, `${base}/index.js`, `${base}/index.jsx`];
     return candidates.find(exactFile) ?? null;
   };

@@ -1,8 +1,8 @@
 import { motion } from 'motion/react';
 import { IconEdit, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
-import { Button, Chip, Input, List, Pagination } from '../../../../common';
+import { Button, Chip, Input, List, Pagination } from '@/components/common';
 import { useTranslation } from 'react-i18next';
-import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../../config/challengeChips';
+import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '@/config/challengeChips';
 
 /** 赛事内部赛题管理组件 */
 function AdminContestChallenges({

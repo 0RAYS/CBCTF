@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getAccessibleRoutes, getUserInfo } from '../api/user';
-import i18n from '../i18n';
+import { getAccessibleRoutes, getUserInfo } from '@/api/user';
+import i18n from '@/i18n';
 
 const initialState = {
   user: null,
@@ -87,7 +87,7 @@ export const fetchAccessibleRoutes = () => async (dispatch) => {
 };
 
 export const logoutUser = () => (dispatch) => {
-  import('../api/request').then(({ default: request }) => {
+  import('@/api/request').then(({ default: request }) => {
     request({ url: '/logout', method: 'DELETE', noLoading: true }).catch(() => {});
   });
   dispatch(logout());

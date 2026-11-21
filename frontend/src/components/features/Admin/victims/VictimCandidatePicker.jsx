@@ -1,8 +1,8 @@
 import { IconArrowsMaximize, IconChevronLeft, IconChevronRight, IconSearch, IconTarget } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../../common';
-import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../config/challengeChips';
-import { VictimCandidateDialog } from './VictimStartDialogs';
+import { Button } from '@/components/common';
+import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '@/config/challengeChips';
+import { VictimCandidateDialog } from '@/components/features/Admin/victims/VictimStartDialogs';
 
 export default function VictimCandidatePicker({ candidates }) {
   const { t } = useTranslation();

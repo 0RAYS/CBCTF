@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import StatusPanel from '../../components/features/CTFGame/StatusPanel';
-import ChallengeBoard from '../../components/features/CTFGame/Challenges/ChallengeBoard';
-import ContestCountdown from '../../components/features/CTFGame/Challenges/ContestCountdown';
-import ContestEnded from '../../components/features/CTFGame/Challenges/ContestEnded';
-import ContestPaused from '../../components/features/CTFGame/Challenges/ContestPaused';
-import ChallengeModal from '../../components/features/CTFGame/Challenges/ChallengeModal';
-import useChallengeList from '../../components/features/CTFGame/Challenges/hooks/useChallengeList';
-import useChallengeSession from '../../components/features/CTFGame/Challenges/hooks/useChallengeSession';
-import useContestOverview from '../../components/features/CTFGame/Challenges/hooks/useContestOverview';
-import { areChallengesAvailable } from '../../components/features/CTFGame/Challenges/models/challengeViewModel';
-import useContestWriteups from '../../components/features/CTFGame/Writeup/useContestWriteups';
-import Loading from '../../components/common/Loading';
-import { Button, EmptyState } from '../../components/common';
+import StatusPanel from '@/components/features/CTFGame/StatusPanel';
+import ChallengeBoard from '@/components/features/CTFGame/Challenges/ChallengeBoard';
+import ContestCountdown from '@/components/features/CTFGame/Challenges/ContestCountdown';
+import ContestEnded from '@/components/features/CTFGame/Challenges/ContestEnded';
+import ContestPaused from '@/components/features/CTFGame/Challenges/ContestPaused';
+import ChallengeModal from '@/components/features/CTFGame/Challenges/ChallengeModal';
+import useChallengeList from '@/components/features/CTFGame/Challenges/hooks/useChallengeList';
+import useChallengeSession from '@/components/features/CTFGame/Challenges/hooks/useChallengeSession';
+import useContestOverview from '@/components/features/CTFGame/Challenges/hooks/useContestOverview';
+import { areChallengesAvailable } from '@/components/features/CTFGame/Challenges/models/challengeViewModel';
+import useContestWriteups from '@/components/features/CTFGame/Writeup/useContestWriteups';
+import Loading from '@/components/common/Loading';
+import { Button, EmptyState } from '@/components/common';
 
 function ContestChallenges({ contestId }) {
   const navigate = useNavigate();

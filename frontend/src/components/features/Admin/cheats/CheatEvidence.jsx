@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Button, StatusTag } from '../../../common';
-import IpLookup from '../network/IpLookup.jsx';
-import { formatDateTime, formatGap } from './cheatFormat';
+import { Button, StatusTag } from '@/components/common';
+import IpLookup from '@/components/features/Admin/network/IpLookup.jsx';
+import { formatDateTime, formatGap } from '@/components/features/Admin/cheats/cheatFormat';
 
 export function CheatModels({ model, openUserDetail, openTeamDetail }) {
   if (!model || Object.keys(model).length === 0) return '-';

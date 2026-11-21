@@ -5,7 +5,7 @@ const loadNProgress = async () => {
     nprogressPromise = Promise.all([
       import('nprogress'),
       import('nprogress/nprogress.css'),
-      import('./nprogress.css'),
+      import('@/utils/nprogress.css'),
     ]).then(([{ default: NProgress }]) => {
       NProgress.configure({
         showSpinner: false,

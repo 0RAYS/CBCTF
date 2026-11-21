@@ -1,5 +1,5 @@
-import { Avatar, Button, Card, EmptyState, Pagination } from '../../../../components/common';
-import ChallengeSkeleton from './display/ChallengeSkeleton';
+import { Avatar, Button, Card, EmptyState, Pagination } from '@/components/common';
+import ChallengeSkeleton from '@/components/features/CTFGame/Challenges/display/ChallengeSkeleton';
 import { useTranslation } from 'react-i18next';
 
 /** 赛题展示面板组件 */

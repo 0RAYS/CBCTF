@@ -1,15 +1,15 @@
 import { lazy } from 'react';
 import { Route } from 'react-router-dom';
-import { UserRoute } from './AuthRoute';
-import { withGuard, withSuspense } from './routeUtils';
-const ContestLayout = lazy(() => import('../components/features/layouts/ContestLayout'));
+import { UserRoute } from '@/routes/AuthRoute';
+import { withGuard, withSuspense } from '@/routes/routeUtils';
+const ContestLayout = lazy(() => import('@/components/features/layouts/ContestLayout'));
 
-const GameDetailPage = lazy(() => import('../pages/user/GameDetailPage'));
-const GameChallengesPage = lazy(() => import('../pages/user/GameChallengesPage'));
-const GameLeaderboardPage = lazy(() => import('../pages/user/GameLeaderboardPage'));
-const GameTeamPage = lazy(() => import('../pages/user/GameTeamPage'));
-const GameNoticePage = lazy(() => import('../pages/user/GameNoticePage'));
-const GameWriteupPage = lazy(() => import('../pages/user/GameWriteupPage'));
+const GameDetailPage = lazy(() => import('@/pages/user/GameDetailPage'));
+const GameChallengesPage = lazy(() => import('@/pages/user/GameChallengesPage'));
+const GameLeaderboardPage = lazy(() => import('@/pages/user/GameLeaderboardPage'));
+const GameTeamPage = lazy(() => import('@/pages/user/GameTeamPage'));
+const GameNoticePage = lazy(() => import('@/pages/user/GameNoticePage'));
+const GameWriteupPage = lazy(() => import('@/pages/user/GameWriteupPage'));
 
 export function ContestRoutes() {
   return (

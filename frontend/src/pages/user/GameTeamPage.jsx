@@ -1,9 +1,9 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import TeamSettings from '../../components/features/CTFGame/Team/TeamSettings';
-import useTeamSettings from '../../components/features/CTFGame/Team/useTeamSettings';
-import Loading from '../../components/common/Loading';
+import TeamSettings from '@/components/features/CTFGame/Team/TeamSettings';
+import useTeamSettings from '@/components/features/CTFGame/Team/useTeamSettings';
+import Loading from '@/components/common/Loading';
 
 function GameTeamContent({ contestId, userId }) {
   const navigate = useNavigate();

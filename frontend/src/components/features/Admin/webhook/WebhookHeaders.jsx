@@ -1,8 +1,8 @@
 import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Input } from '../../../common';
-import { renameHeader } from './payload';
+import { Button, Input } from '@/components/common';
+import { renameHeader } from '@/components/features/Admin/webhook/payload';
 
 export default function WebhookHeaders({ headers, setForm }) {
   const { t } = useTranslation();

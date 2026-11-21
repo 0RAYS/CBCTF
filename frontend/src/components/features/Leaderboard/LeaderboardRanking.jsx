@@ -1,10 +1,10 @@
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
-import { Avatar, Card, EmptyState } from '../../common';
-import Loading from '../../common/Loading';
-import ChallengeSolves from './ChallengeSolves';
-import useScoreColumnWidth from './useScoreColumnWidth';
-import TruncatedText from '../../common/TruncatedText';
+import { Avatar, Card, EmptyState } from '@/components/common';
+import Loading from '@/components/common/Loading';
+import ChallengeSolves from '@/components/features/Leaderboard/ChallengeSolves';
+import useScoreColumnWidth from '@/components/features/Leaderboard/useScoreColumnWidth';
+import TruncatedText from '@/components/common/TruncatedText';
 
 const DEFAULT_LABELS = {
   rank: 'RANK',

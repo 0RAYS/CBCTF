@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ConfirmModal from '../../../common/ConfirmModal';
-import Avatar from '../../../common/Avatar';
-import EditTeamModal from './EditTeamModal';
-import InvitationCode from './InvitationCode';
-import MembersCard from './MembersCard';
-import { Button, Card } from '../../../common';
-import MarkdownContent from '../../../common/MarkdownContent';
+import ConfirmModal from '@/components/common/ConfirmModal';
+import Avatar from '@/components/common/Avatar';
+import EditTeamModal from '@/components/features/CTFGame/Team/EditTeamModal';
+import InvitationCode from '@/components/features/CTFGame/Team/InvitationCode';
+import MembersCard from '@/components/features/CTFGame/Team/MembersCard';
+import { Button, Card } from '@/components/common';
+import MarkdownContent from '@/components/common/MarkdownContent';
 
 function TeamSettings({
   team,

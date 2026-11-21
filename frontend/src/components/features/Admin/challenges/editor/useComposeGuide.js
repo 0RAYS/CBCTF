@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { createGuideConfig, emptyComposeYaml, normalizeGuideConfigForMode } from './guideModel.js';
-import { buildGuidedComposeYaml } from './composeSerializer.js';
-import { parseComposeYamlToGuideConfig } from './composeParser.js';
-import { validateGuidedCompose, validateRawCompose } from './composeValidation.js';
+import {
+  createGuideConfig,
+  emptyComposeYaml,
+  normalizeGuideConfigForMode,
+} from '@/components/features/Admin/challenges/editor/guideModel.js';
+import { buildGuidedComposeYaml } from '@/components/features/Admin/challenges/editor/composeSerializer.js';
+import { parseComposeYamlToGuideConfig } from '@/components/features/Admin/challenges/editor/composeParser.js';
+import {
+  validateGuidedCompose,
+  validateRawCompose,
+} from '@/components/features/Admin/challenges/editor/composeValidation.js';
 
 // Own only the bidirectional text/guide boundary. Domain edits live in their editors.
 export default function useComposeGuide({ isOpen, challenge, onChange, t }) {

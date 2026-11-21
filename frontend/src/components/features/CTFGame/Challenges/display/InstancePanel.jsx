@@ -1,7 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
-import { Button } from '../../../../common';
-import { formatTimeLeft, normalizeInstanceStatus } from '../models/challengeViewModel';
+import { Button } from '@/components/common';
+import {
+  formatTimeLeft,
+  normalizeInstanceStatus,
+} from '@/components/features/CTFGame/Challenges/models/challengeViewModel';
 
 export default function InstancePanel({
   challenge,

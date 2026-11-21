@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Card } from '../../../common';
+import { Button, Card } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 import { IconBook, IconSettings, IconUsers } from '@tabler/icons-react';
 

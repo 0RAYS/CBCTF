@@ -1,15 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  deleteTeam,
-  kickTeamMember,
-  updateTeamCaptcha,
-  updateTeamInfo,
-  uploadTeamPicture,
-} from '../../../../api/game/team';
-import { toast } from '../../../../utils/toast';
-import { loadTeamSettings } from './loader';
-import { teamUpdatePayload, unchangedTeamFields } from './model';
+import { deleteTeam, kickTeamMember, updateTeamCaptcha, updateTeamInfo, uploadTeamPicture } from '@/api/game/team';
+import { toast } from '@/utils/toast';
+import { loadTeamSettings } from '@/components/features/CTFGame/Team/loader';
+import { teamUpdatePayload, unchangedTeamFields } from '@/components/features/CTFGame/Team/model';
 
 // A scope token per contest isolates pending work and drops late responses.
 export default function useTeamSettings(contestId, navigate) {

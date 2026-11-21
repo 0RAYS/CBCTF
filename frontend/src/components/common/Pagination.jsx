@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react';
-import Button from './Button';
+import Button from '@/components/common/Button';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 

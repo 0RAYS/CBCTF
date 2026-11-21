@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
-import { Button, Pagination } from '../../../components/common';
-import { List, StatusTag } from '../../common';
+import { Button, Pagination } from '@/components/common';
+import { List, StatusTag } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 
 /** 比赛管理展示组件 */

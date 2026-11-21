@@ -2,6 +2,7 @@ import {defineConfig} from 'vite'
 import transformImports from '@rolldown/plugin-transform-imports'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import {fileURLToPath} from 'node:url'
 import localeChunks from './build/localeChunks.js';
 import precompress from './build/precompress.js';
 
@@ -37,6 +38,11 @@ export default defineConfig({
     react(),
   ],
   base: '/platform/',
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   build: {
     manifest: true,
     rolldownOptions: {

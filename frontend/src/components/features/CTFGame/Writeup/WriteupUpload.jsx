@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useState } from 'react';
-import { Card } from '../../../common';
+import { Card } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 
 function WriteupUpload({ onUploadWriteup, writeups = [] }) {

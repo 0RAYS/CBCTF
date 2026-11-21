@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { EASE_T2 } from '../../config/motion';
+import { EASE_T2 } from '@/config/motion';
 
 function StatCard({ title, value, valueColor = 'text-geek-400', icon, iconBgClass = 'bg-geek-400/15', delay = 0 }) {
   return (

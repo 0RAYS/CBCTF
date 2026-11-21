@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getContestTeam } from '../../../../api/admin/contest';
-import { toast } from '../../../../utils/toast';
-import TeamDetailSession from './TeamDetailSession';
+import { getContestTeam } from '@/api/admin/contest';
+import { toast } from '@/utils/toast';
+import TeamDetailSession from '@/components/features/Admin/details/TeamDetailSession';
 
 export function useTeamDetailDialog(contestId) {
   const { t } = useTranslation();

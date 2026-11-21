@@ -1,10 +1,10 @@
 import { motion } from 'motion/react';
-import Button from '../../common/Button';
-import ScrollingText from '../../common/ScrollingText';
-import TruncatedText from '../../common/TruncatedText';
+import Button from '@/components/common/Button';
+import ScrollingText from '@/components/common/ScrollingText';
+import TruncatedText from '@/components/common/TruncatedText';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useBranding } from '../../../hooks/useBranding';
+import { useBranding } from '@/hooks/useBranding';
 
 const RANK_COLORS = ['text-rank-gold', 'text-rank-silver', 'text-rank-bronze'];
 const ROW_LAYOUT =

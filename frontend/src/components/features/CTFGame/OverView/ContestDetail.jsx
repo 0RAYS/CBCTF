@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
-import MarkdownContent from '../../../common/MarkdownContent';
+import MarkdownContent from '@/components/common/MarkdownContent';
 import { useState } from 'react';
-import { Button, Card } from '../../../../components/common';
+import { Button, Card } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 
 /** 比赛详情组件 */

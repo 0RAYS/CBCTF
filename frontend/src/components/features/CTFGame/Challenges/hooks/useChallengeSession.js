@@ -9,11 +9,14 @@ import {
   startRemoteTarget,
   stopContainer,
   submitFlag,
-} from '../../../../../api/challenge';
-import { toast } from '../../../../../utils/toast';
-import { downloadBlobResponse } from '../../../../../utils/fileDownload';
-import { isInstanceTransitioning, mapChallengeStatusToViewModel } from '../models/challengeViewModel';
-import { POLL_TIMEOUT } from '../../../../../config/workload.js';
+} from '@/api/challenge';
+import { toast } from '@/utils/toast';
+import { downloadBlobResponse } from '@/utils/fileDownload';
+import {
+  isInstanceTransitioning,
+  mapChallengeStatusToViewModel,
+} from '@/components/features/CTFGame/Challenges/models/challengeViewModel';
+import { POLL_TIMEOUT } from '@/config/workload.js';
 
 export default function useChallengeSession(contestId, { updateChallenge, onSolved }) {
   const { t } = useTranslation();

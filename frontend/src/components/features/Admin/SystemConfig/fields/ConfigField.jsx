@@ -1,4 +1,4 @@
-import { Input, Select } from '../../../../common';
+import { Input, Select } from '@/components/common';
 
 /** Generic field component for config forms. */
 export function ConfigField({

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { toast } from '../../utils/toast';
-import { downloadBlobResponse } from '../../utils/fileDownload';
-import AdminChallenge from '../../components/features/Admin/AdminChallenge.jsx';
-import ChallengeEditorDialog from '../../components/features/Admin/challenges/editor/ChallengeEditorDialog.jsx';
-import { buildChallengePayload } from '../../components/features/Admin/challenges/editor/challengePayload.js';
-import AdminChallengeTestModal from '../../components/features/Admin/challenges/testing/ChallengeTestDialog.jsx';
+import { toast } from '@/utils/toast';
+import { downloadBlobResponse } from '@/utils/fileDownload';
+import AdminChallenge from '@/components/features/Admin/AdminChallenge.jsx';
+import ChallengeEditorDialog from '@/components/features/Admin/challenges/editor/ChallengeEditorDialog.jsx';
+import { buildChallengePayload } from '@/components/features/Admin/challenges/editor/challengePayload.js';
+import AdminChallengeTestModal from '@/components/features/Admin/challenges/testing/ChallengeTestDialog.jsx';
 import {
   createChallenge,
   deleteChallenge,
@@ -15,10 +15,10 @@ import {
   getChallengeUsages,
   updateChallenge,
   uploadChallengeFile,
-} from '../../api/admin/challenge';
-import { useDebounce } from '../../hooks';
+} from '@/api/admin/challenge';
+import { useDebounce } from '@/hooks';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '../../config/challenges';
+import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '@/config/challenges';
 
 function ChallengesManagement() {
   const [challenges, setChallenges] = useState([]);

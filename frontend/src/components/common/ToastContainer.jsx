@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import Toast from './Toast';
+import Toast from '@/components/common/Toast';
 import { useTranslation } from 'react-i18next';
 
 const POSITION_CLASSES = {

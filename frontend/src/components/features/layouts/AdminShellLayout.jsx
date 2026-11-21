@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AdminSidebar from '../Admin/AdminSidebar';
-import AdminTopbar from '../Admin/AdminTopbar';
-import Footer from './Footer';
-import { getFooterConfig } from '../../../config/footer';
-import { useBranding } from '../../../hooks/useBranding';
-import '../../../i18n/admin-translations';
+import AdminSidebar from '@/components/features/Admin/AdminSidebar';
+import AdminTopbar from '@/components/features/Admin/AdminTopbar';
+import Footer from '@/components/features/layouts/Footer';
+import { getFooterConfig } from '@/config/footer';
+import { useBranding } from '@/hooks/useBranding';
+import '@/i18n/admin-translations';
 
 function AdminShellLayout({
   children,

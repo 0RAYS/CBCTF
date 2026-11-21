@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import Spinner from './Spinner';
+import Spinner from '@/components/common/Spinner';
 
 function Loading({ compact = false, className = '' }) {
   const { t } = useTranslation();

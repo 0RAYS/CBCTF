@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card } from '../../common';
-import ProfileSection from './ProfileSection';
-import PasswordSection from './PasswordSection';
-import AccountDialogs from './AccountDialogs';
+import { Button, Card } from '@/components/common';
+import ProfileSection from '@/components/features/UserSettings/ProfileSection';
+import PasswordSection from '@/components/features/UserSettings/PasswordSection';
+import AccountDialogs from '@/components/features/UserSettings/AccountDialogs';
 
 export default function UserSettings({
   user,

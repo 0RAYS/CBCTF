@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import UsersManager from '../../components/features/Admin/rbac/UsersManager';
-import RolesManager from '../../components/features/Admin/rbac/RolesManager';
-import GroupsManager from '../../components/features/Admin/rbac/GroupsManager';
-import PermissionsManager from '../../components/features/Admin/rbac/PermissionsManager';
+import UsersManager from '@/components/features/Admin/rbac/UsersManager';
+import RolesManager from '@/components/features/Admin/rbac/RolesManager';
+import GroupsManager from '@/components/features/Admin/rbac/GroupsManager';
+import PermissionsManager from '@/components/features/Admin/rbac/PermissionsManager';
 import { useTranslation } from 'react-i18next';
-import { Tabs } from '../../components/common';
+import { Tabs } from '@/components/common';
 
 function RbacManagement() {
   const [activeTab, setActiveTab] = useState('users');

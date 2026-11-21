@@ -1,8 +1,12 @@
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getTestChallengeStatus, startTestVictim, stopTestVictim } from '../../../../../api/admin/challenge';
-import { toast } from '../../../../../utils/toast';
-import { createTestSession, initialTestState, normalizeInstanceStatus } from './testSession';
+import { getTestChallengeStatus, startTestVictim, stopTestVictim } from '@/api/admin/challenge';
+import { toast } from '@/utils/toast';
+import {
+  createTestSession,
+  initialTestState,
+  normalizeInstanceStatus,
+} from '@/components/features/Admin/challenges/testing/testSession';
 
 const api = { getTestChallengeStatus, startTestVictim, stopTestVictim };
 

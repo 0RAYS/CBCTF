@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FormField, Input, Select, Textarea } from '../../../common';
+import { FormField, Input, Select, Textarea } from '@/components/common';
 
 export default function RbacForm({ domain, mode, item, form, setForm, roles }) {
   const { t } = useTranslation();

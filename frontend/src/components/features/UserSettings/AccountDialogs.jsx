@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ConfirmModal from '../../common/ConfirmModal';
-import { Input } from '../../common';
+import ConfirmModal from '@/components/common/ConfirmModal';
+import { Input } from '@/components/common';
 
 export default function AccountDialogs({ dialog, onClose, user, onDeleteAccount, onEmailVerify }) {
   const { t } = useTranslation();

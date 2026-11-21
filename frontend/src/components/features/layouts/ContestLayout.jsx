@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
-import BaseLayout from './BaseLayout';
+import BaseLayout from '@/components/features/layouts/BaseLayout';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { getContestInfo } from '../../../api/contest';
-import { getContestStatus } from '../../../config/contest';
-import { useBranding } from '../../../hooks/useBranding';
+import { getContestInfo } from '@/api/contest';
+import { getContestStatus } from '@/config/contest';
+import { useBranding } from '@/hooks/useBranding';
 
 function ContestLayout() {
   const { contestId } = useParams();

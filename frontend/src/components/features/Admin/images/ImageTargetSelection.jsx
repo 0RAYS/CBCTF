@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IconCheck, IconDownload, IconSearch } from '@tabler/icons-react';
-import { Button, Card, Chip, EmptyState, Input } from '../../../common';
-import { buildTargetKey, imageState, selectableTargetKeys } from './imageModel';
+import { Button, Card, Chip, EmptyState, Input } from '@/components/common';
+import { buildTargetKey, imageState, selectableTargetKeys } from '@/components/features/Admin/images/imageModel';
 
 export default function ImageTargetSelection({
   scopeKey,

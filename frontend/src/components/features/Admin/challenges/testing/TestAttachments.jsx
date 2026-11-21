@@ -2,9 +2,9 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { IconLoader2, IconPaperclip } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { downloadTestAttachment } from '../../../../../api/admin/challenge';
-import { downloadBlobResponse } from '../../../../../utils/fileDownload';
-import { toast } from '../../../../../utils/toast';
+import { downloadTestAttachment } from '@/api/admin/challenge';
+import { downloadBlobResponse } from '@/utils/fileDownload';
+import { toast } from '@/utils/toast';
 
 export default function TestAttachments({ challenge, file }) {
   const { t } = useTranslation();

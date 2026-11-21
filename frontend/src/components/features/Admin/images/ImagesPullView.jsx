@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconRefresh, IconSearch } from '@tabler/icons-react';
-import { Button } from '../../../common';
-import Loading from '../../../common/Loading';
-import ImagePullSummary from './ImagePullSummary';
-import ImageTargetSelection from './ImageTargetSelection';
-import ManualImagePull from './ManualImagePull';
-import NodeImageInventory from './NodeImageInventory';
-import { formatDetectionTime } from './imageModel';
+import { Button } from '@/components/common';
+import Loading from '@/components/common/Loading';
+import ImagePullSummary from '@/components/features/Admin/images/ImagePullSummary';
+import ImageTargetSelection from '@/components/features/Admin/images/ImageTargetSelection';
+import ManualImagePull from '@/components/features/Admin/images/ManualImagePull';
+import NodeImageInventory from '@/components/features/Admin/images/NodeImageInventory';
+import { formatDetectionTime } from '@/components/features/Admin/images/imageModel';
 
 export default function ImagesPullView({ scope, loading, onRefresh, ...props }) {
   const { t, i18n } = useTranslation();

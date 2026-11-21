@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { clamp, DEFAULT_SLICE_MS, sanitizeSlice } from './trafficPresentation.js';
+import { clamp, DEFAULT_SLICE_MS, sanitizeSlice } from '@/components/features/Admin/traffic/trafficPresentation.js';
 
 const PLAYBACK_INTERVAL_MS = 900;
 

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createOAuthProvider, deleteOAuthProvider, updateOAuthProvider } from '../../../../api/admin/oauth';
-import { getGroupList } from '../../../../api/admin/rbac';
-import { toast } from '../../../../utils/toast';
-import { Button, Modal, Select } from '../../../common';
-import { buildOAuthPayload, oauthForm } from './payload';
-import OAuthProtocolFields from './OAuthProtocolFields';
-import OAuthClaimFields from './OAuthClaimFields';
+import { createOAuthProvider, deleteOAuthProvider, updateOAuthProvider } from '@/api/admin/oauth';
+import { getGroupList } from '@/api/admin/rbac';
+import { toast } from '@/utils/toast';
+import { Button, Modal, Select } from '@/components/common';
+import { buildOAuthPayload, oauthForm } from '@/components/features/Admin/oauth/payload';
+import OAuthProtocolFields from '@/components/features/Admin/oauth/OAuthProtocolFields';
+import OAuthClaimFields from '@/components/features/Admin/oauth/OAuthClaimFields';
 
 export default function OAuthProviderDialog({ mode, provider, onClose, onSaved }) {
   const { t } = useTranslation();

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { testSmtp } from '../../../../api/admin/smtp';
-import { toast } from '../../../../utils/toast';
-import { Button, Input, Modal } from '../../../common';
+import { testSmtp } from '@/api/admin/smtp';
+import { toast } from '@/utils/toast';
+import { Button, Input, Modal } from '@/components/common';
 
 export default function SmtpTestDialog({ smtp, onClose, onSent }) {
   const { t } = useTranslation();

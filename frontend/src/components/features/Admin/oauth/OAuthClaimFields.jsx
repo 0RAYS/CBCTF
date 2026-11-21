@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Input } from '../../../common';
+import { Input } from '@/components/common';
 
 export default function OAuthClaimFields({ form, change, mode }) {
   const { t } = useTranslation();

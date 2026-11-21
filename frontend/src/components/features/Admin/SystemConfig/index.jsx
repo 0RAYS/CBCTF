@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import ConfirmModal from '../../../common/ConfirmModal';
-import { useSystemConfig } from './useSystemConfig';
-import { SystemConfigForm } from './SystemConfigForm';
+import ConfirmModal from '@/components/common/ConfirmModal';
+import { useSystemConfig } from '@/components/features/Admin/SystemConfig/useSystemConfig';
+import { SystemConfigForm } from '@/components/features/Admin/SystemConfig/SystemConfigForm';
 
 /** Main container component for system configuration. */
 function SystemConfig({ config, onConfigUpdated }) {

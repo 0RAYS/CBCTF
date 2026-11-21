@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Card } from '../../common';
+import { Card } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 
 /** 积分榜总览统计组件 */

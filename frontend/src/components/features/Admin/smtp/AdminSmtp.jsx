@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Button, List, Pagination, StatusTag } from '../../../common';
+import { Button, List, Pagination, StatusTag } from '@/components/common';
 import { IconEdit, IconHistory, IconPlus, IconSend, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
