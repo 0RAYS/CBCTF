@@ -9,7 +9,7 @@ export default function Rules({ rules = [], onChange }) {
   const [editing, setEditing] = useState(null);
   return (
     <Card padding="lg" className="lg:col-span-2">
-      <h2 className="text-2xl font-mono text-neutral-50 mb-6">{t('admin.contests.editor.sections.rules')}</h2>
+      <h2 className="text-lg font-mono text-neutral-50 mb-6">{t('admin.contests.editor.sections.rules')}</h2>
       <div className="flex gap-2 mb-6">
         <Input
           value={newRule}

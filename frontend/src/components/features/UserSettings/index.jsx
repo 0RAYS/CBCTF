@@ -26,10 +26,10 @@ export default function UserSettings({
   ];
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto">
+    <div className="page-container">
       <Card variant="default" padding="none" animate className="overflow-hidden">
         <div className="p-4 sm:p-6 border-b border-neutral-300/30">
-          <h2 className="text-2xl font-mono text-neutral-50">{t('user.settings.title')}</h2>
+          <h2 className="text-lg font-mono text-neutral-50">{t('user.settings.title')}</h2>
         </div>
         <div className="flex flex-col md:flex-row">
           <div className="w-full md:w-[220px] shrink-0 border-b md:border-b-0 md:border-r border-neutral-300/30 p-4">

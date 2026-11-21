@@ -122,7 +122,7 @@ export default function TrafficAnalysisPanel({
     <Card className="min-w-0 rounded-md border-neutral-600 bg-neutral-900" padding="sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-semibold">{label('title')}</h3>
+          <h3 className="text-lg font-mono text-neutral-50">{label('title')}</h3>
           <p className="mt-1 text-xs text-neutral-400">{label('scope')}</p>
         </div>
         <Button size="sm" onClick={analysis.refresh} disabled={analysis.loading || analysis.overlapsLoading}>

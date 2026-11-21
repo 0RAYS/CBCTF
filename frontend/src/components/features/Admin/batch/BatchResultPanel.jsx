@@ -31,7 +31,7 @@ export default function BatchResultPanel({ result, error, queued = false }) {
       aria-live="polite"
       className={`min-w-0 rounded-lg border bg-neutral-900 p-3 text-sm ${colors}`}
     >
-      <h3 className="font-semibold">{t(`admin.batch.states.${result.status}`)}</h3>
+      <h3 className="font-mono font-semibold">{t(`admin.batch.states.${result.status}`)}</h3>
       <p className="mt-1 break-words">{t('admin.batch.summary', result)}</p>
       {queued ? <p className="mt-1 text-xs text-neutral-400">{t('admin.batch.queueHint')}</p> : null}
       {result.not_attempted > 0 ? <p className="mt-1 text-xs">{t('admin.batch.unattemptedHint')}</p> : null}

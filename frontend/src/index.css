@@ -156,6 +156,15 @@ body {
     margin-inline: auto;
   }
 
+  /* General page content width. .contest-container is the wider variant for
+     contest-scoped pages that carry dense tables. */
+  .page-container {
+    width: 100%;
+    max-width: 1200px;
+    min-width: 0;
+    margin-inline: auto;
+  }
+
   /* Shared Markdown typography for challenge statements, notices and contest details. */
   .prose {
     color: #d9d9d9;

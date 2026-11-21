@@ -8,7 +8,7 @@ function HeroSection() {
 
   return (
     <div className="min-h-[560px] md:min-h-[700px] flex items-center px-4 md:px-8">
-      <div className="w-full max-w-[1200px] mx-auto">
+      <div className="page-container">
         <div className="grid grid-cols-1 md:grid-cols-[5fr_3fr] gap-12 md:gap-20 items-center">
           <div className="space-y-10">
             <div className="flex items-center gap-3">

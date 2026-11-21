@@ -226,7 +226,7 @@ function ContestLeaderboard({ id, viewMode: externalViewMode, onViewModeChange: 
   return (
     <div className="w-full min-w-0 mx-auto space-y-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h1 className="text-xl font-mono text-neutral-50">{t('nav.leaderboard')}</h1>
+        <h1 className="text-xl sm:text-3xl font-mono text-neutral-50 tracking-wider">{t('nav.leaderboard')}</h1>
         <div className="flex flex-wrap items-center gap-3">
           <div
             role="group"

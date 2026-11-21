@@ -10,7 +10,7 @@ export default function Timeline({ timeline = [], onChange }) {
   return (
     <Card padding="lg">
       <div className="flex flex-wrap justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-mono text-neutral-50">{t('admin.contests.editor.sections.timeline')}</h2>
+        <h2 className="text-lg font-mono text-neutral-50">{t('admin.contests.editor.sections.timeline')}</h2>
         <Button
           size="sm"
           icon={<IconPlus size={16} />}
