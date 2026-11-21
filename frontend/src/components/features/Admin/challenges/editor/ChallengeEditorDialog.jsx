@@ -32,6 +32,7 @@ export default function ChallengeEditorDialog({
   },
   categories = [],
   contests = [],
+  contestLocked = false,
   flagVersion = 0,
   onClose,
   onSubmit,
@@ -69,6 +70,9 @@ export default function ChallengeEditorDialog({
       hidden: isEditMode ? challenge.hidden : contestId !== 0,
     });
   };
+  const contestName = contests.find((contest) => contest.id === Number(challenge.contest_id || 0))?.name;
+  const contestLabel =
+    contestName || (challenge.contest_id ? `#${challenge.contest_id}` : t('admin.challengeModal.contest.unassigned'));
 
   return (
     <Modal
@@ -104,7 +108,7 @@ export default function ChallengeEditorDialog({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className={isEditMode ? 'grid grid-cols-1 xl:grid-cols-2 gap-4' : 'space-y-3'}>
           <div className="space-y-3">
             <div className="rounded-md border border-neutral-700/70 bg-black/10 p-3">
               <h3 className="text-lg font-mono text-neutral-50 mb-3">{t('admin.challengeModal.sections.basic')}</h3>
@@ -178,19 +182,23 @@ export default function ChallengeEditorDialog({
                     <label className="block text-sm font-mono text-neutral-400 mb-1">
                       {t('admin.challengeModal.labels.contest')}
                     </label>
-                    <select
-                      value={String(challenge.contest_id || 0)}
-                      onChange={(e) => changeContest(e.target.value)}
-                      className={selectClass}
-                      disabled={isEditMode}
-                    >
-                      <option value="0">{t('admin.challengeModal.contest.unassigned')}</option>
-                      {contests.map((contest) => (
-                        <option key={contest.id} value={contest.id}>
-                          {contest.name}
-                        </option>
-                      ))}
-                    </select>
+                    {contestLocked ? (
+                      <div className={`${selectClass} flex items-center`}>{contestLabel}</div>
+                    ) : (
+                      <select
+                        value={String(challenge.contest_id || 0)}
+                        onChange={(e) => changeContest(e.target.value)}
+                        className={selectClass}
+                        disabled={isEditMode}
+                      >
+                        <option value="0">{t('admin.challengeModal.contest.unassigned')}</option>
+                        {contests.map((contest) => (
+                          <option key={contest.id} value={contest.id}>
+                            {contest.name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-mono text-neutral-400 mb-1">
@@ -210,8 +218,12 @@ export default function ChallengeEditorDialog({
                   onChange={(e) => onChange({ ...challenge, hidden: e.target.checked })}
                   label={t('admin.challengeModal.labels.hidden')}
                 />
-                {isEditMode && (
-                  <p className="text-xs font-mono text-neutral-500">{t('admin.challengeModal.contest.lockedHint')}</p>
+                {contestLocked ? (
+                  <p className="text-xs font-mono text-neutral-500">{t('admin.challengeModal.contest.fixedHint')}</p>
+                ) : (
+                  isEditMode && (
+                    <p className="text-xs font-mono text-neutral-500">{t('admin.challengeModal.contest.lockedHint')}</p>
+                  )
                 )}
               </div>
             </div>

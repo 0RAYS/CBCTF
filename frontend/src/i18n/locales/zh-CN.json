@@ -1287,7 +1287,9 @@
         "label": "搜索题目",
         "placeholder": "输入题目名搜索...",
         "descLabel": "描述",
-        "descPlaceholder": "按描述搜索..."
+        "descPlaceholder": "按描述搜索...",
+        "contestLabel": "所属比赛",
+        "contestPlaceholder": "按比赛名称搜索..."
       },
       "filters": {
         "all": "全部",
@@ -1439,7 +1441,8 @@
       },
       "contest": {
         "unassigned": "未归属比赛",
-        "lockedHint": "题目保持所属比赛。如需在其他比赛复用，请复制该题目。"
+        "lockedHint": "题目保持所属比赛。如需在其他比赛复用，请复制该题目。",
+        "fixedHint": "该题目固定归属当前比赛。"
       },
       "toast": {
         "fetchFlagsFailed": "获取题目 Flag 失败",

@@ -12,10 +12,8 @@ function AdminChallenge({
   currentPage = 1,
   pageSize = 10,
   categories = [],
-  contests = [],
   filterCategory = 'all',
   filterType = 'all',
-  filterContest = 'all',
   loading = false,
   onPageChange,
   onAddChallenge,
@@ -27,13 +25,14 @@ function AdminChallenge({
   onTestChallenge,
   onFilterTypeChange,
   onFilterCategoryChange,
-  onFilterContestChange,
   nameQuery = '',
   descQuery = '',
+  contestQuery = '',
   searchLoading = false,
   isSearchMode = false,
   onNameChange,
   onDescChange,
+  onContestChange,
 }) {
   const { t } = useTranslation();
 
@@ -159,7 +158,7 @@ function AdminChallenge({
       </div>
 
       <div className="mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.challenge.search.label')}</label>
             <Input
@@ -180,6 +179,18 @@ function AdminChallenge({
               value={descQuery}
               placeholder={t('admin.challenge.search.descPlaceholder')}
               onChange={(e) => onDescChange?.(e.target.value)}
+              icon={<IconSearch size={16} />}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-mono text-neutral-400 mb-2">
+              {t('admin.challenge.search.contestLabel')}
+            </label>
+            <Input
+              type="text"
+              value={contestQuery}
+              placeholder={t('admin.challenge.search.contestPlaceholder')}
+              onChange={(e) => onContestChange?.(e.target.value)}
               icon={<IconSearch size={16} />}
             />
           </div>
@@ -218,21 +229,6 @@ function AdminChallenge({
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="w-56">
-              <select
-                value={filterContest}
-                onChange={(e) => onFilterContestChange(e.target.value)}
-                className="select-custom select-custom-sm"
-              >
-                <option value="all">{t('admin.challenge.contestFilter.all')}</option>
-                <option value="0">{t('admin.challenge.contestFilter.unassigned')}</option>
-                {contests.map((contest) => (
-                  <option key={contest.id} value={contest.id}>
-                    {contest.name}
-                  </option>
-                ))}
-              </select>
-            </div>
             <div className="w-48">
               <select
                 value={filterCategory}

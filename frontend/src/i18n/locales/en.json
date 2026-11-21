@@ -1287,7 +1287,9 @@
         "label": "Search Challenges",
         "placeholder": "Search by challenge name...",
         "descLabel": "Description",
-        "descPlaceholder": "Search by description..."
+        "descPlaceholder": "Search by description...",
+        "contestLabel": "Contest",
+        "contestPlaceholder": "Search by contest name..."
       },
       "filters": {
         "all": "All",
@@ -1439,7 +1441,8 @@
       },
       "contest": {
         "unassigned": "Not in a contest",
-        "lockedHint": "A challenge keeps its contest. Copy it into another contest to reuse it there."
+        "lockedHint": "A challenge keeps its contest. Copy it into another contest to reuse it there.",
+        "fixedHint": "This challenge belongs to the current contest."
       },
       "toast": {
         "fetchFlagsFailed": "Failed to load challenge flags",

@@ -30,7 +30,6 @@ function ChallengesManagement() {
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedContest, setSelectedContest] = useState('all');
   const [categories, setCategories] = useState([]);
   const [contests, setContests] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,23 +48,25 @@ function ChallengesManagement() {
 
   const [nameQuery, setNameQuery] = useState('');
   const [descQuery, setDescQuery] = useState('');
+  const [contestQuery, setContestQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [resolvedSearchSignature, setResolvedSearchSignature] = useState('');
 
   const debouncedName = useDebounce(nameQuery, 300);
   const debouncedDesc = useDebounce(descQuery, 300);
+  const debouncedContest = useDebounce(contestQuery, 300);
 
   // 搜索结果对应的查询签名，未匹配时说明这批结果还在加载
-  const searchSignature = `${debouncedName}|${debouncedDesc}|${selectedType}|${selectedCategory}|${selectedContest}`;
+  const searchSignature = `${debouncedName}|${debouncedDesc}|${debouncedContest}|${selectedType}|${selectedCategory}`;
   const searchLoading = searchSignature !== resolvedSearchSignature;
 
-  const isSearchMode = !!(nameQuery.trim() || descQuery.trim());
+  const isSearchMode = !!(nameQuery.trim() || descQuery.trim() || contestQuery.trim());
 
-  const contestParams = () => (selectedContest === 'all' ? {} : { contest_id: Number(selectedContest) });
+  const contestParams = () => (debouncedContest.trim() ? { contest_name: debouncedContest.trim() } : {});
 
   useEffect(() => {
     let cancelled = false;
-    if (!debouncedName.trim() && !debouncedDesc.trim()) {
+    if (!debouncedName.trim() && !debouncedDesc.trim() && !debouncedContest.trim()) {
       setSearchResults([]);
       setResolvedSearchSignature(searchSignature);
       return;
@@ -96,7 +97,7 @@ function ChallengesManagement() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedName, debouncedDesc, selectedType, selectedCategory, selectedContest]);
+  }, [debouncedName, debouncedDesc, debouncedContest, selectedType, selectedCategory]);
 
   const fetchCategories = async () => {
     try {
@@ -120,7 +121,6 @@ function ChallengesManagement() {
       const params = {
         limit: pageSize,
         offset: (currentPage - 1) * pageSize,
-        ...contestParams(),
       };
 
       if (selectedType !== 'all') {
@@ -162,13 +162,13 @@ function ChallengesManagement() {
 
   useEffect(() => {
     fetchCategories();
-  }, [selectedContest, selectedType]);
+  }, [debouncedContest, selectedType]);
 
   useEffect(() => {
     if (!isSearchMode) {
       fetchChallenges();
     }
-  }, [currentPage, selectedType, selectedCategory, selectedContest, isSearchMode]);
+  }, [currentPage, selectedType, selectedCategory, isSearchMode]);
 
   const handleFilterTypeChange = (type) => {
     setSelectedType(type);
@@ -184,18 +184,10 @@ function ChallengesManagement() {
     setDescQuery('');
   };
 
-  const handleFilterContestChange = (contest) => {
-    setSelectedContest(contest);
-    setCurrentPage(1);
-    setNameQuery('');
-    setDescQuery('');
-  };
-
   const handleAddChallenge = () => {
-    const contestId = selectedContest === 'all' ? 0 : Number(selectedContest);
     setMode('add');
     setSelectedChallenge(null);
-    setEditChallenge(challengeDraft({ contest_id: contestId, hidden: contestId !== 0, flags: [{ id: 0, value: '' }] }));
+    setEditChallenge(challengeDraft({ contest_id: 0, hidden: false, flags: [{ id: 0, value: '' }] }));
     setIsModalOpen(true);
   };
 
@@ -388,10 +380,8 @@ function ChallengesManagement() {
         currentPage={currentPage}
         pageSize={pageSize}
         categories={categories}
-        contests={contests}
         filterCategory={selectedCategory}
         filterType={selectedType}
-        filterContest={selectedContest}
         loading={isSearchMode ? searchLoading : loading}
         onPageChange={setCurrentPage}
         onAddChallenge={handleAddChallenge}
@@ -403,13 +393,14 @@ function ChallengesManagement() {
         onTestChallenge={handleTestChallenge}
         onFilterTypeChange={handleFilterTypeChange}
         onFilterCategoryChange={handleFilterCategoryChange}
-        onFilterContestChange={handleFilterContestChange}
         nameQuery={nameQuery}
         descQuery={descQuery}
+        contestQuery={contestQuery}
         searchLoading={searchLoading}
         isSearchMode={isSearchMode}
         onNameChange={setNameQuery}
         onDescChange={setDescQuery}
+        onContestChange={setContestQuery}
       />
 
       <ChallengeEditorDialog
