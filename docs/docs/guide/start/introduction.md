@@ -5,7 +5,7 @@ description: 了解 CBCTF 的题型、赛事管理能力、动态靶机和附件
 
 # 介绍
 
-CBCTF 是由 [0RAYS](https://github.com/0rays) 维护的 CTF 竞赛平台，基于 Go 语言构建，原生支持 Kubernetes
+CBCTF 是由 [0RAYS](https://github.com/0RAYS) 维护的 CTF 竞赛平台，基于 Go 语言构建，原生支持 Kubernetes
 编排。平台支持动态附件生成、动态容器分发、容器与虚拟机混合部署、网络渗透场景构建等特性。
 
 <img src="/img/homepage.png" width="100%" alt="首页" />
