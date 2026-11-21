@@ -306,12 +306,27 @@ func createVictimNetworkResources(
 	endpoints := make(model.Endpoints, 0)
 	wg := utils.NewGroup(ctx)
 
-	createNetworkPolicy := func(labels map[string]string, policies model.NetworkPolicies) error {
-		name := victimResourceName("np", victim.ID, labels[ServiceLabel])
+	// 题目 VPC 的网段不计入集群外部范围，VPC 内的容器按互通规则放行。
+	vpcSubnets := make([]string, 0)
+	for _, podSpec := range victim.Spec.Pods {
+		for _, network := range podSpec.Networks {
+			if network.Definition.CIDR != "" && !slices.Contains(vpcSubnets, network.Definition.CIDR) {
+				vpcSubnets = append(vpcSubnets, network.Definition.CIDR)
+			}
+		}
+	}
+
+	createNetworkPolicy := func(selector map[string]string, service string, subnetCIDRs []string, peerIPs map[string][]string) error {
+		name := victimResourceName("np", victim.ID, selector[ServiceLabel])
 		_, ret := CreateNetworkPolicy(wg.Context(), CreateNetworkPolicyOptions{
-			Name:     name,
-			Labels:   labels,
-			Policies: policies,
+			Name:        name,
+			Labels:      selector,
+			Selector:    selector,
+			Service:     service,
+			Policies:    victim.Spec.NetworkPolicies,
+			SubnetCIDRs: subnetCIDRs,
+			PeerIPs:     peerIPs,
+			VPCSubnets:  vpcSubnets,
 		})
 		if !ret.OK {
 			return ret.AsError()
@@ -321,8 +336,9 @@ func createVictimNetworkResources(
 	}
 
 	if victim.Spec.NetworkPlan.Name == "" {
+		// 共享 Pod 网络下所有容器共用一个 Pod，出站策略取所有条目的并集。
 		wg.Go(func() error {
-			return createNetworkPolicy(labels, victim.Spec.NetworkPolicies)
+			return createNetworkPolicy(labels, "", nil, nil)
 		})
 	} else {
 		for _, podSpec := range victim.Spec.Pods {
@@ -332,14 +348,32 @@ func createVictimNetworkResources(
 			if serviceName != "" {
 				matchLabels[ServiceLabel] = serviceName
 			}
-			policies := make(model.NetworkPolicies, 0)
-			for _, policy := range victim.Spec.NetworkPolicies {
-				if policy.Service == serviceName {
-					policies = append(policies, policy)
+			// 同网段的容器默认互通，所在网段始终放行。
+			subnetCIDRs := make([]string, 0, len(podSpec.Networks))
+			for _, network := range podSpec.Networks {
+				if network.Definition.CIDR != "" {
+					subnetCIDRs = append(subnetCIDRs, network.Definition.CIDR)
 				}
 			}
+			peerIPs := make(map[string][]string)
+			for _, peerSpec := range victim.Spec.Pods {
+				peerService := podServiceName(peerSpec)
+				if peerService == "" || peerService == serviceName {
+					continue
+				}
+				ips := make([]string, 0, len(peerSpec.Networks))
+				for _, network := range peerSpec.Networks {
+					if network.Attachment.IP != "" {
+						ips = append(ips, network.Attachment.IP)
+					}
+				}
+				if len(ips) == 0 {
+					continue
+				}
+				peerIPs[peerService] = ips
+			}
 			wg.Go(func() error {
-				return createNetworkPolicy(matchLabels, policies)
+				return createNetworkPolicy(matchLabels, serviceName, subnetCIDRs, peerIPs)
 			})
 		}
 	}

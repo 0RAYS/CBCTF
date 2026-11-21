@@ -1,4 +1,4 @@
-import { normalizePolicyRules } from '@/components/features/Admin/challenges/editor/networkPolicy.js';
+import { normalizeNetworkPolicy } from '@/components/features/Admin/challenges/editor/networkPolicy.js';
 
 export const buildChallengePayload = (challenge, mode, initialCompose = []) => {
   const payload = {
@@ -29,13 +29,19 @@ export const buildChallengePayload = (challenge, mode, initialCompose = []) => {
         }
       });
     }
-    const vpcMode = /^networks\s*:/m.test(String(challenge.docker_compose ?? ''));
     payload.network_policies =
-      challenge.network_policies?.map((policy) => ({
-        ...(vpcMode ? { service: policy.service || '' } : {}),
-        from: normalizePolicyRules(policy.from),
-        to: normalizePolicyRules(policy.to),
-      })) || [];
+      challenge.network_policies?.map((rawPolicy) => {
+        const policy = normalizeNetworkPolicy(rawPolicy);
+        return {
+          service: policy.service,
+          allow_internet: policy.allow_internet,
+          egress_cidrs: policy.egress_cidrs,
+          allow_external: policy.allow_external,
+          peers: policy.peers,
+          from: policy.from,
+          to: policy.to,
+        };
+      }) || [];
   }
   return payload;
 };
