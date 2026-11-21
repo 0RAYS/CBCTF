@@ -4,7 +4,7 @@ import ImagesPullView from './ImagesPullView';
 import { toast } from '../../../../utils/toast';
 import useBatchAction from '../batch/useBatchAction.js';
 import BatchResultPanel from '../batch/BatchResultPanel.jsx';
-import { remainingBatchIds } from '../batch/batchModel.js';
+import { completedBatchIds } from '../batch/batchModel.js';
 import {
   buildTargetKey,
   buildTargets,
@@ -14,6 +14,8 @@ import {
   parseManualImages,
   parseTargetKey,
   completedImageTargetKeys,
+  selectedNodeNames,
+  toggleDeselectedNode,
 } from './imageModel';
 
 const DETECT_POLL_INTERVAL = 2000;
@@ -26,7 +28,7 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages, dete
   const [nodes, setNodes] = useState([]);
   const [targetImages, setTargetImages] = useState([]);
   const [selectedTargetKeys, setSelectedTargetKeys] = useState([]);
-  const [selectedNodes, setSelectedNodes] = useState([]);
+  const [deselectedNodes, setDeselectedNodes] = useState([]);
   const [manualImagesText, setManualImagesText] = useState('');
   const [pullPolicy, setPullPolicy] = useState('IfNotPresent');
   const [detectedAt, setDetectedAt] = useState('');
@@ -36,6 +38,7 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages, dete
   const detectedAtRef = useRef('');
 
   const allImages = useMemo(() => normalizeTargetImages(undefined, nodes), [nodes]);
+  const selectedNodes = useMemo(() => selectedNodeNames(nodes, deselectedNodes), [nodes, deselectedNodes]);
   const availableTargetKeys = useMemo(
     () => selectableTargetKeys(nodes, targetImages, pullPolicy),
     [nodes, targetImages, pullPolicy]
@@ -115,26 +118,16 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages, dete
   }, [detecting]);
 
   useEffect(() => {
-    setSelectedNodes((prev) => prev.filter((node) => nodes.some((item) => item.node === node)));
-  }, [nodes]);
-
-  useEffect(() => {
     const availableSet = new Set(availableTargetKeys);
     setSelectedTargetKeys((prev) => prev.filter((key) => availableSet.has(key)));
   }, [availableTargetKeys]);
 
   const handleNodeToggle = (nodeName) => {
-    setSelectedNodes((prev) =>
-      prev.includes(nodeName) ? prev.filter((node) => node !== nodeName) : [...prev, nodeName]
-    );
+    setDeselectedNodes((prev) => toggleDeselectedNode(prev, nodeName));
   };
 
   const handleToggleAllNodes = () => {
-    if (selectedNodes.length === nodes.length) {
-      setSelectedNodes([]);
-    } else {
-      setSelectedNodes(nodes.map((node) => node.node));
-    }
+    setDeselectedNodes(selectedNodes.length === nodes.length ? nodes.map((node) => node.node) : []);
   };
 
   const handleTargetToggle = (nodeName, imageName) => {
@@ -173,7 +166,7 @@ function ImagesPullManagement({ scope = 'contest', fetchImages, pullImages, dete
       onResult: (batch) => {
         if (batch) {
           if (requireNodeSelection) {
-            setSelectedNodes((current) => remainingBatchIds(current, batch));
+            setDeselectedNodes((current) => Array.from(new Set([...current, ...completedBatchIds(batch)])));
           } else {
             const completed = new Set(completedImageTargetKeys(targets, batch));
             setSelectedTargetKeys((current) => current.filter((key) => !completed.has(key)));

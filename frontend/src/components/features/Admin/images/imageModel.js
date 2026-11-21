@@ -48,6 +48,15 @@ export function parseManualImages(text) {
   );
 }
 
+// Every detected node is selected by default; the deselected list carries the explicit exclusions.
+export function selectedNodeNames(nodes, deselected) {
+  return nodes.map((node) => node.node).filter((name) => !deselected.includes(name));
+}
+
+export function toggleDeselectedNode(deselected, nodeName) {
+  return deselected.includes(nodeName) ? deselected.filter((name) => name !== nodeName) : [...deselected, nodeName];
+}
+
 export function buildTargetKey(node, image) {
   return `${node}\u0000${image}`;
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getBatchResult, hasBatchProgress, batchTone, remainingBatchIds, remainingGeneratorCounts, remainingVictimChallenges, batchRows } from '../src/components/features/Admin/batch/batchModel.js';
+import { getBatchResult, hasBatchProgress, batchTone, completedBatchIds, remainingBatchIds, remainingGeneratorCounts, remainingVictimChallenges, batchRows } from '../src/components/features/Admin/batch/batchModel.js';
 
 test('partial responses are read even with a non-200 business code', () => {
   const batch = { status: 'partial', requested: 3, succeeded: 1, failed: 1, skipped: 0, not_attempted: 1, items: [] };
@@ -13,6 +13,7 @@ test('partial responses are read even with a non-200 business code', () => {
 test('retry selection retains failed and unattempted targets, not successes or skips', () => {
   const batch = { items: [{ id: '1', status: 'success' }, { id: '2', status: 'skipped' }, { id: '3', status: 'failed' }] };
   assert.deepEqual(remainingBatchIds([1, 2, 3, 4], batch), [3, 4]);
+  assert.deepEqual(completedBatchIds(batch), ['1', '2']);
   assert.deepEqual(remainingGeneratorCounts(['a', 'a', 'b'], { items: [
     { id: 'challenge:a/instance:1/generator:9', status: 'success' },
     { id: 'challenge:a/instance:2', status: 'failed' },

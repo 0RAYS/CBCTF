@@ -26,6 +26,8 @@ import {
     parseManualImages,
     parseTargetKey,
     selectableTargetKeys,
+    selectedNodeNames,
+    toggleDeselectedNode,
     unconfirmedTargetKeys,
 } from '../src/components/features/Admin/images/imageModel.js';
 
@@ -258,4 +260,13 @@ test('the detection time is rendered for the last result only', () => {
   assert.equal(formatDetectionTime('', 'en'), '');
   assert.equal(formatDetectionTime('not-a-date', 'en'), 'not-a-date');
   assert.notEqual(formatDetectionTime('2026-01-02T03:04:05Z', 'en'), '');
+});
+
+test('every node is selected by default and only explicit deselections are kept', () => {
+  const nodes = [{ node: 'a' }, { node: 'b' }];
+  assert.deepEqual(selectedNodeNames(nodes, []), ['a', 'b']);
+  const deselected = toggleDeselectedNode([], 'a');
+  assert.deepEqual(selectedNodeNames(nodes, deselected), ['b']);
+  assert.deepEqual(selectedNodeNames([...nodes, { node: 'c' }], deselected), ['b', 'c']);
+  assert.deepEqual(selectedNodeNames(nodes, toggleDeselectedNode(deselected, 'a')), ['a', 'b']);
 });
