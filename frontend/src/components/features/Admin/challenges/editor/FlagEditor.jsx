@@ -8,7 +8,7 @@ export default function FlagEditor({ flag, index, onChange, onSave, onViewSolver
   const label = (key) => t(`admin.challengeModal.labels.${key}`);
   return (
     <fieldset disabled={disabled} className="p-3 border border-neutral-700 rounded-md bg-black/20 space-y-4 min-w-0">
-      <legend className="font-mono text-geek-400">Flag #{index + 1}</legend>
+      <div className="font-mono text-geek-400">Flag #{index + 1}</div>
       <div className="flex flex-wrap items-center justify-end gap-2">
         <div className="flex flex-wrap items-center gap-2">
           {flag.generation > 1 && (
