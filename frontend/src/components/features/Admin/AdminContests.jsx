@@ -20,19 +20,20 @@ function AdminContests({
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'zh-CN' ? 'zh-CN' : 'en-US';
 
-  const getContestStatus = (startTime, duration) => {
+  const getContestStatus = (contest) => {
     const now = new Date().getTime() / 1000;
-    const start = new Date(startTime).getTime() / 1000;
-    const end = start + duration;
+    const start = new Date(contest.start).getTime() / 1000;
+    const end = start + contest.duration;
 
     if (now < start) return 'upcoming';
     if (now > end) return 'ended';
-    return 'running';
+    return contest.paused ? 'paused' : 'running';
   };
 
   const getStatusTag = (status) => {
     if (status === 'running') return { type: 'info', text: t('admin.contests.status.running') };
     if (status === 'upcoming') return { type: 'success', text: t('admin.contests.status.upcoming') };
+    if (status === 'paused') return { type: 'warning', text: t('admin.contests.status.paused') };
     return { type: 'default', text: t('admin.contests.status.ended') };
   };
 
@@ -91,7 +92,7 @@ function AdminContests({
         );
 
       case 'status': {
-        const status = getContestStatus(contest.start, contest.duration);
+        const status = getContestStatus(contest);
         const { type, text } = getStatusTag(status);
         return (
           <div className="flex flex-wrap gap-2">

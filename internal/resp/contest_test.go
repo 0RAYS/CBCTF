@@ -88,8 +88,8 @@ func TestGetContestRespMetadata(t *testing.T) {
 			input.StatsReady = statsReady
 			want := gin.H{
 				"id": uint(7), "name": "Example", "description": "Description", "start": start,
-				"duration": int64(3600), "size": 3, "prefix": "CTF", "victims": int64(2),
-				"picture": model.FileURL("/contest.png"), "hidden": true, "blood": false,
+				"end": start.Add(time.Hour), "duration": int64(3600), "size": 3, "prefix": "CTF", "victims": int64(2),
+				"picture": model.FileURL("/contest.png"), "hidden": true, "blood": false, "paused": false,
 				"teams": int64(4), "users": int64(12), "notices": int64(2),
 				"rules": []string{}, "prizes": []model.Prize{}, "timelines": []model.Timeline{},
 			}

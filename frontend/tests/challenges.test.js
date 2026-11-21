@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+    areChallengesAvailable,
     formatTimeLeft,
     getContestOverview,
     isInstanceTransitioning,
@@ -194,4 +195,29 @@ test('countdown formatting retains hours and floors fractional seconds', () => {
   assert.equal(formatTimeLeft(0), '00:00:00');
   assert.equal(formatTimeLeft(3661.9), '01:01:01');
   assert.equal(formatTimeLeft(360000), '100:00:00');
+});
+
+test('a paused contest reports the paused status and keeps the server end time', () => {
+  const start = Date.parse('2026-09-10T00:00:00Z');
+  const contest = {
+    start: new Date(start).toISOString(),
+    end: '2026-09-10T02:00:00.000Z',
+    duration: 3600,
+    paused: true,
+    prefix: 'flag',
+    teams: 10,
+  };
+  const team = { score: 42, solved: [] };
+
+  const overview = getContestOverview(contest, team, start);
+  assert.equal(overview.status, 'paused');
+  assert.equal(overview.endTime, '2026-09-10T02:00:00.000Z');
+  assert.equal(getContestOverview({ ...contest, paused: false }, team, start).status, 'running');
+});
+
+test('challenges stay unavailable until the contest state is known and while it is paused', () => {
+  assert.equal(areChallengesAvailable({}), false);
+  assert.equal(areChallengesAvailable({ status: 'paused' }), false);
+  assert.equal(areChallengesAvailable({ status: 'running' }), true);
+  assert.equal(areChallengesAvailable({ status: 'ended' }), true);
 });

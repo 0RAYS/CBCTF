@@ -9,6 +9,7 @@ import (
 var (
 	ContestIsComing  = i18n.Model.Contest.IsComing
 	ContestIsRunning = i18n.Model.Contest.IsRunning
+	ContestIsPaused  = i18n.Model.Contest.IsPaused
 	ContestIsOver    = i18n.Model.Contest.IsOver
 )
 
@@ -29,6 +30,8 @@ type Contest struct {
 	Duration          time.Duration      `json:"duration"`
 	Blood             bool               `gorm:"default:true" json:"blood"`
 	Hidden            bool               `gorm:"default:true;index" json:"hidden"`
+	Paused            bool               `gorm:"default:false" json:"paused"`
+	PausedAt          time.Time          `gorm:"default:null" json:"-"`
 	Victims           int64              `gorm:"default:1" json:"victims"`
 	Rules             []string           `gorm:"serializer:json;type:jsonb;default:'[]'" json:"rules"`
 	Prizes            []Prize            `gorm:"serializer:json;type:jsonb;default:'[]'" json:"prizes"`
@@ -37,8 +40,13 @@ type Contest struct {
 }
 
 // End returns the moment the contest stops scoring.
+// Time spent paused is not part of the contest clock.
 func (c Contest) End() time.Time {
-	return c.Start.Add(c.Duration)
+	end := c.Start.Add(c.Duration)
+	if c.Paused && !c.PausedAt.IsZero() {
+		end = end.Add(time.Since(c.PausedAt))
+	}
+	return end
 }
 
 // EndedWithin reports whether the contest ended within the given window
@@ -56,7 +64,7 @@ func (c Contest) IsComing() bool {
 }
 
 func (c Contest) IsRunning() bool {
-	return !(c.IsOver() || c.IsComing() || c.Hidden)
+	return !(c.IsOver() || c.IsComing() || c.Hidden || c.Paused)
 }
 
 func (c Contest) Status() string {
@@ -65,6 +73,9 @@ func (c Contest) Status() string {
 	}
 	if c.IsComing() {
 		return ContestIsComing
+	}
+	if c.Paused {
+		return ContestIsPaused
 	}
 	return ContestIsRunning
 }

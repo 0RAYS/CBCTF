@@ -23,6 +23,7 @@ func GetContestResp(contestView view.ContestView, admin bool) gin.H {
 		"name":        contest.Name,
 		"description": contest.Description,
 		"start":       contest.Start,
+		"end":         contest.End(),
 		"duration":    int64(contest.Duration.Seconds()),
 		"rules":       contest.Rules,
 		"prizes":      contest.Prizes,
@@ -36,6 +37,7 @@ func GetContestResp(contestView view.ContestView, admin bool) gin.H {
 		"picture":     contest.Picture,
 		"hidden":      contest.Hidden,
 		"blood":       contest.Blood,
+		"paused":      contest.Paused,
 	}
 	if contestView.StatsReady {
 		data["highest"] = contestView.Highest

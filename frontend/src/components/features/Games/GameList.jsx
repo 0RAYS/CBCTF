@@ -15,6 +15,8 @@ function GameCard({ game, onGameAction, user }) {
         return 'text-yellow-400 border-yellow-400/40';
       case 'active':
         return 'text-green-400 border-green-400/40';
+      case 'paused':
+        return 'text-yellow-400 border-yellow-400/40';
       case 'ended':
         return 'text-neutral-400 border-neutral-400/40';
       default:

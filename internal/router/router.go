@@ -358,6 +358,7 @@ func Init() *gin.Engine {
 			adminContest.GET("", GetContest)
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
+			adminContest.PUT("/pause", UpdateContestPause)
 			adminContest.POST("/picture", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("contest"))
 			adminContest.GET("/leaderboard", GetTeamRanking)
 			adminContest.GET("/leaderboard/challenges", GetLeaderboardMatrix)

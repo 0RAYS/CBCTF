@@ -47,9 +47,11 @@ export function mapChallengeStatusToViewModel(challenge, statusData = null) {
 
 export function getContestOverview(contest, team, now) {
   const start = new Date(contest.start).getTime();
-  const end = start + contest.duration * 1000;
+  // The server reports the effective end, which moves while the contest is paused.
+  const end = contest.end ? new Date(contest.end).getTime() : start + contest.duration * 1000;
+  const status = now < start ? 'upcoming' : now > end ? 'ended' : contest.paused ? 'paused' : 'running';
   return {
-    status: now < start ? 'upcoming' : now > end ? 'ended' : 'running',
+    status,
     startTime: new Date(start).toISOString(),
     endTime: new Date(end).toISOString(),
     joined: true,
@@ -63,6 +65,10 @@ export function getContestOverview(contest, team, now) {
     teams: contest.teams,
     totalChallenges: team.solved.reduce((sum, category) => sum + category.all, 0),
   };
+}
+
+export function areChallengesAvailable(contestStatus) {
+  return contestStatus?.status !== undefined && contestStatus.status !== 'paused';
 }
 
 export function formatTimeLeft(seconds) {

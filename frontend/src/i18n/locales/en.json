@@ -283,8 +283,22 @@
       "status": {
         "upcoming": "Upcoming",
         "running": "Running",
+        "paused": "Paused",
         "ended": "Ended",
         "hidden": "Hidden"
+      },
+      "control": {
+        "title": "Contest Control",
+        "help": "Pause a running contest to freeze the clock and block challenge access.",
+        "pause": "Pause contest",
+        "resume": "Resume contest",
+        "pausedHint": "The contest is paused: challenges are unavailable and the remaining time is frozen.",
+        "runningHint": "The contest is running: the remaining time keeps counting down.",
+        "toast": {
+          "paused": "Contest paused",
+          "resumed": "Contest resumed",
+          "failed": "Failed to change the contest state"
+        }
       },
       "labels": {
         "startTime": "Start Time",
@@ -2593,6 +2607,7 @@
     "status": {
       "upcoming": "UPCOMING",
       "active": "ACTIVE",
+      "paused": "PAUSED",
       "ended": "ENDED"
     },
     "actions": {
@@ -2666,6 +2681,13 @@
       "actions": {
         "viewChallenges": "VIEW CHALLENGES",
         "viewFinalLeaderboard": "VIEW FINAL LEADERBOARD"
+      }
+    },
+    "contestPaused": {
+      "title": "Contest Paused",
+      "description": "The contest is temporarily paused. Challenges are unavailable and the remaining time is frozen until the contest resumes.",
+      "actions": {
+        "viewLeaderboard": "VIEW LEADERBOARD"
       }
     },
     "statusPanel": {
