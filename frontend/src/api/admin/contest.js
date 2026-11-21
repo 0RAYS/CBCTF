@@ -156,6 +156,21 @@ export function updateTeamInfo(contestId, teamId, data) {
   });
 }
 
+export function updateTeamScore(contestId, teamId, data) {
+  return request({
+    url: `/admin/contests/${contestId}/teams/${teamId}/score`,
+    method: 'PUT',
+    data,
+  });
+}
+
+export function getTeamScoreAdjustments(contestId, teamId) {
+  return request({
+    url: `/admin/contests/${contestId}/teams/${teamId}/adjustments`,
+    method: 'GET',
+  });
+}
+
 export function deleteTeam(contestId, teamId) {
   return request({
     url: `/admin/contests/${contestId}/teams/${teamId}`,

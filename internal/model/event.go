@@ -73,6 +73,8 @@ const (
 	LeaveTeamEventType  = "leave_team"
 	KickMemberEventType = "kick_member"
 
+	UpdateTeamScoreEventType = "update_team_score"
+
 	InitChallengeEventType      = "init_challenge"
 	ResetChallengeEventType     = "reset_challenge"
 	DownloadAttachmentEventType = "download_attachment"
@@ -130,7 +132,7 @@ var EventTypes = []string{
 	ActivateEmailEventType, VerifyEmailEventType,
 	UploadPictureEventType,
 	JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType,
-	LeaveTeamEventType, KickMemberEventType,
+	LeaveTeamEventType, KickMemberEventType, UpdateTeamScoreEventType,
 	InitChallengeEventType, ResetChallengeEventType,
 	DownloadAttachmentEventType, PullImageEventType, DetectImageEventType, StartVictimEventType, ExtendVictimEventType, StopVictimEventType,
 	DownloadTrafficEventType,

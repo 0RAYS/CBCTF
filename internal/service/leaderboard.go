@@ -23,7 +23,7 @@ func UpdateTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([
 		if !ret.OK {
 			return ret
 		}
-		scores, ret := CalcTeamScores(work, contest.Blood, teams...)
+		scores, ret := CalcTeamScores(work, contest.ID, contest.Blood, teams...)
 		if !ret.OK {
 			return ret
 		}
@@ -324,7 +324,7 @@ func GetLeaderboardExportView(tx *gorm.DB, contest model.Contest, showHidden boo
 	if !ret.OK {
 		return view.LeaderboardExportView{}, ret
 	}
-	scores, ret := CalcTeamScores(tx, contest.Blood, teams...)
+	scores, ret := CalcTeamScores(tx, contest.ID, contest.Blood, teams...)
 	if !ret.OK {
 		return view.LeaderboardExportView{}, ret
 	}

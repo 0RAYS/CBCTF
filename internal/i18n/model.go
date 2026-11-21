@@ -136,14 +136,16 @@ type ModelTask struct {
 }
 
 type Team struct {
-	Banned             string
-	Full               string
-	CaptchaWrong       string
-	NotHasMember       string
-	CaptainCannotLeave string
-	GetError           string
-	NotFound           string
-	DeleteError        string
+	Banned              string
+	Full                string
+	CaptchaWrong        string
+	NotHasMember        string
+	CaptainCannotLeave  string
+	ScoreInvalid        string
+	ScoreReasonRequired string
+	GetError            string
+	NotFound            string
+	DeleteError         string
 }
 
 type TeamFlag struct {
@@ -374,14 +376,16 @@ var Model = struct {
 		GetError: "model.task.getError",
 	},
 	Team: Team{
-		Banned:             "model.team.banned",
-		Full:               "model.team.full",
-		CaptchaWrong:       "model.team.captchaWrong",
-		NotHasMember:       "model.team.notHasMember",
-		CaptainCannotLeave: "model.team.captainCannotLeave",
-		GetError:           "model.team.getError",
-		NotFound:           "model.team.notFound",
-		DeleteError:        "model.team.deleteError",
+		Banned:              "model.team.banned",
+		Full:                "model.team.full",
+		CaptchaWrong:        "model.team.captchaWrong",
+		NotHasMember:        "model.team.notHasMember",
+		CaptainCannotLeave:  "model.team.captainCannotLeave",
+		ScoreInvalid:        "model.team.scoreInvalid",
+		ScoreReasonRequired: "model.team.scoreReasonRequired",
+		GetError:            "model.team.getError",
+		NotFound:            "model.team.notFound",
+		DeleteError:         "model.team.deleteError",
 	},
 	TeamFlag: TeamFlag{
 		NotMatch:      "model.teamFlag.notMatch",

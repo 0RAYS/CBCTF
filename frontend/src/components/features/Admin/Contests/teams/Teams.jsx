@@ -1,6 +1,6 @@
 /** 团队管理组件 */
 
-import { IconEdit, IconEye, IconSearch, IconTrash, IconUserMinus } from '@tabler/icons-react';
+import { IconEdit, IconEye, IconScale, IconSearch, IconTrash, IconUserMinus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import {
   Avatar,
@@ -30,13 +30,17 @@ function AdminTeams({
   showModal = false,
   modalMode = 'edit',
   selectedTeam = null,
+  scoreForm = { score: '', reason: '' },
+  adjustments = [],
   loading = false,
   onPageChange,
   onEditTeam,
   onDeleteTeam,
+  onAdjustScore,
   onModalClose,
   onModalSubmit,
   onFormChange,
+  onScoreFormChange,
   onUserSelect,
   onKickUserSelect,
   onKickSubmit,
@@ -111,7 +115,18 @@ function AdminTeams({
           </div>
         );
       case 'score':
-        return <span className="text-neutral-300 font-mono">{team.score?.toLocaleString(locale) || 0}</span>;
+        return (
+          <div className="flex flex-col">
+            <span className="text-neutral-300 font-mono">{team.score?.toLocaleString(locale) || 0}</span>
+            {team.adjustment ? (
+              <span className="text-xs text-yellow-400 font-mono">
+                {t('admin.contests.teams.score.adjusted', {
+                  value: `${team.adjustment > 0 ? '+' : ''}${team.adjustment.toLocaleString(locale)}`,
+                })}
+              </span>
+            ) : null}
+          </div>
+        );
       case 'members':
         return (
           <span className="text-neutral-300 font-mono">
@@ -157,6 +172,46 @@ function AdminTeams({
             name: selectedTeam?.name || '',
           })}
         </p>
+      );
+    }
+
+    if (modalMode === 'score') {
+      return (
+        <div className="space-y-4 [&>div>label]:font-mono [&>div>label]:mb-2">
+          <div className="flex items-center justify-between rounded-md border border-neutral-700 px-4 py-3">
+            <span className="text-sm text-neutral-400">{t('admin.contests.teams.score.current')}</span>
+            <span className="font-mono text-neutral-50">{(selectedTeam?.score || 0).toLocaleString(locale)}</span>
+          </div>
+          <Input
+            label={t('admin.contests.teams.score.delta')}
+            type="number"
+            step="0.01"
+            value={scoreForm.score}
+            onChange={(e) => onScoreFormChange({ ...scoreForm, score: e.target.value })}
+            placeholder={t('admin.contests.teams.score.deltaPlaceholder')}
+          />
+          <Textarea
+            label={t('admin.contests.teams.score.reason')}
+            value={scoreForm.reason}
+            onChange={(e) => onScoreFormChange({ ...scoreForm, reason: e.target.value })}
+            rows={3}
+            placeholder={t('admin.contests.teams.score.reasonPlaceholder')}
+          />
+          {adjustments.length > 0 && (
+            <div className="border-t border-neutral-700 pt-4 space-y-2">
+              <p className="text-sm font-mono text-neutral-400">{t('admin.contests.teams.score.history')}</p>
+              {adjustments.map((adjustment) => (
+                <div key={adjustment.id} className="flex items-start justify-between gap-3 text-sm">
+                  <span className="text-neutral-300 [overflow-wrap:anywhere]">{adjustment.reason}</span>
+                  <span className="font-mono text-yellow-400 shrink-0">
+                    {adjustment.score > 0 ? '+' : ''}
+                    {adjustment.score.toLocaleString(locale)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       );
     }
 
@@ -307,6 +362,12 @@ function AdminTeams({
             onClick: () => onEditTeam(team),
           },
           {
+            key: 'score',
+            label: t('admin.contests.teams.actions.adjustScore'),
+            icon: <IconScale size={18} />,
+            onClick: () => onAdjustScore(team),
+          },
+          {
             key: 'delete',
             label: t('common.delete'),
             icon: <IconTrash size={18} />,
@@ -338,7 +399,9 @@ function AdminTeams({
         title={
           modalMode === 'delete'
             ? t('admin.contests.teams.modal.title.delete')
-            : t('admin.contests.teams.modal.title.edit')
+            : modalMode === 'score'
+              ? t('admin.contests.teams.modal.title.score')
+              : t('admin.contests.teams.modal.title.edit')
         }
         size={modalMode === 'delete' ? 'sm' : 'lg'}
         footer={renderModalFooter()}

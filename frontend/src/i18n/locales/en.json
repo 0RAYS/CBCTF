@@ -793,13 +793,28 @@
         "modal": {
           "title": {
             "edit": "Edit Team Info",
-            "delete": "Delete Team"
+            "delete": "Delete Team",
+            "score": "Adjust Team Score"
           },
           "deletePrompt": "Delete team {{name}}? This action cannot be undone.",
           "kickPrompt": "Remove a member from team {{name}}:",
           "selectMemberLabel": "Select member to remove",
           "selectMemberPlaceholder": "Select a member",
           "kickAction": "Remove"
+        },
+        "actions": {
+          "adjustScore": "Adjust score"
+        },
+        "score": {
+          "current": "Current score",
+          "delta": "Score adjustment",
+          "deltaPlaceholder": "Positive adds score, negative removes it",
+          "reason": "Reason",
+          "reasonPlaceholder": "Why is the score adjusted?",
+          "history": "Adjustment history",
+          "adjusted": "Manual adjustment {{value}}",
+          "invalid": "The score adjustment must not be zero",
+          "reasonRequired": "A reason is required for the score adjustment"
         },
         "toast": {
           "fetchFailed": "Failed to load teams",
@@ -811,7 +826,8 @@
           "kickSuccess": "Member removed",
           "actionFailed": "Operation failed",
           "pictureUpdated": "Team avatar updated",
-          "pictureUpdateFailed": "Failed to update team avatar"
+          "pictureUpdateFailed": "Failed to update team avatar",
+          "scoreUpdated": "Team score adjusted"
         },
         "detail": {
           "title": "Team Detail",

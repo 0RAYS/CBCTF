@@ -39,6 +39,8 @@ func BuildTeamView(tx *gorm.DB, team model.Team) view.TeamView {
 	if !ret.OK {
 		result.Unavailable = []string{"users"}
 	}
+	adjustments, _ := db.InitScoreAdjustmentRepo(tx).SumByTeamID(team.ContestID, team.ID)
+	result.Adjustment = adjustments[team.ID]
 	return result
 }
 
@@ -157,8 +159,8 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 	})
 }
 
-func CalcTeamScore(tx *gorm.DB, team model.Team, blood bool) (float64, model.RetVal) {
-	scoreMap, ret := CalcTeamScores(tx, blood, team)
+func CalcTeamScore(tx *gorm.DB, contest model.Contest, team model.Team) (float64, model.RetVal) {
+	scoreMap, ret := CalcTeamScores(tx, contest.ID, contest.Blood, team)
 	if !ret.OK {
 		return 0, ret
 	}
@@ -172,7 +174,9 @@ type TeamScore struct {
 	ByChallenge map[uint]float64
 }
 
-func CalcTeamScores(tx *gorm.DB, blood bool, teams ...model.Team) (map[uint]TeamScore, model.RetVal) {
+// CalcTeamScores 计算队伍总分。总分等于解题分数加上管理员对队伍的分数变动总和，
+// 变动分数只计入总分，不计入分题得分。
+func CalcTeamScores(tx *gorm.DB, contestID uint, blood bool, teams ...model.Team) (map[uint]TeamScore, model.RetVal) {
 	scoreMap := make(map[uint]TeamScore)
 	if len(teams) == 0 {
 		return scoreMap, model.SuccessRetVal()
@@ -184,12 +188,14 @@ func CalcTeamScores(tx *gorm.DB, blood bool, teams ...model.Team) (map[uint]Team
 		scoreMap[team.ID] = TeamScore{ByChallenge: make(map[uint]float64)}
 	}
 
-	rows, ret := db.InitContestFlagRepo(tx).GetTeamsSolvedContestFlags(teamIDL...)
+	adjustments, ret := db.InitScoreAdjustmentRepo(tx).SumByTeamID(contestID, teamIDL...)
 	if !ret.OK {
 		return nil, ret
 	}
-	if len(rows) == 0 {
-		return scoreMap, model.SuccessRetVal()
+
+	rows, ret := db.InitContestFlagRepo(tx).GetTeamsSolvedContestFlags(teamIDL...)
+	if !ret.OK {
+		return nil, ret
 	}
 
 	contestFlagIDL := make([]uint, 0, len(rows))
@@ -198,7 +204,7 @@ func CalcTeamScores(tx *gorm.DB, blood bool, teams ...model.Team) (map[uint]Team
 	}
 
 	bloodRanks := make(map[uint]map[uint]int)
-	if blood {
+	if blood && len(contestFlagIDL) > 0 {
 		bloodRanks, ret = db.InitSubmissionRepo(tx).GetBloodRankMap(contestFlagIDL...)
 		if !ret.OK {
 			return nil, ret
@@ -223,14 +229,19 @@ func CalcTeamScores(tx *gorm.DB, blood bool, teams ...model.Team) (map[uint]Team
 		scoreMap[row.TeamID] = teamScore
 	}
 
+	finalizeTeamScores(scoreMap, adjustments)
+	return scoreMap, model.SuccessRetVal()
+}
+
+// finalizeTeamScores 规整队伍分数，并把管理员对队伍的分数变动计入总分。分题得分不受变动影响。
+func finalizeTeamScores(scoreMap map[uint]TeamScore, adjustments map[uint]float64) {
 	for teamID, teamScore := range scoreMap {
-		teamScore.Total = math.Trunc(teamScore.Total*100) / 100
+		teamScore.Total = math.Trunc((teamScore.Total+adjustments[teamID])*100) / 100
 		for challengeID, score := range teamScore.ByChallenge {
 			teamScore.ByChallenge[challengeID] = math.Trunc(score*100) / 100
 		}
 		scoreMap[teamID] = teamScore
 	}
-	return scoreMap, model.SuccessRetVal()
 }
 
 func ListTeams(tx *gorm.DB, contest model.Contest, form dto.ListTeamForm) ([]view.TeamView, int64, model.RetVal) {
@@ -257,10 +268,12 @@ func ListTeams(tx *gorm.DB, contest model.Contest, form dto.ListTeamForm) ([]vie
 		teamIDs = append(teamIDs, team.ID)
 	}
 	userCountMap, _ := db.InitTeamRepo(tx).CountUsersMap(teamIDs...)
+	adjustments, _ := db.InitScoreAdjustmentRepo(tx).SumByTeamID(contest.ID, teamIDs...)
 	for _, team := range teams {
 		views = append(views, view.TeamView{
-			Team:      team,
-			UserCount: userCountMap[team.ID],
+			Team:       team,
+			UserCount:  userCountMap[team.ID],
+			Adjustment: adjustments[team.ID],
 		})
 	}
 	return views, count, model.SuccessRetVal()
