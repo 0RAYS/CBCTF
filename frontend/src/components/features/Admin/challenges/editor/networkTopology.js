@@ -63,7 +63,7 @@ export const buildNetworkTopology = (config, policies = []) => {
     });
   });
 
-  const internet = { id: INTERNET_ID, label: 'internet', x: 50, y: 8, networks: [] };
+  const internet = { id: INTERNET_ID, label: 'internet', x: 50, y: 5, networks: [] };
 
   const connections = [];
   nodes.forEach((source) => {

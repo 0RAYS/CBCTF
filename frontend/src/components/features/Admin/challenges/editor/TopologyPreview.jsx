@@ -103,9 +103,9 @@ export default function TopologyPreview({ topology }) {
             <g key={lane.id}>
               <rect
                 x={lane.x - lane.width / 2 + 0.6}
-                y={13}
+                y={15}
                 width={lane.width - 1.2}
-                height={84}
+                height={82}
                 rx={2}
                 fill="#ffffff"
                 fillOpacity="0.02"
@@ -114,7 +114,17 @@ export default function TopologyPreview({ topology }) {
                 strokeWidth="0.2"
                 strokeDasharray="1.5 1.5"
               />
-              <text x={lane.x} y={11} textAnchor="middle" fill="#a3a3a3" fontSize="2.6" fontFamily="monospace">
+              <text
+                x={lane.x}
+                y={12.6}
+                textAnchor="middle"
+                fill="#a3a3a3"
+                fontSize="2.6"
+                fontFamily="monospace"
+                stroke="#0a0a0a"
+                strokeWidth="0.7"
+                paintOrder="stroke"
+              >
                 {lane.name}
               </text>
             </g>
