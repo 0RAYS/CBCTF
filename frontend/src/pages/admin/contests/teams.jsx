@@ -6,9 +6,11 @@ import {
   deleteTeam,
   getContestTeams,
   getTeamMembers,
+  getTeamScoreAdjustments,
   kickTeamMember,
   updateTeamInfo,
   updateTeamPicture,
+  updateTeamScore,
 } from '@/api/admin/contest';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -32,6 +34,8 @@ function ContestTeamsManagement({ id }) {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [kickUserId, setKickUserId] = useState('');
   const [teamMembers, setTeamMembers] = useState([]);
+  const [scoreForm, setScoreForm] = useState({ score: '', reason: '' });
+  const [adjustments, setAdjustments] = useState([]);
   const pageSize = 20;
   const { t } = useTranslation();
   const listRequest = useRef(0);
@@ -204,6 +208,21 @@ function ContestTeamsManagement({ id }) {
     setShowModal(true);
   };
 
+  const handleAdjustScore = async (team) => {
+    modalSession.current += 1;
+    setSelectedTeam(team);
+    setScoreForm({ score: '', reason: '' });
+    setAdjustments([]);
+    setModalMode('score');
+    setShowModal(true);
+    try {
+      const response = await getTeamScoreAdjustments(parseInt(id), team.id);
+      if (response.code === 200) setAdjustments(response.data || []);
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.teams.toast.actionFailed') });
+    }
+  };
+
   const handleKickSubmit = async () => {
     const session = modalSession.current;
     if (!kickUserId) {
@@ -257,6 +276,25 @@ function ContestTeamsManagement({ id }) {
         if (response.code === 200) {
           toast.success({ description: t('admin.contests.teams.toast.deleteSuccess') });
         }
+      } else if (modalMode === 'score') {
+        const score = Number(scoreForm.score);
+        if (!score) throw new Error(t('admin.contests.teams.score.invalid'));
+        if (!scoreForm.reason.trim()) throw new Error(t('admin.contests.teams.score.reasonRequired'));
+        const response = await updateTeamScore(parseInt(id), selectedTeam.id, {
+          score,
+          reason: scoreForm.reason.trim(),
+        });
+        if (session !== modalSession.current) return;
+        if (response.code !== 200) throw new Error(response.msg || t('admin.contests.teams.toast.actionFailed'));
+        toast.success({ description: t('admin.contests.teams.toast.scoreUpdated') });
+        setAdjustments((previous) => [
+          {
+            id: response.data.adjustment_record?.id || `new-${previous.length}`,
+            score: response.data.adjustment_record?.score ?? score,
+            reason: scoreForm.reason.trim(),
+          },
+          ...previous,
+        ]);
       }
       handleModalClose();
       refreshTeams();
@@ -287,13 +325,17 @@ function ContestTeamsManagement({ id }) {
         showModal={showModal}
         modalMode={modalMode}
         selectedTeam={selectedTeam}
+        scoreForm={scoreForm}
+        adjustments={adjustments}
         loading={isSearchMode ? searchLoading : listLoading}
         onPageChange={setCurrentPage}
         onEditTeam={handleEditTeam}
         onDeleteTeam={handleDeleteTeam}
+        onAdjustScore={handleAdjustScore}
         onModalClose={handleModalClose}
         onModalSubmit={handleModalSubmit}
         onFormChange={handleFormChange}
+        onScoreFormChange={setScoreForm}
         onUserSelect={handleUserSelect}
         onKickUserSelect={setKickUserId}
         onKickSubmit={handleKickSubmit}

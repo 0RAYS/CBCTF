@@ -6,6 +6,8 @@ type TeamView struct {
 	Unavailable []string
 	Team        model.Team
 	UserCount   int64
+	// Adjustment 是管理员对该队伍做出的分数变动总和，队伍显示分数已包含它。
+	Adjustment float64
 }
 
 type TeamFlagInfoView struct {

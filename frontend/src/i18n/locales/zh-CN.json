@@ -793,13 +793,28 @@
         "modal": {
           "title": {
             "edit": "编辑团队信息",
-            "delete": "删除团队"
+            "delete": "删除团队",
+            "score": "调整队伍分数"
           },
           "deletePrompt": "确定删除团队 {{name}} 吗？此操作不可恢复",
           "kickPrompt": "从团队 {{name}} 中移出成员: ",
           "selectMemberLabel": "选择要移出的成员",
           "selectMemberPlaceholder": "请选择成员",
           "kickAction": "移除"
+        },
+        "actions": {
+          "adjustScore": "调整分数"
+        },
+        "score": {
+          "current": "当前分数",
+          "delta": "分数变动",
+          "deltaPlaceholder": "正数加分，负数减分",
+          "reason": "变动原因",
+          "reasonPlaceholder": "请说明调整分数的原因",
+          "history": "分数变动记录",
+          "adjusted": "人工调整 {{value}}",
+          "invalid": "分数变动不能为零",
+          "reasonRequired": "分数变动必须填写原因"
         },
         "toast": {
           "fetchFailed": "获取团队列表失败",
@@ -811,7 +826,8 @@
           "kickSuccess": "移出成员成功",
           "actionFailed": "操作失败",
           "pictureUpdated": "更新队伍头像成功",
-          "pictureUpdateFailed": "更新队伍头像失败"
+          "pictureUpdateFailed": "更新队伍头像失败",
+          "scoreUpdated": "队伍分数已调整"
         },
         "detail": {
           "title": "队伍详情",

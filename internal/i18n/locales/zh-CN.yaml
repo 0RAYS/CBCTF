@@ -114,6 +114,8 @@ model:
     captchaWrong: "队伍邀请码错误"
     notHasMember: "用户不属于该队伍"
     captainCannotLeave: "请先转让队长再退出队伍"
+    scoreInvalid: "分数变动不能为零"
+    scoreReasonRequired: "分数变动必须填写原因"
     getError: "读取队伍失败：{{.Error}}"
     notFound: "队伍不存在"
     deleteError: "删除队伍失败：{{.Error}}"

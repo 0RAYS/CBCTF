@@ -337,6 +337,8 @@ var RoutePermissions = map[string]string{
 	"GET /admin/contests/:contestID/teams/:teamID":                                    PermAdminTeamRead,
 	"GET /admin/contests/:contestID/teams/:teamID/users":                              PermAdminTeamRead,
 	"PUT /admin/contests/:contestID/teams/:teamID":                                    PermAdminTeamUpdate,
+	"PUT /admin/contests/:contestID/teams/:teamID/score":                              PermAdminTeamUpdate,
+	"GET /admin/contests/:contestID/teams/:teamID/adjustments":                        PermAdminTeamRead,
 	"DELETE /admin/contests/:contestID/teams/:teamID":                                 PermAdminTeamDelete,
 	"POST /admin/contests/:contestID/teams/:teamID/kick":                              PermAdminTeamUpdate,
 	"POST /admin/contests/:contestID/teams/:teamID/picture":                           PermAdminTeamUpdate,

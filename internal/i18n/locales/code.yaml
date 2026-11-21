@@ -114,6 +114,8 @@ model:
     captchaWrong: "400"
     notHasMember: "400"
     captainCannotLeave: "400"
+    scoreInvalid: "400"
+    scoreReasonRequired: "400"
     getError: "500"
     notFound: "404"
     deleteError: "500"

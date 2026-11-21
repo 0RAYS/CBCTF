@@ -107,6 +107,43 @@ func UpdateCaptcha(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(captcha))
 }
 
+// UpdateTeamScore 管理员人工调整队伍分数，变动分数计入队伍显示分数。
+func UpdateTeamScore(ctx *gin.Context) {
+	var form dto.UpdateTeamScoreForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamScoreEventType)
+	tx := db.DB.WithContext(ctx.Request.Context())
+	team := middleware.GetTeam(ctx)
+	adjustment, ret := service.AdjustTeamScore(tx, middleware.GetContest(ctx), team, form.Score, form.Reason, middleware.GetSelf(ctx).ID)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	updated, ret := db.InitTeamRepo(tx).GetByID(team.ID)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	data := resp.GetTeamResp(service.BuildTeamView(tx, updated), true)
+	data["adjustment_record"] = adjustment
+	resp.JSON(ctx, model.SuccessRetVal(data))
+}
+
+// GetTeamScoreAdjustments 返回队伍的人工分数变动记录。
+func GetTeamScoreAdjustments(ctx *gin.Context) {
+	adjustments, ret := service.ListTeamScoreAdjustments(
+		db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), middleware.GetTeam(ctx))
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	resp.JSON(ctx, model.SuccessRetVal(adjustments))
+}
+
 func DeleteTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteTeamEventType)
 	ret := service.DeleteTeam(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx))

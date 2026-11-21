@@ -374,6 +374,8 @@ func Init() *gin.Engine {
 				adminContestTeam.GET("", GetTeam)
 				adminContestTeam.GET("/users", GetTeammates)
 				adminContestTeam.PUT("", UpdateTeam)
+				adminContestTeam.PUT("/score", UpdateTeamScore)
+				adminContestTeam.GET("/adjustments", GetTeamScoreAdjustments)
 				adminContestTeam.DELETE("", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
 				adminContestTeam.POST("/picture", middleware.LimitUploadSize(pictureMaxBytes), UploadPicture("team"))

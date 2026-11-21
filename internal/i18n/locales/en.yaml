@@ -114,6 +114,8 @@ model:
     captchaWrong: "Incorrect team invite code"
     notHasMember: "User does not belong to this team"
     captainCannotLeave: "Transfer team leadership before leaving"
+    scoreInvalid: "The score adjustment must not be zero"
+    scoreReasonRequired: "A reason is required for the score adjustment"
     getError: "Failed to load team: {{.Error}}"
     notFound: "Team not found"
     deleteError: "Failed to delete team: {{.Error}}"

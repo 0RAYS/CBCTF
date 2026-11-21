@@ -129,7 +129,7 @@ func Submit(
 		return model.Submission{}, ret
 	}
 
-	score, ret := CalcTeamScore(tx, lockedTeam, contest.Blood)
+	score, ret := CalcTeamScore(tx, contest, lockedTeam)
 	if !ret.OK {
 		return model.Submission{}, ret
 	}
