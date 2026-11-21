@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@/utils/toast';
-import { getContestChallenges, getContestInfo, getContestList } from '@/api/admin/contest';
+import { getContestChallenges, getContestInfo } from '@/api/admin/contest';
 import {
   createChallenge,
   deleteChallenge,
@@ -24,7 +24,6 @@ function ChallengeManagement({ contestId }) {
   const [challenges, setChallenges] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [categories, setCategories] = useState(DEFAULT_CHALLENGE_CATEGORIES);
-  const [contests, setContests] = useState([]);
   const [currentContest, setCurrentContest] = useState(null);
   const [filters, setFilters] = useState({ page: 1, type: 'all', category: 'all', name: '' });
   const [nameQuery, setNameQuery] = useState('');
@@ -47,16 +46,6 @@ function ChallengeManagement({ contestId }) {
       previous.name === debouncedName ? previous : { ...previous, page: 1, name: debouncedName }
     );
   }, [debouncedName]);
-
-  useEffect(() => {
-    getContestList({ limit: 100, offset: 0 })
-      .then((response) => {
-        if (response.code === 200) setContests(response.data?.contests || []);
-      })
-      .catch(() => {
-        // 比赛列表加载失败不阻断本页操作
-      });
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,6 +101,7 @@ function ChallengeManagement({ contestId }) {
     setEditing(
       challengeDraft({
         contest_id: contestId,
+        contest_name: currentContest?.name || '',
         hidden: true,
         flags: [{ id: 0, value: '' }],
       })
@@ -160,11 +150,6 @@ function ChallengeManagement({ contestId }) {
     }
   };
 
-  // 归属展示需要当前比赛，列表接口只返回前 100 场比赛
-  const contestOptions = currentContest
-    ? [currentContest, ...contests.filter((contest) => contest.id !== currentContest.id)]
-    : contests;
-
   return (
     <>
       <ChallengeTable
@@ -189,7 +174,6 @@ function ChallengeManagement({ contestId }) {
       {picker && (
         <ChallengePickerSession
           contestId={contestId}
-          contests={contestOptions}
           categories={categories}
           onClose={() => setPicker(false)}
           onAdded={refresh}
@@ -202,7 +186,6 @@ function ChallengeManagement({ contestId }) {
           mode={editorMode}
           challenge={editing}
           categories={categories}
-          contests={contestOptions}
           contestLocked
           flagVersion={flagVersion}
           onClose={() => setEditing(null)}

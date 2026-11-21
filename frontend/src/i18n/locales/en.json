@@ -1273,9 +1273,11 @@
         "test": "Test Challenge",
         "copy": "Copy to contest"
       },
-      "contestFilter": {
+      "contestSearch": {
+        "placeholder": "Search contests...",
         "all": "All contests",
-        "unassigned": "Not in a contest"
+        "selected": "Selected",
+        "empty": "No contest matches this search"
       },
       "copy": {
         "title": "Copy Challenge",

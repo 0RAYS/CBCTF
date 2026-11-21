@@ -13,7 +13,6 @@ function ChallengeSelector({
   challenges = [],
   selectedChallenges = [],
   categories = [],
-  contests = [],
   totalCount = 0,
   currentPage = 1,
   pageSize = 10,
@@ -25,7 +24,7 @@ function ChallengeSelector({
   descQuery = '',
   category = 'all',
   type = 'all',
-  contest = 'all',
+  contestName = '',
   onClose,
   onSearch,
   onDescSearch,
@@ -34,7 +33,7 @@ function ChallengeSelector({
   onPageChange,
   onFilterCategoryChange,
   onFilterTypeChange,
-  onFilterContestChange,
+  onFilterContestNameChange,
 }) {
   const { t } = useTranslation();
 
@@ -118,20 +117,15 @@ function ChallengeSelector({
             </select>
           </div>
 
-          <div className="w-56">
-            <select
-              value={contest}
-              onChange={(e) => onFilterContestChange(e.target.value)}
-              className="select-custom select-custom-lg"
-            >
-              <option value="all">{t('admin.challenge.contestFilter.all')}</option>
-              <option value="0">{t('admin.challenge.contestFilter.unassigned')}</option>
-              {contests.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
+          <div className="relative w-64">
+            <IconSearch size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
+            <input
+              type="text"
+              value={contestName}
+              onChange={(e) => onFilterContestNameChange(e.target.value)}
+              className={`${inputBaseClass} pl-10`}
+              placeholder={t('admin.challenge.search.contestPlaceholder')}
+            />
           </div>
         </div>
       </div>

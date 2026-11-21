@@ -6,6 +6,7 @@ export function challengeDraft(challenge = {}) {
     category: challenge.category || '',
     type: challenge.type || 'static',
     contest_id: challenge.contest_id || 0,
+    contest_name: challenge.contest_name || '',
     hidden: !!challenge.hidden,
     attempt: challenge.attempt || 0,
     hints: [...(challenge.hints || [])],

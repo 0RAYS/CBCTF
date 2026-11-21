@@ -11,7 +11,7 @@ import {
 import useBatchAction from '@/components/features/Admin/batch/useBatchAction.js';
 import { remainingBatchIds } from '@/components/features/Admin/batch/batchModel.js';
 
-export default function ChallengePickerSession({ contestId, contests = [], categories, onClose, onAdded }) {
+export default function ChallengePickerSession({ contestId, categories, onClose, onAdded }) {
   const { t } = useTranslation();
   const [filters, setFilters] = useState({
     page: 1,
@@ -19,7 +19,7 @@ export default function ChallengePickerSession({ contestId, contests = [], categ
     category: 'all',
     name: '',
     description: '',
-    contest: 'all',
+    contestName: '',
   });
   const [challenges, setChallenges] = useState([]);
   const [count, setCount] = useState(0);
@@ -77,7 +77,6 @@ export default function ChallengePickerSession({ contestId, contests = [], categ
       challenges={challenges}
       selectedChallenges={selected}
       categories={categories}
-      contests={contests}
       totalCount={count}
       currentPage={filters.page}
       pageSize={10}
@@ -89,7 +88,7 @@ export default function ChallengePickerSession({ contestId, contests = [], categ
       descQuery={filters.description}
       type={filters.type}
       category={filters.category}
-      contest={filters.contest}
+      contestName={filters.contestName}
       onClose={() => {
         if (!action.pending) onClose();
       }}
@@ -98,7 +97,7 @@ export default function ChallengePickerSession({ contestId, contests = [], categ
       onDescSearch={(value) => changeFilter('description', value)}
       onFilterCategoryChange={(value) => changeFilter('category', value)}
       onFilterTypeChange={(value) => changeFilter('type', value)}
-      onFilterContestChange={(value) => changeFilter('contest', value)}
+      onFilterContestNameChange={(value) => changeFilter('contestName', value)}
       onPageChange={(value) => changeFilter('page', value)}
       onSelect={(challenge) => setSelected((previous) => toggleChallengeSelection(previous, challenge))}
     />
