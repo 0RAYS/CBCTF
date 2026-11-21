@@ -323,6 +323,7 @@ var RoutePermissions = map[string]string{
 	"PUT /admin/contests/:contestID":                        PermAdminContestUpdate,
 	"DELETE /admin/contests/:contestID":                     PermAdminContestDelete,
 	"PUT /admin/contests/:contestID/pause":                  PermAdminContestUpdate,
+	"PUT /admin/contests/:contestID/leaderboard":            PermAdminContestUpdate,
 	"POST /admin/contests/:contestID/picture":               PermAdminContestUpdate,
 	"GET /admin/contests/:contestID/leaderboard":            PermAdminContestRank,
 	"GET /admin/contests/:contestID/leaderboard/challenges": PermAdminContestRank,

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import LeaderboardRanking from '@/components/features/Leaderboard/LeaderboardRanking';
 import LeaderboardTable from '@/components/features/Leaderboard/LeaderboardTable';
 import LeaderboardTimeline from '@/components/features/Leaderboard/LeaderboardTimeline';
+import LeaderboardHiddenNotice from '@/components/features/Leaderboard/LeaderboardHiddenNotice';
 import { collectChallenges, toRankingTeam } from '@/components/features/Leaderboard/leaderboardModel.js';
 import {
   getContestInfo,
@@ -48,8 +49,30 @@ function ContestLeaderboard({ contestId }) {
     teams: [],
     userTeam: null,
   });
+  const [contestInfo, setContestInfo] = useState(null);
+  const leaderboardHidden = !!contestInfo?.leaderboard_hidden;
 
   useEffect(() => {
+    let ignore = false;
+    getContestInfo(contestId)
+      .then((response) => {
+        if (!ignore && response.code === 200) setContestInfo(response.data);
+      })
+      .catch((error) => {
+        if (!ignore) toast.danger({ description: error.message || t('game.leaderboard.toast.fetchFailed') });
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [contestId, t]);
+
+  useEffect(() => {
+    if (!contestInfo) return;
+    // 黑灯期间不请求榜单数据。
+    if (leaderboardHidden) {
+      setRankingLoading(false);
+      return;
+    }
     let ignore = false;
     const teamTransform = (teamData, index = 0) =>
       toRankingTeam(teamData, index, currentPage, pageSize, i18n.language || 'en-US');
@@ -58,17 +81,16 @@ function ContestLeaderboard({ contestId }) {
     Promise.all([
       getContestLeaderboard(contestId, pageSize, (currentPage - 1) * pageSize, showHidden),
       getTeamInfo(contestId),
-      getContestInfo(contestId),
     ])
-      .then(([rankResponse, teamResponse, contestInfoResponse]) => {
+      .then(([rankResponse, teamResponse]) => {
         if (ignore) return;
-        if (rankResponse.code === 200 && teamResponse.code === 200 && contestInfoResponse.code === 200) {
+        if (rankResponse.code === 200 && teamResponse.code === 200) {
           setLeaderboardData({
             stats: {
-              totalTeams: contestInfoResponse.data.teams,
-              totalPlayers: contestInfoResponse.data.users,
-              totalSolves: contestInfoResponse.data.solved,
-              highestScore: contestInfoResponse.data.highest,
+              totalTeams: contestInfo.teams,
+              totalPlayers: contestInfo.users,
+              totalSolves: contestInfo.solved,
+              highestScore: contestInfo.highest,
             },
             teams: (rankResponse.data.teams || []).map(teamTransform),
             userTeam: teamResponse.data ? teamTransform(teamResponse.data) : null,
@@ -85,10 +107,10 @@ function ContestLeaderboard({ contestId }) {
     return () => {
       ignore = true;
     };
-  }, [contestId, currentPage, showHidden, i18n.language, t]);
+  }, [contestId, currentPage, showHidden, i18n.language, t, contestInfo, leaderboardHidden]);
 
   useEffect(() => {
-    if (viewMode !== 'table' || tableData.page === tableCurrentPage) return;
+    if (leaderboardHidden || viewMode !== 'table' || tableData.page === tableCurrentPage) return;
     let ignore = false;
     setTableData({ page: null, teams: [], challenges: [], count: 0 });
     getContestLeaderboardChallenges(contestId, {
@@ -111,9 +133,13 @@ function ContestLeaderboard({ contestId }) {
     return () => {
       ignore = true;
     };
-  }, [contestId, viewMode, tableCurrentPage, showHidden]);
+  }, [contestId, viewMode, tableCurrentPage, showHidden, leaderboardHidden]);
 
   useEffect(() => {
+    if (leaderboardHidden) {
+      setTimelineLoading(false);
+      return;
+    }
     let ignore = false;
     setTimelineLoading(true);
     setTimelineError(false);
@@ -135,7 +161,7 @@ function ContestLeaderboard({ contestId }) {
     return () => {
       ignore = true;
     };
-  }, [contestId, showHidden, timelineVersion]);
+  }, [contestId, showHidden, timelineVersion, leaderboardHidden]);
 
   const handleShowHiddenChange = (event) => {
     setShowHidden(event.target.checked);
@@ -147,83 +173,91 @@ function ContestLeaderboard({ contestId }) {
     <div className="contest-container mx-auto min-w-0 space-y-4">
       <div className="flex flex-wrap justify-between items-center gap-3">
         <h1 className="text-xl sm:text-3xl font-mono text-neutral-50 tracking-wider">{t('nav.leaderboard')}</h1>
-        <div className="flex flex-wrap items-center gap-3">
-          <div
-            role="group"
-            aria-label={t('nav.leaderboard')}
-            className="flex items-center gap-2 p-1 bg-black/30 border border-neutral-300/30 rounded-md"
-          >
-            {[
-              { mode: 'ranking', label: t('common.rank'), icon: <IconList size={16} /> },
-              { mode: 'table', label: t('common.leaderboard.headers.challenges'), icon: <IconTable size={16} /> },
-            ].map(({ mode, label, icon }) => (
-              <Button
-                key={mode}
-                variant={viewMode === mode ? 'primary' : 'ghost'}
-                size="sm"
-                align="icon-left"
-                icon={icon}
-                aria-label={label}
-                title={label}
-                aria-pressed={viewMode === mode}
-                onClick={() => setViewMode(mode)}
-              />
-            ))}
-          </div>
-          <Checkbox
-            checked={showHidden}
-            onChange={handleShowHiddenChange}
-            label={t('game.leaderboard.showHiddenTeams')}
-            className="text-xs text-neutral-400"
-          />
-        </div>
-      </div>
-      <LeaderboardStats {...leaderboardData.stats} />
-      <LeaderboardTimeline
-        timelineData={timelineData || []}
-        loading={timelineLoading}
-        error={timelineError}
-        onRetry={() => setTimelineVersion((version) => version + 1)}
-      />
-      {viewMode === 'table' ? (
-        <LeaderboardTable
-          teams={tableData.teams}
-          challenges={tableData.challenges}
-          totalCount={tableData.count}
-          currentPage={tableCurrentPage}
-          pageSize={tablePageSize}
-          loading={tableLoading}
-          onPageChange={setTableCurrentPage}
-        />
-      ) : (
-        <LeaderboardRanking
-          teams={leaderboardData.teams}
-          loading={rankingLoading}
-          locale={i18n.language || 'en-US'}
-          labels={{
-            rank: t('common.leaderboard.headers.rank'),
-            team: t('common.leaderboard.headers.team'),
-            score: t('common.leaderboard.headers.score'),
-            challenges: t('common.leaderboard.headers.challenges'),
-            lastSubmit: t('common.leaderboard.headers.lastSubmit'),
-            total: t('common.leaderboard.total'),
-          }}
-          emptyMessage={t('common.noData')}
-          footer={
-            totalCount > pageSize ? (
-              <div className="mt-6 flex justify-center">
-                <Pagination
-                  current={currentPage}
-                  total={Math.ceil(totalCount / pageSize)}
-                  onChange={setCurrentPage}
-                  showTotal={true}
-                  totalItems={totalCount}
-                  animate
+        {!leaderboardHidden && (
+          <div className="flex flex-wrap items-center gap-3">
+            <div
+              role="group"
+              aria-label={t('nav.leaderboard')}
+              className="flex items-center gap-2 p-1 bg-black/30 border border-neutral-300/30 rounded-md"
+            >
+              {[
+                { mode: 'ranking', label: t('common.rank'), icon: <IconList size={16} /> },
+                { mode: 'table', label: t('common.leaderboard.headers.challenges'), icon: <IconTable size={16} /> },
+              ].map(({ mode, label, icon }) => (
+                <Button
+                  key={mode}
+                  variant={viewMode === mode ? 'primary' : 'ghost'}
+                  size="sm"
+                  align="icon-left"
+                  icon={icon}
+                  aria-label={label}
+                  title={label}
+                  aria-pressed={viewMode === mode}
+                  onClick={() => setViewMode(mode)}
                 />
-              </div>
-            ) : null
-          }
-        />
+              ))}
+            </div>
+            <Checkbox
+              checked={showHidden}
+              onChange={handleShowHiddenChange}
+              label={t('game.leaderboard.showHiddenTeams')}
+              className="text-xs text-neutral-400"
+            />
+          </div>
+        )}
+      </div>
+      {leaderboardHidden ? (
+        <LeaderboardHiddenNotice />
+      ) : (
+        <>
+          <LeaderboardStats {...leaderboardData.stats} />
+          <LeaderboardTimeline
+            timelineData={timelineData || []}
+            loading={timelineLoading}
+            error={timelineError}
+            onRetry={() => setTimelineVersion((version) => version + 1)}
+          />
+          {viewMode === 'table' ? (
+            <LeaderboardTable
+              teams={tableData.teams}
+              challenges={tableData.challenges}
+              totalCount={tableData.count}
+              currentPage={tableCurrentPage}
+              pageSize={tablePageSize}
+              loading={tableLoading}
+              onPageChange={setTableCurrentPage}
+            />
+          ) : (
+            <LeaderboardRanking
+              teams={leaderboardData.teams}
+              loading={rankingLoading}
+              locale={i18n.language || 'en-US'}
+              labels={{
+                rank: t('common.leaderboard.headers.rank'),
+                team: t('common.leaderboard.headers.team'),
+                score: t('common.leaderboard.headers.score'),
+                challenges: t('common.leaderboard.headers.challenges'),
+                lastSubmit: t('common.leaderboard.headers.lastSubmit'),
+                total: t('common.leaderboard.total'),
+              }}
+              emptyMessage={t('common.noData')}
+              footer={
+                totalCount > pageSize ? (
+                  <div className="mt-6 flex justify-center">
+                    <Pagination
+                      current={currentPage}
+                      total={Math.ceil(totalCount / pageSize)}
+                      onChange={setCurrentPage}
+                      showTotal={true}
+                      totalItems={totalCount}
+                      animate
+                    />
+                  </div>
+                ) : null
+              }
+            />
+          )}
+        </>
       )}
     </div>
   );

@@ -64,7 +64,9 @@ function ContestEnded({ contestInfo, onViewLeaderboard, onUploadWriteup, onViewC
           >
             <div className="flex items-center justify-between mb-4">
               <span className="text-neutral-50 font-mono">{t('game.contestEnded.teamPerformance.title')}</span>
-              <span className="text-geek-400 font-mono">#{contestInfo?.teamRank || '1'}</span>
+              <span className="text-geek-400 font-mono">
+                {contestInfo?.teamRank != null ? `#${contestInfo.teamRank}` : t('game.leaderboard.hidden.rank')}
+              </span>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -89,9 +91,11 @@ function ContestEnded({ contestInfo, onViewLeaderboard, onUploadWriteup, onViewC
             <Button variant="outline" size="lg" onClick={onViewChallenges}>
               {t('game.contestEnded.actions.viewChallenges')}
             </Button>
-            <Button variant="primary" size="lg" onClick={onViewLeaderboard}>
-              {t('game.contestEnded.actions.viewFinalLeaderboard')}
-            </Button>
+            {onViewLeaderboard && (
+              <Button variant="primary" size="lg" onClick={onViewLeaderboard}>
+                {t('game.contestEnded.actions.viewFinalLeaderboard')}
+              </Button>
+            )}
           </motion.div>
         </div>
       </Card>

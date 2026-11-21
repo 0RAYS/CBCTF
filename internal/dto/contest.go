@@ -57,3 +57,8 @@ func (f *UpdateContestForm) Validate(_ *gin.Context) model.RetVal {
 type UpdateContestPauseForm struct {
 	Paused bool `form:"paused" json:"paused"`
 }
+
+// UpdateContestLeaderboardForm 开启或关闭排行榜黑灯模式。
+type UpdateContestLeaderboardForm struct {
+	Hidden bool `form:"hidden" json:"hidden"`
+}

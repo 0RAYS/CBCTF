@@ -32,6 +32,7 @@ type Contest struct {
 	Hidden            bool               `gorm:"default:true;index" json:"hidden"`
 	Paused            bool               `gorm:"default:false" json:"paused"`
 	PausedAt          time.Time          `gorm:"default:null" json:"-"`
+	LeaderboardHidden bool               `gorm:"default:false" json:"leaderboard_hidden"`
 	Victims           int64              `gorm:"default:1" json:"victims"`
 	Rules             []string           `gorm:"serializer:json;type:jsonb;default:'[]'" json:"rules"`
 	Prizes            []Prize            `gorm:"serializer:json;type:jsonb;default:'[]'" json:"prizes"`

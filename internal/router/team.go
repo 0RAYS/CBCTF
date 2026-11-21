@@ -22,6 +22,10 @@ func GetTeam(ctx *gin.Context) {
 		return
 	}
 	data := resp.GetTeamResp(view, middleware.IsFullAccess(ctx))
+	// 排行榜黑灯期间选手看不到自己的名次。
+	if !middleware.IsFullAccess(ctx) && middleware.GetContest(ctx).LeaderboardHidden {
+		delete(data, "rank")
+	}
 	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
 	resp.JSON(ctx, model.SuccessRetVal(data))
 }

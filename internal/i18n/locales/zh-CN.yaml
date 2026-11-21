@@ -41,6 +41,7 @@ model:
     isPaused: "比赛已暂停"
     isOver: "比赛已结束"
     notRunning: "只有进行中的比赛才能暂停"
+    leaderboardHidden: "排行榜暂时隐藏"
     getError: "读取比赛失败：{{.Error}}"
     deleteError: "删除比赛失败：{{.Error}}"
     notFound: "比赛不存在"

@@ -125,6 +125,19 @@ func UpdateContest(tx *gorm.DB, contest model.Contest, form dto.UpdateContestFor
 	})
 }
 
+// UpdateContestLeaderboard 开启或关闭排行榜黑灯模式。
+func UpdateContestLeaderboard(tx *gorm.DB, contest model.Contest, hidden bool) (model.Contest, model.RetVal) {
+	repo := db.InitContestRepo(tx)
+	if ret := repo.Update(contest.ID, db.UpdateContestOptions{LeaderboardHidden: &hidden}); !ret.OK {
+		return contest, ret
+	}
+	updated, ret := repo.GetByID(contest.ID)
+	if !ret.OK {
+		return contest, ret
+	}
+	return updated, model.SuccessRetVal()
+}
+
 // UpdateContestPause 暂停或恢复比赛。暂停期间选手无法访问题目，暂停的时间在恢复时补回比赛时长。
 func UpdateContestPause(tx *gorm.DB, contest model.Contest, paused bool) (model.Contest, model.RetVal) {
 	repo := db.InitContestRepo(tx)

@@ -74,6 +74,24 @@ func DeleteContest(ctx *gin.Context) {
 	resp.JSON(ctx, ret)
 }
 
+// UpdateContestLeaderboard 开启或关闭排行榜黑灯模式。
+func UpdateContestLeaderboard(ctx *gin.Context) {
+	var form dto.UpdateContestLeaderboardForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestLeaderboardEventType)
+	contest, ret := service.UpdateContestLeaderboard(db.DB.WithContext(ctx.Request.Context()), middleware.GetContest(ctx), form.Hidden)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	view := service.BuildContestView(db.DB.WithContext(ctx.Request.Context()), contest)
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(view, true)))
+}
+
 // UpdateContestPause 暂停或恢复比赛。
 func UpdateContestPause(ctx *gin.Context) {
 	var form dto.UpdateContestPauseForm

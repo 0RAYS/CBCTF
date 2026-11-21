@@ -16,6 +16,7 @@ function ContestLayout() {
   const { siteName } = useBranding();
   const [contestStatus, setContestStatus] = useState(null);
   const [contestPicture, setContestPicture] = useState('');
+  const [leaderboardHidden, setLeaderboardHidden] = useState(false);
 
   useEffect(() => {
     setContestPicture('');
@@ -24,9 +25,17 @@ function ContestLayout() {
         const contest = res.data;
         setContestStatus(contest.paused ? 'paused' : getContestStatus(contest.start, contest.duration));
         setContestPicture(contest.picture || '');
+        setLeaderboardHidden(!!contest.leaderboard_hidden);
       }
     });
   }, [contestId]);
+
+  useEffect(() => {
+    // 黑灯期间排行榜页面不可访问，退回比赛首页。
+    if (leaderboardHidden && location.pathname.endsWith('/leaderboard')) {
+      navigate(`/contests/${contestId}`);
+    }
+  }, [leaderboardHidden, location.pathname, contestId, navigate]);
 
   const contestTabs = useMemo(() => {
     const tabs = [
@@ -41,8 +50,13 @@ function ContestLayout() {
       tabs.splice(4, 0, { id: 'writeup', label: t('nav.writeup') });
     }
 
+    // 黑灯期间选手看不到排行榜入口。
+    if (leaderboardHidden) {
+      return tabs.filter((tab) => tab.id !== 'leaderboard');
+    }
+
     return tabs;
-  }, [t, contestStatus]);
+  }, [t, contestStatus, leaderboardHidden]);
 
   const activeTab = useMemo(() => {
     const currentTab = location.pathname.split('/').pop();

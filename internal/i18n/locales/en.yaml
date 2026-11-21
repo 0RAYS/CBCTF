@@ -41,6 +41,7 @@ model:
     isPaused: "Contest is paused"
     isOver: "Contest has ended"
     notRunning: "Only a running contest can be paused"
+    leaderboardHidden: "The leaderboard is temporarily hidden"
     getError: "Failed to load contest: {{.Error}}"
     deleteError: "Failed to delete contest: {{.Error}}"
     notFound: "Contest not found"

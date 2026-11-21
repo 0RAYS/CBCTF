@@ -91,7 +91,11 @@ function ContestChallenges({ contestId }) {
       {contestStatus.status === 'upcoming' ? (
         <ContestCountdown startTime={contestStatus.startTime} joined={contestStatus.joined} onJoin={() => {}} />
       ) : contestStatus.status === 'paused' ? (
-        <ContestPaused onViewLeaderboard={() => navigate(`/contests/${contestId}/leaderboard`)} />
+        <ContestPaused
+          onViewLeaderboard={
+            contestStatus.leaderboardHidden ? undefined : () => navigate(`/contests/${contestId}/leaderboard`)
+          }
+        />
       ) : contestStatus.status === 'ended' ? (
         showChallengesAfterEnd ? (
           <div>
@@ -119,7 +123,9 @@ function ContestChallenges({ contestId }) {
               teamScore: contestStatus.team.score,
               teamSolved: contestStatus.team.solved,
             }}
-            onViewLeaderboard={() => navigate(`/contests/${contestId}/leaderboard`)}
+            onViewLeaderboard={
+              contestStatus.leaderboardHidden ? undefined : () => navigate(`/contests/${contestId}/leaderboard`)
+            }
             onUploadWriteup={handleUploadWriteup}
             onViewChallenges={() => setShowChallengesAfterEnd(true)}
             writeups={writeups.writeups}

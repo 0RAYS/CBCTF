@@ -57,9 +57,11 @@ export function getContestOverview(contest, team, now) {
     joined: true,
     duration: contest.duration / 3600,
     prefix: contest.prefix,
+    // The leaderboard blackout keeps the standings away from players, rank included.
+    leaderboardHidden: !!contest.leaderboard_hidden,
     team: {
       score: team.score,
-      rank: team.rank || 0,
+      rank: team.rank ?? null,
       solved: team.solved.reduce((sum, category) => sum + category.solved, 0),
     },
     teams: contest.teams,

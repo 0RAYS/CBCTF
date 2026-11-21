@@ -16,22 +16,23 @@ type ContestRepo struct {
 }
 
 type UpdateContestOptions struct {
-	Name        *string
-	Description *string
-	Captcha     *string
-	Picture     *model.FileURL
-	Prefix      *string
-	Size        *int
-	Start       *time.Time
-	Duration    *time.Duration
-	Blood       *bool
-	Hidden      *bool
-	Paused      *bool
-	PausedAt    *time.Time
-	Victims     *int64
-	Rules       *[]string
-	Prizes      *[]model.Prize
-	Timelines   *[]model.Timeline
+	Name              *string
+	Description       *string
+	Captcha           *string
+	Picture           *model.FileURL
+	Prefix            *string
+	Size              *int
+	Start             *time.Time
+	Duration          *time.Duration
+	Blood             *bool
+	Hidden            *bool
+	Paused            *bool
+	PausedAt          *time.Time
+	LeaderboardHidden *bool
+	Victims           *int64
+	Rules             *[]string
+	Prizes            *[]model.Prize
+	Timelines         *[]model.Timeline
 }
 
 func (u UpdateContestOptions) Convert2Map() map[string]any {
@@ -71,6 +72,9 @@ func (u UpdateContestOptions) Convert2Map() map[string]any {
 	}
 	if u.PausedAt != nil {
 		options["paused_at"] = *u.PausedAt
+	}
+	if u.LeaderboardHidden != nil {
+		options["leaderboard_hidden"] = *u.LeaderboardHidden
 	}
 	if u.Victims != nil {
 		options["victims"] = *u.Victims

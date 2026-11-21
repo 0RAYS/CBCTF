@@ -90,7 +90,8 @@ func TestGetContestRespMetadata(t *testing.T) {
 				"id": uint(7), "name": "Example", "description": "Description", "start": start,
 				"end": start.Add(time.Hour), "duration": int64(3600), "size": 3, "prefix": "CTF", "victims": int64(2),
 				"picture": model.FileURL("/contest.png"), "hidden": true, "blood": false, "paused": false,
-				"teams": int64(4), "users": int64(12), "notices": int64(2),
+				"leaderboard_hidden": false,
+				"teams":              int64(4), "users": int64(12), "notices": int64(2),
 				"rules": []string{}, "prizes": []model.Prize{}, "timelines": []model.Timeline{},
 			}
 			if statsReady {
@@ -104,6 +105,26 @@ func TestGetContestRespMetadata(t *testing.T) {
 				t.Errorf("admin=%v statsReady=%v: got %#v, want %#v", admin, statsReady, got, want)
 			}
 		}
+	}
+}
+
+func TestGetContestRespHidesHighestDuringLeaderboardBlackout(t *testing.T) {
+	input := view.ContestView{
+		Contest:     model.Contest{LeaderboardHidden: true},
+		StatsReady:  true,
+		Highest:     1000,
+		SolvedCount: 5,
+	}
+	admin := GetContestResp(input, true)
+	if admin["highest"] != float64(1000) {
+		t.Fatalf("admin highest = %v, want 1000", admin["highest"])
+	}
+	player := GetContestResp(input, false)
+	if _, ok := player["highest"]; ok {
+		t.Fatalf("player response exposes highest during blackout: %v", player["highest"])
+	}
+	if player["solved"] != int64(5) {
+		t.Fatalf("player solved = %v, want 5", player["solved"])
 	}
 }
 

@@ -294,9 +294,16 @@
         "resume": "Resume contest",
         "pausedHint": "The contest is paused: challenges are unavailable and the remaining time is frozen.",
         "runningHint": "The contest is running: the remaining time keeps counting down.",
+        "blackout": {
+          "label": "Leaderboard blackout",
+          "help": "Hide the leaderboard and every team ranking from the players.",
+          "toggle": "Enable blackout"
+        },
         "toast": {
           "paused": "Contest paused",
           "resumed": "Contest resumed",
+          "blackoutEnabled": "Leaderboard hidden from the players",
+          "blackoutDisabled": "Leaderboard visible to the players",
           "failed": "Failed to change the contest state"
         }
       },
@@ -2830,6 +2837,11 @@
     },
     "leaderboard": {
       "showHiddenTeams": "Show hidden teams",
+      "hidden": {
+        "title": "Leaderboard temporarily hidden",
+        "description": "The organizers have hidden the leaderboard. Scores and rankings come back once it reopens.",
+        "rank": "Hidden by the organizers"
+      },
       "toast": {
         "fetchFailed": "Failed to load the leaderboard"
       },

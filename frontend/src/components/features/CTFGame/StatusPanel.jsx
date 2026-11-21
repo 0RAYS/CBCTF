@@ -102,7 +102,8 @@ function StatusPanel({ contestStatus, notifications, onStatusExpired }) {
           value={contestStatus.team.score.toLocaleString(i18n.language || 'en-US')}
           valueColor="text-geek-400"
           subTitle={t('common.rank')}
-          subValue={`#${contestStatus.team.rank}`}
+          // 黑灯期间后端不下发名次。
+          subValue={contestStatus.team.rank != null ? `#${contestStatus.team.rank}` : undefined}
           subValueColor="text-yellow-400"
         />
 
