@@ -18,7 +18,6 @@ const serialize = (policy) => ({
   service: policy.service || '',
   allow_internet: policy.allow_internet === true,
   egress_cidrs: policy.egress_cidrs || [],
-  allow_external: policy.allow_external === true,
   peers: policy.peers || [],
   from: policy.from || [],
   to: policy.to || [],
@@ -201,14 +200,7 @@ function PolicyCard({ title, subtitle, policy, showPeers, peerOptions, onChange,
           </div>
         </div>
       )}
-      <Checkbox
-        checked={policy.allow_external}
-        onChange={(event) => onChange({ allow_external: event.target.checked })}
-        label={t(nt('ingress.external'))}
-      />
-      {policy.allow_external && (
-        <div className="pl-6 text-[11px] font-mono text-neutral-500">{t(nt('ingress.externalHint'))}</div>
-      )}
+      <div className="text-[11px] font-mono text-neutral-500">{t(nt('ingressHint'))}</div>
       <div>
         <button
           type="button"
@@ -255,6 +247,9 @@ function LegacyRules({ direction, rules, onChange }) {
           {t(nt('actions.addRule'))}
         </Button>
       </div>
+      {direction === 'from' && (
+        <div className="text-[10px] font-mono text-neutral-600">{t(nt('advanced.inboundHint'))}</div>
+      )}
       {rules.map((rule, index) => (
         <div key={index} className="space-y-1">
           <div className="flex gap-1 items-center">

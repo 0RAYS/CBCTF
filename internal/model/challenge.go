@@ -88,12 +88,11 @@ func (c Challenge) AttachmentPath(teamID uint) string {
 }
 
 // NetworkPolicy 描述单个容器的网络策略。
-// AllowInternet 与 AllowExternal 为 nil 表示条目没有声明这一项，沿用旧的 CIDR 规则语义。
+// AllowInternet 为 nil 表示条目没有声明这一项，沿用旧的 CIDR 规则语义。
 type NetworkPolicy struct {
 	Service       string           `json:"service"`
 	AllowInternet *bool            `json:"allow_internet,omitempty"`
 	EgressCIDRs   []string         `json:"egress_cidrs,omitempty"`
-	AllowExternal *bool            `json:"allow_external,omitempty"`
 	Peers         []string         `json:"peers,omitempty"`
 	From          []*netv1.IPBlock `json:"from"`
 	To            []*netv1.IPBlock `json:"to"`
@@ -114,7 +113,6 @@ func (n NetworkPolicies) DeepCopy() NetworkPolicies {
 			Service:       policy.Service,
 			AllowInternet: copyBool(policy.AllowInternet),
 			EgressCIDRs:   append([]string(nil), policy.EgressCIDRs...),
-			AllowExternal: copyBool(policy.AllowExternal),
 			Peers:         append([]string(nil), policy.Peers...),
 			From:          copyIPBlocks(policy.From),
 			To:            copyIPBlocks(policy.To),

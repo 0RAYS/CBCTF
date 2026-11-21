@@ -16,7 +16,6 @@ func TestCreateNetworkPolicyAllowsInternetAndPeers(t *testing.T) {
 	policies := model.NetworkPolicies{{
 		Service:       "web",
 		AllowInternet: &allow,
-		AllowExternal: &allow,
 		Peers:         []string{"db"},
 	}}
 	peerIPs := map[string][]string{"db": {"10.1.0.3"}}
@@ -70,7 +69,7 @@ func TestCreateNetworkPolicyAllowsInternetAndPeers(t *testing.T) {
 func TestCreateNetworkPolicyDeniesEgressWithoutRules(t *testing.T) {
 	useFakePods(t)
 	deny := false
-	policies := model.NetworkPolicies{{Service: "web", AllowInternet: &deny, AllowExternal: &deny}}
+	policies := model.NetworkPolicies{{Service: "web", AllowInternet: &deny}}
 	created, ret := CreateNetworkPolicy(context.Background(), CreateNetworkPolicyOptions{
 		Name:     "np-web",
 		Labels:   map[string]string{"service": "web"},
@@ -88,8 +87,8 @@ func TestCreateNetworkPolicyDeniesEgressWithoutRules(t *testing.T) {
 	if !slices.Contains(spec.PolicyTypes, netv1.PolicyTypeEgress) {
 		t.Fatalf("egress policy type is required to deny all egress: %v", spec.PolicyTypes)
 	}
-	if len(spec.Ingress) != 0 {
-		t.Fatalf("ingress must be denied: %+v", spec.Ingress)
+	if len(spec.Ingress) != 1 || spec.Ingress[0].From[0].IPBlock.CIDR != "0.0.0.0/0" {
+		t.Fatalf("ingress must accept external traffic: %+v", spec.Ingress)
 	}
 }
 
@@ -114,6 +113,32 @@ func TestCreateNetworkPolicyKeepsSubnetConnectivity(t *testing.T) {
 	}
 }
 
+func TestCreateNetworkPolicyUsesCustomInboundCIDRsAsAllowlist(t *testing.T) {
+	useFakePods(t)
+	policies := model.NetworkPolicies{{
+		Service: "web",
+		From:    []*netv1.IPBlock{{CIDR: "192.168.1.0/24"}},
+	}}
+	created, ret := CreateNetworkPolicy(context.Background(), CreateNetworkPolicyOptions{
+		Name:        "np-web",
+		Labels:      map[string]string{"service": "web"},
+		Selector:    map[string]string{"service": "web"},
+		Service:     "web",
+		Policies:    policies,
+		SubnetCIDRs: []string{"10.1.0.0/24"},
+	})
+	if !ret.OK {
+		t.Fatal(ret)
+	}
+	ingress := created.Spec.Ingress[0].From
+	if len(ingress) != 2 {
+		t.Fatalf("ingress must keep the subnet and the custom source: %+v", ingress)
+	}
+	if ingress[0].IPBlock.CIDR != "10.1.0.0/24" || ingress[1].IPBlock.CIDR != "192.168.1.0/24" {
+		t.Fatalf("unexpected ingress sources: %+v", ingress)
+	}
+}
+
 func TestCreateNetworkPolicyExcludesVPCSubnetsFromExternalTraffic(t *testing.T) {
 	useFakePods(t)
 	allow := true
@@ -122,7 +147,7 @@ func TestCreateNetworkPolicyExcludesVPCSubnetsFromExternalTraffic(t *testing.T) 
 		Labels:      map[string]string{"service": "web"},
 		Selector:    map[string]string{"service": "web"},
 		Service:     "web",
-		Policies:    model.NetworkPolicies{{Service: "web", AllowInternet: &allow, AllowExternal: &allow}},
+		Policies:    model.NetworkPolicies{{Service: "web", AllowInternet: &allow}},
 		SubnetCIDRs: []string{"10.1.0.0/24"},
 		VPCSubnets:  []string{"10.1.0.0/24", "10.2.0.0/24"},
 	})
