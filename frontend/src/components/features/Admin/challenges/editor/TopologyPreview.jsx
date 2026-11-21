@@ -124,7 +124,7 @@ export default function TopologyPreview({ topology }) {
         {topology.nodes.map((node) => (
           <div
             key={node.id}
-            className="absolute w-40 -translate-x-1/2 -translate-y-1/2 rounded-md border border-neutral-700 bg-neutral-950/95 p-2"
+            className="absolute w-40 -translate-x-1/2 -translate-y-1/2 rounded-md border border-neutral-700 bg-neutral-900/95 p-2"
             style={{ left: `${node.x}%`, top: `${node.y}%` }}
           >
             <div className="truncate text-sm font-mono text-neutral-50" title={node.label}>

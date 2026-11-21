@@ -28,7 +28,7 @@ export function injectClickableIps(html) {
     if (tag || !text) return match;
     return text.replace(IPV4_RE, (ip) => {
       if (!isPublicIp(ip)) return ip;
-      return `<span data-ip="${ip}" role="button" tabindex="0" class="ip-lookup-trigger focus-visible:outline-2 focus-visible:outline-geek-400" style="color:#597ef7;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;">${ip}</span>`;
+      return `<span data-ip="${ip}" role="button" tabindex="0" class="ip-lookup-trigger focus-visible:outline-2 focus-visible:outline-geek-400" style="color:var(--accent);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;">${ip}</span>`;
     });
   });
 }

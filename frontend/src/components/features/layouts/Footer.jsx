@@ -44,8 +44,7 @@ function Footer({ copyright, icp, links, fixed = true }) {
 
   return (
     <motion.footer
-      className={`${fixed ? 'fixed bottom-0 left-0' : 'relative'} w-full bg-neutral-900/80 backdrop-blur-[4px] border-t border-neutral-600/50 [overflow-wrap:anywhere]`}
-      style={{ minHeight: '60px' }}
+      className={`${fixed ? 'fixed bottom-0 left-0' : 'relative'} w-full min-h-[60px] bg-neutral-900/80 backdrop-blur-[4px] border-t border-neutral-600/50 [overflow-wrap:anywhere]`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}

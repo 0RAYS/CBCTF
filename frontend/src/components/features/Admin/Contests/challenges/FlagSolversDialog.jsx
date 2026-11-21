@@ -57,13 +57,6 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
             </p>
           ) : (
             <table className="w-full min-w-[640px] table-fixed text-sm font-mono">
-              <colgroup>
-                <col style={{ width: 48 }} />
-                <col />
-                <col />
-                <col style={{ width: 112 }} />
-                <col style={{ width: 160 }} />
-              </colgroup>
               <thead>
                 <tr className="border-b border-neutral-700 text-neutral-400">
                   <th className="text-left py-2 pr-4 w-12" scope="col">
@@ -75,10 +68,10 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
                   <th className="text-left py-2 pr-4" scope="col">
                     {t('admin.contests.challengeModal.solversModal.columns.team')}
                   </th>
-                  <th className="text-right py-2 pr-4 w-20" scope="col">
+                  <th className="text-right py-2 pr-4 w-28" scope="col">
                     {t('common.score')}
                   </th>
-                  <th className="text-right py-2 w-36" scope="col">
+                  <th className="text-right py-2 w-40" scope="col">
                     {t('admin.contests.challengeModal.solversModal.columns.solvedAt')}
                   </th>
                 </tr>
@@ -92,7 +85,7 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
                       ) : i === 1 ? (
                         <IconTrophy size={16} className="text-neutral-300" />
                       ) : i === 2 ? (
-                        <IconTrophy size={16} className="text-amber-600" />
+                        <IconTrophy size={16} className="text-amber-400" />
                       ) : (
                         <span className="text-neutral-400">{i + 1}</span>
                       )}

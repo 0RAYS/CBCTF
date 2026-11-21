@@ -63,8 +63,8 @@ function ContestCountdown({ startTime, joined, onJoin }) {
         <div className="flex flex-col items-center">
           {joined ? (
             <div
-              className="px-8 py-2 border border-green-400 rounded-md
-                         bg-green-400/5 text-green-400 font-mono shadow-glow-success"
+              className="px-6 py-3 border border-green-400 rounded-md
+                         bg-green-400/5 text-green-400 text-lg font-mono shadow-glow-success"
             >
               {t('game.countdown.joined')}
             </div>

@@ -126,8 +126,7 @@ function AdminFiles({
                 />
               ) : null}
               <div
-                className={`w-full h-full flex items-center justify-center rounded border border-neutral-300/20 ${isPicture ? 'hidden' : 'flex'}`}
-                style={{ display: isPicture ? 'none' : 'flex' }}
+                className={`w-full h-full items-center justify-center rounded border border-neutral-300/20 ${isPicture ? 'hidden' : 'flex'}`}
               >
                 <FileIcon size={22} className="text-neutral-400" />
               </div>

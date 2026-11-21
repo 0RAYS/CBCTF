@@ -123,20 +123,15 @@ function AdminTeamDetailDialog({
           <Card variant="default" padding="none" className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[480px] table-fixed">
-                <colgroup>
-                  <col style={{ width: 100 }} />
-                  <col />
-                  <col style={{ width: 128 }} />
-                </colgroup>
                 <thead className="bg-neutral-800/50">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider w-25">
                       {t('admin.contests.teams.detail.info.memberId')}
                     </th>
                     <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider">
                       {t('admin.contests.teams.detail.info.memberName')}
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-mono text-neutral-300 uppercase tracking-wider w-32">
                       {t('admin.contests.teams.detail.info.memberRole')}
                     </th>
                   </tr>

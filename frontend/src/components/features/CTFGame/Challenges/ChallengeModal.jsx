@@ -186,7 +186,7 @@ function ChallengeModal({
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
             <div className="w-full space-y-1.5 flex-1 min-w-0">
               <h3 className="text-neutral-400 font-mono text-sm">{t('game.challengeModal.sections.description')}</h3>
-              <MarkdownContent className="break-words text-neutral-50 prose prose-invert prose-sm max-w-none [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_table]:block [&_table]:overflow-x-auto">
+              <MarkdownContent className="break-words text-neutral-50 prose prose-sm max-w-none [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_table]:block [&_table]:overflow-x-auto">
                 {challenge.description || ''}
               </MarkdownContent>
             </div>

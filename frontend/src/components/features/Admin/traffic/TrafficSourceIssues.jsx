@@ -4,7 +4,7 @@ export default function TrafficSourceIssues({ issues }) {
   const { t } = useTranslation();
   if (!issues?.length) return null;
   return (
-    <details className="mt-3 rounded-lg border border-amber-500/30 p-3 text-xs text-amber-200">
+    <details className="mt-3 rounded-lg border border-amber-400/30 p-3 text-xs text-amber-200">
       <summary className="cursor-pointer">
         {t('admin.contests.trafficGraph.analysis.sourceIssues', { count: issues.length })}
       </summary>

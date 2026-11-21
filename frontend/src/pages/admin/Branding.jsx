@@ -146,7 +146,7 @@ function BrandingSettings() {
             <div className="border border-neutral-300/20 rounded-md bg-black/20 p-4">
               <div className="text-sm text-neutral-400 mb-3">{t('admin.branding.labels.homeLogo')}</div>
               <div
-                className="aspect-square rounded-md border border-neutral-300/20 bg-neutral-950 flex items-center justify-center overflow-hidden relative group cursor-pointer"
+                className="aspect-square rounded-md border border-neutral-300/20 bg-neutral-900 flex items-center justify-center overflow-hidden relative group cursor-pointer"
                 onClick={() => !uploading && fileInputRef.current?.click()}
                 title={t('admin.branding.actions.uploadLogo')}
               >

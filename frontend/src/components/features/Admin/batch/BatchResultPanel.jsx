@@ -11,7 +11,7 @@ export default function BatchResultPanel({ result, error, queued = false }) {
   useEffect(() => setPage(0), [result]);
   if (!result)
     return error ? (
-      <p role="alert" className="rounded border border-red-500/40 p-3 text-sm text-red-300">
+      <p role="alert" className="rounded border border-red-400/40 p-3 text-sm text-red-300">
         {error}
       </p>
     ) : null;
@@ -19,10 +19,10 @@ export default function BatchResultPanel({ result, error, queued = false }) {
   const tone = batchTone(result);
   const colors =
     tone === 'success'
-      ? 'border-green-500/40 text-green-300'
+      ? 'border-green-400/40 text-green-300'
       : tone === 'warning'
-        ? 'border-amber-500/40 text-amber-200'
-        : 'border-red-500/40 text-red-300';
+        ? 'border-amber-400/40 text-amber-200'
+        : 'border-red-400/40 text-red-300';
   const lastPage = Math.max(0, Math.ceil(rows.length / PAGE_SIZE) - 1);
   const current = Math.min(page, lastPage);
   return (

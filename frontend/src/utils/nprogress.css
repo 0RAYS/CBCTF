@@ -8,7 +8,6 @@
 }
 
 #nprogress .bar {
-    background: rgb(89, 126, 247); /* 使用项目主题色 */
     position: absolute;
     left: 0;
     width: 100%;
@@ -24,9 +23,9 @@
 #nprogress .bar {
     background: linear-gradient(
         to right,
-        rgba(89, 126, 247, 0.2),
-        rgb(89, 126, 247)
+        color-mix(in srgb, var(--accent) 20%, transparent),
+        var(--accent)
     );
-    box-shadow: 0 0 10px rgba(89, 126, 247, 0.5);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
     transition: all 0.2s ease;
 }
