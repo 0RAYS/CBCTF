@@ -42,7 +42,7 @@
 | 场景        | 主要权限                                                                                                                                                  |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 个人信息与邮箱验证 | `self:read`、`self:update`、`self:activate`                                                                                                             |
-| 参赛        | `user:contest:*`、`user:team:*`、`user:notice:list`                                                                                                     |
+| 参赛        | `user:contest:*`、`user:team:*`、`user:notice:list`、`user:rank:read`                                                                                    |
 | 解题与题解     | `user:challenge:*`、`user:victim:control`、`user:writeup:*`                                                                                             |
 | 题库与测试     | `admin:challenge:*`                                                                                                                                   |
 | 比赛与比赛题目   | `admin:contest:*`、`admin:contest_challenge:*`、`admin:contest_challenge_flag:*`                                                                        |
