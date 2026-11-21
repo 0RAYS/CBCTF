@@ -32,11 +32,11 @@ export default function TrafficSummary({ summary }) {
           tone: 'text-neutral-100',
         },
       ].map((item) => (
-        <div key={item.label} className="rounded-xl border border-neutral-600 bg-black/20 px-3 py-2">
+        <div key={item.label} className="rounded-lg border border-neutral-600 bg-black/20 px-3 py-2">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-800">{item.icon}</div>
             <div className="min-w-0">
-              <div className="text-[11px] font-mono text-neutral-500">{item.label}</div>
+              <div className="text-xs font-mono text-neutral-500">{item.label}</div>
               <div className={`truncate font-mono text-base ${item.tone}`}>{item.value}</div>
             </div>
           </div>

@@ -13,7 +13,7 @@ export default function TrafficRankings({ topology, playback }) {
   const summary = topology?.summary || {};
   const { windowInfo, slice, isPlaying, playbackIndex, playbackFrames } = playback;
   return (
-    <Card padding="sm" className="rounded-2xl border-neutral-600 bg-neutral-900">
+    <Card padding="sm" className="rounded-md border-neutral-600 bg-neutral-900">
       <div className="pr-1">
         <div className="grid gap-3">
           <div>
@@ -28,14 +28,14 @@ export default function TrafficRankings({ topology, playback }) {
                     className="flex items-center justify-between rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2"
                   >
                     <div className="min-w-0">
-                      <div className="truncate font-mono text-[11px] text-white">{item.label || item.ip}</div>
-                      <div className="mt-1 truncate text-[11px] text-neutral-500">
+                      <div className="truncate font-mono text-xs text-white">{item.label || item.ip}</div>
+                      <div className="mt-1 truncate text-xs text-neutral-500">
                         {item.dominant_process || formatProcessLabel((item.processes || [])[0]) || item.ip}
                       </div>
                     </div>
                     <div className="ml-3 text-right font-mono">
-                      <div className="text-[11px] text-geek-400">{formatBytes(item.bytes)}</div>
-                      <div className="mt-1 text-[11px] text-neutral-400">{item.connections || 0} conn</div>
+                      <div className="text-xs text-geek-400">{formatBytes(item.bytes)}</div>
+                      <div className="mt-1 text-xs text-neutral-400">{item.connections || 0} conn</div>
                     </div>
                   </div>
                 ))}
@@ -53,16 +53,16 @@ export default function TrafficRankings({ topology, playback }) {
                     className="flex items-center justify-between rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2"
                   >
                     <div className="min-w-0">
-                      <div className="truncate font-mono text-[11px] text-white">{item.label}</div>
-                      <div className="mt-1 truncate text-[11px] text-neutral-500">
+                      <div className="truncate font-mono text-xs text-white">{item.label}</div>
+                      <div className="mt-1 truncate text-xs text-neutral-500">
                         {item.dominant_process ||
                           formatProcessLabel((item.processes || [])[0]) ||
                           t(`admin.contests.trafficGraph.direction.${item.direction || 'internal'}`)}
                       </div>
                     </div>
                     <div className="ml-3 text-right font-mono">
-                      <div className="text-[11px] text-geek-400">{formatBytes(item.bytes)}</div>
-                      <div className="mt-1 text-[11px] text-neutral-400">{item.connections || 0} conn</div>
+                      <div className="text-xs text-geek-400">{formatBytes(item.bytes)}</div>
+                      <div className="mt-1 text-xs text-neutral-400">{item.connections || 0} conn</div>
                     </div>
                   </div>
                 ))}
@@ -71,7 +71,7 @@ export default function TrafficRankings({ topology, playback }) {
         </div>
       </div>
       <div className="mt-3 border-t border-neutral-700 pt-3">
-        <div className="flex flex-wrap gap-2 text-[11px] font-mono text-neutral-500">
+        <div className="flex flex-wrap gap-2 text-xs font-mono text-neutral-500">
           <span>
             {t('admin.contests.trafficGraph.footer.window', {
               start: formatDurationMs(windowInfo.start),
@@ -107,7 +107,7 @@ export default function TrafficRankings({ topology, playback }) {
             </span>
           ) : null}
         </div>
-        <div className="mt-2 text-[11px] font-mono text-neutral-500">
+        <div className="mt-2 text-xs font-mono text-neutral-500">
           {t('admin.contests.trafficGraph.footer.updatedAt', {
             time: new Date().toLocaleString(i18n.language || 'en-US'),
           })}

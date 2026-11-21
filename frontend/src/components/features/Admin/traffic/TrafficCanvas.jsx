@@ -73,12 +73,12 @@ export default function TrafficCanvas({
   };
 
   return (
-    <Card padding="none" className="overflow-hidden rounded-2xl border-neutral-600 bg-neutral-900">
+    <Card padding="none" className="overflow-hidden rounded-md border-neutral-600 bg-neutral-900">
       <div className="flex flex-col">
         <div className="flex flex-wrap items-start justify-between gap-2 border-b border-neutral-600 px-4 py-3">
           <div>
             <div className="text-sm font-mono text-neutral-300">{t('admin.contests.trafficGraph.canvas.title')}</div>
-            <div className="mt-1 text-[11px] text-neutral-500">{t('admin.contests.trafficGraph.canvas.subtitle')}</div>
+            <div className="mt-1 text-xs text-neutral-500">{t('admin.contests.trafficGraph.canvas.subtitle')}</div>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Chip
@@ -133,9 +133,7 @@ export default function TrafficCanvas({
         </div>
         {universeProtocols.length > 0 ? (
           <div className="flex flex-wrap items-center gap-2 border-b border-neutral-700/80 px-4 py-2">
-            <span className="text-[11px] text-neutral-400 shrink-0">
-              {t('admin.contests.trafficGraph.filter.label')}
-            </span>
+            <span className="text-xs text-neutral-400 shrink-0">{t('admin.contests.trafficGraph.filter.label')}</span>
             {universeProtocols.map((proto) => {
               const active = protocolFilter.has(proto);
               const inCurrentFrame = activeProtocolSet.has(proto);
@@ -145,7 +143,7 @@ export default function TrafficCanvas({
                   type="button"
                   onClick={() => toggleProtocol(proto)}
                   className={[
-                    'inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-mono transition-colors',
+                    'inline-flex items-center rounded border px-2 py-0.5 text-xs font-mono transition-colors',
                     active
                       ? 'border-geek-400/60 bg-geek-400/20 text-geek-300'
                       : inCurrentFrame
@@ -161,7 +159,7 @@ export default function TrafficCanvas({
               <button
                 type="button"
                 onClick={() => setProtocolFilter(new Set())}
-                className="ml-1 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
+                className="ml-1 text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
               >
                 {t('admin.contests.trafficGraph.filter.clear')}
               </button>
@@ -177,7 +175,7 @@ export default function TrafficCanvas({
           onPointerLeave={stopDrag}
         >
           <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(82,82,82,.45)_1px,transparent_1px),linear-gradient(90deg,rgba(82,82,82,.45)_1px,transparent_1px)] [background-size:34px_34px]" />
-          <div className="absolute left-3 top-3 z-10 text-[11px] text-neutral-400">
+          <div className="absolute left-3 top-3 z-10 text-xs text-neutral-400">
             {t('admin.contests.trafficGraph.canvas.zoomHint')}
           </div>
           <svg
