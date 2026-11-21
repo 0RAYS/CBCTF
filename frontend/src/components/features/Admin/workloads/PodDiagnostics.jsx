@@ -1,22 +1,27 @@
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/common';
 
 export default function PodDiagnostics({ pods = [], refreshing, statusError, updatedAt, refreshStatus }) {
   const { t } = useTranslation();
   const text = (key, options) => t(`admin.workloads.${key}`, options);
   return (
-    <section className="rounded border border-neutral-700 bg-neutral-900 p-3 space-y-3" aria-label={text('title')}>
+    <section
+      className="rounded-md border border-neutral-600 bg-neutral-800/60 p-3 space-y-3"
+      aria-label={text('title')}
+    >
       <div className="flex flex-wrap items-center gap-3 text-xs">
-        <h3 className="text-neutral-200 font-medium">{text('title')}</h3>
+        <h3 className="text-sm font-mono text-neutral-100">{text('title')}</h3>
         <span className="text-neutral-500">{text('polling')}</span>
         {updatedAt && <span className="text-neutral-400">{text('updated', { time: updatedAt })}</span>}
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={refreshStatus}
           disabled={refreshing}
-          className="ml-auto text-geek-400 disabled:opacity-50 focus-visible:outline focus-visible:outline-geek-400"
+          className="ml-auto !h-7 !px-2 !text-xs"
         >
           {refreshing ? t('common.loading') : text('refresh')}
-        </button>
+        </Button>
       </div>
       {statusError && (
         <p role="status" className="text-xs text-amber-400">
@@ -28,7 +33,7 @@ export default function PodDiagnostics({ pods = [], refreshing, statusError, upd
         <div key={pod.uid} className="text-xs space-y-2 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-neutral-300 break-all">{pod.name}</span>
-            <span className={pod.ready ? 'text-emerald-400' : 'text-amber-400'}>
+            <span className={pod.ready ? 'text-green-400' : 'text-amber-400'}>
               {text(pod.terminating ? 'terminating' : pod.ready ? 'ready' : 'notReady')}
             </span>
             <span className="text-neutral-400">
