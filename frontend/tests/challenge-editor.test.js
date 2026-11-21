@@ -325,7 +325,6 @@ test('policy normalization accepts persisted uppercase rules without mutating in
     service: 'web',
     allow_internet: false,
     egress_cidrs: [],
-    allow_external: null,
     peers: [],
     from: [{ cidr: '10.1.0.0/24', except: ['10.1.0.2'] }],
     to: [],
@@ -333,7 +332,6 @@ test('policy normalization accepts persisted uppercase rules without mutating in
   assert.deepEqual(policy, original);
   assert.equal(defaultNetworkPolicy('web').service, 'web');
   assert.equal(defaultNetworkPolicy('web').allow_internet, false);
-  assert.equal(defaultNetworkPolicy('web').allow_external, true);
 });
 
 test('policy resolution denies egress by default and keeps legacy CIDR semantics', () => {
@@ -343,14 +341,11 @@ test('policy resolution denies egress by default and keeps legacy CIDR semantics
   ];
   const [fallback] = resolvePolicies([], targets);
   assert.equal(fallback.allow_internet, false);
-  assert.equal(fallback.allow_external, true);
   const [legacy] = resolvePolicies([{ service: 'web', to: [{ cidr: '10.0.0.0/8' }] }], targets);
   assert.equal(legacy.allow_internet, false);
-  assert.equal(legacy.allow_external, true);
   assert.deepEqual(legacy.to, [{ cidr: '10.0.0.0/8', except: [] }]);
   const [legacyInbound] = resolvePolicies([{ service: 'web', from: [{ cidr: '10.1.0.0/24' }] }], targets);
-  assert.equal(legacyInbound.allow_external, false);
-  assert.equal(legacyInbound.restrict_ingress, true);
+  assert.deepEqual(legacyInbound.from, [{ cidr: '10.1.0.0/24', except: [] }]);
 });
 
 test('peer interconnection is symmetric and scoped to the declaring container', () => {
@@ -360,15 +355,14 @@ test('peer interconnection is symmetric and scoped to the declaring container', 
   ];
   const resolved = resolvePolicies(
     [
-      { service: 'web', allow_internet: true, allow_external: true, peers: ['db'] },
-      { service: 'db', allow_internet: false, allow_external: false, peers: [] },
+      { service: 'web', allow_internet: true, peers: ['db'] },
+      { service: 'db', allow_internet: false, peers: [] },
     ],
     targets
   );
   assert.deepEqual(resolved[0].peers, ['db']);
   assert.deepEqual(resolved[1].peers, ['web']);
   assert.equal(resolved[1].allow_internet, false);
-  assert.equal(resolved[1].allow_external, false);
 });
 
 for (const direction of ['from', 'to', 'both']) {
@@ -405,8 +399,8 @@ test('topology follows NIC lanes, peer rules and internet egress', () => {
     { label: 'db', service: 'db' },
   ]);
   const policies = [
-    { service: 'frontend', allow_internet: true, allow_external: true, peers: ['db'] },
-    { service: 'db', allow_internet: false, allow_external: true, peers: ['frontend'] },
+    { service: 'frontend', allow_internet: true, peers: ['db'] },
+    { service: 'db', allow_internet: false, peers: ['frontend'] },
   ];
   const topology = buildNetworkTopology(config, policies);
   assert.deepEqual(topology.lanes.map((lane) => lane.name), ['lan']);
@@ -416,7 +410,7 @@ test('topology follows NIC lanes, peer rules and internet egress', () => {
   assert.equal(topology.egress.length, 2);
   assert.equal(topology.egress[0].allowed, true);
   assert.equal(topology.egress[1].allowed, false);
-  const blocked = buildNetworkTopology(config, [{ service: 'frontend', allow_internet: true, allow_external: true }]);
+  const blocked = buildNetworkTopology(config, [{ service: 'frontend', allow_internet: true }]);
   assert.equal(blocked.connections[0].reasonKey, 'allowed');
   const shared = buildNetworkTopology(sharedConfig());
   assert.equal(shared.nodes[0].x, 50);
@@ -515,7 +509,6 @@ test('pods payload omits unchanged Compose, preserves handwritten text exactly a
       service: 'web',
       allow_internet: false,
       egress_cidrs: [],
-      allow_external: null,
       peers: [],
       from: [{ cidr: '10.1.0.0/24', except: [] }],
       to: [],
@@ -541,7 +534,6 @@ test('policy payload keeps the service and the semantic fields even when Compose
         service: 'web',
         allow_internet: true,
         egress_cidrs: ['10.1.0.0/16'],
-        allow_external: false,
         peers: ['db'],
         from: [],
         to: [{ CIDR: '0.0.0.0/0', Except: ['10.0.0.0/8'] }],
@@ -556,7 +548,6 @@ test('policy payload keeps the service and the semantic fields even when Compose
       service: 'web',
       allow_internet: true,
       egress_cidrs: ['10.1.0.0/16'],
-      allow_external: false,
       peers: ['db'],
       from: [],
       to: [{ cidr: '0.0.0.0/0', except: ['10.0.0.0/8'] }],
@@ -565,7 +556,6 @@ test('policy payload keeps the service and the semantic fields even when Compose
       service: '',
       allow_internet: false,
       egress_cidrs: [],
-      allow_external: null,
       peers: [],
       from: [],
       to: [],

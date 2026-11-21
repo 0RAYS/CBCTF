@@ -43,8 +43,6 @@ export const defaultNetworkPolicy = (service = '') => ({
   service,
   allow_internet: false,
   egress_cidrs: [],
-  allow_external: true,
-  restrict_ingress: true,
   peers: [],
   from: [],
   to: [],
@@ -57,21 +55,14 @@ export const normalizePolicyRule = (rule = {}) => ({
 
 export const normalizePolicyRules = (rules = []) => (Array.isArray(rules) ? rules.map(normalizePolicyRule) : []);
 
-export const normalizeNetworkPolicy = (policy = {}) => {
-  const from = normalizePolicyRules(policy.from);
-  const peers = Array.isArray(policy.peers) ? policy.peers.filter(Boolean) : [];
-  const declared = policy.allow_external;
-  return {
-    service: policy.service || '',
-    allow_internet: policy.allow_internet === true,
-    egress_cidrs: Array.isArray(policy.egress_cidrs) ? policy.egress_cidrs.filter(Boolean) : [],
-    // null 表示旧条目没有声明入站限制，按旧语义处理。
-    allow_external: declared === undefined || declared === null ? null : declared === true,
-    peers,
-    from,
-    to: normalizePolicyRules(policy.to),
-  };
-};
+export const normalizeNetworkPolicy = (policy = {}) => ({
+  service: policy.service || '',
+  allow_internet: policy.allow_internet === true,
+  egress_cidrs: Array.isArray(policy.egress_cidrs) ? policy.egress_cidrs.filter(Boolean) : [],
+  peers: Array.isArray(policy.peers) ? policy.peers.filter(Boolean) : [],
+  from: normalizePolicyRules(policy.from),
+  to: normalizePolicyRules(policy.to),
+});
 
 // buildNetworkContext 计算容器网卡信息：所在网段、同 subnet 容器与地址。
 export const buildNetworkContext = (config) => {
@@ -146,9 +137,6 @@ export const resolveSharedPolicy = (policies) => {
 const mergePolicies = (policies) => {
   const merged = {
     allow_internet: false,
-    allow_external: false,
-    restrict_ingress: false,
-    legacy_open: false,
     egress_cidrs: [],
     peers: [],
     from: [],
@@ -156,23 +144,11 @@ const mergePolicies = (policies) => {
   };
   policies.forEach((policy) => {
     merged.allow_internet = merged.allow_internet || policy.allow_internet;
-    if (policy.allow_external !== null) {
-      merged.allow_external = merged.allow_external || policy.allow_external;
-      merged.restrict_ingress = true;
-    }
-    if (policy.from.length > 0 || policy.peers.length > 0) merged.restrict_ingress = true;
-    if (policy.allow_external === null && policy.from.length === 0 && policy.peers.length === 0)
-      merged.legacy_open = true;
     merged.egress_cidrs = merged.egress_cidrs.concat(policy.egress_cidrs);
     merged.peers = merged.peers.concat(policy.peers);
     merged.from = merged.from.concat(policy.from);
     merged.to = merged.to.concat(policy.to);
   });
-  if (merged.legacy_open) {
-    // 旧条目没有声明入站限制，保持历史上的不限入站行为。
-    merged.allow_external = true;
-    merged.restrict_ingress = false;
-  }
   return merged;
 };
 
@@ -197,11 +173,11 @@ export const policyAllowsEgressIp = (policy, ip, context = {}) => {
 };
 
 // policyAllowsIngressIp 判断容器是否接受来源 IP 的入站流量。
+// 自定义入站 CIDR 是唯一的外部来源，未填写时接受题目 VPC 之外的访问。
 export const policyAllowsIngressIp = (policy, ip, context = {}) => {
-  if (!policy.restrict_ingress) return true;
   if (!ip) return false;
   if (policy.subnet_cidrs.some((cidr) => cidrContainsIp(cidr, ip))) return true;
   if (policy.peer_ips.includes(ip)) return true;
-  if (policy.from.some((block) => blockAllowsIp(block, ip))) return true;
-  return policy.allow_external && !isVpcIp(ip, context);
+  if (policy.from.length > 0) return policy.from.some((block) => blockAllowsIp(block, ip));
+  return !isVpcIp(ip, context);
 };

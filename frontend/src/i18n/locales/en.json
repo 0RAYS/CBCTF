@@ -1481,14 +1481,12 @@
           "label": "Interconnected with",
           "sameSubnet": "same subnet"
         },
-        "ingress": {
-          "external": "Allow inbound traffic from outside the challenge",
-          "externalHint": "While enabled, addresses outside the challenge can reach this container; containers inside the challenge VPC still follow the peer rules."
-        },
+        "ingressHint": "Inbound traffic from outside the challenge is accepted by default; the local subnet and peered containers always stay reachable.",
         "advanced": {
           "title": "Advanced CIDR rules",
           "inbound": "Custom inbound CIDR",
           "outbound": "Custom outbound CIDR",
+          "inboundHint": "Once filled, only these sources can reach the container; peers and the local subnet stay reachable.",
           "except": "Excluded ranges (comma separated)"
         },
         "actions": {

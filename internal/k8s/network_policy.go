@@ -54,6 +54,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 // buildNetworkPolicySpec 把解析后的策略转换为 Kubernetes NetworkPolicy。
 // 出站始终受策略类型约束：没有规则时表示拒绝全部出站。
 // 容器所在网段与互通容器的地址始终放行，其余目标由策略决定。
+// 入站默认接受集群外部的访问，填写自定义入站 CIDR 后只有这些来源可以访问。
 func buildNetworkPolicySpec(
 	resolved model.ResolvedNetworkPolicy,
 	subnetCIDRs []string,
@@ -63,7 +64,7 @@ func buildNetworkPolicySpec(
 ) netv1.NetworkPolicySpec {
 	spec := netv1.NetworkPolicySpec{
 		PodSelector: metav1.LabelSelector{MatchLabels: selector},
-		PolicyTypes: []netv1.PolicyType{netv1.PolicyTypeEgress},
+		PolicyTypes: []netv1.PolicyType{netv1.PolicyTypeEgress, netv1.PolicyTypeIngress},
 	}
 	subnetBlocks := make([]netv1.NetworkPolicyPeer, 0, len(subnetCIDRs))
 	for _, cidr := range subnetCIDRs {
@@ -97,17 +98,14 @@ func buildNetworkPolicySpec(
 	}
 	spec.Egress = mergeEgressRules(concatPeers(subnetBlocks, peerBlocks, egressBlocks))
 
-	if resolved.RestrictIngress {
-		spec.PolicyTypes = append(spec.PolicyTypes, netv1.PolicyTypeIngress)
-		ingressBlocks := make([]netv1.NetworkPolicyPeer, 0, len(resolved.From)+1)
-		for _, block := range resolved.From {
-			ingressBlocks = append(ingressBlocks, netv1.NetworkPolicyPeer{IPBlock: block})
-		}
-		if resolved.AllowExternal {
-			ingressBlocks = append(ingressBlocks, netv1.NetworkPolicyPeer{IPBlock: externalBlock(vpcSubnets)})
-		}
-		spec.Ingress = mergeIngressRules(concatPeers(subnetBlocks, peerBlocks, ingressBlocks))
+	ingressBlocks := make([]netv1.NetworkPolicyPeer, 0, len(resolved.From)+1)
+	for _, block := range resolved.From {
+		ingressBlocks = append(ingressBlocks, netv1.NetworkPolicyPeer{IPBlock: block})
 	}
+	if len(ingressBlocks) == 0 {
+		ingressBlocks = append(ingressBlocks, netv1.NetworkPolicyPeer{IPBlock: externalBlock(vpcSubnets)})
+	}
+	spec.Ingress = mergeIngressRules(concatPeers(subnetBlocks, peerBlocks, ingressBlocks))
 	return spec
 }
 

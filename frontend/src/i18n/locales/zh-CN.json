@@ -1481,14 +1481,12 @@
           "label": "允许互通",
           "sameSubnet": "同 subnet 默认互通"
         },
-        "ingress": {
-          "external": "允许集群外部访问",
-          "externalHint": "开启后集群外的地址可以访问该容器，题目 VPC 内的容器仍按互通规则放行。"
-        },
+        "ingressHint": "入站默认接受集群外部的访问，同一 subnet 与勾选互通的容器始终可达。",
         "advanced": {
           "title": "高级 CIDR 规则",
           "inbound": "自定义入站 CIDR",
           "outbound": "自定义出站 CIDR",
+          "inboundHint": "填写后只有这些来源可以访问该容器，互通容器与同网段仍然可达。",
           "except": "排除网段（逗号分隔）"
         },
         "actions": {
