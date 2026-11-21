@@ -1,6 +1,7 @@
 import { Avatar, Button, Card, EmptyState, Pagination } from '@/components/common';
 import ChallengeSkeleton from '@/components/features/CTFGame/Challenges/display/ChallengeSkeleton';
 import { useTranslation } from 'react-i18next';
+import { CHECKBOX_INPUT_CLASS } from '@/components/common/Checkbox';
 
 /** 赛题展示面板组件 */
 function ChallengeBoard({
@@ -63,7 +64,7 @@ function ChallengeBoard({
               type="checkbox"
               checked={unsolvedOnly}
               onChange={() => onSolvedFilterChange?.()}
-              className="h-4 w-4 rounded border border-neutral-500/60 bg-black/20 text-geek-400 focus:ring-geek-400/70"
+              className={CHECKBOX_INPUT_CLASS}
             />
             <span>{t('game.challengeBoard.filters.hideSolved')}</span>
           </label>

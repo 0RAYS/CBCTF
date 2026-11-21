@@ -1,5 +1,9 @@
 import { useId } from 'react';
 
+/** Shared checkbox box: standalone checkboxes use it, labelled ones use the component below. */
+export const CHECKBOX_INPUT_CLASS =
+  'w-4 h-4 rounded border-neutral-600/60 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-neutral-800/60';
+
 function Checkbox({ id: suppliedId, checked = false, onChange, label, className = '', disabled = false, ...rest }) {
   const generatedId = useId();
   const id = suppliedId || generatedId;
@@ -11,7 +15,7 @@ function Checkbox({ id: suppliedId, checked = false, onChange, label, className 
         checked={checked}
         onChange={onChange}
         disabled={disabled}
-        className="w-4 h-4 rounded border-neutral-600/60 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-neutral-800/60"
+        className={CHECKBOX_INPUT_CLASS}
         {...rest}
       />
       <span>{label}</span>

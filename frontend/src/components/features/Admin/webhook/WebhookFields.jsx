@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Input, Select } from '@/components/common';
+import Checkbox from '@/components/common/Checkbox';
 import WebhookHeaders from '@/components/features/Admin/webhook/WebhookHeaders';
 
 export default function WebhookFields({ form, setForm, mode, events }) {
@@ -66,15 +67,13 @@ export default function WebhookFields({ form, setForm, mode, events }) {
           {events.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {events.map((event) => (
-                <label key={event} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={form.events.includes(event)}
-                    onChange={() => toggleEvent(event)}
-                    className="text-geek-400"
-                  />
-                  <span className="text-neutral-300 text-sm break-all">{event}</span>
-                </label>
+                <Checkbox
+                  key={event}
+                  checked={form.events.includes(event)}
+                  onChange={() => toggleEvent(event)}
+                  label={event}
+                  className="text-sm break-all"
+                />
               ))}
             </div>
           ) : (
@@ -83,10 +82,11 @@ export default function WebhookFields({ form, setForm, mode, events }) {
         </div>
         <p className="text-neutral-400 text-xs mt-1">{t('admin.webhook.form.eventsHint')}</p>
       </div>
-      <label className="flex items-center text-neutral-300">
-        <input type="checkbox" checked={form.on} onChange={(e) => change('on', e.target.checked)} className="mr-2" />
-        {t('admin.webhook.form.enable')}
-      </label>
+      <Checkbox
+        checked={form.on}
+        onChange={(e) => change('on', e.target.checked)}
+        label={t('admin.webhook.form.enable')}
+      />
     </div>
   );
 }

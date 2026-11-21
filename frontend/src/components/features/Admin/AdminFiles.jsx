@@ -4,6 +4,7 @@ import { IconDownload, IconFile, IconFileText, IconPhoto, IconTrash } from '@tab
 import { Button, Pagination } from '@/components/common';
 import { List } from '@/components/common';
 import { useTranslation } from 'react-i18next';
+import { CHECKBOX_INPUT_CLASS } from '@/components/common/Checkbox';
 
 /** 管理后台文件管理组件 */
 function AdminFiles({
@@ -70,7 +71,7 @@ function AdminFiles({
         type="checkbox"
         checked={selectedFiles.length === files.length && files.length > 0}
         onChange={handleSelectAll}
-        className="w-4 h-4 rounded border-neutral-300/30 bg-black/30 text-geek-400 focus:ring-0 focus:ring-offset-0"
+        className={CHECKBOX_INPUT_CLASS}
       />
       <span className="text-xs font-mono text-neutral-400">{t('common.selectAll')}</span>
     </div>
@@ -99,7 +100,7 @@ function AdminFiles({
             type="checkbox"
             checked={selectedFiles.includes(file.id)}
             onChange={() => handleSelectFile(file.id)}
-            className="w-4 h-4 rounded border-neutral-300/30 bg-black/30 text-geek-400 focus:ring-0 focus:ring-offset-0"
+            className={CHECKBOX_INPUT_CLASS}
           />
         );
 

@@ -6,6 +6,7 @@ import useContextMenu from '@/components/common/useContextMenu';
 import RowActions from '@/components/common/RowActions';
 import { isGeneratorStoppable } from '@/components/features/Admin/generators/generatorUtils.js';
 import TruncatedText from '@/components/common/TruncatedText';
+import { CHECKBOX_INPUT_CLASS } from '@/components/common/Checkbox';
 
 const COLUMN_WIDTHS = [48, 80, 200, 256, 112, 176, 96, 184, 96, 184, 128, 88];
 
@@ -71,7 +72,7 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
                 <th className="p-4 text-left font-mono w-10" scope="col">
                   <input
                     type="checkbox"
-                    className="accent-geek-400"
+                    className={CHECKBOX_INPUT_CLASS}
                     aria-label={text('stopButton')}
                     checked={stoppable.length > 0 && stoppable.every((generator) => selectedIds.includes(generator.id))}
                     onChange={toggleSelectAll}
@@ -96,7 +97,7 @@ export default function GeneratorList({ session, onViewLogs, text, t }) {
                   <td className="p-4">
                     <input
                       type="checkbox"
-                      className="accent-geek-400"
+                      className={CHECKBOX_INPUT_CLASS}
                       aria-label={`${text('stopButton')} ${generator.name}`}
                       checked={selectedIds.includes(generator.id)}
                       disabled={!isGeneratorStoppable(generator)}

@@ -1,5 +1,11 @@
 import { useId } from 'react';
 
+/** Shared field surface: every text entry control uses it, including raw <input> elements. */
+export const INPUT_BASE_CLASS =
+  'min-w-0 bg-neutral-800/60 border rounded-md text-neutral-50 placeholder-neutral-400 font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 transition-all duration-200';
+
+export const INPUT_BORDER_CLASS = 'border-neutral-600/60 focus:border-geek-400 focus:shadow-focus';
+
 /** 通用输入框组件 */
 function Input({
   type = 'text',
@@ -37,13 +43,12 @@ function Input({
   };
 
   const inputClasses = `
-    min-w-0 bg-neutral-800/60 border rounded-md text-neutral-50 placeholder-neutral-400 font-mono
-    focus:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 transition-all duration-200
+    ${INPUT_BASE_CLASS}
     ${type === 'number' ? 'tabular-nums' : ''}
     ${sizes[size] || sizes.md}
     ${getPadding()}
     ${fullWidth ? 'w-full' : ''}
-    ${error ? 'border-red-400 focus:border-red-400 focus:shadow-error' : 'border-neutral-600/60 focus:border-geek-400 focus:shadow-focus'}
+    ${error ? 'border-red-400 focus:border-red-400 focus:shadow-error' : INPUT_BORDER_CLASS}
     ${disabled ? 'opacity-50 cursor-not-allowed bg-neutral-800/30' : ''}
     ${className}
   `

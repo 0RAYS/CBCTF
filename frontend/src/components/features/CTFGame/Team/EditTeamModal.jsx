@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common';
 import Modal from '@/components/common/Modal';
+import { INPUT_BASE_CLASS, INPUT_BORDER_CLASS } from '@/components/common/Input';
 
 /** 编辑队伍模态框 */
 function EditTeamModal({ isOpen, onClose, team, onSave }) {
@@ -26,9 +27,7 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
             type="text"
             value={formData.name}
             onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-            className="w-full p-3 bg-neutral-800/60 border border-neutral-600/60 rounded-md
-                                        text-neutral-50 font-mono
-                                        focus:outline-none focus:border-geek-400"
+            className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full p-3`}
           />
         </div>
 
@@ -38,9 +37,7 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
             value={formData.description.slice(0, 100)}
             onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value.slice(0, 100) }))}
             rows={4}
-            className="w-full p-3 bg-neutral-800/60 border border-neutral-600/60 rounded-md
-                                        text-neutral-50
-                                        focus:outline-none focus:border-geek-400"
+            className={`${INPUT_BASE_CLASS} ${INPUT_BORDER_CLASS} w-full p-3`}
           />
         </div>
 
