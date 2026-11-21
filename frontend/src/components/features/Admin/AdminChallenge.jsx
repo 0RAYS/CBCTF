@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { IconEdit, IconFlask, IconPlus, IconSearch, IconTrash, IconUpload } from '@tabler/icons-react';
+import { IconCopy, IconEdit, IconFlask, IconPlus, IconSearch, IconTrash, IconUpload } from '@tabler/icons-react';
 import { Button, Chip, Input, Pagination, Spinner } from '@/components/common';
 import { List } from '@/components/common';
 import { useTranslation } from 'react-i18next';
@@ -12,18 +12,22 @@ function AdminChallenge({
   currentPage = 1,
   pageSize = 10,
   categories = [],
+  contests = [],
   filterCategory = 'all',
   filterType = 'all',
+  filterContest = 'all',
   loading = false,
   onPageChange,
   onAddChallenge,
   onEditChallenge,
   onDeleteChallenge,
+  onCopyChallenge,
   onUploadAttachment,
   onDownloadAttachment,
   onTestChallenge,
   onFilterTypeChange,
   onFilterCategoryChange,
+  onFilterContestChange,
   nameQuery = '',
   descQuery = '',
   searchLoading = false,
@@ -52,7 +56,12 @@ function AdminChallenge({
   };
 
   const columns = [
-    { key: 'name', label: t('admin.challenge.table.name'), width: '10%' },
+    { key: 'name', label: t('admin.challenge.table.name'), width: '18%' },
+    {
+      key: 'contest',
+      label: t('admin.challenge.table.contest'),
+      width: '12%',
+    },
     {
       key: 'category',
       label: t('admin.challenge.table.category'),
@@ -71,6 +80,12 @@ function AdminChallenge({
             <span className="text-neutral-50 font-mono truncate">{challenge.name}</span>
             <span className="text-xs text-neutral-400 line-clamp-2">{challenge.description || '-'}</span>
           </div>
+        );
+      case 'contest':
+        return challenge.contest_name ? (
+          <span className="text-neutral-300 whitespace-normal">{challenge.contest_name}</span>
+        ) : (
+          <span className="text-neutral-500">{t('admin.challengeModal.contest.unassigned')}</span>
         );
       case 'category':
         return challenge.category ? (
@@ -203,6 +218,21 @@ function AdminChallenge({
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <div className="w-56">
+              <select
+                value={filterContest}
+                onChange={(e) => onFilterContestChange(e.target.value)}
+                className="select-custom select-custom-sm"
+              >
+                <option value="all">{t('admin.challenge.contestFilter.all')}</option>
+                <option value="0">{t('admin.challenge.contestFilter.unassigned')}</option>
+                {contests.map((contest) => (
+                  <option key={contest.id} value={contest.id}>
+                    {contest.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="w-48">
               <select
                 value={filterCategory}
@@ -240,6 +270,12 @@ function AdminChallenge({
             label: t('common.edit'),
             icon: <IconEdit size={18} />,
             onClick: () => onEditChallenge(challenge),
+          },
+          {
+            key: 'copy',
+            label: t('admin.challenge.actions.copy'),
+            icon: <IconCopy size={18} />,
+            onClick: () => onCopyChallenge(challenge),
           },
           {
             key: 'delete',

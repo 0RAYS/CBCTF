@@ -8,11 +8,12 @@ import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '@/conf
 import { INPUT_BASE_CLASS, INPUT_BORDER_CLASS } from '@/components/common/Input';
 
 /** 赛事赛题选择弹窗组件 */
-function AdminContestChallengeSelector({
+function ChallengeSelector({
   isOpen = false,
   challenges = [],
   selectedChallenges = [],
   categories = [],
+  contests = [],
   totalCount = 0,
   currentPage = 1,
   pageSize = 10,
@@ -24,6 +25,7 @@ function AdminContestChallengeSelector({
   descQuery = '',
   category = 'all',
   type = 'all',
+  contest = 'all',
   onClose,
   onSearch,
   onDescSearch,
@@ -32,6 +34,7 @@ function AdminContestChallengeSelector({
   onPageChange,
   onFilterCategoryChange,
   onFilterTypeChange,
+  onFilterContestChange,
 }) {
   const { t } = useTranslation();
 
@@ -56,12 +59,13 @@ function AdminContestChallengeSelector({
             {t('common.cancel')}
           </Button>
           <Button size="sm" onClick={onConfirm} disabled={saving || selectedChallenges.length === 0}>
-            {t('admin.contests.challengeSelector.actions.confirmAdd')}
+            {t('admin.contests.challengeSelector.actions.confirmCopy')}
           </Button>
         </>
       }
     >
       <BatchResultPanel result={batchResult} error={error} />
+      <p className="px-4 pt-3 text-xs font-mono text-neutral-500">{t('admin.contests.challengeSelector.notice')}</p>
       <div className="p-4 border-b border-neutral-700">
         <div className="flex flex-col sm:flex-row gap-4 mb-3">
           <div className="flex-1 relative">
@@ -113,6 +117,22 @@ function AdminContestChallengeSelector({
               <option value="pods">{t('common.challengeTypes.pods')}</option>
             </select>
           </div>
+
+          <div className="w-56">
+            <select
+              value={contest}
+              onChange={(e) => onFilterContestChange(e.target.value)}
+              className="select-custom select-custom-lg"
+            >
+              <option value="all">{t('admin.challenge.contestFilter.all')}</option>
+              <option value="0">{t('admin.challenge.contestFilter.unassigned')}</option>
+              {contests.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -156,6 +176,10 @@ function AdminContestChallengeSelector({
                         <h3 className="text-lg font-mono text-neutral-50">{challenge.name}</h3>
                         <div className="flex gap-2">
                           <Chip
+                            label={challenge.contest_name || t('admin.challengeModal.contest.unassigned')}
+                            colorClass="border-geek-600/30 text-geek-300"
+                          />
+                          <Chip
                             label={challenge.category}
                             colorClass={getChallengeCategoryChipClass(challenge.category)}
                           />
@@ -193,4 +217,4 @@ function AdminContestChallengeSelector({
   );
 }
 
-export default AdminContestChallengeSelector;
+export default ChallengeSelector;

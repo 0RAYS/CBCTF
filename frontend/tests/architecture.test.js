@@ -212,6 +212,7 @@ test('extracted business models/parsers/serializers stay isolated from runtime l
     'components/features/Admin/Contests/editor/contestForm.js',
     'components/features/Admin/Contests/teams/teamDetailData.js',
     'components/features/Admin/challenges/editor/challengePayload.js',
+    'components/features/Admin/challenges/editor/challengeData.js',
     'components/features/Admin/challenges/editor/composeParser.js',
     'components/features/Admin/challenges/editor/composeSerializer.js',
     'components/features/Admin/challenges/editor/composeValidation.js',

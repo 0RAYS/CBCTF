@@ -1,25 +1,10 @@
 import request from '@/api/request';
 
-export const getChallengeCategories = (type) => {
+export const getChallengeCategories = (params = {}) => {
   return request({
     url: '/admin/challenges/categories',
     method: 'GET',
-    params: { type },
-  });
-};
-
-export const getNotInContestChallengeList = (contestId, params = { limit: 20, offset: 0 }) => {
-  return request({
-    url: `/admin/contests/${contestId}/challenges/others`,
-    method: 'GET',
     params,
-  });
-};
-
-export const getContestChallengeCategories = (contestId) => {
-  return request({
-    url: `/admin/contests/${contestId}/challenges/categories`,
-    method: 'GET',
   });
 };
 
@@ -35,14 +20,6 @@ export const getChallenge = (challengeId) => {
   return request({
     url: `/admin/challenges/${challengeId}`,
     method: 'GET',
-  });
-};
-
-export const getChallengeUsages = (challengeId) => {
-  return request({
-    url: `/admin/challenges/${challengeId}/usages`,
-    method: 'GET',
-    noToast: true,
   });
 };
 
@@ -69,6 +46,14 @@ export const deleteChallenge = (challengeId) => {
   });
 };
 
+export const copyChallenge = (challengeId, contestId) => {
+  return request({
+    url: `/admin/challenges/${challengeId}/copy`,
+    method: 'POST',
+    data: { contest_id: contestId },
+  });
+};
+
 export const uploadChallengeFile = (challengeId, file) => {
   const formData = new FormData();
   formData.append('file', file);
@@ -90,18 +75,32 @@ export const downloadChallengeFile = (challengeId) => {
   });
 };
 
-export const getChallengeFlags = (contestID, challengeID) => {
+export const getChallengeFlags = (challengeId) => {
   return request({
-    url: `/admin/contests/${contestID}/challenges/${challengeID}/flags`,
+    url: `/admin/challenges/${challengeId}/flags`,
     method: 'GET',
   });
 };
 
-export const updateChallengeFlag = (contestID, challengeID, flagID, data) => {
+export const updateChallengeFlag = (challengeId, flagId, data) => {
   return request({
-    url: `/admin/contests/${contestID}/challenges/${challengeID}/flags/${flagID}`,
+    url: `/admin/challenges/${challengeId}/flags/${flagId}`,
     method: 'PUT',
     data,
+  });
+};
+
+export const getFlagSolvers = (challengeId, flagId) => {
+  return request({
+    url: `/admin/challenges/${challengeId}/flags/${flagId}/solvers`,
+    method: 'GET',
+  });
+};
+
+export const resetChallengeSolves = (challengeId) => {
+  return request({
+    url: `/admin/challenges/${challengeId}/reset-solves`,
+    method: 'POST',
   });
 };
 
@@ -131,12 +130,5 @@ export const stopTestVictim = (challengeId) => {
   return request({
     url: `/admin/challenges/${challengeId}/test/stop`,
     method: 'POST',
-  });
-};
-
-export const getFlagSolvers = (contestId, challengeId, flagId) => {
-  return request({
-    url: `/admin/contests/${contestId}/challenges/${challengeId}/flags/${flagId}/solvers`,
-    method: 'GET',
   });
 };

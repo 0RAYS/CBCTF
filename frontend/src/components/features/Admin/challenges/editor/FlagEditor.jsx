@@ -5,7 +5,7 @@ import ScoreCurveChart from '@/components/features/Admin/Contests/ScoreCurveChar
 
 export default function FlagEditor({ flag, index, onChange, onSave, onViewSolvers, disabled, dirty }) {
   const { t } = useTranslation();
-  const label = (key) => t(`admin.contests.challengeModal.labels.${key}`);
+  const label = (key) => t(`admin.challengeModal.labels.${key}`);
   return (
     <fieldset disabled={disabled} className="p-3 border border-neutral-700 rounded-md bg-black/20 space-y-4 min-w-0">
       <legend className="font-mono text-geek-400">Flag #{index + 1}</legend>
@@ -14,14 +14,14 @@ export default function FlagEditor({ flag, index, onChange, onSave, onViewSolver
           {flag.generation > 1 && (
             <Chip
               size="sm"
-              label={t('admin.contests.challengeModal.labels.generation', { generation: flag.generation })}
+              label={t('admin.challengeModal.labels.generation', { generation: flag.generation })}
               colorClass="border-geek-600/30 text-geek-300"
             />
           )}
           {flag.active === false && (
             <Chip
               size="sm"
-              label={t('admin.contests.challengeModal.labels.archived')}
+              label={t('admin.challengeModal.labels.archived')}
               colorClass="bg-yellow-400/20 text-yellow-300"
             />
           )}
@@ -35,7 +35,7 @@ export default function FlagEditor({ flag, index, onChange, onSave, onViewSolver
               icon={<IconUsers size={15} />}
               onClick={onViewSolvers}
             >
-              {t('admin.contests.challengeModal.actions.viewSolvers')}
+              {t('admin.challengeModal.actions.viewSolvers')}
             </Button>
           )}
           <Button size="sm" variant="primary" disabled={disabled || !dirty} onClick={onSave}>
@@ -44,19 +44,13 @@ export default function FlagEditor({ flag, index, onChange, onSave, onViewSolver
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Input
-          label={label('flagValueHint')}
-          value={flag.value}
-          onChange={(e) => onChange({ ...flag, value: e.target.value })}
-          placeholder={t('admin.contests.challengeModal.placeholders.flagValue')}
-        />
         <Select
           label={label('scoreCurve')}
           value={flag.score_type}
           onChange={(e) => onChange({ ...flag, score_type: Number(e.target.value) })}
           options={['static', 'linear', 'log'].map((type, value) => ({
             value,
-            label: t(`admin.contests.challengeModal.scoreCurve.${type}`),
+            label: t(`admin.challengeModal.scoreCurve.${type}`),
           }))}
         />
         {[
@@ -81,7 +75,6 @@ export default function FlagEditor({ flag, index, onChange, onSave, onViewSolver
           />
         ))}
       </div>
-      <p className="text-xs font-mono text-neutral-500">{t('admin.contests.challengeModal.labels.flagChangeNote')}</p>
       <div className={disabled ? 'pointer-events-none' : ''}>
         <ScoreCurveChart
           scoreType={flag.score_type}

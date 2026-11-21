@@ -2,24 +2,36 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@/utils/toast';
-import { getContestChallenges, removeContestChallenge } from '@/api/admin/contest';
-import { getContestChallengeCategories } from '@/api/admin/challenge';
+import { getContestChallenges, getContestList } from '@/api/admin/contest';
+import {
+  createChallenge,
+  deleteChallenge,
+  getChallenge,
+  getChallengeCategories,
+  updateChallenge,
+} from '@/api/admin/challenge';
 import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '@/config/challenges';
-import ContestChallenges from '@/components/features/Admin/Contests/challenges/ContestChallenges';
+import ChallengeTable from '@/components/features/Admin/Contests/challenges/ChallengeTable';
 import ChallengePickerSession from '@/components/features/Admin/Contests/challenges/ChallengePickerSession';
-import ChallengeEditorDialog from '@/components/features/Admin/Contests/challenges/ChallengeEditorDialog';
 import { challengeQuery } from '@/components/features/Admin/Contests/challenges/challengeData.js';
+import ChallengeEditorDialog from '@/components/features/Admin/challenges/editor/ChallengeEditorDialog.jsx';
+import { applyChallengeType, challengeDraft } from '@/components/features/Admin/challenges/editor/challengeData.js';
+import { buildChallengePayload } from '@/components/features/Admin/challenges/editor/challengePayload.js';
 import { useDebounce } from '@/hooks/useDebounce';
 
-function ContestChallengeManagement({ contestId }) {
+function ChallengeManagement({ contestId }) {
   const { t } = useTranslation();
   const [challenges, setChallenges] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [categories, setCategories] = useState(DEFAULT_CHALLENGE_CATEGORIES);
+  const [contests, setContests] = useState([]);
   const [filters, setFilters] = useState({ page: 1, type: 'all', category: 'all', name: '' });
   const [nameQuery, setNameQuery] = useState('');
   const [picker, setPicker] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [editorMode, setEditorMode] = useState('add');
+  const [initDockerCompose, setInitDockerCompose] = useState([]);
+  const [flagVersion, setFlagVersion] = useState(0);
   const [revision, setRevision] = useState(0);
   const [loadedKey, setLoadedKey] = useState('');
   const refresh = () => setRevision((previous) => previous + 1);
@@ -36,8 +48,18 @@ function ContestChallengeManagement({ contestId }) {
   }, [debouncedName]);
 
   useEffect(() => {
+    getContestList({ limit: 100, offset: 0 })
+      .then((response) => {
+        if (response.code === 200) setContests(response.data?.contests || []);
+      })
+      .catch(() => {
+        // 比赛列表加载失败不阻断本页操作
+      });
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
-    getContestChallengeCategories(contestId)
+    getChallengeCategories({ contest_id: contestId })
       .then((response) => {
         if (!cancelled && response.code === 200) setCategories(mergeChallengeCategories(response.data));
       })
@@ -69,9 +91,35 @@ function ContestChallengeManagement({ contestId }) {
     };
   }, [contestId, filters, revision, t]);
   const changeFilter = (field, value) => setFilters((previous) => ({ ...previous, page: 1, [field]: value }));
+
+  const createInContest = () => {
+    setEditorMode('add');
+    setEditing(
+      challengeDraft({
+        contest_id: contestId,
+        hidden: true,
+        flags: [{ id: 0, value: '' }],
+      })
+    );
+    setInitDockerCompose([]);
+  };
+
+  const edit = async (challenge) => {
+    try {
+      const response = await getChallenge(challenge.id);
+      if (response.code !== 200) throw new Error(response.msg || t('admin.contests.challenges.toast.fetchListFailed'));
+      const detail = challengeDraft(response.data);
+      setEditorMode('edit');
+      setEditing(detail);
+      setInitDockerCompose([{ id: detail.id, value: detail.docker_compose }]);
+    } catch (error) {
+      toast.danger({ description: error.message });
+    }
+  };
+
   const remove = async (challenge) => {
     try {
-      const response = await removeContestChallenge(contestId, challenge.id);
+      const response = await deleteChallenge(challenge.id);
       if (response.code === 200) {
         toast.success({ description: t('admin.contests.challenges.toast.removeSuccess') });
         if (challenges.length === 1 && filters.page > 1) changeFilter('page', filters.page - 1);
@@ -81,9 +129,25 @@ function ContestChallengeManagement({ contestId }) {
       toast.danger({ description: error.message || t('admin.contests.challenges.toast.removeFailed') });
     }
   };
+
+  const save = async (challenge) => {
+    try {
+      const payload = buildChallengePayload(challenge, editorMode, initDockerCompose);
+      const response =
+        editorMode === 'add' ? await createChallenge(payload) : await updateChallenge(challenge.id, payload);
+      if (response.code !== 200) throw new Error(response.msg || t('admin.contests.challenges.toast.updateFailed'));
+      toast.success({ description: t('admin.contests.challenges.toast.updateSuccess') });
+      setEditing(null);
+      setFlagVersion((previous) => previous + 1);
+      refresh();
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.challenges.toast.updateFailed') });
+    }
+  };
+
   return (
     <>
-      <ContestChallenges
+      <ChallengeTable
         challenges={challenges}
         totalCount={totalCount}
         currentPage={filters.page}
@@ -94,8 +158,9 @@ function ContestChallengeManagement({ contestId }) {
         nameQuery={nameQuery}
         loading={loading}
         onPageChange={(page) => changeFilter('page', page)}
-        onAddChallenge={() => setPicker(true)}
-        onEditChallenge={setEditing}
+        onAddChallenge={createInContest}
+        onCopyChallenge={() => setPicker(true)}
+        onEditChallenge={edit}
         onDeleteChallenge={remove}
         onFilterTypeChange={(value) => changeFilter('type', value)}
         onFilterCategoryChange={(value) => changeFilter('category', value)}
@@ -104,6 +169,7 @@ function ContestChallengeManagement({ contestId }) {
       {picker && (
         <ChallengePickerSession
           contestId={contestId}
+          contests={contests}
           categories={categories}
           onClose={() => setPicker(false)}
           onAdded={refresh}
@@ -111,18 +177,35 @@ function ContestChallengeManagement({ contestId }) {
       )}
       {editing && (
         <ChallengeEditorDialog
-          key={editing.id}
-          contestId={contestId}
+          key={editing.id || 'new'}
+          isOpen
+          mode={editorMode}
           challenge={editing}
+          categories={categories}
+          contests={contests}
+          flagVersion={flagVersion}
           onClose={() => setEditing(null)}
-          onSaved={refresh}
+          onSubmit={save}
+          onChange={(updated) => setEditing((previous) => applyChallengeType(previous, updated))}
+          onAddFlag={() =>
+            setEditing((previous) => ({ ...previous, flags: [...previous.flags, { id: 0, value: '' }] }))
+          }
+          onRemoveFlag={(index) =>
+            setEditing((previous) => ({ ...previous, flags: previous.flags.filter((_, i) => i !== index) }))
+          }
+          onFlagChange={(index, value) =>
+            setEditing((previous) => ({
+              ...previous,
+              flags: previous.flags.map((flag, i) => (i === index ? { ...flag, value } : flag)),
+            }))
+          }
         />
       )}
     </>
   );
 }
 
-export default function AdminContestChallengesPage() {
+export default function AdminChallengePage() {
   const { id } = useParams();
-  return <ContestChallengeManagement key={id} contestId={Number(id)} />;
+  return <ChallengeManagement key={id} contestId={Number(id)} />;
 }

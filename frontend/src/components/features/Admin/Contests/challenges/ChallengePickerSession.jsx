@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getNotInContestChallengeList } from '@/api/admin/challenge';
-import { addContestChallenge } from '@/api/admin/contest';
+import { getChallengeList } from '@/api/admin/challenge';
+import { copyChallengesToContest } from '@/api/admin/contest';
 import { toast } from '@/utils/toast';
 import ChallengePickerDialog from '@/components/features/Admin/Contests/challenges/ChallengePickerDialog';
 import {
@@ -11,9 +11,16 @@ import {
 import useBatchAction from '@/components/features/Admin/batch/useBatchAction.js';
 import { remainingBatchIds } from '@/components/features/Admin/batch/batchModel.js';
 
-export default function ChallengePickerSession({ contestId, categories, onClose, onAdded }) {
+export default function ChallengePickerSession({ contestId, contests = [], categories, onClose, onAdded }) {
   const { t } = useTranslation();
-  const [filters, setFilters] = useState({ page: 1, type: 'all', category: 'all', name: '', description: '' });
+  const [filters, setFilters] = useState({
+    page: 1,
+    type: 'all',
+    category: 'all',
+    name: '',
+    description: '',
+    contest: 'all',
+  });
   const [challenges, setChallenges] = useState([]);
   const [count, setCount] = useState(0);
   const [selected, setSelected] = useState([]);
@@ -23,7 +30,7 @@ export default function ChallengePickerSession({ contestId, categories, onClose,
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getNotInContestChallengeList(contestId, challengeQuery(filters))
+    getChallengeList(challengeQuery(filters))
       .then((response) => {
         if (cancelled) return;
         if (response.code !== 200)
@@ -43,18 +50,18 @@ export default function ChallengePickerSession({ contestId, categories, onClose,
     return () => {
       cancelled = true;
     };
-  }, [contestId, filters, revision, t]);
+  }, [filters, revision, t]);
   const changeFilter = (key, value) => {
     setLoading(true);
     setFilters((previous) => ({ ...previous, page: 1, [key]: value }));
   };
-  const add = async () => {
+  const copy = async () => {
     if (!selected.length) return;
     const ids = selected.map((item) => item.id);
-    await action.run(() => addContestChallenge(contestId, ids), {
+    await action.run(() => copyChallengesToContest(contestId, ids), {
       nested: true,
-      successMessage: t('admin.contests.challenges.toast.addSuccess'),
-      failureMessage: t('admin.contests.challenges.toast.addFailed'),
+      successMessage: t('admin.contests.challenges.toast.copySuccess'),
+      failureMessage: t('admin.contests.challenges.toast.copyFailed'),
       onResult: (batch) => {
         const remaining = batch ? remainingBatchIds(ids, batch) : [];
         setSelected((current) => current.filter((item) => !ids.includes(item.id) || remaining.includes(item.id)));
@@ -70,6 +77,7 @@ export default function ChallengePickerSession({ contestId, categories, onClose,
       challenges={challenges}
       selectedChallenges={selected}
       categories={categories}
+      contests={contests}
       totalCount={count}
       currentPage={filters.page}
       pageSize={10}
@@ -81,14 +89,16 @@ export default function ChallengePickerSession({ contestId, categories, onClose,
       descQuery={filters.description}
       type={filters.type}
       category={filters.category}
+      contest={filters.contest}
       onClose={() => {
         if (!action.pending) onClose();
       }}
-      onConfirm={add}
+      onConfirm={copy}
       onSearch={(value) => changeFilter('name', value)}
       onDescSearch={(value) => changeFilter('description', value)}
       onFilterCategoryChange={(value) => changeFilter('category', value)}
       onFilterTypeChange={(value) => changeFilter('type', value)}
+      onFilterContestChange={(value) => changeFilter('contest', value)}
       onPageChange={(value) => changeFilter('page', value)}
       onSelect={(challenge) => setSelected((previous) => toggleChallengeSelection(previous, challenge))}
     />

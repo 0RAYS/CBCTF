@@ -40,7 +40,7 @@ export default function TrafficHeader({ topology, container }) {
           </div>
           <div className="mt-1 max-w-[64ch] text-xs leading-5 text-neutral-400">
             {t('admin.contests.trafficGraph.hero.subtitle', {
-              challenge: container?.challenge || container?.contest_challenge_name || `#${container?.id}`,
+              challenge: container?.challenge || container?.challenge_name || `#${container?.id}`,
             })}
           </div>
         </div>

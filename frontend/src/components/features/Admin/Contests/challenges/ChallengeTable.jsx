@@ -1,11 +1,11 @@
 import { motion } from 'motion/react';
-import { IconEdit, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
+import { IconCopy, IconEdit, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
 import { Button, Chip, Input, List, Pagination } from '@/components/common';
 import { useTranslation } from 'react-i18next';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '@/config/challengeChips';
 
 /** 赛事内部赛题管理组件 */
-function AdminContestChallenges({
+function ChallengeTable({
   challenges = [],
   totalCount = 0,
   currentPage = 1,
@@ -16,6 +16,7 @@ function AdminContestChallenges({
   loading = false,
   onPageChange,
   onAddChallenge,
+  onCopyChallenge,
   onEditChallenge,
   onDeleteChallenge,
   onFilterTypeChange,
@@ -155,9 +156,12 @@ function AdminContestChallenges({
 
   return (
     <div className="w-full mx-auto">
-      <div className="flex justify-end items-center mb-8">
+      <div className="flex flex-wrap justify-end items-center gap-3 mb-8">
+        <Button variant="outline" size="sm" align="icon-left" icon={<IconCopy size={18} />} onClick={onCopyChallenge}>
+          {t('admin.contests.challenges.actions.copyFromLibrary')}
+        </Button>
         <Button variant="primary" size="sm" align="icon-left" icon={<IconPlus size={18} />} onClick={onAddChallenge}>
-          {t('admin.challenge.actions.add')}
+          {t('admin.contests.challenges.actions.newInContest')}
         </Button>
       </div>
 
@@ -288,4 +292,4 @@ function AdminContestChallenges({
   );
 }
 
-export default AdminContestChallenges;
+export default ChallengeTable;

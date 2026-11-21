@@ -24,7 +24,7 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
     let cancelled = false;
     setLoading(true);
     setSolvers([]);
-    getFlagSolvers(contestId, challengeId, flagId)
+    getFlagSolvers(challengeId, flagId)
       .then((res) => {
         if (!cancelled && res.code === 200) {
           setSolvers(res.data?.solvers ?? []);
@@ -39,7 +39,7 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
     return () => {
       cancelled = true;
     };
-  }, [isOpen, flagId, contestId, challengeId]);
+  }, [isOpen, flagId, challengeId]);
 
   if (!isOpen) return null;
 
@@ -49,14 +49,14 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
         isOpen={isOpen}
         onClose={onClose}
         size="lg"
-        title={t('admin.contests.challengeModal.solversModal.title', { index: flagIndex + 1 })}
+        title={t('admin.challengeModal.solversModal.title', { index: flagIndex + 1 })}
       >
         <div className="p-4 max-h-[60vh] overflow-y-auto table-scroll">
           {loading ? (
             <p className="text-center text-sm font-mono text-neutral-400 py-8">{t('common.loading')}</p>
           ) : solvers.length === 0 ? (
             <p className="text-center text-sm font-mono text-neutral-500 py-8">
-              {t('admin.contests.challengeModal.solversModal.empty')}
+              {t('admin.challengeModal.solversModal.empty')}
             </p>
           ) : (
             <table className="table-adaptive text-sm font-mono" style={{ '--table-min-width': '640px' }}>
@@ -66,16 +66,16 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
                     {t('common.rank')}
                   </th>
                   <th className="text-left py-2 pr-4" scope="col" style={{ width: FLEX_COLUMN_WIDTH }}>
-                    {t('admin.contests.challengeModal.solversModal.columns.user')}
+                    {t('admin.challengeModal.solversModal.columns.user')}
                   </th>
                   <th className="text-left py-2 pr-4" scope="col" style={{ width: FLEX_COLUMN_WIDTH }}>
-                    {t('admin.contests.challengeModal.solversModal.columns.team')}
+                    {t('admin.challengeModal.solversModal.columns.team')}
                   </th>
                   <th className="text-right py-2 pr-4 w-28" scope="col">
                     {t('common.score')}
                   </th>
                   <th className="text-right py-2 w-40" scope="col">
-                    {t('admin.contests.challengeModal.solversModal.columns.solvedAt')}
+                    {t('admin.challengeModal.solversModal.columns.solvedAt')}
                   </th>
                 </tr>
               </thead>
