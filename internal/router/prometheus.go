@@ -22,6 +22,7 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.NewCTFCollector())
 	registerer.MustRegister(p.NewGormCollector())
 	registerer.MustRegister(p.NewPostgresCollector())
+	registerer.MustRegister(p.NewRedisCollector())
 
 	// 注册 HTTP 基础指标
 	registerer.MustRegister(p.HttpRequestsTotal)
@@ -51,6 +52,10 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.TaskEnqueuedTotal)
 	registerer.MustRegister(p.TaskProcessedTotal)
 	registerer.MustRegister(p.TaskProcessingDuration)
+
+	// 注册 Valkey/Redis 指标
+	registerer.MustRegister(p.RedisCommandDuration)
+	registerer.MustRegister(p.RedisCommandErrorsTotal)
 
 	// 注册 Go 运行时指标
 	registerer.MustRegister(collectors.NewGoCollector())

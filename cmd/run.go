@@ -15,6 +15,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/oa"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/router"
 	"CBCTF/internal/sys"
@@ -27,6 +28,7 @@ var server *http.Server
 func run() {
 	db.Init()
 	redis.Init()
+	prometheus.AttachRedisMetrics(redis.RDB)
 	k8s.Init()
 	oa.Init()
 	email.Init()
