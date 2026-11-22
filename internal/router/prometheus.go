@@ -24,6 +24,8 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.NewGormCollector())
 	registerer.MustRegister(p.NewPostgresCollector())
 	registerer.MustRegister(p.NewRedisCollector())
+	registerer.MustRegister(p.NewBuildCollector())
+	registerer.MustRegister(p.NewDependencyCollector())
 	registerer.MustRegister(task.NewQueueCollector())
 
 	// 注册 HTTP 基础指标
@@ -36,6 +38,7 @@ func RegisterMetricsRouter(router *gin.Engine) {
 
 	// 注册 CTF 业务事件指标
 	registerer.MustRegister(p.FlagSubmissionsTotal)
+	registerer.MustRegister(p.FlagSolveDuration)
 	registerer.MustRegister(p.BloodTotal)
 	registerer.MustRegister(p.UserRegistrationTotal)
 	registerer.MustRegister(p.UserLoginTotal)
@@ -43,8 +46,11 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.FileUploadTotal)
 	registerer.MustRegister(p.FileUploadSize)
 	registerer.MustRegister(p.EmailSentTotal)
+	registerer.MustRegister(p.WebhookDeliveriesTotal)
+	registerer.MustRegister(p.WebhookDeliveryDuration)
 	registerer.MustRegister(p.RateLimitHits)
 	registerer.MustRegister(p.CheatDetectionsTotal)
+	registerer.MustRegister(p.CheatReviewsTotal)
 
 	// 注册靶机与 Kubernetes 指标
 	registerer.MustRegister(p.VictimTransitionsTotal)

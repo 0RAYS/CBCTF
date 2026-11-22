@@ -8,6 +8,7 @@ import (
 	"github.com/hibiken/asynq"
 
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/webhook"
 )
 
@@ -27,8 +28,11 @@ func HandleWebhookTask(_ context.Context, task *asynq.Task) error {
 	if err != nil {
 		return err
 	}
+	start := time.Now()
 	if err := webhook.SendPayload(payload.Event, payload.Target); err != nil {
+		prometheus.RecordWebhookDelivery(payload.Event.Type, time.Since(start).Seconds(), false)
 		return fmt.Errorf("send webhook failed: event_id=%d webhook_id=%d event_type=%s: %w", payload.Event.ID, payload.Target.ID, payload.Event.Type, err)
 	}
+	prometheus.RecordWebhookDelivery(payload.Event.Type, time.Since(start).Seconds(), true)
 	return nil
 }

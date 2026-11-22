@@ -97,11 +97,13 @@ func OauthCallback(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.OauthLoginEventType)
 	result, ret := protocol.Exchange(ctx, provider)
 	if !ret.OK {
+		prometheus.RecordUserLogin(provider.Provider, false)
 		resp.JSON(ctx, ret)
 		return
 	}
 	user, ret := service.OauthLogin(db.DB.WithContext(ctx.Request.Context()), provider, result)
 	if !ret.OK {
+		prometheus.RecordUserLogin(provider.Provider, false)
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -116,7 +118,7 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	prometheus.RecordUserLogin(provider.Provider)
+	prometheus.RecordUserLogin(provider.Provider, true)
 	url := fmt.Sprintf("%s/platform/#/oauth/callback?code=%s", config.Env.Host, code)
 	ctx.Redirect(http.StatusTemporaryRedirect, url)
 }

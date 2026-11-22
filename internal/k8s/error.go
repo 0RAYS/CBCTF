@@ -14,6 +14,9 @@ import (
 // could not be identified safely.
 var errMissingPodIdentity = errors.New("refusing deletion without a Pod name and observed UID")
 
+// errClientUnavailable marks a request made before the clients were built.
+var errClientUnavailable = errors.New("kubernetes client is not initialized")
+
 // errMissingNamespace marks a deletion that was refused because the target
 // namespace was not given.
 var errMissingNamespace = errors.New("refusing deletion without a namespace")

@@ -32,6 +32,8 @@ jobs:
         run: |
           echo "tag=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
           echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          echo "version=${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "commit=${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - name: Delete old package versions
         uses: actions/delete-package-versions@v5.0.0
@@ -60,5 +62,8 @@ jobs:
           tags: |
             ghcr.io/${{ steps.vars.outputs.repo }}:${{ steps.vars.outputs.tag }}
             ghcr.io/${{ steps.vars.outputs.repo }}:latest
+          build-args: |
+            VERSION=${{ steps.vars.outputs.version }}
+            COMMIT=${{ steps.vars.outputs.commit }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

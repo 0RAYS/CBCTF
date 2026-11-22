@@ -144,6 +144,7 @@ func Submit(
 	}
 
 	prometheus.RecordFlagSubmission(contest.ID, string(challenge.Type), true)
+	prometheus.RecordFlagSolve(contest.ID, string(challenge.Type), submission.CreatedAt.Sub(contest.Start).Seconds())
 	return submission, model.SuccessRetVal()
 }
 

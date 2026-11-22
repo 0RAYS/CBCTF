@@ -61,7 +61,18 @@ func UpdateCheat(tx *gorm.DB, cheat model.Cheat, form dto.UpdateCheatForm, revie
 		options.ReviewedBy = &reviewer
 		options.ReviewedAt = &now
 	}
-	return db.InitCheatRepo(tx).Update(cheat.ID, options)
+	ret := db.InitCheatRepo(tx).Update(cheat.ID, options)
+	if !ret.OK {
+		return ret
+	}
+	if form.Checked != nil {
+		action := "unreviewed"
+		if *form.Checked {
+			action = "reviewed"
+		}
+		prometheus.RecordCheatReview(cheat.ContestID, action)
+	}
+	return ret
 }
 
 func DeleteContestCheats(tx *gorm.DB, contest model.Contest) model.RetVal {

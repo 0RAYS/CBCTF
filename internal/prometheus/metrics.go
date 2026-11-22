@@ -66,6 +66,16 @@ var (
 		[]string{"contest_id", "challenge_type", "status"},
 	)
 
+	// FlagSolveDuration 记录从比赛开始到解出该题的耗时，直接反映赛题难度与赛况。
+	FlagSolveDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "cbctf_flag_solve_duration_seconds",
+			Help:    "Time from contest start until a challenge was solved",
+			Buckets: prometheus.ExponentialBuckets(60, 2, 12),
+		},
+		[]string{"contest_id", "challenge_type"},
+	)
+
 	BloodTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cbctf_blood_total",
@@ -85,9 +95,9 @@ var (
 	UserLoginTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cbctf_user_logins_total",
-			Help: "Total number of user logins",
+			Help: "Total number of user login attempts",
 		},
-		[]string{"oauth_provider"},
+		[]string{"oauth_provider", "status"},
 	)
 
 	PasswordResetTotal = prometheus.NewCounterVec(
@@ -123,6 +133,24 @@ var (
 		[]string{"email_kind", "status"},
 	)
 
+	// WebhookDeliveriesTotal 记录 Webhook 投递结果，status 为 success/failure。
+	WebhookDeliveriesTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cbctf_webhook_deliveries_total",
+			Help: "Total number of webhook delivery attempts",
+		},
+		[]string{"event_type", "status"},
+	)
+
+	WebhookDeliveryDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "cbctf_webhook_delivery_duration_seconds",
+			Help:    "Webhook delivery duration in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"event_type", "status"},
+	)
+
 	RateLimitHits = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cbctf_rate_limit_hits_total",
@@ -137,6 +165,15 @@ var (
 			Help: "Total number of cheat detection events",
 		},
 		[]string{"contest_id", "reason_type"},
+	)
+
+	// CheatReviewsTotal 记录管理员对作弊线索的复核动作。
+	CheatReviewsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cbctf_cheat_reviews_total",
+			Help: "Total number of cheat evidence reviews",
+		},
+		[]string{"contest_id", "action"},
 	)
 
 	// VictimTransitionsTotal 记录靶机容器的状态跃迁。action 取 start/stop/expire/ready。

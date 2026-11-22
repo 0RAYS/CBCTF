@@ -36,6 +36,7 @@ type ctfSnapshot struct {
 	challenges      []challengeCount
 	victimCounts    []statusCount
 	generatorCounts []statusCount
+	cheatsPending   int64
 }
 
 // CTFCollector implements prometheus.Collector and reads metrics from DB state.
@@ -49,6 +50,7 @@ type CTFCollector struct {
 	victimsActiveDesc       *prometheus.Desc
 	victimsDesc             *prometheus.Desc
 	generatorStatusDesc     *prometheus.Desc
+	cheatsPendingDesc       *prometheus.Desc
 
 	cache cacheMemo[ctfSnapshot]
 }
@@ -96,6 +98,11 @@ func NewCTFCollector() *CTFCollector {
 			"Number of dynamic challenge generators by status (DB-driven)",
 			[]string{"status"}, nil,
 		),
+		cheatsPendingDesc: prometheus.NewDesc(
+			"cbctf_cheats_pending",
+			"Number of cheat evidence records awaiting review (DB-driven)",
+			nil, nil,
+		),
 	}
 }
 
@@ -109,6 +116,7 @@ func (c *CTFCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.victimsActiveDesc
 	ch <- c.victimsDesc
 	ch <- c.generatorStatusDesc
+	ch <- c.cheatsPendingDesc
 }
 
 func (c *CTFCollector) Collect(ch chan<- prometheus.Metric) {
@@ -155,6 +163,8 @@ func (c *CTFCollector) Collect(ch chan<- prometheus.Metric) {
 	for _, count := range snapshot.generatorCounts {
 		ch <- prometheus.MustNewConstMetric(c.generatorStatusDesc, prometheus.GaugeValue, float64(count.Count), count.Status)
 	}
+
+	ch <- prometheus.MustNewConstMetric(c.cheatsPendingDesc, prometheus.GaugeValue, float64(snapshot.cheatsPending))
 
 	running := int64(0)
 	for _, count := range snapshot.victimCounts {
@@ -225,6 +235,10 @@ func (c *CTFCollector) collectSnapshot(root *gorm.DB) (ctfSnapshot, bool) {
 		return snapshot, false
 	}
 	snapshot.generatorCounts = generatorRows
+
+	if err := root.Model(&model.Cheat{}).Where("checked = ?", false).Count(&snapshot.cheatsPending).Error; err != nil {
+		return snapshot, false
+	}
 
 	return snapshot, true
 }

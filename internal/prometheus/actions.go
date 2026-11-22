@@ -18,8 +18,13 @@ func RecordUserRegister(provider string) {
 	UserRegistrationTotal.WithLabelValues(provider).Inc()
 }
 
-func RecordUserLogin(provider string) {
-	UserLoginTotal.WithLabelValues(provider).Inc()
+func RecordUserLogin(provider string, success bool) {
+	UserLoginTotal.WithLabelValues(provider, statusLabel(success)).Inc()
+}
+
+// RecordFlagSolve 记录从比赛开始到解出该题的耗时。
+func RecordFlagSolve(contestID uint, challengeType string, duration float64) {
+	FlagSolveDuration.WithLabelValues(strconv.FormatUint(uint64(contestID), 10), challengeType).Observe(duration)
 }
 
 func RecordPasswordReset(success bool) {
@@ -33,6 +38,17 @@ func RecordFileUpload(uploadType string, size int64) {
 
 func RecordEmailSent(emailKind string, success bool) {
 	EmailSentTotal.WithLabelValues(emailKind, statusLabel(success)).Inc()
+}
+
+func RecordWebhookDelivery(eventType string, duration float64, success bool) {
+	status := statusLabel(success)
+	WebhookDeliveriesTotal.WithLabelValues(eventType, status).Inc()
+	WebhookDeliveryDuration.WithLabelValues(eventType, status).Observe(duration)
+}
+
+// RecordCheatReview 记录管理员对作弊线索的复核动作。
+func RecordCheatReview(contestID uint, action string) {
+	CheatReviewsTotal.WithLabelValues(strconv.FormatUint(uint64(contestID), 10), action).Inc()
 }
 
 func RecordRateLimitHit(endpoint string) {

@@ -42,7 +42,6 @@ type RedisCollector struct {
 	poolTimeoutsDesc      *prometheus.Desc
 	poolWaitCountDesc     *prometheus.Desc
 	poolWaitDurationDesc  *prometheus.Desc
-	dependencyReadyDesc   *prometheus.Desc
 	collectionSuccessDesc *prometheus.Desc
 }
 
@@ -93,11 +92,6 @@ func NewRedisCollector() *RedisCollector {
 			"Total time in seconds spent waiting for a Redis connection.",
 			nil, nil,
 		),
-		dependencyReadyDesc: prometheus.NewDesc(
-			"cbctf_dependency_ready",
-			"Whether a dependency the platform needs is reachable.",
-			[]string{"dependency"}, nil,
-		),
 		collectionSuccessDesc: prometheus.NewDesc(
 			"cbctf_redis_collection_success",
 			"Whether the Redis collector reached the server.",
@@ -116,14 +110,12 @@ func (c *RedisCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.poolTimeoutsDesc
 	ch <- c.poolWaitCountDesc
 	ch <- c.poolWaitDurationDesc
-	ch <- c.dependencyReadyDesc
 	ch <- c.collectionSuccessDesc
 }
 
 func (c *RedisCollector) Collect(ch chan<- prometheus.Metric) {
 	client := redisClientRef.Load()
 	if client == nil {
-		ch <- prometheus.MustNewConstMetric(c.dependencyReadyDesc, prometheus.GaugeValue, 0, "valkey")
 		ch <- prometheus.MustNewConstMetric(c.collectionSuccessDesc, prometheus.GaugeValue, 0)
 		return
 	}
@@ -142,11 +134,9 @@ func (c *RedisCollector) Collect(ch chan<- prometheus.Metric) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if err := client.Ping(ctx).Err(); err != nil {
-		ch <- prometheus.MustNewConstMetric(c.dependencyReadyDesc, prometheus.GaugeValue, 0, "valkey")
 		ch <- prometheus.MustNewConstMetric(c.collectionSuccessDesc, prometheus.GaugeValue, 0)
 		return
 	}
-	ch <- prometheus.MustNewConstMetric(c.dependencyReadyDesc, prometheus.GaugeValue, 1, "valkey")
 	ch <- prometheus.MustNewConstMetric(c.collectionSuccessDesc, prometheus.GaugeValue, 1)
 }
 

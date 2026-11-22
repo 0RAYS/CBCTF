@@ -115,20 +115,24 @@ func Register(ctx *gin.Context) {
 func Login(ctx *gin.Context) {
 	var form dto.LoginForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
+		prometheus.RecordUserLogin(oa.LocalProvider, false)
 		resp.JSON(ctx, ret)
 		return
 	}
 	if form.CaptchaID == "" || form.Captcha == "" {
+		prometheus.RecordUserLogin(oa.LocalProvider, false)
 		resp.JSON(ctx, model.FailRetVal(i18n.Model.User.CaptchaRequired, "Captcha", "", nil))
 		return
 	}
 	if ret := redis.VerifyCaptcha(ctx.Request.Context(), form.CaptchaID, form.Captcha); !ret.OK {
+		prometheus.RecordUserLogin(oa.LocalProvider, false)
 		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.LoginEventType)
 	user, ret := service.VerifyUser(db.DB.WithContext(ctx.Request.Context()), form)
 	if !ret.OK {
+		prometheus.RecordUserLogin(oa.LocalProvider, false)
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -139,7 +143,7 @@ func Login(ctx *gin.Context) {
 	ctx.Set("Self", user)
 	log.Logger.Infof("%s:%d login", user.Name, user.ID)
 	setAuthCookie(ctx, token)
-	prometheus.RecordUserLogin(oa.LocalProvider)
+	prometheus.RecordUserLogin(oa.LocalProvider, true)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.BuildUserView(db.DB.WithContext(ctx.Request.Context()), user, false), false)))
 }

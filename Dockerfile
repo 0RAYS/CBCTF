@@ -21,7 +21,14 @@ RUN go mod download
 COPY . .
 
 COPY --from=frontend-builder /app/dist ./frontend/dist
-RUN CGO_ENABLED=1 go build -ldflags="-linkmode external -extldflags '-static' -s -w" -trimpath -o CBCTF .
+
+ARG VERSION=dev
+ARG COMMIT=unknown
+RUN CGO_ENABLED=1 go build \
+    -ldflags="-linkmode external -extldflags '-static' -s -w \
+      -X CBCTF/internal/version.Version=${VERSION} \
+      -X CBCTF/internal/version.Commit=${COMMIT}" \
+    -trimpath -o CBCTF .
 
 
 FROM alpine:latest
