@@ -5,12 +5,14 @@ import (
 )
 
 var (
+	// HttpRequestsTotal code 是平台响应码：业务码与 HTTP 语义对齐（200/400/401/403/404/413/429/500），
+	// 但响应行本身始终是 HTTP 200，因此不能当作 http_status 使用。
 	HttpRequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cbctf_http_requests_total",
 			Help: "Total number of HTTP requests",
 		},
-		[]string{"method", "path", "status_code"},
+		[]string{"method", "path", "code", "status_class"},
 	)
 
 	HttpRequestDuration = prometheus.NewHistogramVec(
@@ -29,6 +31,23 @@ var (
 			Buckets: prometheus.ExponentialBuckets(100, 2, 10),
 		},
 		[]string{"method", "path", "status_class"},
+	)
+
+	HttpRequestSize = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "cbctf_http_request_size_bytes",
+			Help:    "Histogram of HTTP request body sizes.",
+			Buckets: prometheus.ExponentialBuckets(1024, 2, 12),
+		},
+		[]string{"method", "path"},
+	)
+
+	HttpPanicsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cbctf_http_panics_total",
+			Help: "Total number of panics recovered by the HTTP middleware",
+		},
+		[]string{"path"},
 	)
 
 	InFlightRequests = prometheus.NewGauge(

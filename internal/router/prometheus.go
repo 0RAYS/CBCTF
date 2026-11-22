@@ -27,6 +27,8 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.HttpRequestsTotal)
 	registerer.MustRegister(p.HttpRequestDuration)
 	registerer.MustRegister(p.HttpResponseSize)
+	registerer.MustRegister(p.HttpRequestSize)
+	registerer.MustRegister(p.HttpPanicsTotal)
 	registerer.MustRegister(p.InFlightRequests)
 
 	// 注册 CTF 业务事件指标

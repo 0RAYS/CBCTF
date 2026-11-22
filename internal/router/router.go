@@ -32,6 +32,9 @@ func Init() *gin.Engine {
 	}
 
 	router.Use(middleware.SetTrace, middleware.Cors())
+	// Gin 在注册路由时快照根 group 的中间件链，因此这行必须早于静态资源路由，
+	// 否则前端资源和根跳转既不会被计量也没有 panic 兜底。
+	router.Use(middleware.Logger, middleware.Prometheus, middleware.Events, middleware.Recovery)
 
 	{
 		router.GET("/", func(ctx *gin.Context) {
@@ -54,8 +57,6 @@ func Init() *gin.Engine {
 		router.GET("/platform/*filepath", static)
 		router.HEAD("/platform/*filepath", static)
 	}
-
-	router.Use(middleware.Logger, middleware.Prometheus, middleware.Events, middleware.Recovery)
 
 	RegisterMetricsRouter(router)
 	pprof.Register(router.Group("", middleware.PProfWhitelist))

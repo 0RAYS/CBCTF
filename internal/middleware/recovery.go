@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/resp"
 )
 
@@ -18,6 +19,12 @@ func Recovery(ctx *gin.Context) {
 		if err := recover(); err != nil {
 			panicErr := fmt.Errorf("panic recovered: %v", err)
 			_ = ctx.Error(panicErr)
+
+			path := ctx.FullPath()
+			if path == "" {
+				path = "__not_found__"
+			}
+			prometheus.HttpPanicsTotal.WithLabelValues(path).Inc()
 
 			log.Logger.WithFields(logrus.Fields{
 				"Type":     log.GinLogType,

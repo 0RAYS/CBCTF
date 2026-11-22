@@ -14,6 +14,10 @@ import (
 	"CBCTF/internal/resp"
 )
 
+// MetricsPath 是 Prometheus 抓取端点。它自身的请求不计入 HTTP 指标，
+// 否则抓取频率和采集耗时会被算进流量与延迟分位数里。
+const MetricsPath = "/metrics"
+
 func MetricsWhitelist(ctx *gin.Context) {
 	clientIP := ctx.ClientIP()
 	ip := net.ParseIP(clientIP)
@@ -32,25 +36,31 @@ func MetricsWhitelist(ctx *gin.Context) {
 }
 
 func Prometheus(ctx *gin.Context) {
+	if ctx.FullPath() == MetricsPath {
+		ctx.Next()
+		return
+	}
+
 	start := time.Now()
 	prometheus.InFlightRequests.Inc()
+	defer prometheus.InFlightRequests.Dec()
 
 	ctx.Next()
 
-	status := ctx.GetInt(resp.CTXStatusCodeKey)
-	if status == 0 {
-		status = ctx.Writer.Status()
+	code := ctx.GetInt(resp.CTXStatusCodeKey)
+	if code == 0 {
+		code = ctx.Writer.Status()
 	}
 	path := ctx.FullPath()
 	if path == "" {
 		path = "__not_found__"
 	}
-	statusClass := strconv.Itoa(status/100) + "xx"
+	statusClass := strconv.Itoa(code/100) + "xx"
 
-	prometheus.InFlightRequests.Dec()
-	prometheus.HttpRequestsTotal.WithLabelValues(ctx.Request.Method, path, strconv.Itoa(status)).Inc()
+	prometheus.HttpRequestsTotal.WithLabelValues(ctx.Request.Method, path, strconv.Itoa(code), statusClass).Inc()
 	prometheus.HttpRequestDuration.WithLabelValues(ctx.Request.Method, path, statusClass).Observe(time.Since(start).Seconds())
-	if size := ctx.Writer.Size(); size > 0 {
-		prometheus.HttpResponseSize.WithLabelValues(ctx.Request.Method, path, statusClass).Observe(float64(size))
+	prometheus.HttpResponseSize.WithLabelValues(ctx.Request.Method, path, statusClass).Observe(float64(ctx.Writer.Size()))
+	if size := ctx.Request.ContentLength; size > 0 {
+		prometheus.HttpRequestSize.WithLabelValues(ctx.Request.Method, path).Observe(float64(size))
 	}
 }
