@@ -35,6 +35,93 @@ gin:
 
 未在白名单内的 IP 访问 `/metrics` 会返回 `403 Forbidden`。
 
+### 指标内容
+
+平台自身指标统一使用 `cbctf_` 前缀，PostgreSQL 与连接池指标沿用 `postgres_`、`gorm_` 前缀。仓库内的 `grafana/CBCTF-Dashboard.json` 是配套的 Grafana 仪表盘，可直接导入使用。
+
+#### 服务状态
+
+| 指标 | 说明 |
+| --- | --- |
+| `cbctf_build_info{version,commit,go_version}` | 构建版本信息，`version`/`commit` 由镜像构建时注入 |
+| `cbctf_uptime_seconds` | 进程运行时长 |
+| `cbctf_dependency_ready{dependency}` | 依赖就绪状态，`dependency` 取 `postgres`、`valkey`、`kubernetes`，值为 1 表示可用 |
+| `cbctf_ctf_collection_success{section}`、`postgres_collection_success`、`cbctf_redis_collection_success`、`cbctf_task_collection_success` | 各采集器最近一次采集是否成功，值为 0 时对应面板数据已过期 |
+
+#### HTTP 请求
+
+| 指标 | 说明 |
+| --- | --- |
+| `cbctf_http_requests_total{method,path,code,status_class}` | 请求计数。`code` 是平台业务响应码（业务码与 HTTP 语义对齐），但响应行始终是 HTTP 200，不能当作 HTTP 状态码使用；`status_class` 是由 `code` 派生的 `2xx`/`4xx`/`5xx` |
+| `cbctf_http_request_duration_seconds{method,path,status_class}` | 请求处理耗时分布 |
+| `cbctf_http_response_size_bytes{method,path,status_class}` | 响应体大小分布 |
+| `cbctf_http_request_size_bytes{method,path}` | 请求体大小分布 |
+| `cbctf_http_in_flight_requests` | 当前正在处理的请求数 |
+| `cbctf_http_panics_total{path}` | 被中间件捕获的 panic 次数，任何增长都需要排查 |
+
+#### CTF 业务
+
+| 指标 | 说明 |
+| --- | --- |
+| `cbctf_flag_submissions_total{contest_id,challenge_type,status}` | Flag 提交计数 |
+| `cbctf_flag_solve_duration_seconds{contest_id,challenge_type}` | 从比赛开始到解出该题的耗时，反映赛题难度 |
+| `cbctf_blood_total{contest_id,blood_order}` | 一血/二血/三血事件计数 |
+| `cbctf_contest_teams{contest_id}`、`cbctf_contest_participants{contest_id}` | 各比赛的战队数与参赛人数 |
+| `cbctf_contests{status}` | 按状态（`coming`/`running`/`paused`/`over`）统计比赛数量 |
+| `cbctf_challenges{contest_id,challenge_type}` | 各比赛的题目数量 |
+| `cbctf_victims{status}`、`cbctf_victims_active` | 靶机容器状态分布与活跃数量 |
+| `cbctf_generators{status}` | 生成器池状态分布 |
+| `cbctf_cheat_detections_total{contest_id,reason_type}` | 作弊检测事件计数 |
+| `cbctf_cheat_reviews_total{contest_id,action}` | 管理员复核作弊线索的动作计数 |
+| `cbctf_cheats_pending` | 待复核的作弊线索数量 |
+
+#### 靶机生命周期与 Kubernetes
+
+| 指标 | 说明 |
+| --- | --- |
+| `cbctf_victim_transitions_total{action,result}` | 靶机状态跃迁计数，`action` 取 `start`/`stop`/`expire`/`ready` |
+| `cbctf_victim_lifecycle_duration_seconds{result}` | 从创建到容器就绪的耗时，即调度与镜像拉取的真实延迟 |
+| `cbctf_victim_readiness_failures_total{reason}` | 靶机始终未能就绪的数量与原因 |
+| `cbctf_k8s_operation_errors_total{operation}` | 失败的 Kubernetes 操作计数 |
+
+#### 用户、文件、邮件与安全
+
+| 指标 | 说明 |
+| --- | --- |
+| `cbctf_user_registrations_total{oauth_provider}` | 注册计数 |
+| `cbctf_user_logins_total{oauth_provider,status}` | 登录尝试计数 |
+| `cbctf_password_resets_total{status}` | 密码重置计数 |
+| `cbctf_file_uploads_total{file_type}`、`cbctf_file_upload_size_bytes{file_type}` | 文件上传计数与大小分布 |
+| `cbctf_email_sent_total{email_kind,status}` | 邮件发送计数 |
+| `cbctf_webhook_deliveries_total{event_type,status}`、`cbctf_webhook_delivery_duration_seconds{event_type,status}` | Webhook 投递计数与耗时 |
+| `cbctf_rate_limit_hits_total{endpoint}` | 限流命中计数 |
+
+#### 定时任务与异步任务
+
+| 指标 | 说明 |
+| --- | --- |
+| `cbctf_cron_job_runs_total{job_name,status}`、`cbctf_cron_job_duration_seconds{job_name}` | 定时任务运行计数与耗时 |
+| `cbctf_task_enqueued_total{task_type,status}`、`cbctf_task_processed_total{task_type,status}` | 异步任务入队与处理计数 |
+| `cbctf_task_processing_duration_seconds{task_type,status}` | 异步任务处理耗时 |
+| `cbctf_task_retries_total{task_type}` | 异步任务重试计数 |
+| `cbctf_task_queue_depth{queue,state}` | 队列瞬时深度，按任务状态拆分 |
+| `cbctf_task_queue_latency_seconds{queue}` | 队列中最老待处理任务的等待时间，积压告警的主要依据 |
+| `cbctf_task_queue_memory_bytes{queue}` | 队列占用的内存 |
+
+#### 依赖组件
+
+| 指标 | 说明 |
+| --- | --- |
+| `gorm_dbstats_*` | GORM 连接池的连接数、等待次数与等待耗时 |
+| `cbctf_redis_pool_*` | Valkey/Redis 连接池连接数、空闲数、待处理请求、命中与未命中、等待时长 |
+| `cbctf_redis_command_duration_seconds{command}`、`cbctf_redis_command_errors_total{command}` | Redis 命令耗时与错误计数 |
+| `postgres_stat_database_*` | 事务提交/回滚、死锁、块命中与读取、临时文件等库级统计 |
+| `postgres_bgwriter_*` | Checkpoint 次数与耗时、后台缓冲区写入 |
+| `postgres_stat_activity_backends{datname,state}` | 各数据库的连接状态分布 |
+| `postgres_n_live_tup`、`postgres_n_dead_tup`、`postgres_n_mod_since_last_analyze` | 表的存活行、死元组与未 analyze 的变更量 |
+| `postgres_*_scan_total`、`postgres_*_blks_*_total` | 表的扫描次数与块命中/读取计数 |
+| `postgres_last_*_timestamp_seconds` | 表最近一次 vacuum / analyze 时间 |
+
 ## PProf 诊断
 
 需要进一步定位 CPU 或内存异常时，运维人员可通过 `/debug/pprof/*` 获取性能诊断数据。请只允许可信运维来源访问。
@@ -50,13 +137,6 @@ gin:
 ```
 
 未在白名单内的 IP 访问 `/debug/pprof/*` 会返回 `403 Forbidden`。
-
-### 指标内容
-
-- HTTP 请求数和延迟（按路由、方法、状态码分类）
-- Asynq 任务队列深度和处理速率
-- 作弊检测计数
-- 活跃靶机数量
 
 ## 日志系统
 
