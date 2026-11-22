@@ -182,4 +182,38 @@ var (
 		},
 		[]string{"task_type", "status"},
 	)
+
+	TaskRetriesTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cbctf_task_retries_total",
+			Help: "Total number of async task retries",
+		},
+		[]string{"task_type"},
+	)
+
+	// TaskQueueDepth 是队列瞬时深度，按任务状态拆分。
+	TaskQueueDepth = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cbctf_task_queue_depth",
+			Help: "Number of tasks in an async queue by state",
+		},
+		[]string{"queue", "state"},
+	)
+
+	// TaskQueueLatency 是队列中最老待处理任务的等待时间，积压告警的主要依据。
+	TaskQueueLatency = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cbctf_task_queue_latency_seconds",
+			Help: "Age of the oldest pending task in an async queue",
+		},
+		[]string{"queue"},
+	)
+
+	TaskQueueMemory = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "cbctf_task_queue_memory_bytes",
+			Help: "Memory used by an async queue",
+		},
+		[]string{"queue"},
+	)
 )

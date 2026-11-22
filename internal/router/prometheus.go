@@ -8,6 +8,7 @@ import (
 
 	"CBCTF/internal/middleware"
 	p "CBCTF/internal/prometheus"
+	"CBCTF/internal/task"
 )
 
 func RegisterMetricsRouter(router *gin.Engine) {
@@ -23,6 +24,7 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.NewGormCollector())
 	registerer.MustRegister(p.NewPostgresCollector())
 	registerer.MustRegister(p.NewRedisCollector())
+	registerer.MustRegister(task.NewQueueCollector())
 
 	// 注册 HTTP 基础指标
 	registerer.MustRegister(p.HttpRequestsTotal)
@@ -52,6 +54,10 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.TaskEnqueuedTotal)
 	registerer.MustRegister(p.TaskProcessedTotal)
 	registerer.MustRegister(p.TaskProcessingDuration)
+	registerer.MustRegister(p.TaskRetriesTotal)
+	registerer.MustRegister(p.TaskQueueDepth)
+	registerer.MustRegister(p.TaskQueueLatency)
+	registerer.MustRegister(p.TaskQueueMemory)
 
 	// 注册 Valkey/Redis 指标
 	registerer.MustRegister(p.RedisCommandDuration)

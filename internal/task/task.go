@@ -32,6 +32,9 @@ func enqueueTask(taskType string, t *asynq.Task, options ...asynq.Option) (*asyn
 func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 	return func(ctx context.Context, t *asynq.Task) error {
 		start := time.Now()
+		if retry, ok := asynq.GetRetryCount(ctx); ok && retry > 0 {
+			prometheus.TaskRetriesTotal.WithLabelValues(taskType).Inc()
+		}
 		err := h(ctx, t)
 		if errors.Is(err, redis.ErrGeneratorPoolEmpty) || errors.Is(err, redis.ErrNoAvailableGenerator) {
 			return err
