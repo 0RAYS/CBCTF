@@ -13,6 +13,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/service"
 )
 
@@ -34,12 +35,14 @@ func closeTimeoutVictimsTask() model.RetVal {
 		key := fmt.Sprint(victim.ID)
 		if victimExpired(victim, time.Now()) {
 			if ret = service.ForceStopVictim(root, victim); ret.OK {
+				prometheus.RecordVictimTransition("expire", true)
 				batch.Success(key, "queued")
 				log.Logger.Infof(
 					"Timeout victim stop queued: victim_id=%d team_id=%d challenge_id=%d expired_at=%s",
 					victim.ID, victim.TeamID.V, victim.ChallengeID, victim.Start.Add(victim.Duration).Format(time.RFC3339),
 				)
 			} else {
+				prometheus.RecordVictimTransition("expire", false)
 				batch.Fail(key, "stop", ret)
 				log.Logger.Warningf("Failed to queue timeout victim stop: victim_id=%d reason=%v", victim.ID, ret)
 				if model.BatchDependencyFailed(ret) {

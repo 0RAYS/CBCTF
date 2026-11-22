@@ -12,6 +12,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 )
 
 const (
@@ -68,6 +69,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 
 			ret := k8s.StopVictim(cleanupCtx, victim)
 			if !ret.OK {
+				prometheus.RecordK8sOperationError("stop_victim")
 				return fmt.Errorf("%w; cleanup enqueue failed and synchronous cleanup failed: %v", reason, ret)
 			}
 			if ret = victimRepo.Delete(victim.ID); !ret.OK {
@@ -114,6 +116,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			)
 			victim, ret = k8s.StartVictim(ctx, victim)
 			if !ret.OK {
+				prometheus.RecordK8sOperationError("start_victim")
 				return taskResourceError("start victim failed", ret)
 			}
 			if len(victim.Pods) > basePodCount {
@@ -149,6 +152,9 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 		}()
 		if err != nil && claimed && !cleanupQueued {
 			err = cleanupFailedStart(err)
+		}
+		if claimed {
+			prometheus.RecordVictimTransition("start", err == nil)
 		}
 		return err
 	})
@@ -186,8 +192,11 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 		log.Logger.Infof("Stopping victim: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
 		ret = k8s.StopVictim(ctx, victim)
 		if !ret.OK {
+			prometheus.RecordK8sOperationError("stop_victim")
+			prometheus.RecordVictimTransition("stop", false)
 			return fmt.Errorf("stop victim failed: %w", ret.AsError())
 		}
+		prometheus.RecordVictimTransition("stop", true)
 		if _, err := EnqueueLoadTrafficTask(victim); err != nil {
 			log.Logger.Warningf(
 				"Failed to enqueue load traffic task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v",

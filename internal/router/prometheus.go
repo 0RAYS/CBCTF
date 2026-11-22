@@ -46,6 +46,12 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.RateLimitHits)
 	registerer.MustRegister(p.CheatDetectionsTotal)
 
+	// 注册靶机与 Kubernetes 指标
+	registerer.MustRegister(p.VictimTransitionsTotal)
+	registerer.MustRegister(p.VictimLifecycleDuration)
+	registerer.MustRegister(p.VictimReadinessFailuresTotal)
+	registerer.MustRegister(p.K8sOperationErrorsTotal)
+
 	// 注册 Cron Job 指标
 	registerer.MustRegister(p.CronJobDuration)
 	registerer.MustRegister(p.CronJobRunsTotal)

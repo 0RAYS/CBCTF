@@ -43,6 +43,24 @@ func RecordCheatDetection(contestID uint, reasonType string) {
 	CheatDetectionsTotal.WithLabelValues(strconv.FormatUint(uint64(contestID), 10), reasonType).Inc()
 }
 
+// RecordVictimTransition 记录一次靶机状态跃迁。
+func RecordVictimTransition(action string, success bool) {
+	VictimTransitionsTotal.WithLabelValues(action, statusLabel(success)).Inc()
+}
+
+// RecordVictimLifecycle 记录靶机从创建到就绪（或失败）的耗时。
+func RecordVictimLifecycle(duration float64, success bool) {
+	VictimLifecycleDuration.WithLabelValues(statusLabel(success)).Observe(duration)
+}
+
+func RecordVictimReadinessFailure(reason string) {
+	VictimReadinessFailuresTotal.WithLabelValues(reason).Inc()
+}
+
+func RecordK8sOperationError(operation string) {
+	K8sOperationErrorsTotal.WithLabelValues(operation).Inc()
+}
+
 func RecordCronJob(jobName string, duration float64, success bool) {
 	CronJobDuration.WithLabelValues(jobName).Observe(duration)
 	CronJobRunsTotal.WithLabelValues(jobName, statusLabel(success)).Inc()

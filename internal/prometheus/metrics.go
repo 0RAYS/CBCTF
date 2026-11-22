@@ -139,6 +139,42 @@ var (
 		[]string{"contest_id", "reason_type"},
 	)
 
+	// VictimTransitionsTotal 记录靶机容器的状态跃迁。action 取 start/stop/expire/ready。
+	VictimTransitionsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cbctf_victim_transitions_total",
+			Help: "Total number of victim container lifecycle transitions",
+		},
+		[]string{"action", "result"},
+	)
+
+	// VictimLifecycleDuration 记录从创建到容器就绪的耗时，即调度与镜像拉取的真实延迟。
+	VictimLifecycleDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "cbctf_victim_lifecycle_duration_seconds",
+			Help:    "Time from victim creation until the container became ready",
+			Buckets: prometheus.ExponentialBuckets(1, 2, 10),
+		},
+		[]string{"result"},
+	)
+
+	VictimReadinessFailuresTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cbctf_victim_readiness_failures_total",
+			Help: "Total number of victims that never became ready",
+		},
+		[]string{"reason"},
+	)
+
+	// K8sOperationErrorsTotal 记录失败的 Kubernetes 操作，operation 是稳定的英文标识。
+	K8sOperationErrorsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "cbctf_k8s_operation_errors_total",
+			Help: "Total number of failed Kubernetes operations",
+		},
+		[]string{"operation"},
+	)
+
 	// CronJobDuration Cron Job 监控
 	CronJobDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{

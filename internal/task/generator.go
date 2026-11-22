@@ -12,6 +12,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 )
 
@@ -64,6 +65,7 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 			_, ret = k8s.StartGenerator(startCtx, source, generator)
 			cancel()
 			if !ret.OK {
+				prometheus.RecordK8sOperationError("start_generator")
 				_ = generatorRepo.UpdateIfStatus(generator.ID, model.PendingGeneratorStatus, db.UpdateGeneratorOptions{Status: new(model.TerminatingGeneratorStatus)})
 				if err := EnqueueStopGeneratorTask(generator); err != nil {
 					return fmt.Errorf("%w; enqueue cleanup failed: %v", taskResourceError("start generator failed", ret), err)
@@ -142,6 +144,7 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 		ret = k8s.StopGenerator(stopCtx, generator)
 		cancel()
 		if !ret.OK {
+			prometheus.RecordK8sOperationError("stop_generator")
 			return fmt.Errorf("stop generator failed: %w", ret.AsError())
 		}
 		ret = generatorRepo.Delete(generator.ID)

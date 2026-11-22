@@ -11,6 +11,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 )
 
 var readinessCancel context.CancelFunc
@@ -68,10 +69,17 @@ func reconcileVictim(ctx context.Context, id uint) error {
 		return ctx.Err()
 	}
 	if err != nil && !shouldStopUnreadyVictim(expired, err) {
+		prometheus.RecordK8sOperationError("victim_ready")
 		return fmt.Errorf("read victim readiness (will retry): %w", err)
 	}
 	if shouldStopUnreadyVictim(expired, err) {
 		log.Logger.Warningf("Victim readiness failed: victim_id=%d expired=%t error=%v", id, expired, err)
+		if expired {
+			prometheus.RecordVictimReadinessFailure("expired")
+		} else {
+			prometheus.RecordVictimReadinessFailure("startup_error")
+		}
+		prometheus.RecordVictimLifecycle(time.Since(victim.CreatedAt).Seconds(), false)
 		// Queue under the same workload lock before changing status. A crash in
 		// between leaves either a retryable pending record or durable cleanup.
 		if err := EnqueueStopVictimTask(victim); err != nil {
@@ -95,6 +103,8 @@ func reconcileVictim(ctx context.Context, id uint) error {
 	if !ret.OK {
 		return fmt.Errorf("mark running: %w", ret.AsError())
 	}
+	prometheus.RecordVictimTransition("ready", true)
+	prometheus.RecordVictimLifecycle(time.Since(victim.CreatedAt).Seconds(), true)
 	log.Logger.Infof("Victim is running: victim_id=%d", id)
 	return nil
 }
