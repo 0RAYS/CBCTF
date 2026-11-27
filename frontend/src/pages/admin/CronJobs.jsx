@@ -200,7 +200,7 @@ function CronJobs() {
       case 'runOnStart':
         return (
           <span className={cronJob.run_on_start ? 'text-geek-400 text-sm' : 'text-neutral-400 text-sm'}>
-            {t(cronJob.run_on_start ? 'common.toggle.enabled' : 'common.toggle.disabled')}
+            {t(cronJob.run_on_start ? 'common.yes' : 'common.no')}
           </span>
         );
       case 'successCount':
