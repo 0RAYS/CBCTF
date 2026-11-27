@@ -115,12 +115,15 @@ gin:
 | `gorm_dbstats_*` | GORM 连接池的连接数、等待次数与等待耗时 |
 | `cbctf_redis_pool_*` | Valkey/Redis 连接池连接数、空闲数、待处理请求、命中与未命中、等待时长 |
 | `cbctf_redis_command_duration_seconds{command}`、`cbctf_redis_command_errors_total{command}` | Redis 命令耗时与错误计数 |
-| `postgres_stat_database_*` | 事务提交/回滚、死锁、块命中与读取、临时文件等库级统计 |
-| `postgres_bgwriter_*` | Checkpoint 次数与耗时、后台缓冲区写入 |
+| `postgres_stat_database_*` | 事务提交/回滚、死锁与冲突、块命中/读取及块读取耗时、临时文件数与写入量等库级统计 |
+| `postgres_bgwriter_*` | Checkpoint 次数与读写耗时，checkpoint、后台写入器与后端直接写出的缓冲区数 |
+| `postgres_server_info{version}` | PostgreSQL 版本信息 |
 | `postgres_stat_activity_backends{datname,state}` | 各数据库的连接状态分布 |
 | `postgres_n_live_tup`、`postgres_n_dead_tup`、`postgres_n_mod_since_last_analyze` | 表的存活行、死元组与未 analyze 的变更量 |
 | `postgres_*_scan_total`、`postgres_*_blks_*_total` | 表的扫描次数与块命中/读取计数 |
 | `postgres_last_*_timestamp_seconds` | 表最近一次 vacuum / analyze 时间 |
+
+PostgreSQL 17 从 `pg_stat_bgwriter` 移除了 checkpoint 与后端写入列，采集器改从 `pg_stat_checkpointer` 和 `pg_stat_io` 读取，指标名与语义不变。
 
 ## PProf 诊断
 

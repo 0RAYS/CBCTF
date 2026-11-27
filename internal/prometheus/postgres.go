@@ -26,7 +26,7 @@ type PostgresCollector struct {
 	deadlocksDesc        *prometheus.Desc
 	blksReadDesc         *prometheus.Desc
 	blksHitDesc          *prometheus.Desc
-	blksReadTimeDesc     *prometheus.Desc
+	blkReadTimeDesc      *prometheus.Desc
 	tempFilesDesc        *prometheus.Desc
 	tempBytesDesc        *prometheus.Desc
 	conflictsDesc        *prometheus.Desc
@@ -71,6 +71,7 @@ type PostgresCollector struct {
 	toastIdxBlksHitDesc  *prometheus.Desc
 
 	tableCache cacheMemo[postgresTableStats]
+	viewsCache cacheMemo[postgresViews]
 }
 
 func NewPostgresCollector() *PostgresCollector {
@@ -106,7 +107,7 @@ func NewPostgresCollector() *PostgresCollector {
 		deadlocksDesc:        newPostgresDesc("stat_database_deadlocks_total", "Number of deadlocks detected", databaseLabels, labels),
 		blksReadDesc:         newPostgresDesc("stat_database_blks_read_total", "Number of disk blocks read", databaseLabels, labels),
 		blksHitDesc:          newPostgresDesc("stat_database_blks_hit_total", "Number of buffer hits", databaseLabels, labels),
-		blksReadTimeDesc:     newPostgresDesc("stat_database_blks_read_time_seconds_total", "Time spent reading data file blocks", databaseLabels, labels),
+		blkReadTimeDesc:      newPostgresDesc("stat_database_blk_read_time_seconds_total", "Time spent reading data file blocks", databaseLabels, labels),
 		tempFilesDesc:        newPostgresDesc("stat_database_temp_files_total", "Number of temporary files created", databaseLabels, labels),
 		tempBytesDesc:        newPostgresDesc("stat_database_temp_bytes_total", "Total bytes written to temporary files", databaseLabels, labels),
 		conflictsDesc:        newPostgresDesc("stat_database_conflicts_total", "Number of queries cancelled by lock conflicts", databaseLabels, labels),
@@ -161,7 +162,7 @@ func (c *PostgresCollector) Describe(ch chan<- *prometheus.Desc) {
 	descs := []*prometheus.Desc{
 		c.replicationLagDesc, c.postmasterStartedDesc, c.serverInfoDesc, c.databaseSizeDesc,
 		c.xactCommitDesc, c.xactRollbackDesc, c.deadlocksDesc, c.blksReadDesc, c.blksHitDesc,
-		c.blksReadTimeDesc, c.tempFilesDesc, c.tempBytesDesc, c.conflictsDesc, c.activityBackendsDesc,
+		c.blkReadTimeDesc, c.tempFilesDesc, c.tempBytesDesc, c.conflictsDesc, c.activityBackendsDesc,
 		c.checkpointsTimedDesc, c.checkpointsReqDesc, c.checkpointWriteTimeDesc, c.checkpointSyncTimeDesc,
 		c.buffersCheckpointDesc, c.buffersBackendDesc, c.buffersBackendFsyncDesc, c.buffersCleanDesc,
 		c.seqScanDesc, c.seqTupReadDesc, c.idxScanDesc, c.idxTupFetchDesc, c.nTupInsDesc, c.nTupUpdDesc,
@@ -245,7 +246,7 @@ func (c *PostgresCollector) collectDatabaseStats(root *gorm.DB, ch chan<- promet
 		Deadlocks    int64   `gorm:"column:deadlocks"`
 		BlksRead     int64   `gorm:"column:blks_read"`
 		BlksHit      int64   `gorm:"column:blks_hit"`
-		BlksReadTime float64 `gorm:"column:blks_read_time"`
+		BlkReadTime  float64 `gorm:"column:blk_read_time"`
 		TempFiles    int64   `gorm:"column:temp_files"`
 		TempBytes    int64   `gorm:"column:temp_bytes"`
 		Conflicts    int64   `gorm:"column:conflicts"`
@@ -259,7 +260,7 @@ func (c *PostgresCollector) collectDatabaseStats(root *gorm.DB, ch chan<- promet
 			deadlocks,
 			blks_read,
 			blks_hit,
-			blks_read_time,
+			blk_read_time,
 			temp_files,
 			temp_bytes,
 			conflicts
@@ -274,7 +275,7 @@ func (c *PostgresCollector) collectDatabaseStats(root *gorm.DB, ch chan<- promet
 		ch <- prometheus.MustNewConstMetric(c.deadlocksDesc, prometheus.CounterValue, float64(row.Deadlocks), labels...)
 		ch <- prometheus.MustNewConstMetric(c.blksReadDesc, prometheus.CounterValue, float64(row.BlksRead), labels...)
 		ch <- prometheus.MustNewConstMetric(c.blksHitDesc, prometheus.CounterValue, float64(row.BlksHit), labels...)
-		ch <- prometheus.MustNewConstMetric(c.blksReadTimeDesc, prometheus.CounterValue, row.BlksReadTime, labels...)
+		ch <- prometheus.MustNewConstMetric(c.blkReadTimeDesc, prometheus.CounterValue, row.BlkReadTime/1000, labels...)
 		ch <- prometheus.MustNewConstMetric(c.tempFilesDesc, prometheus.CounterValue, float64(row.TempFiles), labels...)
 		ch <- prometheus.MustNewConstMetric(c.tempBytesDesc, prometheus.CounterValue, float64(row.TempBytes), labels...)
 		ch <- prometheus.MustNewConstMetric(c.conflictsDesc, prometheus.CounterValue, float64(row.Conflicts), labels...)
@@ -301,6 +302,27 @@ func (c *PostgresCollector) collectActivity(root *gorm.DB, ch chan<- prometheus.
 	return true
 }
 
+// postgresViews 记录统计视图的可用性。PostgreSQL 17 把 checkpoint 计数与
+// 后端写入计数拆到了 pg_stat_checkpointer 和 pg_stat_io，老版本的
+// pg_stat_bgwriter 已不再提供这些列。
+type postgresViews struct {
+	Checkpointer bool `gorm:"column:checkpointer"`
+	StatIO       bool `gorm:"column:stat_io"`
+}
+
+func (c *PostgresCollector) pgViews(root *gorm.DB) (postgresViews, bool) {
+	return c.viewsCache.get(func() (postgresViews, bool) {
+		var views postgresViews
+		if err := root.Raw(`
+			SELECT to_regclass('pg_catalog.pg_stat_checkpointer') IS NOT NULL AS checkpointer,
+			       to_regclass('pg_catalog.pg_stat_io') IS NOT NULL AS stat_io
+		`).Scan(&views).Error; err != nil {
+			return views, false
+		}
+		return views, true
+	})
+}
+
 func (c *PostgresCollector) collectCheckpointer(root *gorm.DB, ch chan<- prometheus.Metric) bool {
 	type row struct {
 		CheckpointsTimed    int64   `gorm:"column:checkpoints_timed"`
@@ -310,40 +332,56 @@ func (c *PostgresCollector) collectCheckpointer(root *gorm.DB, ch chan<- prometh
 		BuffersCheckpoint   int64   `gorm:"column:buffers_checkpoint"`
 		BuffersBackend      int64   `gorm:"column:buffers_backend"`
 		BuffersBackendFsync int64   `gorm:"column:buffers_backend_fsync"`
-		BuffersClean        int64   `gorm:"column:buffers_clean"`
 	}
-	var rows []row
-	// PostgreSQL 17 moved checkpoint counters into pg_stat_checkpointer.
-	err := root.Raw(`
-		SELECT num_timed AS checkpoints_timed, num_requested AS checkpoints_req,
-		       write_time AS checkpoint_write_time, sync_time AS checkpoint_sync_time,
-		       buffers_written AS buffers_checkpoint
-		FROM pg_stat_checkpointer`).Scan(&rows).Error
-	if err != nil {
-		err = root.Raw(`
-			SELECT checkpoints_timed, checkpoints_req, checkpoint_write_time, checkpoint_sync_time,
-			       buffers_checkpoint
-			FROM pg_stat_bgwriter`).Scan(&rows).Error
-		if err != nil {
-			return false
-		}
-	}
-	var buffers []row
-	if err := root.Raw("SELECT buffers_backend, buffers_backend_fsync, buffers_clean FROM pg_stat_bgwriter").Scan(&buffers).Error; err != nil {
+	views, ok := c.pgViews(root)
+	if !ok {
 		return false
 	}
-	for _, item := range rows {
+	var checkpoints []row
+	if views.Checkpointer {
+		if err := root.Raw(`
+			SELECT num_timed AS checkpoints_timed, num_requested AS checkpoints_req,
+			       write_time AS checkpoint_write_time, sync_time AS checkpoint_sync_time,
+			       buffers_written AS buffers_checkpoint
+			FROM pg_stat_checkpointer`).Scan(&checkpoints).Error; err != nil {
+			return false
+		}
+	} else if err := root.Raw(`
+		SELECT checkpoints_timed, checkpoints_req, checkpoint_write_time, checkpoint_sync_time,
+		       buffers_checkpoint
+		FROM pg_stat_bgwriter`).Scan(&checkpoints).Error; err != nil {
+		return false
+	}
+	var backend []row
+	if views.StatIO {
+		if err := root.Raw(`
+			SELECT COALESCE(SUM(writebacks), 0) AS buffers_backend,
+			       COALESCE(SUM(fsyncs), 0) AS buffers_backend_fsync
+			FROM pg_stat_io
+			WHERE backend_type = 'client backend' AND object = 'relation' AND context = 'normal'`).Scan(&backend).Error; err != nil {
+			return false
+		}
+	} else if err := root.Raw(`
+		SELECT buffers_backend, buffers_backend_fsync
+		FROM pg_stat_bgwriter`).Scan(&backend).Error; err != nil {
+		return false
+	}
+	var buffersClean int64
+	if err := root.Raw("SELECT buffers_clean FROM pg_stat_bgwriter").Scan(&buffersClean).Error; err != nil {
+		return false
+	}
+	for _, item := range checkpoints {
 		ch <- prometheus.MustNewConstMetric(c.checkpointsTimedDesc, prometheus.CounterValue, float64(item.CheckpointsTimed))
 		ch <- prometheus.MustNewConstMetric(c.checkpointsReqDesc, prometheus.CounterValue, float64(item.CheckpointsReq))
-		ch <- prometheus.MustNewConstMetric(c.checkpointWriteTimeDesc, prometheus.CounterValue, item.CheckpointWriteTime)
-		ch <- prometheus.MustNewConstMetric(c.checkpointSyncTimeDesc, prometheus.CounterValue, item.CheckpointSyncTime)
+		ch <- prometheus.MustNewConstMetric(c.checkpointWriteTimeDesc, prometheus.CounterValue, item.CheckpointWriteTime/1000)
+		ch <- prometheus.MustNewConstMetric(c.checkpointSyncTimeDesc, prometheus.CounterValue, item.CheckpointSyncTime/1000)
 		ch <- prometheus.MustNewConstMetric(c.buffersCheckpointDesc, prometheus.CounterValue, float64(item.BuffersCheckpoint))
 	}
-	for _, item := range buffers {
+	for _, item := range backend {
 		ch <- prometheus.MustNewConstMetric(c.buffersBackendDesc, prometheus.CounterValue, float64(item.BuffersBackend))
 		ch <- prometheus.MustNewConstMetric(c.buffersBackendFsyncDesc, prometheus.CounterValue, float64(item.BuffersBackendFsync))
-		ch <- prometheus.MustNewConstMetric(c.buffersCleanDesc, prometheus.CounterValue, float64(item.BuffersClean))
 	}
+	ch <- prometheus.MustNewConstMetric(c.buffersCleanDesc, prometheus.CounterValue, float64(buffersClean))
 	return true
 }
 
