@@ -78,6 +78,7 @@ func NewPostgresCollector() *PostgresCollector {
 	labels := prometheus.Labels{"db_name": config.Env.Gorm.Postgres.DB}
 	tableLabels := []string{"datname", "schemaname", "relname"}
 	databaseLabels := []string{"datname"}
+	activityLabels := []string{"datname", "state"}
 
 	return &PostgresCollector{
 		collectionSuccessDesc: prometheus.NewDesc(postgresMetricPrefix+"collection_success", "Whether a PostgreSQL metric section was collected", []string{"section"}, labels),
@@ -111,7 +112,7 @@ func NewPostgresCollector() *PostgresCollector {
 		tempFilesDesc:        newPostgresDesc("stat_database_temp_files_total", "Number of temporary files created", databaseLabels, labels),
 		tempBytesDesc:        newPostgresDesc("stat_database_temp_bytes_total", "Total bytes written to temporary files", databaseLabels, labels),
 		conflictsDesc:        newPostgresDesc("stat_database_conflicts_total", "Number of queries cancelled by lock conflicts", databaseLabels, labels),
-		activityBackendsDesc: newPostgresDesc("stat_activity_backends", "Number of backends by wait state", databaseLabels, labels),
+		activityBackendsDesc: newPostgresDesc("stat_activity_backends", "Number of backends by wait state", activityLabels, labels),
 
 		checkpointsTimedDesc:    newPostgresDesc("bgwriter_checkpoints_timed_total", "Number of scheduled checkpoints", nil, labels),
 		checkpointsReqDesc:      newPostgresDesc("bgwriter_checkpoints_req_total", "Number of requested checkpoints", nil, labels),
