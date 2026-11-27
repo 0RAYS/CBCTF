@@ -328,39 +328,49 @@ helm repo add kube-ovn https://kubeovn.github.io/kube-ovn/
 
 根据集群网络规划，可以把 Kube-OVN 安装为主 CNI，也可以安装为副 CNI。
 
-
 **作为 主 CNI 安装**
 
 主 CNI 模式由 Kube-OVN 接管集群默认 Pod 网络，适合新建集群或计划完全使用 Kube-OVN 作为主网络插件的环境。
+
 :::warning
 主 CNI 安装会影响集群默认网络。已有生产集群切换主 CNI 风险较高，建议仅在新集群中使用。
 :::
+
 如果使用 K3S 并希望 Kube-OVN 作为主 CNI，安装 K3S 时应禁用默认 flannel 和 network-policy：
+
 ```bash
 curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | \
   INSTALL_K3S_MIRROR=cn sh - --flannel-backend=none --disable-network-policy
 ```
+
 使用 kube-ovn-v2 chart
+
 values.yaml
+
 ```yaml
 # master ip
 masterNodes:
     - 192.168.3.1
 ```
+
 安装
+
 ```bash
 helm install kube-ovn kube-ovn/kube-ovn-v2 --namespace kube-system -f values.yaml
 ```
 
-
 **作为 副 CNI 安装**
 
 副 CNI 模式保留集群原有主 CNI，只通过 Multus 为 CBCTF 靶机额外挂载 Kube-OVN 网络。这个模式更适合已有集群。
+
 :::tip
 如果集群已经有稳定主 CNI，优先考虑副 CNI 模式。它对现有业务网络影响更小，也更符合多网络靶机场景。
 :::
+
 使用 kube-ovn-v2 chart
+
 values.yaml
+
 ```yaml
 cni:
     configPriority: "10"
@@ -369,11 +379,12 @@ cni:
 masterNodes:
     - 192.168.3.1
 ```
+
 安装
+
 ```bash
 helm install kube-ovn kube-ovn/kube-ovn-v2 --namespace kube-system -f values.yaml
 ```
-
 
 ## 安装 [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni)
 
@@ -1515,26 +1526,31 @@ flag 的实际前缀由比赛配置中的 `prefix` 字段决定，而非固定�
 
 ## Flag 注入方式
 
-
 **动态附件题**
 
 ### 动态附件题
+
 平台自动调用生成器容器中的 `/root/run.sh` 脚本，将 flag 作为参数传入：
+
 ```bash
 /root/run.sh {team_id} {base64(base64(flag1),base64(flag2),...)}
 ```
+
 示例（team_id=1，两个 flag）：
+
 ```bash
 FLAGS=$(printf '%s,%s' "$(printf 'CBCTF{flag1}' | base64 | tr -d '\n')" "$(printf 'CBCTF{flag2}' | base64 | tr -d '\n')" | base64 | tr -d '\n')
 /root/run.sh 1 "$FLAGS"
 ```
-其中第二个参数为 `base64(base64("CBCTF{flag1}") + "," + base64("CBCTF{flag2}"))` 的结果。
 
+其中第二个参数为 `base64(base64("CBCTF{flag1}") + "," + base64("CBCTF{flag2}"))` 的结果。
 
 **容器题：环境变量**
 
 ### 容器题：环境变量注入
+
 环境变量名必须以 `FLAG_` 为前缀，平台在启动容器时替换 flag 值：
+
 ```yaml
 services:
   web:
@@ -1547,11 +1563,12 @@ services:
       - "80:80"
 ```
 
-
 **容器题：文件**
 
 ### 容器题：文件注入
+
 通过 service 下的 `x-volumes` 配置文件路径和内容。`content` 中可同时包含多个 Flag 模板和普通文本，实例启动时会写入指定路径：
+
 ```yaml
 services:
   web:
@@ -1572,9 +1589,9 @@ services:
     ports:
       - "80:80"
 ```
+
 每个 `x-volumes` 条目对应容器内一个文件。`content` 中出现的 `static{}`、`leet{}` 或 `uuid{}` 会被识别为 flag
 模板并在启动时替换为实际 flag 值，其余内容原样写入文件。
-
 
 ## Flag 生成时机
 
@@ -1622,26 +1639,32 @@ CBCTF 支持三种计分类型，可在比赛中对每个 flag 独立配置。
 
 ## 计分类型
 
-
 **静态分数**
 
 ### 静态分数
+
 ```
 score = Score
 ```
-分数固定不变，不受解题人数影响。
-**示例**：Score=500，无论多少人解题，每人得 500 分。
-适用场景：难度固定的题目，或不希望使用动态计分的比赛。
 
+分数固定不变，不受解题人数影响。
+
+**示例**：Score=500，无论多少人解题，每人得 500 分。
+
+适用场景：难度固定的题目，或不希望使用动态计分的比赛。
 
 **线性分数**
 
 ### 线性分数
+
 ```
 score = max(Score - Decay × solvers, MinScore)
 ```
+
 其中 `solvers` 为解题人数，`Decay` 为每多一人解题扣除的分数。
+
 **示例**（Score=1000, MinScore=100, Decay=20）：
+
 | 解题人数 |      分数 |
 | ---: | ------: |
 |    0 |    1000 |
@@ -1649,17 +1672,21 @@ score = max(Score - Decay × solvers, MinScore)
 |   20 |     600 |
 |   40 |     200 |
 |  50+ | 100（下限） |
-适用场景：竞争性较强、参赛人数较少的比赛。
 
+适用场景：竞争性较强、参赛人数较少的比赛。
 
 **对数分数**
 
 ### 对数分数
+
 ```
 score = (Score - MinScore) × exp(-5/Decay × solvers) + MinScore
 ```
+
 `Decay` 控制衰减速率，值越大衰减越慢。`k = 5 / Decay`。
+
 **示例**（Score=1000, MinScore=100, Decay=50）：
+
 | 解题人数 | 分数（近似） |
 | ---: | -----: |
 |    0 |   1000 |
@@ -1668,8 +1695,8 @@ score = (Score - MinScore) × exp(-5/Decay × solvers) + MinScore
 |   50 | 106.06 |
 |  100 | 100.04 |
 |  200 | 100.00 |
-前期降分较快，后期趋于平稳。适用场景：大型 CTF 比赛，题目难度分布合理。
 
+前期降分较快，后期趋于平稳。适用场景：大型 CTF 比赛，题目难度分布合理。
 
 ## 三血奖励（Blood Bonus）
 
@@ -1714,11 +1741,14 @@ url: /guide/features/attachment.md
 
 动态题加入比赛和发布时，平台会提前启动生成器。每道题默认准备 2 个实例，管理员可通过 `k8s.generator_pool_size` 调整，也可在比赛的生成器页面手动增加。
 
-
 ### 准备题目镜像并启动生成器
+
 ### 队伍初始化或重置题目，开始生成专属附件
+
 ### 生成器执行脚本，将该队 Flag 写入题目内容
+
 ### 脚本完成并输出 ZIP 附件
+
 ### 队伍在题目页面下载附件
 
 生成器繁忙时任务会排队，已有可用附件时可直接下载。等待较久时，管理员可检查任务队列和生成器状态。容量配置见[工作负载调度](/deploy/workloads.md)。
@@ -2348,18 +2378,23 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 
 ## 常用管理流程
 
-
 ### 登录后台，查看仪表盘的资源与业务统计，并从任务页、应用日志确认后台任务是否正常
+
 ### 在 RBAC 的用户、分组、角色权限标签页创建用户并授权，同时设置注册默认分组和 SMTP
+
 ### 在题目管理中创建题目，配置附件、Flag、动态生成器或容器靶机
+
 ### 对容器题使用测试启动，确认镜像、端口、Flag 注入和访问地址正常
+
 ### 在比赛管理中创建比赛，设置时间、队伍人数、规则、奖项、公告和题目
+
 ### 比赛前按需预热镜像、生成器或靶机
+
 ### 比赛期间查看队伍、提交、排行榜、公告、作弊记录、任务和运行中的靶机
+
 ### 比赛结束后下载 Writeup、流量文件或附件，并清理不再需要的靶机和文件
 
 ## 后台页面
-
 
 **系统后台**
 
@@ -2382,7 +2417,6 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 | System     | 更新系统配置，上传 GeoIP 数据库，重启重载配置           |
 | Logs       | 查看平台日志                               |
 
-
 **比赛管理**
 
 | 页面          | 说明                         |
@@ -2396,7 +2430,6 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 | Victims     | 比赛内靶机预热、查看和停止              |
 | Generators  | 比赛内动态附件生成器管理               |
 | Cheats      | 作弊检测记录                     |
-
 
 ## 角色和权限
 
@@ -3026,17 +3059,20 @@ gin:
 
 #### 依赖组件
 
-| 指标                                                                                          | 说明                                        |
-| ------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| `gorm_dbstats_*`                                                                            | GORM 连接池的连接数、等待次数与等待耗时                    |
-| `cbctf_redis_pool_*`                                                                        | Valkey/Redis 连接池连接数、空闲数、待处理请求、命中与未命中、等待时长 |
-| `cbctf_redis_command_duration_seconds{command}`、`cbctf_redis_command_errors_total{command}` | Redis 命令耗时与错误计数                           |
-| `postgres_stat_database_*`                                                                  | 事务提交/回滚、死锁、块命中与读取、临时文件等库级统计               |
-| `postgres_bgwriter_*`                                                                       | Checkpoint 次数与耗时、后台缓冲区写入                  |
-| `postgres_stat_activity_backends{datname,state}`                                            | 各数据库的连接状态分布                               |
-| `postgres_n_live_tup`、`postgres_n_dead_tup`、`postgres_n_mod_since_last_analyze`             | 表的存活行、死元组与未 analyze 的变更量                  |
-| `postgres_*_scan_total`、`postgres_*_blks_*_total`                                           | 表的扫描次数与块命中/读取计数                           |
-| `postgres_last_*_timestamp_seconds`                                                         | 表最近一次 vacuum / analyze 时间                 |
+| 指标                                                                                          | 说明                                              |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `gorm_dbstats_*`                                                                            | GORM 连接池的连接数、等待次数与等待耗时                          |
+| `cbctf_redis_pool_*`                                                                        | Valkey/Redis 连接池连接数、空闲数、待处理请求、命中与未命中、等待时长       |
+| `cbctf_redis_command_duration_seconds{command}`、`cbctf_redis_command_errors_total{command}` | Redis 命令耗时与错误计数                                 |
+| `postgres_stat_database_*`                                                                  | 事务提交/回滚、死锁与冲突、块命中/读取及块读取耗时、临时文件数与写入量等库级统计       |
+| `postgres_bgwriter_*`                                                                       | Checkpoint 次数与读写耗时，checkpoint、后台写入器与后端直接写出的缓冲区数 |
+| `postgres_server_info{version}`                                                             | PostgreSQL 版本信息                                 |
+| `postgres_stat_activity_backends{datname,state}`                                            | 各数据库的连接状态分布                                     |
+| `postgres_n_live_tup`、`postgres_n_dead_tup`、`postgres_n_mod_since_last_analyze`             | 表的存活行、死元组与未 analyze 的变更量                        |
+| `postgres_*_scan_total`、`postgres_*_blks_*_total`                                           | 表的扫描次数与块命中/读取计数                                 |
+| `postgres_last_*_timestamp_seconds`                                                         | 表最近一次 vacuum / analyze 时间                       |
+
+PostgreSQL 17 从 `pg_stat_bgwriter` 移除了 checkpoint 与后端写入列，采集器改从 `pg_stat_checkpointer` 和 `pg_stat_io` 读取，指标名与语义不变。
 
 ## PProf 诊断
 

@@ -24,18 +24,23 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 
 ## 常用管理流程
 
-
 ### 登录后台，查看仪表盘的资源与业务统计，并从任务页、应用日志确认后台任务是否正常
+
 ### 在 RBAC 的用户、分组、角色权限标签页创建用户并授权，同时设置注册默认分组和 SMTP
+
 ### 在题目管理中创建题目，配置附件、Flag、动态生成器或容器靶机
+
 ### 对容器题使用测试启动，确认镜像、端口、Flag 注入和访问地址正常
+
 ### 在比赛管理中创建比赛，设置时间、队伍人数、规则、奖项、公告和题目
+
 ### 比赛前按需预热镜像、生成器或靶机
+
 ### 比赛期间查看队伍、提交、排行榜、公告、作弊记录、任务和运行中的靶机
+
 ### 比赛结束后下载 Writeup、流量文件或附件，并清理不再需要的靶机和文件
 
 ## 后台页面
-
 
 **系统后台**
 
@@ -58,7 +63,6 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 | System     | 更新系统配置，上传 GeoIP 数据库，重启重载配置           |
 | Logs       | 查看平台日志                               |
 
-
 **比赛管理**
 
 | 页面          | 说明                         |
@@ -72,7 +76,6 @@ kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 | Victims     | 比赛内靶机预热、查看和停止              |
 | Generators  | 比赛内动态附件生成器管理               |
 | Cheats      | 作弊检测记录                     |
-
 
 ## 角色和权限
 

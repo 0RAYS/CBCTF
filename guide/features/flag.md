@@ -45,26 +45,31 @@ flag 的实际前缀由比赛配置中的 `prefix` 字段决定，而非固定�
 
 ## Flag 注入方式
 
-
 **动态附件题**
 
 ### 动态附件题
+
 平台自动调用生成器容器中的 `/root/run.sh` 脚本，将 flag 作为参数传入：
+
 ```bash
 /root/run.sh {team_id} {base64(base64(flag1),base64(flag2),...)}
 ```
+
 示例（team_id=1，两个 flag）：
+
 ```bash
 FLAGS=$(printf '%s,%s' "$(printf 'CBCTF{flag1}' | base64 | tr -d '\n')" "$(printf 'CBCTF{flag2}' | base64 | tr -d '\n')" | base64 | tr -d '\n')
 /root/run.sh 1 "$FLAGS"
 ```
-其中第二个参数为 `base64(base64("CBCTF{flag1}") + "," + base64("CBCTF{flag2}"))` 的结果。
 
+其中第二个参数为 `base64(base64("CBCTF{flag1}") + "," + base64("CBCTF{flag2}"))` 的结果。
 
 **容器题：环境变量**
 
 ### 容器题：环境变量注入
+
 环境变量名必须以 `FLAG_` 为前缀，平台在启动容器时替换 flag 值：
+
 ```yaml
 services:
   web:
@@ -77,11 +82,12 @@ services:
       - "80:80"
 ```
 
-
 **容器题：文件**
 
 ### 容器题：文件注入
+
 通过 service 下的 `x-volumes` 配置文件路径和内容。`content` 中可同时包含多个 Flag 模板和普通文本，实例启动时会写入指定路径：
+
 ```yaml
 services:
   web:
@@ -102,9 +108,9 @@ services:
     ports:
       - "80:80"
 ```
+
 每个 `x-volumes` 条目对应容器内一个文件。`content` 中出现的 `static{}`、`leet{}` 或 `uuid{}` 会被识别为 flag
 模板并在启动时替换为实际 flag 值，其余内容原样写入文件。
-
 
 ## Flag 生成时机
 

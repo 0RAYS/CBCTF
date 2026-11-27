@@ -86,39 +86,49 @@ helm repo add kube-ovn https://kubeovn.github.io/kube-ovn/
 
 根据集群网络规划，可以把 Kube-OVN 安装为主 CNI，也可以安装为副 CNI。
 
-
 **作为 主 CNI 安装**
 
 主 CNI 模式由 Kube-OVN 接管集群默认 Pod 网络，适合新建集群或计划完全使用 Kube-OVN 作为主网络插件的环境。
+
 :::warning
 主 CNI 安装会影响集群默认网络。已有生产集群切换主 CNI 风险较高，建议仅在新集群中使用。
 :::
+
 如果使用 K3S 并希望 Kube-OVN 作为主 CNI，安装 K3S 时应禁用默认 flannel 和 network-policy：
+
 ```bash
 curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | \
   INSTALL_K3S_MIRROR=cn sh - --flannel-backend=none --disable-network-policy
 ```
+
 使用 kube-ovn-v2 chart
+
 values.yaml
+
 ```yaml
 # master ip
 masterNodes:
     - 192.168.3.1
 ```
+
 安装
+
 ```bash
 helm install kube-ovn kube-ovn/kube-ovn-v2 --namespace kube-system -f values.yaml
 ```
 
-
 **作为 副 CNI 安装**
 
 副 CNI 模式保留集群原有主 CNI，只通过 Multus 为 CBCTF 靶机额外挂载 Kube-OVN 网络。这个模式更适合已有集群。
+
 :::tip
 如果集群已经有稳定主 CNI，优先考虑副 CNI 模式。它对现有业务网络影响更小，也更符合多网络靶机场景。
 :::
+
 使用 kube-ovn-v2 chart
+
 values.yaml
+
 ```yaml
 cni:
     configPriority: "10"
@@ -127,11 +137,12 @@ cni:
 masterNodes:
     - 192.168.3.1
 ```
+
 安装
+
 ```bash
 helm install kube-ovn kube-ovn/kube-ovn-v2 --namespace kube-system -f values.yaml
 ```
-
 
 ## 安装 [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni)
 
