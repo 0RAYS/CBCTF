@@ -62,7 +62,7 @@ spec:
                 done
                 echo "$host:$port is reachable"
               }
-              wait_for "{{ include "cbctf.postgres.host" . }}" "{{ .Values.postgres.service.port }}"
+              wait_for "{{ include "cbctf.postgres.host" . }}" "{{ .Values.postgres.service.ports.postgresql }}"
               wait_for "{{ include "cbctf.valkey.host" . }}" "{{ .Values.valkey.service.port }}"
 
       containers:

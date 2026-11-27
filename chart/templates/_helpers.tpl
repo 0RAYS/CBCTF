@@ -69,27 +69,27 @@ private registries.
 {{- end }}
 
 {{/*
-PostgreSQL fullname
+PostgreSQL resource name.
+
+The workload itself comes from the upstream Bitnami postgresql chart declared
+as a dependency in Chart.yaml under the alias `postgres`, so its resources are
+named `<release>-postgres`. This mirrors that rule because the platform
+configuration has to address the Service the subchart renders.
+TestBundledPostgresAddressMatchesRenderedService in render_test.go compares this
+against the Service that actually shows up, so a change upstream fails the
+suite instead of silently pointing at nothing.
 */}}
 {{- define "cbctf.postgres.fullname" -}}
-{{- printf "%s-postgres" (include "cbctf.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- if .Values.postgres.fullnameOverride }}
+{{- .Values.postgres.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default "postgres" .Values.postgres.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
 {{- end }}
-
-{{/*
-PostgreSQL labels
-*/}}
-{{- define "cbctf.postgres.labels" -}}
-helm.sh/chart: {{ include "cbctf.chart" . }}
-{{ include "cbctf.postgres.selectorLabels" . }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
-
-{{/*
-PostgreSQL selector labels
-*/}}
-{{- define "cbctf.postgres.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "cbctf.name" . }}-postgres
-app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*

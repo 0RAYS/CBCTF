@@ -18,8 +18,8 @@ CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲�
 - 运行时共享 PVC：`k8s.shared_volume_claim`（空值回退到 `{namespace}-shared-volume`）
 
 :::info
-Chart `0.0.30` 起内置服务由官方 [Valkey Chart](https://valkey.io/valkey-helm/) 部署，Helm values 中的键由 `redis.*` 更名为
-`valkey.*`。`config.yaml` 中的 `redis.*` 段保持不变，因为后端读取的仍是该键名；Chart 只负责把 `valkey.*` 的地址、端口和密码写入其中。
+内置服务由官方 [Valkey Chart](https://valkey.io/valkey-helm/) 部署，Helm values 使用 `valkey.*`。
+`config.yaml` 中的 `redis.*` 段保持不变，因为后端读取的仍是该键名；Chart 只负责把 `valkey.*` 的地址、端口和密码写入其中。
 :::
 
 可在线修改的运行设置在首次启动时采用配置文件中的初始值，之后通过「系统管理」维护。升级 Helm values 不会覆盖已经保存的在线设置，在线修改也不会写回配置文件。

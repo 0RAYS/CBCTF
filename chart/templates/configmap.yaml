@@ -47,7 +47,7 @@ data:
     gorm:
       postgres:
         host: {{ include "cbctf.postgres.host" . | quote }}
-        port: {{ .Values.postgres.service.port }}
+        port: {{ .Values.postgres.service.ports.postgresql }}
         user: {{ .Values.postgres.auth.username | quote }}
         pwd: {{ .Values.postgres.auth.password | quote }}
         db: {{ .Values.postgres.auth.database | quote }}

@@ -195,8 +195,51 @@ func TestBundledValkeyAddressMatchesRenderedService(t *testing.T) {
 	}
 }
 
+// postgresService returns the Service the bundled PostgreSQL is reached through.
+func postgresService(t *testing.T, documents []map[string]any) (string, int) {
+	t.Helper()
+	for _, document := range documents {
+		if document["kind"] != "Service" {
+			continue
+		}
+		metadata := document["metadata"].(map[string]any)
+		labels, _ := metadata["labels"].(map[string]any)
+		if labels["app.kubernetes.io/name"] != "postgres" || labels["app.kubernetes.io/component"] != "primary" {
+			continue
+		}
+		spec := document["spec"].(map[string]any)
+		if spec["clusterIP"] == "None" {
+			continue
+		}
+		ports := spec["ports"].([]any)
+		return metadata["name"].(string), ports[0].(map[string]any)["port"].(int)
+	}
+	t.Fatal("bundled PostgreSQL rendered no primary Service")
+	return "", 0
+}
+
+// TestBundledPostgresAddressMatchesRenderedService pins cbctf.postgres.fullname,
+// the only place this chart reimplements the upstream postgresql chart's naming
+// rule. The application configuration has to reach the Service the subchart
+// renders, and nothing else in this chart could notice the two drifting apart.
+func TestBundledPostgresAddressMatchesRenderedService(t *testing.T) {
+	documents := render(t, "postgres.auth.password=bundled-secret")
+	config := appConfig(t, documents)
+	connection := config["gorm"].(map[string]any)["postgres"].(map[string]any)
+	if connection["pwd"] != "bundled-secret" {
+		t.Fatalf("platform password does not follow the bundled PostgreSQL auth: %v", connection["pwd"])
+	}
+	name, port := postgresService(t, documents)
+	if connection["host"] != name+"."+releaseNamespace {
+		t.Fatalf("platform addresses %v but the bundled PostgreSQL Service is %s", connection["host"], name)
+	}
+	if connection["port"] != port {
+		t.Fatalf("platform dials port %v but the bundled PostgreSQL Service exposes %d", connection["port"], port)
+	}
+}
+
 func TestValkeyEphemeralVolumeAndPullSecrets(t *testing.T) {
-	documents := render(t, "valkey.dataStorage.enabled=false", "valkey.imagePullSecrets[0]=registry-key")
+	documents := render(t, "valkey.persistence.enabled=false", "valkey.persistence.size=", "valkey.imagePullSecrets[0]=registry-key")
 	for _, document := range documents {
 		if document["kind"] == "PersistentVolumeClaim" && ownedByValkey(document) {
 			t.Fatal("ephemeral Valkey rendered a PVC")
@@ -346,7 +389,7 @@ func TestPartialImageCredentialsFailTheRender(t *testing.T) {
 }
 
 func TestPostgresEphemeralVolumeAndPullSecrets(t *testing.T) {
-	documents := render(t, "postgres.persistence.enabled=false", "imagePullSecrets[0].name=registry-key")
+	documents := render(t, "postgres.primary.persistence.enabled=false", "postgres.global.imagePullSecrets[0].name=registry-key")
 	for _, document := range documents {
 		if document["kind"] != "StatefulSet" {
 			continue

@@ -25,7 +25,7 @@ crash-looping through the kubelet backoff. It gives up after five minutes.
 Liveness probes the HTTP port every 5 seconds and readiness every 3 seconds;
 `startupProbe` still gates both until the platform finished its startup.
 
-## Valkey (0.0.30)
+## Valkey
 
 The cache and Asynq task queue are deployed by the upstream
 [Valkey chart](https://valkey.io/valkey-helm/), pulled in as a chart dependency.
@@ -38,7 +38,7 @@ helm dependency build chart/
 ```
 
 `helm dependency build` is required before `helm template` or `helm install` from
-this directory. The chart release workflow resolves the dependency itself.
+this directory. The chart release workflow resolves the dependencies itself.
 
 | Value | Purpose |
 | --- | --- |
@@ -47,35 +47,52 @@ this directory. The chart release workflow resolves the dependency itself.
 | `valkey.password` | Password written into the platform configuration; required for an external server, and when `valkey.auth.usersExistingSecret` supplies the bundled credentials |
 | `valkey.auth.aclUsers.default.password` | Inline password for the bundled instance, and the single source the platform configuration reads |
 | `valkey.service.port` | Service port, also used for the external server |
-| `valkey.dataStorage.*` | `enabled`, `requestedSize`, `className`, `accessModes`, `keepPvc` |
+| `valkey.persistence.*` | `enabled`, `size`, `storageClass`, `accessModes`, `keepOnUninstall` |
 
 The defaults keep `appendonly yes`, so queued Asynq work survives a Pod
-replacement, and mark the volume `helm.sh/resource-policy: keep`, matching the
-retention the previous bundled StatefulSet had.
-
-Upgrading from a release that used the bundled Redis StatefulSet:
-
-- The workload changes from a StatefulSet named `<release>-redis` to a
-  Deployment named `<release>-valkey`, and the volume from
-  `data-<release>-redis-0` to `<release>-valkey`. Existing keys are **not** migrated.
-  Drain the release, copy the data directory across, or start clean — queued
-  tasks are lost either way, so finish them before upgrading.
-- `redis.enabled`/`externalHost`/`auth.password`/`persistence.*` are replaced by
-  `valkey.enabled`/`externalHost`/`password`/`dataStorage.*`.
-- `redis.image.*` is now `valkey.image.*`, and `redis.resources` is `valkey.resources`.
-- The generated `/app/config.yaml` still uses a `redis:` section, because that is
-  the key the current backend reads. Only the chart values were renamed.
+replacement, and mark the volume `helm.sh/resource-policy: keep`. The chart
+refuses to render `persistence.enabled: false` while `persistence.size` is still
+set, so clearing the size is part of switching persistence off.
 
 Everything the Valkey chart supports beyond the defaults is available, notably
 `valkey.replica.*` with Sentinel, `valkey.tls.*`, `valkey.metrics.*`,
-`valkey.networkPolicy`, `valkey.podDisruptionBudget` and `valkey.valkeyConfig`.
+`valkey.networkPolicy`, `valkey.podDisruptionBudget` and `valkey.extraConfig`.
+
+## PostgreSQL
+
+The database is deployed by the upstream
+[Bitnami postgresql chart](https://github.com/bitnami/charts/tree/main/bitnami/postgresql),
+declared as a dependency under the alias `postgres`, so the bundled resources are
+named `<release>-postgres`. Every `postgres.*` value except `enabled` and
+`externalHost` is that chart's own; its README covers replication, TLS, the
+metrics exporter and backups.
+
+| Value | Purpose |
+| --- | --- |
+| `postgres.enabled` | Deploy the bundled PostgreSQL; `false` requires `postgres.externalHost` |
+| `postgres.externalHost` | External server address, used verbatim without the release namespace |
+| `postgres.auth.database` / `username` / `password` | Database and application role created on first boot |
+| `postgres.primary.persistence.*` | `enabled`, `size`, `storageClass` |
+| `postgres.primary.extendedConfiguration` | Appended to the generated `postgresql.conf` |
+| `postgres.service.ports.postgresql` | Service port, also used for the external server |
+| `postgres.global.imagePullSecrets` | Pull secrets for the bundled database Pod, because the subchart renders it |
+
+The bundled image is `bitnami/postgresql:latest`: Bitnami publishes only the
+`latest` tag for its freely available images. The application role is not a
+superuser, so `CREATE EXTENSION pg_trgm` is skipped with a warning unless the
+operator creates the extension with the `postgres` superuser whose password is in
+the rendered Secret.
+
+A release that still ran the chart's own PostgreSQL StatefulSet cannot be upgraded
+in place: delete that StatefulSet and its claim `data-<release>-postgres-0`
+before the upgrade, the Bitnami chart starts from an empty data directory.
 
 ## Storage and external services
 
-- Disable `postgres.enabled` / `valkey.enabled` and set the corresponding `externalHost` to use external services. Hostnames and IPs are used verbatim; credentials and ports remain under `auth` and `service.port`.
-- Disabling the bundled PostgreSQL's persistence uses `emptyDir`; `valkey.dataStorage.enabled: false` does the same for Valkey. Their data is lost on Pod replacement.
+- Disable `postgres.enabled` / `valkey.enabled` and set the corresponding `externalHost` to use external services. Hostnames and IPs are used verbatim; credentials and ports remain under `auth` and `service.ports.postgresql` / `service.port`.
+- Disabling the bundled PostgreSQL's persistence uses `emptyDir`; so does `valkey.persistence.enabled: false` together with an empty `valkey.persistence.size`. Their data is lost on Pod replacement.
 - `persistence.existingClaim` must exist in the release namespace. The application and runtime workloads now use the same claim; deploy a matching backend image with this chart.
-- `imagePullSecrets` / `imageCredentials` apply to chart-managed application and PostgreSQL Pods. Valkey pulls from Docker Hub and reads its own `valkey.imagePullSecrets` (plus `valkey.global.*`), because it is rendered by the upstream chart. The runtime workloads the backend creates — victims, generators, FRPC pods and the image jobs — run under the ServiceAccount `cbctf.runtimeServiceAccountName` (`<release>-cbctf-runtime` by default), which carries the same pull secrets and mounts no token. Partial `imageCredentials` fail the render instead of leaving the workloads without credentials.
+- `imagePullSecrets` / `imageCredentials` apply to the chart-managed application Pod. The bundled Valkey and PostgreSQL are rendered by their upstream charts and read `valkey.imagePullSecrets` (plus `valkey.global.*`) and `postgres.global.imagePullSecrets` instead. The runtime workloads the backend creates — victims, generators, FRPC pods and the image jobs — run under the ServiceAccount `cbctf.runtimeServiceAccountName` (`<release>-cbctf-runtime` by default), which carries the same pull secrets and mounts no token. Partial `imageCredentials` fail the render instead of leaving the workloads without credentials.
 - The removed `cbctf.log.level` / `cbctf.log.save` values had no effect on the current backend. Collect container output for persistent application logs.
 - Changing `postgres.auth.password` does not change the password inside an already initialized PostgreSQL data directory.
 

@@ -196,38 +196,46 @@ persistence:
   existingClaim: ""    # Existing PVC in the release namespace, shared with runtime workloads
 
 # ── PostgreSQL ────────────────────────────────────────────────────────────────
+# The database is deployed with the upstream Bitnami postgresql chart
+# (https://github.com/bitnami/charts/tree/main/bitnami/postgresql), declared as
+# a dependency in Chart.yaml. Every key below except `enabled` and
+# `externalHost` is that chart's own value; see its README for the full set
+# (replication, TLS, metrics exporter, backup, network policies).
 
 postgres:
   enabled: true
   externalHost: ""     # Required when disabled; hostname/IP used verbatim
+  architecture: standalone
   image:
-    repository: postgres
-    tag: "17-alpine"
+    repository: bitnami/postgresql
+    # Bitnami publishes only the `latest` tag for its freely available images.
+    tag: latest
     pullPolicy: IfNotPresent
   auth:
     database: "cbctf"
     username: "cbctf"
     password: "change-me-postgres-password"
-  persistence:
-    enabled: true
-    storageClass: ""
-    accessMode: ReadWriteOnce
-    size: 5Gi
-  resources: {}
-    # limits:
-    #   cpu: 2000m
-    #   memory: 2Gi
-    # requests:
-    #   cpu: 500m
-    #   memory: 512Mi
+  primary:
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: 5Gi
+    resources: {}
+      # limits:
+      #   cpu: 2000m
+      #   memory: 2Gi
+      # requests:
+      #   cpu: 500m
+      #   memory: 512Mi
+    # Appended to the generated postgresql.conf
+    extendedConfiguration: |
+      max_connections = 500
+      shared_buffers = 256MB
+      wal_level = replica
+      listen_addresses = '*'
   service:
-    port: 5432
-  # Extra PostgreSQL configuration appended to postgresql.conf
-  extraConfig: |
-    max_connections = 500
-    shared_buffers = 256MB
-    wal_level = replica
-    listen_addresses = '*'
+    ports:
+      postgresql: 5432
 
 # ── Valkey ────────────────────────────────────────────────────────────────────
 # The cache and Asynq task queue are deployed with the upstream Valkey chart
@@ -259,18 +267,18 @@ valkey:
   imagePullSecrets: []  # Valkey only; `imagePullSecrets` above covers app + PostgreSQL
   service:
     port: 6379
-  dataStorage:
+  persistence:
     enabled: true
-    requestedSize: 1Gi
-    className: ""       # Empty uses the cluster default StorageClass
+    size: 1Gi
+    storageClass: ""    # Empty uses the cluster default StorageClass
     accessModes:
       - ReadWriteOnce
     # Keeps the volume on `helm uninstall`; remove it by hand afterwards.
-    keepPvc: true
+    keepOnUninstall: true
   # Asynq task state must survive a Pod replacement, so append-only files are
   # enabled explicitly. This is appended last to the generated configuration
   # and therefore wins over any default.
-  valkeyConfig: |
+  extraConfig: |
     appendonly yes
     appendfsync everysec
     save 900 1

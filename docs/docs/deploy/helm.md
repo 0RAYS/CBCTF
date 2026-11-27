@@ -6,14 +6,15 @@ description: 通过 Helm Chart 安装 CBCTF，并配置镜像、Ingress、存储
 # Helm 部署
 
 CBCTF Chart 位于仓库根目录的 `chart/`。默认会创建应用 Deployment、Service、Ingress、ServiceAccount、ClusterRole、共享 PVC，
-以及内置 PostgreSQL 和 Valkey。Valkey 由官方 Chart [valkey-helm](https://valkey.io/valkey-helm/) 作为子图表部署，
-本仓库不再自带 Redis 模板。
+以及内置 PostgreSQL 和 Valkey。PostgreSQL 由 Bitnami 的
+[postgresql Chart](https://github.com/bitnami/charts/tree/main/bitnami/postgresql) 部署，Valkey 由官方 Chart
+[valkey-helm](https://valkey.io/valkey-helm/) 部署，两者都作为子图表引入，本仓库不再自带数据库与缓存模板。
 
 ## 前置要求
 
 - Kubernetes 集群可用
 - Helm 可用
-- 集群可以拉取 `ghcr.io/0rays/cbctf`、PostgreSQL、`valkey/valkey` 以及题目镜像
+- 集群可以拉取 `ghcr.io/0rays/cbctf`、`bitnami/postgresql`、`valkey/valkey` 以及题目镜像
 - 如启用持久化，集群需要可用 StorageClass
 - 动态附件输入与抓包文件需要平台和运行时 Pod 共享同一 PVC；多节点场景使用 `ReadWriteMany`
 - VPC 靶机需要提前安装 Kube-OVN 和 Multus CNI
@@ -38,17 +39,16 @@ helm upgrade --install cbctf cbctf/cbctf -n cbctf --create-namespace -f values.y
 ```
 
 :::info
-本文与仓库 Chart `0.0.30` 对应。使用仓库代码时可将命令中的 `cbctf/cbctf` 换成 `./chart`；新配置能力需要匹配版本的后端镜像。
+本文与仓库 Chart `0.0.39` 对应。使用仓库代码时可将命令中的 `cbctf/cbctf` 换成 `./chart`；新配置能力需要匹配版本的后端镜像。
 
 运行时设置首次写入数据库后，以数据库为准。修改 values 中的 `host`、JWT、注册、上传限制或 Kubernetes 运行参数再升级，并不会覆盖已经保存的设置；请到「系统管理」修改并按需重启。参见[配置来源与生效时机](./settings)。
 :::
 
 ### 从仓库源码安装
 
-Chart 将 Valkey 声明为依赖，且只提交 `chart/Chart.lock`，不提交打包后的子图表。直接使用仓库代码前需先解析依赖：
+Chart 将 Bitnami postgresql 与官方 Valkey 声明为依赖，且只提交 `chart/Chart.lock`，不提交打包后的子图表。直接使用仓库代码前需先解析依赖：
 
 ```bash
-helm repo add valkey https://valkey.io/valkey-helm/
 helm dependency build chart/
 helm upgrade --install cbctf ./chart -n cbctf --create-namespace -f values.yaml --wait --timeout 10m
 ```
@@ -123,39 +123,45 @@ PostgreSQL 和 Valkey 密钥会写入 `/app/config.yaml`。JWT 签名密钥不�
 | `postgres.auth.database`       | 数据库名                      | `cbctf`                     |
 | `postgres.auth.username`       | 用户名                       | `cbctf`                     |
 | `postgres.auth.password`       | PostgreSQL 密码              | `example-postgres-password` |
-| `postgres.persistence.enabled` | PostgreSQL 数据持久化          | `true`                      |
-| `postgres.persistence.size`    | PostgreSQL PVC 容量         | `5Gi`                       |
-| `postgres.extraConfig`         | 追加到 `postgresql.conf` 的配置 | `max_connections = 500`     |
+| `postgres.primary.persistence.enabled` | PostgreSQL 数据持久化   | `true`                      |
+| `postgres.primary.persistence.size` | PostgreSQL PVC 容量      | `5Gi`                       |
+| `postgres.primary.extendedConfiguration` | 追加到 `postgresql.conf` 的配置 | `max_connections = 500` |
+| `postgres.service.ports.postgresql` | PostgreSQL 端口          | `5432`                      |
+| `postgres.image.*`             | PostgreSQL 镜像仓库、标签和拉取策略 | `bitnami/postgresql:latest` |
+| `postgres.global.imagePullSecrets` | PostgreSQL 镜像拉取 Secret | `[regcred]`                 |
 | `valkey.enabled`               | 是否部署内置 Valkey            | `true`                      |
 | `valkey.externalHost`          | 外部 Valkey 地址，关闭内置时必填    | `valkey.example.com`        |
 | `valkey.password`              | 写入平台配置的 Valkey 密码        | `example-valkey-password`   |
 | `valkey.auth.aclUsers.default.password` | 内置 Valkey 的内联密码      | `example-valkey-password`   |
 | `valkey.service.port`          | Valkey 端口                   | `6379`                      |
-| `valkey.dataStorage.enabled`   | Valkey 数据持久化             | `true`                      |
-| `valkey.dataStorage.requestedSize` | Valkey PVC 容量           | `1Gi`                       |
-| `valkey.dataStorage.className` | Valkey PVC 的 StorageClass   | `nfs-client`                |
-| `valkey.dataStorage.accessModes` | Valkey PVC 访问模式         | `ReadWriteOnce`             |
-| `valkey.dataStorage.keepPvc`   | 卸载时保留 Valkey PVC           | `true`                      |
-| `valkey.image.*`               | Valkey 镜像仓库、标签和拉取策略      | `valkey/valkey:9.1.2`       |
+| `valkey.persistence.enabled`   | Valkey 数据持久化             | `true`                      |
+| `valkey.persistence.size`      | Valkey PVC 容量              | `1Gi`                       |
+| `valkey.persistence.storageClass` | Valkey PVC 的 StorageClass | `nfs-client`                |
+| `valkey.persistence.keepOnUninstall` | 卸载时保留 Valkey PVC      | `true`                      |
+| `valkey.image.*`               | Valkey 镜像仓库、标签和拉取策略      | `valkey/valkey:9.1.3`       |
 | `valkey.resources`             | Valkey 资源限制                 | `requests.cpu: 500m`        |
 | `valkey.imagePullSecrets`      | Valkey 镜像拉取 Secret          | `[regcred]`                 |
-| `valkey.valkeyConfig`          | 追加到 `valkey.conf` 的配置      | `maxmemory 512mb`           |
+| `valkey.extraConfig`           | 追加到 `valkey.conf` 的配置      | `maxmemory 512mb`           |
 
-`valkey` 下的键即官方 Valkey Chart 自身的 values，未列出的配置（`replica.*` 与 Sentinel、`tls.*`、`metrics.*`、
-`networkPolicy`、`podDisruptionBudget`、`podSecurityContext` 等）同样可用，说明见 <https://valkey.io/valkey-helm/>。
+`postgres` 下的键即 Bitnami postgresql Chart 自身的 values，`valkey` 下的键即官方 Valkey Chart 自身的 values；
+未列出的配置（复制与 Sentinel、TLS、metrics exporter、备份、网络策略等）同样可用，说明见各自的 Chart 文档。
 
-内置 Valkey 的地址由 Chart 渲染为 `{release}-valkey.{namespace}`，平台配置中的密码直接取自
-`valkey.auth.aclUsers.default.password`，不存在第二个需要同步的密码字段。
+内置 PostgreSQL 的镜像使用 `bitnami/postgresql:latest`，因为 Bitnami 对免费镜像只发布 `latest` 标签。应用使用的数据库角色不是超级用户，
+`pg_trgm` 扩展需要用渲染出的 Secret 中的 `postgres` 超级用户创建，否则平台启动时只会记录一条跳过扩展的警告。
+
+内置 Valkey 的地址由 Chart 渲染为 `{release}-valkey.{namespace}`，内置 PostgreSQL 的地址为 `{release}-postgres.{namespace}`；
+平台配置中的密码直接取自 `valkey.auth.aclUsers.default.password` 与 `postgres.auth.password`，不存在第二个需要同步的密码字段。
 若改用 `valkey.auth.usersExistingSecret` 提供密码，则必须同时填写 `valkey.password`，Chart 会渲染报错而不是静默使用错误的密码。
 
-关闭内置组件时必须设置 `externalHost`，地址按原值使用，不追加命名空间。认证和端口仍使用对应的密码字段与 `service.port`：
+关闭内置组件时必须设置 `externalHost`，地址按原值使用，不追加命名空间。认证和端口仍使用对应的密码字段与 `service.ports.postgresql` / `service.port`：
 
 ```yaml
 postgres:
   enabled: false
   externalHost: postgres.example.com
   service:
-    port: 5432
+    ports:
+      postgresql: 5432
   auth:
     database: cbctf
     username: cbctf
@@ -177,12 +183,13 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 仍需按单实例地址接入或先确认客户端配置能否解析。
 
 内置 PostgreSQL 的 `auth` 变量仅初始化空数据目录；对已有 PVC 修改 values 中的密码不会执行数据库 `ALTER ROLE`，应先协调修改数据库凭据。
-关闭 PostgreSQL 的 `persistence.enabled` 或设置 `valkey.dataStorage.enabled: false` 后使用 `emptyDir`，Pod 重建会丢失对应数据。
+关闭 `postgres.primary.persistence.enabled`，或同时将 `valkey.persistence.enabled` 置为 `false` 并清空 `valkey.persistence.size`，会让对应组件使用 `emptyDir`，Pod 重建会丢失数据。
 
-:::warning 升级内置 Valkey
-从使用内置 Redis StatefulSet 的旧版本升级时，工作负载由 `<release>-redis` 变为 `<release>-valkey` 的 Deployment，
-数据卷由 `data-<release>-redis-0` 变为 `{release}-valkey`，**已有数据不会自动迁移**，队列中的任务会丢失。
-请先排空任务队列，或手动复制数据目录后再升级。`redis.*` 全部相关 values 已更名为 `valkey.*`，升级时需要同步修改 values 文件。
+:::warning 升级内置组件
+0.0.39 起内置 PostgreSQL 由 Bitnami postgresql Chart 部署，数据目录格式与旧的手写 StatefulSet 不兼容：升级前删除旧的 StatefulSet 与 PVC
+`data-<release>-postgres-0`，升级后数据库重新初始化。旧 values 中的 `postgres.persistence.*`、`postgres.extraConfig`、`postgres.service.port`
+改为 `postgres.primary.persistence.*`、`postgres.primary.extendedConfiguration`、`postgres.service.ports.postgresql`；Valkey Chart 1.0 把
+`valkey.dataStorage.*` 与 `valkey.valkeyConfig` 改为 `valkey.persistence.*` 与 `valkey.extraConfig`。
 :::
 
 ## 共享数据卷与镜像凭据
