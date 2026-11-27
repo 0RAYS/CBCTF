@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"maps"
 	"net/netip"
 
 	netv1 "k8s.io/api/networking/v1"
@@ -55,6 +56,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 // 出站始终受策略类型约束：没有规则时表示拒绝全部出站。
 // 容器所在网段与互通容器的地址始终放行，其余目标由策略决定。
 // 入站默认接受集群外部的访问，填写自定义入站 CIDR 后只有这些来源可以访问。
+// 同一 victim 的 frpc Pod 始终放行入站，否则反向代理的流量无法到达容器。
 func buildNetworkPolicySpec(
 	resolved model.ResolvedNetworkPolicy,
 	subnetCIDRs []string,
@@ -105,8 +107,22 @@ func buildNetworkPolicySpec(
 	if len(ingressBlocks) == 0 {
 		ingressBlocks = append(ingressBlocks, netv1.NetworkPolicyPeer{IPBlock: externalBlock(vpcSubnets)})
 	}
-	spec.Ingress = mergeIngressRules(concatPeers(subnetBlocks, peerBlocks, ingressBlocks))
+	spec.Ingress = mergeIngressRules(concatPeers(subnetBlocks, peerBlocks, frpcPeers(selector), ingressBlocks))
 	return spec
+}
+
+// frpcPeers 选中同一 victim 的 frpc Pod。
+// 集群外的来源用 ipBlock 表达，但 Cilium 对已分配身份的 Pod 走身份匹配，
+// ipBlock 里的 0.0.0.0/0 不会覆盖集群内的 frpc Pod，必须用标签显式放行。
+func frpcPeers(selector map[string]string) []netv1.NetworkPolicyPeer {
+	if len(selector) == 0 {
+		return nil
+	}
+	matchLabels := make(map[string]string, len(selector))
+	maps.Copy(matchLabels, selector)
+	matchLabels[RoleLabel] = FrpcPodTag
+	delete(matchLabels, ServiceLabel)
+	return []netv1.NetworkPolicyPeer{{PodSelector: &metav1.LabelSelector{MatchLabels: matchLabels}}}
 }
 
 // internetBlock 出公网范围：0.0.0.0/0 扣除私有网段与题目 VPC 网段。

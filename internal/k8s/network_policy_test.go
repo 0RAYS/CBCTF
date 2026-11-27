@@ -55,14 +55,17 @@ func TestCreateNetworkPolicyAllowsInternetAndPeers(t *testing.T) {
 		t.Fatalf("unexpected ingress rules: %+v", spec.Ingress)
 	}
 	ingress := spec.Ingress[0].From
-	if len(ingress) != 3 {
-		t.Fatalf("ingress must allow the subnet, the peer and external traffic: %+v", ingress)
+	if len(ingress) != 4 {
+		t.Fatalf("ingress must allow the subnet, the peer, the frpc pod and external traffic: %+v", ingress)
 	}
 	if ingress[0].IPBlock.CIDR != "10.1.0.0/24" || ingress[1].IPBlock.CIDR != "10.1.0.3/32" {
 		t.Fatalf("unexpected ingress sources: %+v", ingress)
 	}
-	if ingress[2].IPBlock.CIDR != "0.0.0.0/0" {
-		t.Fatalf("ingress must allow external traffic: %+v", ingress[2])
+	if ingress[2].PodSelector == nil || ingress[2].PodSelector.MatchLabels[RoleLabel] != FrpcPodTag {
+		t.Fatalf("ingress must allow the frpc pod: %+v", ingress[2])
+	}
+	if ingress[3].IPBlock.CIDR != "0.0.0.0/0" {
+		t.Fatalf("ingress must allow external traffic: %+v", ingress[3])
 	}
 }
 
@@ -87,7 +90,11 @@ func TestCreateNetworkPolicyDeniesEgressWithoutRules(t *testing.T) {
 	if !slices.Contains(spec.PolicyTypes, netv1.PolicyTypeEgress) {
 		t.Fatalf("egress policy type is required to deny all egress: %v", spec.PolicyTypes)
 	}
-	if len(spec.Ingress) != 1 || spec.Ingress[0].From[0].IPBlock.CIDR != "0.0.0.0/0" {
+	if len(spec.Ingress) != 1 {
+		t.Fatalf("ingress must accept external traffic: %+v", spec.Ingress)
+	}
+	external := spec.Ingress[0].From[len(spec.Ingress[0].From)-1]
+	if external.IPBlock.CIDR != "0.0.0.0/0" {
 		t.Fatalf("ingress must accept external traffic: %+v", spec.Ingress)
 	}
 }
@@ -131,10 +138,10 @@ func TestCreateNetworkPolicyUsesCustomInboundCIDRsAsAllowlist(t *testing.T) {
 		t.Fatal(ret)
 	}
 	ingress := created.Spec.Ingress[0].From
-	if len(ingress) != 2 {
-		t.Fatalf("ingress must keep the subnet and the custom source: %+v", ingress)
+	if len(ingress) != 3 {
+		t.Fatalf("ingress must keep the subnet, the frpc pod and the custom source: %+v", ingress)
 	}
-	if ingress[0].IPBlock.CIDR != "10.1.0.0/24" || ingress[1].IPBlock.CIDR != "192.168.1.0/24" {
+	if ingress[0].IPBlock.CIDR != "10.1.0.0/24" || ingress[2].IPBlock.CIDR != "192.168.1.0/24" {
 		t.Fatalf("unexpected ingress sources: %+v", ingress)
 	}
 }
