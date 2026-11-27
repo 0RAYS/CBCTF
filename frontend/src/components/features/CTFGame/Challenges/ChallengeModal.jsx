@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Button, Modal } from '@/components/common';
 import MarkdownContent from '@/components/common/MarkdownContent';
 import { IconPaperclip } from '@tabler/icons-react';
@@ -28,7 +28,8 @@ function ChallengeModal({
   const [flagError, setFlagError] = useState(null);
   const [flag, setFlag] = useState('');
   const [isCopied, setIsCopied] = useState({});
-  const [timeLeft, setTimeLeft] = useState(0);
+  const serverTimeLeft = Math.max(0, Number(challenge?.instanceTimeLeft) || 0);
+  const [timeLeft, setTimeLeft] = useState(serverTimeLeft);
   const timerRef = useRef(null);
   const sessionRef = useRef(null);
   const pendingRef = useRef(new Set());
@@ -50,9 +51,10 @@ function ChallengeModal({
     };
   }, [challenge?.id, isOpen]);
 
-  useEffect(() => {
-    setTimeLeft(Number(challenge?.instanceTimeLeft) || 0);
-  }, [challenge?.instanceTimeLeft]);
+  // A post-paint sync would show the bar at the previous countdown for one frame.
+  useLayoutEffect(() => {
+    setTimeLeft(serverTimeLeft);
+  }, [serverTimeLeft]);
 
   useEffect(() => {
     if (!challenge || !isOpen || !isRunning || timeLeft <= 0) return;
