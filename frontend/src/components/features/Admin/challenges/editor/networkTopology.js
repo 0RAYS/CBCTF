@@ -9,8 +9,7 @@ import {
 
 export const INTERNET_ID = 'internet';
 
-const TOP = 26;
-const BOTTOM = 4;
+const LANE_COLORS = ['#38bdf8', '#a78bfa', '#fbbf24', '#34d399', '#fb7185', '#22d3ee', '#c084fc', '#a3e635'];
 
 const nodeIps = (node) => node.networks.map((network) => network.ip).filter((ip) => ip && ip !== '-');
 
@@ -40,30 +39,23 @@ export const buildNetworkTopology = (config, policies = []) => {
     if (name && !laneNames.includes(name)) laneNames.push(name);
   });
   nodes.forEach((node) => {
-    const name = node.networks[0]?.name || 'default';
-    if (!laneNames.includes(name)) laneNames.push(name);
-  });
-
-  const laneWidth = 100 / Math.max(laneNames.length, 1);
-  const lanes = laneNames.map((name, index) => ({
-    id: name,
-    name,
-    x: laneWidth * (index + 0.5),
-    width: laneWidth,
-    nodes: [],
-  }));
-  nodes.forEach((node) => {
-    const lane = lanes.find((item) => item.id === (node.networks[0]?.name || 'default'));
-    lane.nodes.push(node);
-  });
-  lanes.forEach((lane) => {
-    lane.nodes.forEach((node, index) => {
-      node.x = lane.x;
-      node.y = TOP + ((index + 0.5) * (100 - TOP - BOTTOM)) / lane.nodes.length;
+    node.networks.forEach((network) => {
+      if (!laneNames.includes(network.name)) laneNames.push(network.name);
     });
   });
 
-  const internet = { id: INTERNET_ID, label: 'internet', x: 50, y: 5, networks: [] };
+  const lanes = laneNames.map((name, index) => ({
+    id: name,
+    name,
+    color: LANE_COLORS[index % LANE_COLORS.length],
+    members: nodes.filter((node) => node.networks.some((network) => network.name === name)).map((node) => node.id),
+  }));
+  const colorByLane = new Map(lanes.map((lane) => [lane.id, lane.color]));
+  nodes.forEach((node) => {
+    node.networks.forEach((network) => {
+      network.color = colorByLane.get(network.name);
+    });
+  });
 
   const connections = [];
   nodes.forEach((source) => {
@@ -105,12 +97,12 @@ export const buildNetworkTopology = (config, policies = []) => {
     return {
       id: `${node.id}->${INTERNET_ID}`,
       source: node,
-      target: internet,
+      target: { id: INTERNET_ID, label: 'internet' },
       allowed: policy.allow_internet,
       reasonKey: policy.allow_internet ? 'egressAllowed' : 'egressBlocked',
       ranges: policy.egress_cidrs,
     };
   });
 
-  return { nodes, lanes, internet, connections, egress, sharedNetwork };
+  return { nodes, lanes, internet: { id: INTERNET_ID, label: 'internet' }, connections, egress, sharedNetwork };
 };

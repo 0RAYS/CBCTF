@@ -1,41 +1,39 @@
-import { useId } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconWorld } from '@tabler/icons-react';
+import { layoutTopology } from '@/components/features/Admin/challenges/editor/networkTopologyLayout.js';
 import '@/components/features/Admin/challenges/editor/TopologyPreview.css';
 
 const tt = (key) => `admin.challengeModal.topology.${key}`;
 
-const connectionPath = (source, target) => {
-  const dx = target.x - source.x;
-  const dy = target.y - source.y;
-  const distance = Math.hypot(dx, dy) || 1;
-  // A perpendicular bend puts reverse connections on opposite sides.
-  const controlX = (source.x + target.x) / 2 - (dy / distance) * 6;
-  const controlY = (source.y + target.y) / 2 + (dx / distance) * 6;
-  const startControlX = (source.x + controlX) / 2;
-  const startControlY = (source.y + controlY) / 2;
-  const endControlX = (controlX + target.x) / 2;
-  const endControlY = (controlY + target.y) / 2;
-  const midX = (startControlX + endControlX) / 2;
-  const midY = (startControlY + endControlY) / 2;
-  // Split the curve so its midpoint can carry an arrow outside the node cards.
-  return `M ${source.x} ${source.y} Q ${startControlX} ${startControlY} ${midX} ${midY} Q ${endControlX} ${endControlY} ${target.x} ${target.y}`;
-};
-
 export default function TopologyPreview({ topology }) {
   const { t } = useTranslation();
   const markerId = useId();
-  if (topology.nodes.length === 0) {
+  const frameRef = useRef(null);
+  const [width, setWidth] = useState(0);
+  const hasNodes = topology.nodes.length > 0;
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return undefined;
+    const observer = new ResizeObserver((entries) => {
+      const measured = Math.round(entries[0].contentRect.width);
+      setWidth((current) => (current === measured ? current : measured));
+    });
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, [hasNodes]);
+
+  const layout = useMemo(() => layoutTopology(topology, { width }), [topology, width]);
+
+  if (!hasNodes) {
     return (
       <div className="rounded-md border border-neutral-700 bg-black/20 p-4 text-center font-mono text-sm text-neutral-500">
         {t(tt('empty'))}
       </div>
     );
   }
-  const cardWidth = topology.lanes.length > 2 ? 'w-28' : 'w-36';
-  const laneHeight = Math.max(...topology.lanes.map((lane) => lane.nodes.length));
-  const boxHeight = Math.max(460, 130 + laneHeight * 96);
-  const edges = [...topology.connections, ...topology.egress];
+
   return (
     <div className="rounded-md border border-neutral-700 bg-black/20 p-3">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -52,161 +50,170 @@ export default function TopologyPreview({ topology }) {
           </span>
         </div>
       </div>
-      <div
-        className="relative overflow-hidden rounded-md border border-neutral-800 bg-black/20"
-        style={{ height: `${boxHeight}px` }}
-      >
-        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <defs>
-            <marker
-              id={`${markerId}-allow`}
-              viewBox="0 0 16 16"
-              refX="8"
-              refY="8"
-              markerUnits="userSpaceOnUse"
-              markerWidth="4.5"
-              markerHeight="4.5"
-              orient="auto"
-            >
-              <path
-                d="M 2 2 L 14 8 L 2 14 L 5 8 Z"
-                fill="#4ade80"
-                stroke="#0a0a0a"
-                strokeWidth="1"
-                strokeDasharray="none"
-                strokeOpacity="1"
-                strokeLinejoin="round"
-              />
-            </marker>
-            <marker
-              id={`${markerId}-deny`}
-              viewBox="0 0 16 16"
-              refX="8"
-              refY="8"
-              markerUnits="userSpaceOnUse"
-              markerWidth="4.5"
-              markerHeight="4.5"
-              orient="auto"
-            >
-              <path
-                d="M 4 2 H 6 V 14 H 4 Z M 10 2 H 12 V 14 H 10 Z"
-                fill="#f87171"
-                stroke="#0a0a0a"
-                strokeWidth="1"
-                strokeDasharray="none"
-                strokeOpacity="1"
-                strokeLinejoin="round"
-              />
-            </marker>
-          </defs>
+      {topology.lanes.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1">
           {topology.lanes.map((lane) => (
-            <g key={lane.id}>
-              <rect
-                x={lane.x - lane.width / 2 + 0.6}
-                y={15}
-                width={lane.width - 1.2}
-                height={82}
-                rx={2}
-                fill="#ffffff"
-                fillOpacity="0.02"
-                stroke="#404040"
-                strokeOpacity="0.5"
-                strokeWidth="0.2"
-                strokeDasharray="1.5 1.5"
-              />
-              <text
-                x={lane.x}
-                y={12.6}
-                textAnchor="middle"
-                fill="#a3a3a3"
-                fontSize="2.6"
-                fontFamily="monospace"
-                stroke="#0a0a0a"
-                strokeWidth="0.7"
-                paintOrder="stroke"
-              >
-                {lane.name}
-              </text>
-            </g>
+            <span key={lane.id} className="inline-flex items-center gap-1.5 text-[11px] font-mono">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: lane.color }} />
+              <span className="text-neutral-300">{lane.name}</span>
+              <span className="text-neutral-600">
+                {lane.members
+                  .map((id) => topology.nodes.find((node) => node.id === id)?.label)
+                  .filter(Boolean)
+                  .join(', ')}
+              </span>
+            </span>
           ))}
-          {edges.map((connection) => {
-            const { source, target } = connection;
-            const path = connectionPath(source, target);
-            return (
-              <g
-                key={connection.id}
-                className={`topology-connection ${connection.allowed ? 'topology-connection-allow' : 'topology-connection-deny'}`}
-                fill="none"
-                pointerEvents="none"
-              >
-                <path d={path} stroke="transparent" strokeWidth="2.5" pointerEvents="stroke" />
-                <g className="topology-connection-visual">
-                  <path
-                    className="topology-connection-line"
-                    d={path}
-                    stroke={connection.allowed ? '#22c55e' : '#f87171'}
-                    strokeWidth="0.35"
-                    strokeDasharray={connection.allowed ? 'none' : '1.2 1.2'}
-                    strokeOpacity={connection.allowed ? 0.75 : 0.65}
-                  />
-                  {connection.allowed && (
-                    <path
-                      className="topology-connection-flow"
-                      d={path}
-                      stroke="#bbf7d0"
-                      strokeWidth="0.6"
-                      strokeDasharray="0.9 1.5"
-                      strokeLinecap="round"
-                    />
-                  )}
-                  <path d={path} markerMid={`url(#${markerId}-${connection.allowed ? 'allow' : 'deny'})`} />
-                </g>
-              </g>
-            );
-          })}
-        </svg>
-        <div
-          className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-md border border-neutral-600 bg-neutral-900/95 px-2 py-1"
-          style={{ left: `${topology.internet.x}%`, top: `${topology.internet.y}%` }}
-        >
-          <IconWorld size={14} className="text-geek-400" />
-          <span className="text-xs font-mono text-neutral-100">{t(tt('internet'))}</span>
         </div>
-        {topology.nodes.map((node) => (
-          <div
-            key={node.id}
-            className={`absolute ${cardWidth} -translate-x-1/2 -translate-y-1/2 rounded-md border border-neutral-700 bg-neutral-900/95 p-2`}
-            style={{ left: `${node.x}%`, top: `${node.y}%` }}
-          >
-            <div className="truncate text-sm font-mono text-neutral-50" title={node.label}>
-              {node.label}
+      )}
+      <div ref={frameRef} className="overflow-x-auto rounded-md border border-neutral-800 bg-black/20">
+        {width > 0 ? (
+          <div className="relative" style={{ width: layout.width, height: layout.height }}>
+            <svg
+              className="absolute left-0 top-0"
+              width={layout.width}
+              height={layout.height}
+              viewBox={`0 0 ${layout.width} ${layout.height}`}
+              fill="none"
+            >
+              <defs>
+                <marker
+                  id={`${markerId}-allow`}
+                  viewBox="0 0 12 12"
+                  refX="6"
+                  refY="6"
+                  markerUnits="userSpaceOnUse"
+                  markerWidth="12"
+                  markerHeight="12"
+                  orient="auto-start-reverse"
+                >
+                  <path
+                    d="M 1 1 L 11 6 L 1 11 L 4 6 Z"
+                    fill="#4ade80"
+                    stroke="#0a0a0a"
+                    strokeWidth="1"
+                    strokeLinejoin="round"
+                  />
+                </marker>
+                <marker
+                  id={`${markerId}-deny`}
+                  viewBox="0 0 12 12"
+                  refX="6"
+                  refY="6"
+                  markerUnits="userSpaceOnUse"
+                  markerWidth="12"
+                  markerHeight="12"
+                  orient="auto"
+                >
+                  <path
+                    d="M 3.5 1.5 H 5.5 V 10.5 H 3.5 Z M 8.5 1.5 H 10.5 V 10.5 H 8.5 Z"
+                    fill="#f87171"
+                    stroke="#0a0a0a"
+                    strokeWidth="0.8"
+                  />
+                </marker>
+              </defs>
+              {layout.edges.map((edge) => (
+                <g
+                  key={edge.id}
+                  className={`topology-connection ${edge.allowed ? 'topology-connection-allow' : 'topology-connection-deny'}`}
+                  fill="none"
+                  pointerEvents="none"
+                >
+                  <path d={edge.d} stroke="transparent" strokeWidth="12" pointerEvents="stroke" />
+                  <g className="topology-connection-visual">
+                    <path
+                      className="topology-connection-line"
+                      d={edge.d}
+                      stroke={edge.allowed ? '#22c55e' : '#f87171'}
+                      strokeWidth={edge.allowed ? 1.6 : 0.9}
+                      strokeDasharray={edge.allowed ? 'none' : '4 4'}
+                      strokeOpacity={edge.allowed ? 0.8 : 0.32}
+                    />
+                    {edge.allowed && (
+                      <path
+                        className="topology-connection-flow"
+                        d={edge.d}
+                        stroke="#bbf7d0"
+                        strokeWidth="2.4"
+                        strokeDasharray="3 6"
+                        strokeLinecap="round"
+                      />
+                    )}
+                    <path
+                      d={edge.d}
+                      markerMid={`url(#${markerId}-${edge.allowed ? 'allow' : 'deny'})`}
+                      markerStart={edge.bidirectional ? `url(#${markerId}-allow)` : undefined}
+                    />
+                  </g>
+                </g>
+              ))}
+            </svg>
+            <div
+              className="absolute flex items-center gap-1 rounded-md border border-neutral-600 bg-neutral-900/95 px-2 py-1"
+              style={{
+                left: layout.internet.x - layout.internet.width / 2,
+                top: layout.internet.y - layout.internet.height / 2,
+                width: layout.internet.width,
+                height: layout.internet.height,
+              }}
+            >
+              <IconWorld size={14} className="shrink-0 text-geek-400" />
+              <span className="truncate text-xs font-mono text-neutral-100">{t(tt('internet'))}</span>
             </div>
-            {node.image && (
-              <div className="mt-0.5 truncate text-[10px] font-mono text-neutral-500" title={node.image}>
-                {node.image}
-              </div>
-            )}
-            <div className="mt-2 space-y-1">
-              {node.networks.length > 0 ? (
-                node.networks.map((network, index) => (
-                  <div
-                    key={`${network.name}-${index}`}
-                    className="rounded border border-neutral-700 bg-black/40 px-1.5 py-1"
-                  >
-                    <div className="truncate text-[10px] font-mono text-neutral-500" title={network.name}>
-                      {network.name}
-                    </div>
-                    <div className="truncate text-xs font-mono text-geek-300" title={network.ip}>
-                      {network.ip}
-                    </div>
+            {topology.nodes.map((node) => {
+              const position = layout.positions[node.id];
+              if (!position) return null;
+              return (
+                <div
+                  key={node.id}
+                  className="absolute rounded-md border border-neutral-700 bg-neutral-900/95 p-2"
+                  style={{
+                    left: position.x - position.width / 2,
+                    top: position.y - position.height / 2,
+                    width: position.width,
+                  }}
+                >
+                  <div className="truncate text-sm font-mono text-neutral-50" title={node.label}>
+                    {node.label}
                   </div>
-                ))
-              ) : (
-                <div className="text-xs font-mono text-neutral-500">{t(tt('noIp'))}</div>
-              )}
-            </div>
+                  {node.image && (
+                    <div className="mt-0.5 truncate text-[10px] font-mono text-neutral-500" title={node.image}>
+                      {node.image}
+                    </div>
+                  )}
+                  <div className="mt-2 space-y-1">
+                    {node.networks.length > 0 ? (
+                      node.networks.map((network, index) => (
+                        <div
+                          key={`${network.name}-${index}`}
+                          className="rounded border border-neutral-700 bg-black/40 px-1.5 py-1"
+                        >
+                          <div className="flex items-center gap-1">
+                            <span
+                              className="h-1.5 w-1.5 shrink-0 rounded-full"
+                              style={{ backgroundColor: network.color }}
+                            />
+                            <span className="truncate text-[10px] font-mono text-neutral-500" title={network.name}>
+                              {network.name}
+                            </span>
+                          </div>
+                          <div className="truncate text-xs font-mono text-geek-300" title={network.ip}>
+                            {network.ip}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs font-mono text-neutral-500">{t(tt('noIp'))}</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ))}
+        ) : (
+          <div style={{ height: 320 }} />
+        )}
       </div>
       <div className="mt-3 max-h-60 space-y-2 overflow-y-auto pr-1">
         {topology.egress.map((connection) => (

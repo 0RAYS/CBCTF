@@ -24,6 +24,7 @@ import {
     resolvePolicies,
 } from '@/components/features/Admin/challenges/editor/networkPolicy.js';
 import { buildNetworkTopology } from '@/components/features/Admin/challenges/editor/networkTopology.js';
+import { layoutTopology } from '@/components/features/Admin/challenges/editor/networkTopologyLayout.js';
 
 const service = (overrides = {}) => ({
   ...createGuideService(),
@@ -413,9 +414,37 @@ test('topology follows NIC lanes, peer rules and internet egress', () => {
   const blocked = buildNetworkTopology(config, [{ service: 'frontend', allow_internet: true }]);
   assert.equal(blocked.connections[0].reasonKey, 'allowed');
   const shared = buildNetworkTopology(sharedConfig());
-  assert.equal(shared.nodes[0].x, 50);
+  assert.equal(shared.nodes.length, 1);
   assert.deepEqual(shared.connections, []);
   assert.equal(shared.egress[0].allowed, false);
+});
+
+test('topology layout spreads containers instead of stacking them on one line', () => {
+  const config = vpcConfig();
+  config.services.push(service({ name: 'db', networks: [{ name: 'lan', ipv4Address: '10.1.0.3' }] }));
+  const layout = layoutTopology(buildNetworkTopology(config, []), { width: 640 });
+  const [web, db] = config.services.map((entry) => layout.positions[entry.name]);
+  assert.ok(Math.abs(web.x - db.x) > 1);
+  assert.ok(Math.abs(web.y - db.y) > 1);
+  const separated = Math.abs(web.x - db.x) >= (web.width + db.width) / 2 || Math.abs(web.y - db.y) >= (web.height + db.height) / 2;
+  assert.ok(separated, 'cards must not overlap');
+  assert.ok(layout.height > 0);
+  assert.equal(layout.edges.length, 3);
+});
+
+test('topology layout keeps three same-network containers off a straight line', () => {
+  const config = sharedConfig();
+  config.services.push(service({ name: 'db' }), service({ name: 'cache' }));
+  const layout = layoutTopology(buildNetworkTopology(config, []), { width: 640 });
+  const points = config.services.map((entry) => layout.positions[entry.name]);
+  const area = Math.abs(
+    (points[1].x - points[0].x) * (points[2].y - points[0].y) - (points[2].x - points[0].x) * (points[1].y - points[0].y)
+  );
+  assert.ok(area > 1000, 'containers must not collapse onto one line');
+  const xs = points.map((point) => point.x);
+  const ys = points.map((point) => point.y);
+  assert.ok(Math.max(...xs) - Math.min(...xs) > 1);
+  assert.ok(Math.max(...ys) - Math.min(...ys) > 1);
 });
 
 test('containers on the same subnet are interconnected without an explicit peer', () => {
