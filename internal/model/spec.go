@@ -119,11 +119,61 @@ func (c CloudInitConfig) Empty() bool {
 	return len(c.Users) == 0 && len(c.Groups) == 0 && len(c.WriteFiles) == 0 && len(c.SSHAuthorizedKeys) == 0
 }
 
+// cloudConfig 是写进 guest 的 cloud-config 结构。
+type cloudConfig struct {
+	Users             []CloudInitUser      `yaml:"users,omitempty"`
+	Groups            []CloudInitGroup     `yaml:"groups,omitempty"`
+	WriteFiles        []cloudInitWriteFile `yaml:"write_files,omitempty"`
+	SSHAuthorizedKeys []string             `yaml:"ssh_authorized_keys,omitempty"`
+	RunCmd            [][]string           `yaml:"runcmd,omitempty"`
+}
+
+type cloudInitWriteFile struct {
+	Path        string `yaml:"path"`
+	Content     string `yaml:"content"`
+	Permissions string `yaml:"permissions,omitempty"`
+	Encoding    string `yaml:"encoding,omitempty"`
+	Append      bool   `yaml:"append,omitempty"`
+	Defer       bool   `yaml:"defer,omitempty"`
+}
+
+// String 渲染 guest 的 cloud-config。
+// 文件属主不进 write_files,而是交给 runcmd 里的 chown:
+// write-files 在部分镜像里先于 users-groups 执行,那时目标用户还不存在,
+// cloud-init 会因为改不了属主而让整个模块报错,后面的用户也就没建起来。
 func (c CloudInitConfig) String() (string, error) {
 	if c.Empty() {
 		return "", nil
 	}
-	data, err := yaml.Marshal(c)
+	config := cloudConfig{
+		Groups:            c.Groups,
+		SSHAuthorizedKeys: c.SSHAuthorizedKeys,
+	}
+	for _, user := range c.Users {
+		if user.HomeDir == "" {
+			user.HomeDir = "/home/" + user.Name
+		}
+		config.Users = append(config.Users, user)
+		// 用户主目录可能被 write_files 提前建出来,那时它属于 root,
+		// 用户自己反而写不进去,这里把属主补回来。
+		if !user.System && !user.NoCreateHome && user.HomeDir != "/" {
+			config.RunCmd = append(config.RunCmd, []string{"chown", user.Name + ":" + user.Name, user.HomeDir})
+		}
+	}
+	for _, file := range c.WriteFiles {
+		config.WriteFiles = append(config.WriteFiles, cloudInitWriteFile{
+			Path:        file.Path,
+			Content:     file.Content,
+			Permissions: file.Permissions,
+			Encoding:    file.Encoding,
+			Append:      file.Append,
+			Defer:       file.Defer,
+		})
+		if file.Owner != "" {
+			config.RunCmd = append(config.RunCmd, []string{"chown", file.Owner, file.Path})
+		}
+	}
+	data, err := yaml.Marshal(config)
 	if err != nil {
 		return "", err
 	}
