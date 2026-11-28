@@ -170,6 +170,9 @@ cbctf:
       node_concurrency: 8
       # Seconds a range instance may take to become ready.
       ready_timeout: 600
+      # Player jump host image and login user.
+      jump_image: "ghcr.io/0rays/cbctf-jump:latest"
+      jump_user: "ctf"
     # ServiceAccount of the runtime workloads, it carries the pull secrets of
     # the private registries. Empty uses {fullname}-runtime.
     service_account: ""

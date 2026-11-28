@@ -375,6 +375,10 @@ func GetVictimStatus(tx *gorm.DB, teamID, challengeID uint, challenge model.Chal
 	data.Duration = victim.Duration.Seconds()
 	data.Status = victim.Status
 	data.Remaining = victim.Remaining().Seconds()
+	if victim.AccessKey != "" {
+		data.AccessKey = victim.AccessKey
+		data.AccessUser = config.RangeJumpUser()
+	}
 	return data
 }
 

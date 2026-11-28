@@ -45,6 +45,7 @@ type CreateNetworkPolicyOptions struct {
 	PeerIPs     map[string][]string
 	VPCSubnets  []string
 	RoutedCIDRs []string
+	EgressPeers []string
 }
 
 func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions) (*netv1.NetworkPolicy, model.RetVal) {
@@ -58,7 +59,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 		Name:            options.Name,
 		Namespace:       globalNamespace,
 		Labels:          options.Labels,
-		Spec:            buildNetworkPolicySpec(resolved, options.SubnetCIDRs, options.PeerIPs, options.VPCSubnets, options.RoutedCIDRs, selector),
+		Spec:            buildNetworkPolicySpec(resolved, options.SubnetCIDRs, options.PeerIPs, options.VPCSubnets, options.RoutedCIDRs, options.EgressPeers, selector),
 	}
 	networkPolicy, err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
@@ -80,6 +81,7 @@ func buildNetworkPolicySpec(
 	peerIPs map[string][]string,
 	vpcSubnets []string,
 	routedCIDRs []string,
+	egressPeers []string,
 	selector map[string]string,
 ) netv1.NetworkPolicySpec {
 	spec := netv1.NetworkPolicySpec{
@@ -115,6 +117,14 @@ func buildNetworkPolicySpec(
 	}
 	if resolved.Internet {
 		egressBlocks = append(egressBlocks, netv1.NetworkPolicyPeer{IPBlock: internetBlock(vpcSubnets)})
+	}
+	for _, cidr := range egressPeers {
+		block, err := parseIPBlock(cidr)
+		if err != nil {
+			log.Logger.Warningf("Skipped invalid egress peer CIDR %s: %s", cidr, err)
+			continue
+		}
+		egressBlocks = append(egressBlocks, netv1.NetworkPolicyPeer{IPBlock: block})
 	}
 	spec.Egress = mergeEgressRules(concatPeers(subnetBlocks, peerBlocks, egressBlocks))
 

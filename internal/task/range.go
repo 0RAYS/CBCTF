@@ -2,12 +2,17 @@ package task
 
 import (
 	"context"
-	"encoding/json"
+	"crypto/ed25519"
+	"crypto/rand"
+	"encoding/pem"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hibiken/asynq"
+	"golang.org/x/crypto/ssh"
 
+	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
@@ -42,8 +47,8 @@ func EnqueueRangeGatewayTask(victim model.Victim) (*asynq.TaskInfo, error) {
 	return enqueueMsgpackTask(gatewayRangeTaskType, RangeGatewayPayload{victim}, asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
 }
 
-// HandleRangeGatewayTask 创建玩家网关并把 flag 下发到网关。
-// flag 不进实例环境,环境内容因此与队伍无关,同批实例逐字节一致。
+// HandleRangeGatewayTask 创建玩家跳板并把队伍的登录私钥记录在实例上。
+// 跳板是平台固定容器,只提供 SSH 登录,题目相关的 flag 与文件都在实例环境里。
 func HandleRangeGatewayTask(ctx context.Context, t *asynq.Task) error {
 	payload, err := decodeMsgpackTask[RangeGatewayPayload](t)
 	if err != nil {
@@ -62,9 +67,7 @@ func HandleRangeGatewayTask(ctx context.Context, t *asynq.Task) error {
 			log.Logger.Debugf("Range gateway skipped: victim_id=%d status=%s team_id=%d", victim.ID, victim.Status, victim.TeamID.V)
 			return nil
 		}
-		challenge, ret := db.InitChallengeRepo(db.TaskDB.WithContext(ctx)).GetByID(victim.ChallengeID, db.GetOptions{
-			Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
-		})
+		challenge, ret := db.InitChallengeRepo(db.TaskDB.WithContext(ctx)).GetByID(victim.ChallengeID)
 		if !ret.OK {
 			return fmt.Errorf("get range challenge failed: %w", ret.AsError())
 		}
@@ -75,15 +78,15 @@ func HandleRangeGatewayTask(ctx context.Context, t *asynq.Task) error {
 		if !ok {
 			return fmt.Errorf("challenge %d has no player gateway", challenge.ID)
 		}
-		teamFlags, ret := rangeTeamFlags(ctx, victim.TeamID.V, challenge.ChallengeFlags)
-		if !ret.OK {
-			return ret.AsError()
+		access, privateKey, err := rangeAccess()
+		if err != nil {
+			return fmt.Errorf("generate range access key failed: %w", err)
 		}
 		known := make(map[string]struct{}, len(victim.Pods))
 		for _, pod := range victim.Pods {
 			known[pod.Name] = struct{}{}
 		}
-		victim, ret = k8s.StartRangeGateway(ctx, victim, gateway, buildGatewayPayload(challenge, gateway, teamFlags, victim))
+		victim, ret = k8s.StartRangeGateway(ctx, victim, gateway, access)
 		if !ret.OK {
 			return fmt.Errorf("create range gateway failed: %w", ret.AsError())
 		}
@@ -105,6 +108,7 @@ func HandleRangeGatewayTask(ctx context.Context, t *asynq.Task) error {
 			Resources:        &victim.Resources,
 			Endpoints:        &victim.Endpoints,
 			ExposedEndpoints: &victim.ExposedEndpoints,
+			AccessKey:        &privateKey,
 		}); !ret.OK {
 			return fmt.Errorf("update range gateway endpoints failed: %w", ret.AsError())
 		}
@@ -113,75 +117,24 @@ func HandleRangeGatewayTask(ctx context.Context, t *asynq.Task) error {
 	})
 }
 
-// rangeTeamFlags 读取队伍在该题目上持有的 flag 值。
-func rangeTeamFlags(ctx context.Context, teamID uint, flags []model.ChallengeFlag) (map[uint]string, model.RetVal) {
-	ids := make([]uint, 0, len(flags))
-	for _, flag := range flags {
-		ids = append(ids, flag.ID)
-	}
-	values := make(map[uint]string)
-	if len(ids) == 0 {
-		return values, model.SuccessRetVal()
-	}
-	teamFlags, _, ret := db.InitTeamFlagRepo(db.TaskDB.WithContext(ctx)).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"team_id": teamID, "challenge_flag_id": ids},
-	})
-	if !ret.OK && ret.Msg != i18n.Model.NotFound {
-		return nil, ret
-	}
-	for _, teamFlag := range teamFlags {
-		values[teamFlag.ChallengeFlagID] = teamFlag.Value
-	}
-	return values, model.SuccessRetVal()
-}
-
-// buildGatewayPayload 生成租约载荷。
-// flag 按出题人的绑定方式落到环境变量或文件,网关镜像按约定读取载荷目录。
-func buildGatewayPayload(challenge model.Challenge, gateway model.RangeGateway, teamFlags map[uint]string, victim model.Victim) model.GatewayPayload {
-	payload := model.GatewayPayload{
-		Files: make(map[string]string),
-		Env:   make(map[string]string),
-	}
-	paths := make(map[string]string)
-	for _, flag := range challenge.ChallengeFlags {
-		if !flag.Active {
-			continue
-		}
-		value := flag.Value
-		if teamValue, ok := teamFlags[flag.ID]; ok {
-			value = teamValue
-		} else {
-			value = model.RenderFlagValue(flag.Value)
-		}
-		switch flag.Binding.Type {
-		case model.EnvFlagBindingType:
-			payload.Env[flag.Binding.Target] = value
-		case model.FileFlagBindingType, model.CloudInitFileFlagBindingType:
-			key := fmt.Sprintf("flag-%d", flag.ID)
-			payload.Files[key] = value
-			paths[key] = flag.Binding.Target
-		}
-	}
-	user := ""
-	keys := make([]string, 0)
-	for _, userData := range gateway.UserData.Users {
-		if user == "" {
-			user = userData.Name
-		}
-		keys = append(keys, userData.SSHAuthorizedKeys...)
-	}
-	credentials, err := json.Marshal(map[string]any{
-		"challenge":           challenge.Name,
-		"team_id":             victim.TeamID.V,
-		"lease_expire_at":     victim.LeaseExpireAt,
-		"user":                user,
-		"ssh_authorized_keys": keys,
-		"paths":               paths,
-	})
+// rangeAccess 生成队伍登录跳板的密钥对。
+// 公钥进跳板容器,私钥随状态接口下发给队伍。
+func rangeAccess() (model.RangeAccess, string, error) {
+	public, private, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
-		log.Logger.Warningf("Failed to render gateway credentials: %v", err)
-		return payload
+		return model.RangeAccess{}, "", err
 	}
-	payload.Credentials = string(credentials)
-	return payload
+	sshPublic, err := ssh.NewPublicKey(public)
+	if err != nil {
+		return model.RangeAccess{}, "", err
+	}
+	block, err := ssh.MarshalPrivateKey(private, "cbctf-range")
+	if err != nil {
+		return model.RangeAccess{}, "", err
+	}
+	user := config.RangeJumpUser()
+	return model.RangeAccess{
+		User:      user,
+		PublicKey: strings.TrimSpace(string(ssh.MarshalAuthorizedKey(sshPublic))),
+	}, string(pem.EncodeToMemory(block)), nil
 }

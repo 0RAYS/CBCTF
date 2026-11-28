@@ -62,6 +62,10 @@ func syncFrpsPortLocksTask() model.RetVal {
 		addExpectedKey(frps.Host, "tcp")
 		addExpectedKey(frps.Host, "udp")
 	}
+	frpsHosts := make(map[string]bool, len(config.Env.K8S.Frp.Frps))
+	for _, frps := range config.Env.K8S.Frp.Frps {
+		frpsHosts[frps.Host] = true
+	}
 
 	victims, _, ret := victimRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"status": []string{model.RunningVictimStatus, model.TerminatingVictimStatus}},
@@ -71,6 +75,10 @@ func syncFrpsPortLocksTask() model.RetVal {
 	}
 	for _, victim := range victims {
 		for _, endpoint := range victim.ExposedEndpoints {
+			// 靶场跳板的暴露端点里也有 NodePort,只有 frps 上的端口才占锁。
+			if !frpsHosts[endpoint.IP] {
+				continue
+			}
 			addExpectedPort(endpoint.IP, endpoint.Protocol, endpoint.Port)
 		}
 	}

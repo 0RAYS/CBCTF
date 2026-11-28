@@ -50,6 +50,7 @@ type Victim struct {
 	ChallengeID      uint            `gorm:"index" json:"challenge_id"`
 	UserID           sql.Null[uint]  `gorm:"index" json:"user_id"`
 	Duration         time.Duration   `json:"duration"`
+	AccessKey        string          `gorm:"type:text" json:"-"`
 	BaseModel
 }
 

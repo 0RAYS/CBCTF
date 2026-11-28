@@ -51,6 +51,16 @@ func prepareCaptureTrafficDir(victim model.Victim) error {
 	return nil
 }
 
+// nfsVolume 是共享卷的定义,抓包侧车把 pcap 写进这个卷。
+func nfsVolume() corev1.Volume {
+	return corev1.Volume{
+		Name: nfsVolumeName,
+		PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+			ClaimName: nfsVolumeClaim,
+		},
+	}
+}
+
 // captureContainer builds the traffic capture sidecar of a victim pod.
 //
 // The sidecar shares the pod network namespace with the challenge containers,

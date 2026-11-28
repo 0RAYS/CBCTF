@@ -28,6 +28,7 @@ type UpdateVictimOptions struct {
 	TemplateKey      *string
 	TeamID           *sql.Null[uint]
 	LeaseExpireAt    *time.Time
+	AccessKey        *string
 }
 
 func (u UpdateVictimOptions) Convert2Map() map[string]any {
@@ -64,6 +65,9 @@ func (u UpdateVictimOptions) Convert2Map() map[string]any {
 	}
 	if u.LeaseExpireAt != nil {
 		options["lease_expire_at"] = *u.LeaseExpireAt
+	}
+	if u.AccessKey != nil {
+		options["access_key"] = *u.AccessKey
 	}
 	return options
 }

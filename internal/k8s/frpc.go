@@ -104,22 +104,116 @@ func addFrpcProxy(config *frpcConfig, protocol string, localIP string, localPort
 // server is configured.
 var errNoFrpsServer = errors.New("no FRPS server is configured")
 
-func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
-	if len(config.Env.K8S.Frp.Frps) == 0 {
-		return victim, model.FailRetVal(i18n.K8S.NotFound, "Frps", "frps_pool", errNoFrpsServer)
+// frpSidecars 描述注入 Pod 的 frpc 与 nginx 侧车。
+type frpSidecars struct {
+	Containers []corev1.Container
+	Volumes    []corev1.Volume
+	ConfigName string
+	ConfigData map[string]string
+	Endpoints  model.Endpoints
+}
+
+// buildFrpSidecars 生成 frpc 与 nginx 侧车。
+// targets 是经 frps 暴露的目标,侧车注入到别的 Pod 里时只能填 Pod 内的地址。
+func buildFrpSidecars(configName string, targets []model.Endpoint) (frpSidecars, model.RetVal) {
+	frps, ret := pickFrps()
+	if !ret.OK {
+		return frpSidecars{}, ret
 	}
-	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frp.Frps))))
-	frps := config.Env.K8S.Frp.Frps[idxBig.Int64()]
-	log.Logger.Debugf("Creating frpc resources: victim_id=%d frps=%s endpoints=%d", victim.ID, frps.Host, len(victim.Endpoints))
-	if config.Env.K8S.CaptureEnabled {
-		// The capture sidecar writes into the traffic directory, which has to
-		// exist and belong to the capture user before the pod is created.
-		if err := prepareCaptureTrafficDir(victim); err != nil {
-			log.Logger.Warningf(
-				"Failed to prepare traffic directory for victim %d: %s", victim.ID, err,
-			)
+	portRange := frpsPortRange(frps)
+	frpc := frpcConfig{
+		ServerAddr: frps.Host,
+		ServerPort: frps.Port,
+		Auth:       frpcAuth{Token: frps.Token},
+	}
+	nginx := nginxConfig{}
+	endpoints := make(model.Endpoints, 0, len(targets))
+	for index, target := range targets {
+		exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, target.Protocol)
+		if !ret.OK {
+			return frpSidecars{}, ret
 		}
+		// TCP 目标经 nginx 转发,frpc 的连接才能带上 proxy_protocol。
+		if protocol := strings.ToLower(target.Protocol); protocol == "tcp" {
+			listenPort := int32(10000 + index)
+			addFrpcProxy(&frpc, protocol, "127.0.0.1", listenPort, exposedPort, true)
+			nginx.Streams = append(nginx.Streams, nginxStream{
+				Name:       fmt.Sprintf("upstream_%d", index),
+				TargetIP:   target.IP,
+				TargetPort: target.Port,
+				ListenPort: listenPort,
+			})
+		} else {
+			addFrpcProxy(&frpc, protocol, target.IP, target.Port, exposedPort, false)
+		}
+		endpoints = append(endpoints, model.Endpoint{
+			Name:     target.Name,
+			IP:       frps.Host,
+			Port:     exposedPort,
+			Protocol: target.Protocol,
+		})
+		log.Logger.Debugf(
+			"Reserved frpc endpoint: %s:%d -> %s:%d protocol=%s",
+			frps.Host, exposedPort, target.IP, target.Port, target.Protocol,
+		)
 	}
+	frpcConfigData, err := frpc.String()
+	if err != nil {
+		return frpSidecars{}, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", configName, err)
+	}
+	containers := []corev1.Container{{
+		Name:            FrpcContainerName,
+		Resources:       sidecarResources(),
+		Image:           config.Env.K8S.Frp.FrpcImage,
+		ImagePullPolicy: corev1.PullIfNotPresent,
+		Args:            []string{"-c", "/etc/frp/frpc.toml"},
+		VolumeMounts: []corev1.VolumeMount{{
+			Name:      frpcConfigVolume,
+			MountPath: "/etc/frp/frpc.toml",
+			SubPath:   "frpc.toml",
+		}},
+	}}
+	volumes := []corev1.Volume{{
+		Name:      frpcConfigVolume,
+		ConfigMap: &corev1.ConfigMapVolumeSource{Name: configName},
+	}}
+	if len(nginx.Streams) > 0 {
+		containers = append(containers, corev1.Container{
+			Name:            NginxContainerName,
+			Resources:       sidecarResources(),
+			Image:           config.Env.K8S.Frp.NginxImage,
+			ImagePullPolicy: corev1.PullIfNotPresent,
+			VolumeMounts: []corev1.VolumeMount{{
+				Name:      nginxConfigVolume,
+				MountPath: "/etc/nginx/nginx.conf",
+				SubPath:   "nginx.conf",
+			}},
+		})
+		volumes = append(volumes, corev1.Volume{
+			Name:      nginxConfigVolume,
+			ConfigMap: &corev1.ConfigMapVolumeSource{Name: configName},
+		})
+	}
+	return frpSidecars{
+		Containers: containers,
+		Volumes:    volumes,
+		ConfigName: configName,
+		ConfigData: map[string]string{"frpc.toml": frpcConfigData, "nginx.conf": nginx.String()},
+		Endpoints:  endpoints,
+	}, model.SuccessRetVal()
+}
+
+// pickFrps 随机挑一个 frps 服务器。
+func pickFrps() (config.FrpsConfig, model.RetVal) {
+	if len(config.Env.K8S.Frp.Frps) == 0 {
+		return config.FrpsConfig{}, model.FailRetVal(i18n.K8S.NotFound, "Frps", "frps_pool", errNoFrpsServer)
+	}
+	index, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frp.Frps))))
+	return config.Env.K8S.Frp.Frps[index.Int64()], model.SuccessRetVal()
+}
+
+// frpsPortRange 展开 frps 允许使用的端口区间。
+func frpsPortRange(frps config.FrpsConfig) []int32 {
 	portRange := make([]int32, 0)
 	for _, pr := range frps.Allowed {
 		for i := pr.From; i <= pr.To; i++ {
@@ -129,166 +223,83 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			portRange = append(portRange, i)
 		}
 	}
-	newEndpoints := make(model.Endpoints, 0)
-	frpcPodNameL := make([]string, 0)
-	podFrpcConfigMap := make(map[string]string)
-	podNginxConfigMap := make(map[string]string)
-	podName := fmt.Sprintf("frpc-%d", victim.ID)
-	frpc := frpcConfig{
-		ServerAddr: frps.Host,
-		ServerPort: frps.Port,
-		Auth:       frpcAuth{Token: frps.Token},
+	return portRange
+}
+
+// frpsPeerCIDRs 解析 frps 服务器地址,跳板的出站策略要放行它。
+func frpsPeerCIDRs(host string) []string {
+	if ip := net.ParseIP(host); ip != nil {
+		return []string{ip.String() + "/32"}
 	}
-	nginx := nginxConfig{}
-	victim.ExposedEndpoints = nil
-	for index, endpoint := range victim.Endpoints {
-		exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
-		if !ret.OK {
-			return victim, ret
-		}
-		// TCP endpoints go through nginx so the frpc connection can carry
-		// proxy_protocol.
-		if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
-			listenPort := int32(10000 + index)
-			addFrpcProxy(&frpc, protocol, "127.0.0.1", listenPort, exposedPort, true)
-			nginx.Streams = append(nginx.Streams, nginxStream{
-				Name:       fmt.Sprintf("upstream_%d", index),
-				TargetIP:   endpoint.IP,
-				TargetPort: endpoint.Port,
-				ListenPort: listenPort,
-			})
-		} else {
-			addFrpcProxy(&frpc, protocol, endpoint.IP, endpoint.Port, exposedPort, false)
-		}
-		newEndpoints = append(newEndpoints, model.Endpoint{
-			Name:     endpoint.Name,
-			IP:       frps.Host,
-			Port:     exposedPort,
-			Protocol: endpoint.Protocol,
-		})
-		victim.ExposedEndpoints = newEndpoints
-		log.Logger.Debugf(
-			"Reserved frpc endpoint: victim_id=%d %s:%d -> %s:%d protocol=%s",
-			victim.ID, frps.Host, exposedPort, endpoint.IP, endpoint.Port, endpoint.Protocol,
-		)
-	}
-	frpcConfigData, err := frpc.String()
+	addrs, err := net.LookupIP(host)
 	if err != nil {
-		return victim, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", podName, err)
+		log.Logger.Warningf("Failed to resolve FRPS host %s: %v", host, err)
+		return nil
 	}
-	podFrpcConfigMap[podName] = frpcConfigData
-	podNginxConfigMap[podName] = nginx.String()
-	frpcPodNameL = append(frpcPodNameL, podName)
-	victim.ExposedEndpoints = newEndpoints
-	for _, name := range frpcPodNameL {
-		victim.Pods = append(victim.Pods, model.Pod{
-			VictimID: victim.ID,
-			Name:     name,
-		})
+	cidrs := make([]string, 0, len(addrs))
+	for _, addr := range addrs {
+		cidrs = append(cidrs, addr.String()+"/32")
 	}
-	victim.Resources.FrpcPodNames = append([]string(nil), frpcPodNameL...)
+	return cidrs
+}
+
+func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
+	podName := fmt.Sprintf("frpc-%d", victim.ID)
+	sidecars, ret := buildFrpSidecars(podName, victim.Endpoints)
+	if !ret.OK {
+		return victim, ret
+	}
+	log.Logger.Debugf("Creating frpc resources: victim_id=%d endpoints=%d", victim.ID, len(sidecars.Endpoints))
+	if config.Env.K8S.CaptureEnabled {
+		// The capture sidecar writes into the traffic directory, which has to
+		// exist and belong to the capture user before the pod is created.
+		if err := prepareCaptureTrafficDir(victim); err != nil {
+			log.Logger.Warningf(
+				"Failed to prepare traffic directory for victim %d: %s", victim.ID, err,
+			)
+		}
+	}
 	// The frpc pod carries its own role tag, so the victim NetworkPolicies,
 	// which select on the victim role, do not match it.
 	labels := VictimLabels(victim, map[string]string{RoleLabel: FrpcPodTag})
-	wg := utils.NewGroup(ctx)
-	groupCtx := wg.Context()
-	for _, name := range frpcPodNameL {
-		wg.Go(func() error {
-			ctx := groupCtx
-			fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-				Name:   name,
-				Labels: labels,
-				Data:   map[string]string{"frpc.toml": podFrpcConfigMap[name], "nginx.conf": podNginxConfigMap[name]},
-			})
-			if !ret.OK {
-				return ret.AsError()
-			}
-			if fcm == nil {
-				return model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", name, errMissingConfigMap).AsError()
-			}
-			fcmVolume := corev1.Volume{
-				Name: "frpc-volume",
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					Name: fcm.Name,
-				},
-			}
-			ncmVolume := corev1.Volume{
-				Name: "nginx-volume",
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					Name: fcm.Name,
-				},
-			}
-			nfsVolume := corev1.Volume{
-				Name: nfsVolumeName,
-				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: nfsVolumeClaim,
-				},
-			}
-			containers := []corev1.Container{
-				{
-					Name:            FrpcContainerName,
-					Resources:       sidecarResources(),
-					Image:           config.Env.K8S.Frp.FrpcImage,
-					ImagePullPolicy: corev1.PullIfNotPresent,
-					Args:            []string{"-c", "/etc/frp/frpc.toml"},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      fcmVolume.Name,
-							MountPath: "/etc/frp/frpc.toml",
-							SubPath:   "frpc.toml",
-						},
-					},
-				},
-				{
-					Name:            NginxContainerName,
-					Resources:       sidecarResources(),
-					Image:           config.Env.K8S.Frp.NginxImage,
-					ImagePullPolicy: corev1.PullIfNotPresent,
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      ncmVolume.Name,
-							MountPath: "/etc/nginx/nginx.conf",
-							SubPath:   "nginx.conf",
-						},
-					},
-				},
-			}
-			capture := captureContainer(victim, "frpc.pcap")
-			volumes := []corev1.Volume{fcmVolume}
-			if len(nginx.Streams) > 0 {
-				volumes = append(volumes, ncmVolume)
-			} else {
-				containers = containers[:1]
-			}
-			if config.Env.K8S.CaptureEnabled {
-				containers = append(containers, capture)
-				volumes = append(volumes, nfsVolume)
-			}
-			options := CreatePodOptions{
-				SubmitOnly:         true,
-				Name:               name,
-				Labels:             labels,
-				Containers:         containers,
-				Volumes:            volumes,
-				ServiceAccountName: runtimeServiceAccount(),
-			}
-			p, ret := CreatePod(ctx, options)
-			if !ret.OK {
-				return ret.AsError()
-			}
-			if p == nil {
-				return model.FailRetVal(i18n.K8S.CreateError, "Pod", name, errMissingPodObject).AsError()
-			}
-			victim.Resources.UIDs[name] = string(p.UID)
-			return nil
-		})
+	fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
+		Name:   sidecars.ConfigName,
+		Labels: labels,
+		Data:   sidecars.ConfigData,
+	})
+	if !ret.OK {
+		return victim, ret
 	}
-	if err = wg.Wait(); err != nil {
-		return victim, model.FailRetVal(i18n.Common.UnknownError, "Frpc", podName, err)
+	if fcm == nil {
+		return victim, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", sidecars.ConfigName, errMissingConfigMap)
 	}
+	containers := sidecars.Containers
+	volumes := sidecars.Volumes
+	if config.Env.K8S.CaptureEnabled {
+		containers = append(containers, captureContainer(victim, "frpc.pcap"))
+		volumes = append(volumes, nfsVolume())
+	}
+	p, ret := CreatePod(ctx, CreatePodOptions{
+		SubmitOnly:         true,
+		Name:               podName,
+		Labels:             labels,
+		Containers:         containers,
+		Volumes:            volumes,
+		ServiceAccountName: runtimeServiceAccount(),
+	})
+	if !ret.OK {
+		return victim, ret
+	}
+	if p == nil {
+		return victim, model.FailRetVal(i18n.K8S.CreateError, "Pod", podName, errMissingPodObject)
+	}
+	victim.Resources.UIDs[podName] = string(p.UID)
+	victim.Pods = append(victim.Pods, model.Pod{VictimID: victim.ID, Name: podName})
+	victim.Resources.FrpcPodNames = append([]string(nil), podName)
+	victim.ExposedEndpoints = sidecars.Endpoints
 	log.Logger.Debugf(
 		"Created frpc resources: victim_id=%d frpc_pods=%d exposed_endpoints=%d",
-		victim.ID, len(frpcPodNameL), len(victim.ExposedEndpoints),
+		victim.ID, len(victim.Resources.FrpcPodNames), len(victim.ExposedEndpoints),
 	)
 	return victim, model.SuccessRetVal()
 }

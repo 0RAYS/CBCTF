@@ -26,6 +26,8 @@ const (
 	NginxContainerName   = "nginx"
 	FrpcContainerName    = "frpc"
 	nfsVolumeName        = "shared-data"
+	frpcConfigVolume     = "frpc-volume"
+	nginxConfigVolume    = "nginx-volume"
 )
 
 var (

@@ -21,24 +21,32 @@ import (
 	"CBCTF/internal/task"
 )
 
-func challengeSidecarImages(challengeType model.ChallengeType) []string {
+func challengeSidecarImages(challenge model.Challenge) []string {
 	var sidecars []string
-	if challengeType == model.DynamicChallengeType {
+	if challenge.Type == model.DynamicChallengeType {
 		sidecars = append(sidecars, config.Env.K8S.WorkerImage)
 	}
-	if challengeType == model.PodsChallengeType {
+	if challenge.Type == model.PodsChallengeType {
 		if config.Env.K8S.CaptureEnabled {
 			sidecars = append(sidecars, config.Env.K8S.CaptureImage)
 		}
 		if config.Env.K8S.Frp.On {
 			sidecars = append(sidecars, config.Env.K8S.Frp.FrpcImage, config.Env.K8S.Frp.NginxImage)
 		}
+		if challenge.RangeConfig != nil {
+			sidecars = append(sidecars, rangeJumpImage())
+		}
 	}
 	return sidecars
 }
 
+// rangeJumpImage 返回玩家跳板容器的镜像,玩家网关的镜像由平台决定。
+func rangeJumpImage() string {
+	return config.Env.K8S.Range.JumpImage
+}
+
 func ChallengeImages(challenge model.Challenge) []string {
-	return k8s.ChallengeImages(challenge, challengeSidecarImages(challenge.Type)...)
+	return k8s.ChallengeImages(challenge, challengeSidecarImages(challenge)...)
 }
 
 // ListContestImages 返回某场比赛题目用到的镜像。
@@ -64,7 +72,8 @@ func ListChallengeImages(tx *gorm.DB) ([]string, model.RetVal) {
 	if !ret.OK {
 		return nil, ret
 	}
-	sidecars := append(challengeSidecarImages(model.DynamicChallengeType), challengeSidecarImages(model.PodsChallengeType)...)
+	sidecars := append(challengeSidecarImages(model.Challenge{Type: model.DynamicChallengeType}), challengeSidecarImages(model.Challenge{Type: model.PodsChallengeType})...)
+	sidecars = append(sidecars, rangeJumpImage())
 	images := k8s.ChallengeImages(model.Challenge{}, sidecars...)
 	for _, challenge := range challenges {
 		images = append(images, ChallengeImages(challenge)...)

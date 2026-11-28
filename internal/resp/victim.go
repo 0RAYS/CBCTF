@@ -9,10 +9,12 @@ import (
 
 func GetVictimStatusResp(status view.VictimStatusView) gin.H {
 	return gin.H{
-		"target":    status.Targets,
-		"duration":  status.Duration,
-		"remaining": status.Remaining,
-		"status":    status.Status,
+		"target":      status.Targets,
+		"duration":    status.Duration,
+		"remaining":   status.Remaining,
+		"status":      status.Status,
+		"access_key":  status.AccessKey,
+		"access_user": status.AccessUser,
 	}
 }
 

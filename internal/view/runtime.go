@@ -7,10 +7,12 @@ import (
 )
 
 type VictimStatusView struct {
-	Targets   []string
-	Duration  float64
-	Remaining float64
-	Status    string
+	Targets    []string
+	Duration   float64
+	Remaining  float64
+	Status     string
+	AccessKey  string
+	AccessUser string
 }
 
 type ChallengeRuntimeView struct {

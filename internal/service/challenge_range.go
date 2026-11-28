@@ -49,8 +49,11 @@ func parseRangeTopology(config *types.Project) (*model.RangeConfig, model.RetVal
 	if !ok {
 		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range gateway %s is not a defined service", rangeConfig.GatewayKey))
 	}
-	if len(gateway.Ports) == 0 {
-		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range gateway %s must expose at least one port", rangeConfig.GatewayKey))
+	if len(gateway.Ports) != 1 {
+		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range gateway %s must expose exactly one port", rangeConfig.GatewayKey))
+	}
+	if protocol := gateway.Ports[0].Protocol; protocol != "" && !strings.EqualFold(protocol, "tcp") {
+		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range gateway %s must expose a tcp port", rangeConfig.GatewayKey))
 	}
 	if kubeVirt, _ := gateway.Extensions[model.XKubeVirtExtension].(bool); kubeVirt {
 		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range gateway %s must not run as a virtual machine", rangeConfig.GatewayKey))

@@ -34,27 +34,22 @@ type RouteLink struct {
 	To   string `json:"to"`
 }
 
-// GatewayPayload 玩家网关启动时读取的租约载荷。
-type GatewayPayload struct {
-	Credentials string            `json:"credentials"`
-	Files       map[string]string `json:"files"`
-	Env         map[string]string `json:"env"`
+// RangeAccess 是队伍登录跳板用的凭据。
+// 公钥进跳板容器,私钥由平台保存并下发给队伍。
+type RangeAccess struct {
+	User      string
+	PublicKey string
 }
 
 // RangeGateway 玩家网关的声明,来自出题人的 compose。
 // 网关不属于实例拓扑,平台在租约时单独创建它,选手只拿到它的地址。
+// 网关本身是平台固定的跳板容器,出题人只决定接入网段、静态地址与暴露端口。
 type RangeGateway struct {
-	Service     string
-	Name        string
-	Image       string
-	Command     []string
-	WorkingDir  string
-	Environment map[string]string
-	Resources   ResourceSpec
-	Ports       Exposes
-	Network     NetworkAttachment
-	Subnet      NetworkDefinition
-	UserData    CloudInitConfig
+	Service string
+	Name    string
+	Ports   Exposes
+	Network NetworkAttachment
+	Subnet  NetworkDefinition
 }
 
 // GatewayOf 返回靶场题的玩家网关声明。
@@ -68,15 +63,6 @@ func GatewayOf(template ChallengeTemplate, accessNetwork string) (RangeGateway, 
 			Name:    pod.Name,
 			Ports:   pod.ServicePorts,
 			Subnet:  NetworkDefinition{Name: accessNetwork},
-		}
-		for _, container := range pod.Containers {
-			gateway.Image = container.Image
-			gateway.Command = container.Command
-			gateway.WorkingDir = container.WorkingDir
-			gateway.Environment = container.Environment
-			gateway.Resources = ResourceSpec{CPUMillis: int64(container.CPU * 1000), MemoryBytes: container.Memory}
-			gateway.UserData = container.UserData
-			break
 		}
 		for _, network := range pod.Networks {
 			if network.Definition.Name == accessNetwork {

@@ -2,110 +2,76 @@ package k8s
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"maps"
-	"slices"
+	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 
+	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 )
 
-// rangeGatewayPayloadPath 是玩家网关读取租约载荷的挂载点。
-const rangeGatewayPayloadPath = "/run/range/payload"
-
-// rangeGatewayLabel 区分玩家网关与拓扑节点,Service 只选中网关。
+// rangeGatewayLabel 区分玩家跳板与拓扑节点,Service 只选中跳板。
 const rangeGatewayLabel = "range_gateway"
 
-// StartRangeGateway 创建玩家网关。
-// 网关是租约级资源:载荷、Pod 与 Service 都挂在实例的资源树上,实例销毁时一并回收。
-// 选手只拿到网关的地址,拓扑节点不对外暴露。
-func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.RangeGateway, payload model.GatewayPayload) (model.Victim, model.RetVal) {
+// StartRangeGateway 创建玩家跳板。
+// 跳板是租约级资源:SSH 配置、Pod 与 Service 都挂在实例的资源树上,实例销毁时一并回收。
+// 跳板是平台固定容器,只提供 SSH 登录,题目相关的环境变量、flag 与文件都不进这个容器。
+func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.RangeGateway, access model.RangeAccess) (model.Victim, model.RetVal) {
 	subnet := rangeSubnet(victim, gateway.Subnet.Name)
 	if subnet == nil {
 		return victim, model.FailRetVal(i18n.K8S.GetError, "Subnet", gateway.Subnet.Name, errMissingSubnet)
 	}
-	ctx, ret := withVictimRootOwner(ctx, victim, "workloads")
+	sshPort, ret := gatewaySSHPort(gateway)
+	if !ret.OK {
+		return victim, ret
+	}
+	ctx, ret = withVictimRootOwner(ctx, victim, "workloads")
 	if !ret.OK {
 		return victim, ret
 	}
 	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag, rangeGatewayLabel: "true"})
 	podName := victimResourceName("rgt", victim.ID, "gateway")
-
-	data := make(map[string]string, len(payload.Files)+1)
-	maps.Copy(data, payload.Files)
-	meta, err := json.Marshal(map[string]any{
-		"credentials": payload.Credentials,
-		"env":         payload.Env,
-		"files":       slices.Sorted(maps.Keys(payload.Files)),
-	})
-	if err != nil {
-		return victim, model.FailRetVal(i18n.Common.UnknownError, "GatewayPayload", podName, err)
-	}
-	data["payload.json"] = string(meta)
-	cm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
+	sshConfig, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
 		Name:   victimResourceName("rpay", victim.ID, "gateway"),
 		Labels: labels,
-		Data:   data,
+		Data:   jumpSSHConfig(access.User, access.PublicKey),
 	})
 	if !ret.OK {
 		return victim, ret
 	}
-	if cm == nil {
-		return victim, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", cm.Name, errMissingConfigMap)
+	if sshConfig == nil {
+		return victim, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", sshConfig.Name, errMissingConfigMap)
 	}
 
-	envs := make([]corev1.EnvVar, 0, len(gateway.Environment)+len(payload.Env))
-	values := make(map[string]string, len(gateway.Environment)+len(payload.Env))
-	maps.Copy(values, gateway.Environment)
-	maps.Copy(values, payload.Env)
-	for key, value := range values {
-		envs = append(envs, corev1.EnvVar{Name: key, Value: value})
-	}
-	slices.SortFunc(envs, func(a, b corev1.EnvVar) int {
-		if a.Name < b.Name {
-			return -1
-		}
-		return 1
-	})
-	limit := corev1.ResourceList{}
-	if gateway.Resources.CPUMillis > 0 {
-		limit[corev1.ResourceCPU] = resource.MustParse(fmt.Sprintf("%dm", gateway.Resources.CPUMillis))
-	}
-	if gateway.Resources.MemoryBytes > 0 {
-		limit[corev1.ResourceMemory] = resource.MustParse(fmt.Sprintf("%d", gateway.Resources.MemoryBytes))
-	}
-	container := corev1.Container{
-		Name:            gateway.Name,
-		Image:           gateway.Image,
-		ImagePullPolicy: corev1.PullIfNotPresent,
-		Env:             envs,
-		Command:         gateway.Command,
-		WorkingDir:      gateway.WorkingDir,
-		Resources: corev1.ResourceRequirements{
-			Limits:   limit,
-			Requests: workloadRequests(limit),
-		},
-		VolumeMounts: []corev1.VolumeMount{{
-			Name:      "range-payload",
-			MountPath: rangeGatewayPayloadPath,
-			ReadOnly:  true,
-		}},
-	}
+	containers := []corev1.Container{jumpContainer(sshPort)}
 	volumes := []corev1.Volume{{
-		Name:      "range-payload",
-		ConfigMap: &corev1.ConfigMapVolumeSource{Name: cm.Name},
+		Name:      jumpSSHVolume,
+		ConfigMap: &corev1.ConfigMapVolumeSource{Name: sshConfig.Name},
 	}}
+	if config.Env.K8S.CaptureEnabled {
+		// The capture sidecar writes into the traffic directory, which has to
+		// exist and belong to the capture user before the pod is created.
+		if err := prepareCaptureTrafficDir(victim); err != nil {
+			log.Logger.Warningf("Failed to prepare traffic directory for victim %d: %s", victim.ID, err)
+		}
+		containers = append(containers, captureContainer(victim, "jump.pcap"))
+		volumes = append(volumes, nfsVolume())
+	}
+	frpSidecar, ret := jumpFrpSidecars(ctx, victim, labels, gateway, sshPort)
+	if !ret.OK {
+		return victim, ret
+	}
+	containers = append(containers, frpSidecar.Containers...)
+	volumes = append(volumes, frpSidecar.Volumes...)
+
 	pod, ret := CreatePod(ctx, CreatePodOptions{
 		SubmitOnly:         true,
 		Name:               podName,
 		Labels:             labels,
-		Containers:         []corev1.Container{container},
+		Containers:         containers,
 		Volumes:            volumes,
 		ServiceAccountName: runtimeServiceAccount(),
 		Networks: []Network{{
@@ -127,7 +93,7 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	victim.Resources.UIDs[podName] = string(pod.UID)
 	victim.Pods = append(victim.Pods, model.Pod{VictimID: victim.ID, Name: podName})
 
-	if ret = createRangeGatewayPolicy(ctx, victim, gateway); !ret.OK {
+	if ret = createRangeGatewayPolicy(ctx, victim, gateway, frpSidecar.Endpoints); !ret.OK {
 		return victim, ret
 	}
 
@@ -155,12 +121,52 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 			Protocol: string(port.Protocol),
 		})
 	}
+	// NodePort 与 frps 两个入口并存,选手拿到哪个都能进跳板。
 	victim.ExposedEndpoints = append(model.Endpoints(nil), victim.Endpoints...)
+	victim.ExposedEndpoints = append(victim.ExposedEndpoints, frpSidecar.Endpoints...)
 	log.Logger.Infof(
 		"Range gateway created: victim_id=%d team_id=%d pod=%s endpoints=%d",
 		victim.ID, victim.TeamID.V, podName, len(victim.ExposedEndpoints),
 	)
 	return victim, model.SuccessRetVal()
+}
+
+// gatewaySSHPort 返回跳板对外暴露的 SSH 端口。
+func gatewaySSHPort(gateway model.RangeGateway) (int32, model.RetVal) {
+	for _, port := range gateway.Ports {
+		if strings.EqualFold(port.Protocol, "tcp") {
+			return port.Port, model.SuccessRetVal()
+		}
+	}
+	return 0, model.FailRetVal(i18n.K8S.CreateError, "RangeGateway", "ssh port", nil)
+}
+
+// jumpFrpSidecars 给跳板注入 frpc 与 nginx 侧车,SSH 端口同时经 frps 对外暴露。
+func jumpFrpSidecars(ctx context.Context, victim model.Victim, labels map[string]string, gateway model.RangeGateway, sshPort int32) (frpSidecars, model.RetVal) {
+	if !config.Env.K8S.Frp.On || len(config.Env.K8S.Frp.Frps) == 0 {
+		return frpSidecars{}, model.SuccessRetVal()
+	}
+	sidecars, ret := buildFrpSidecars(victimResourceName("rfrp", victim.ID, "gateway"), []model.Endpoint{{
+		Name:     findExposeDisplayName(gateway.Ports, sshPort, "tcp"),
+		IP:       "127.0.0.1",
+		Port:     sshPort,
+		Protocol: "tcp",
+	}})
+	if !ret.OK {
+		return frpSidecars{}, ret
+	}
+	frpConfig, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
+		Name:   sidecars.ConfigName,
+		Labels: labels,
+		Data:   sidecars.ConfigData,
+	})
+	if !ret.OK {
+		return frpSidecars{}, ret
+	}
+	if frpConfig == nil {
+		return frpSidecars{}, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", sidecars.ConfigName, errMissingConfigMap)
+	}
+	return sidecars, model.SuccessRetVal()
 }
 
 // rangeSubnet 返回实例拓扑中指定网段的子网。
@@ -173,10 +179,10 @@ func rangeSubnet(victim model.Victim, name string) *model.Subnet {
 	return nil
 }
 
-// createRangeGatewayPolicy 给玩家网关建出站策略。
-// 拓扑节点的策略按 service 选择器绑定,网关在拓扑之外,
-// 没有策略的 Pod 出站不受限制,网关因此要自己带上放行范围。
-func createRangeGatewayPolicy(ctx context.Context, victim model.Victim, gateway model.RangeGateway) model.RetVal {
+// createRangeGatewayPolicy 给玩家跳板建出站策略。
+// 拓扑节点的策略按 service 选择器绑定,跳板在拓扑之外,
+// 没有策略的 Pod 出站不受限制,跳板因此要自己带上放行范围。
+func createRangeGatewayPolicy(ctx context.Context, victim model.Victim, gateway model.RangeGateway, frpEndpoints model.Endpoints) model.RetVal {
 	labels := VictimLabels(victim, map[string]string{rangeGatewayLabel: "true"})
 	selector := map[string]string{
 		"victim_id":       labels["victim_id"],
@@ -213,6 +219,12 @@ func createRangeGatewayPolicy(ctx context.Context, victim model.Victim, gateway 
 			peerIPs[service] = ips
 		}
 	}
+	// NetworkPolicy 按 Pod 生效,注入跳板的 frpc 没法靠标签躲开出站策略,
+	// frps 服务器的地址要单独放行。
+	egressPeers := make([]string, 0)
+	for _, endpoint := range frpEndpoints {
+		egressPeers = append(egressPeers, frpsPeerCIDRs(endpoint.IP)...)
+	}
 	_, ret := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
 		Name:        victimResourceName("npg", victim.ID, "gateway"),
 		Labels:      labels,
@@ -223,6 +235,7 @@ func createRangeGatewayPolicy(ctx context.Context, victim model.Victim, gateway 
 		PeerIPs:     peerIPs,
 		VPCSubnets:  vpcSubnetCIDRs(victim),
 		RoutedCIDRs: routedCIDRs,
+		EgressPeers: egressPeers,
 	})
 	return ret
 }
