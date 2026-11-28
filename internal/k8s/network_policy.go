@@ -44,6 +44,7 @@ type CreateNetworkPolicyOptions struct {
 	SubnetCIDRs []string
 	PeerIPs     map[string][]string
 	VPCSubnets  []string
+	RoutedCIDRs []string
 }
 
 func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions) (*netv1.NetworkPolicy, model.RetVal) {
@@ -57,7 +58,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 		Name:            options.Name,
 		Namespace:       globalNamespace,
 		Labels:          options.Labels,
-		Spec:            buildNetworkPolicySpec(resolved, options.SubnetCIDRs, options.PeerIPs, options.VPCSubnets, selector),
+		Spec:            buildNetworkPolicySpec(resolved, options.SubnetCIDRs, options.PeerIPs, options.VPCSubnets, options.RoutedCIDRs, selector),
 	}
 	networkPolicy, err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
@@ -72,19 +73,21 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 // 容器所在网段与互通容器的地址始终放行，其余目标由策略决定。
 // 入站默认接受集群外部的访问，填写自定义入站 CIDR 后只有这些来源可以访问。
 // 同一 victim 的 frpc Pod 始终放行入站，否则反向代理的流量无法到达容器。
+// 声明为三层互通的网段同样放行，否则跨网段的路由建立起来也走不通。
 func buildNetworkPolicySpec(
 	resolved model.ResolvedNetworkPolicy,
 	subnetCIDRs []string,
 	peerIPs map[string][]string,
 	vpcSubnets []string,
+	routedCIDRs []string,
 	selector map[string]string,
 ) netv1.NetworkPolicySpec {
 	spec := netv1.NetworkPolicySpec{
 		PodSelector: metav1.LabelSelector{MatchLabels: selector},
 		PolicyTypes: []netv1.PolicyType{netv1.PolicyTypeEgress, netv1.PolicyTypeIngress},
 	}
-	subnetBlocks := make([]netv1.NetworkPolicyPeer, 0, len(subnetCIDRs))
-	for _, cidr := range subnetCIDRs {
+	subnetBlocks := make([]netv1.NetworkPolicyPeer, 0, len(subnetCIDRs)+len(routedCIDRs))
+	for _, cidr := range append(append([]string{}, subnetCIDRs...), routedCIDRs...) {
 		block, err := parseIPBlock(cidr)
 		if err != nil {
 			log.Logger.Warningf("Skipped invalid subnet CIDR %s: %s", cidr, err)

@@ -315,7 +315,7 @@ func createVictimNetworkResources(
 		}
 	}
 
-	createNetworkPolicy := func(selector map[string]string, service string, subnetCIDRs []string, peerIPs map[string][]string) error {
+	createNetworkPolicy := func(selector map[string]string, service string, subnetCIDRs []string, peerIPs map[string][]string, routedCIDRs []string) error {
 		name := victimResourceName("np", victim.ID, selector[ServiceLabel])
 		_, ret := CreateNetworkPolicy(wg.Context(), CreateNetworkPolicyOptions{
 			Name:        name,
@@ -326,6 +326,7 @@ func createVictimNetworkResources(
 			SubnetCIDRs: subnetCIDRs,
 			PeerIPs:     peerIPs,
 			VPCSubnets:  vpcSubnets,
+			RoutedCIDRs: routedCIDRs,
 		})
 		if !ret.OK {
 			return ret.AsError()
@@ -337,9 +338,15 @@ func createVictimNetworkResources(
 	if victim.Spec.NetworkPlan.Name == "" {
 		// 共享 Pod 网络下所有容器共用一个 Pod，出站策略取所有条目的并集。
 		wg.Go(func() error {
-			return createNetworkPolicy(labels, "", nil, nil)
+			return createNetworkPolicy(labels, "", nil, nil, nil)
 		})
 	} else {
+		subnetCIDRByName := make(map[string]string)
+		for _, subnet := range victim.Spec.NetworkPlan.Subnets {
+			if subnet != nil && subnet.CIDRBlock != "" {
+				subnetCIDRByName[subnet.DefName] = subnet.CIDRBlock
+			}
+		}
 		for _, podSpec := range victim.Spec.Pods {
 			serviceName := podServiceName(podSpec)
 			matchLabels := make(map[string]string, len(labels)+1)
@@ -352,6 +359,23 @@ func createVictimNetworkResources(
 			for _, network := range podSpec.Networks {
 				if network.Definition.CIDR != "" {
 					subnetCIDRs = append(subnetCIDRs, network.Definition.CIDR)
+				}
+			}
+			// 声明为三层互通的网段同样放行，否则路由建立起来也走不通。
+			routedCIDRs := make([]string, 0)
+			for _, network := range podSpec.Networks {
+				for _, route := range victim.Spec.Routes {
+					peer := route.From
+					switch network.Definition.Name {
+					case route.From:
+						peer = route.To
+					case route.To:
+					default:
+						continue
+					}
+					if cidr := subnetCIDRByName[peer]; cidr != "" && !slices.Contains(subnetCIDRs, cidr) {
+						routedCIDRs = append(routedCIDRs, cidr)
+					}
 				}
 			}
 			peerIPs := make(map[string][]string)
@@ -372,7 +396,7 @@ func createVictimNetworkResources(
 				peerIPs[peerService] = ips
 			}
 			wg.Go(func() error {
-				return createNetworkPolicy(matchLabels, serviceName, subnetCIDRs, peerIPs)
+				return createNetworkPolicy(matchLabels, serviceName, subnetCIDRs, peerIPs, routedCIDRs)
 			})
 		}
 	}
