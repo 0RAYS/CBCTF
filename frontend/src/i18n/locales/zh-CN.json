@@ -1192,6 +1192,23 @@
         "running": "运行中",
         "stopped": "已停止"
       },
+      "rangePool": {
+        "title": "靶场实例池",
+        "prewarm": "补齐实例池",
+        "loading": "正在读取靶场实例池...",
+        "empty": "比赛里没有靶场题目",
+        "emptyHint": "题目复制进比赛后，实例池出现在这里。",
+        "noInstances": "还没有实例",
+        "summary": "常驻 {{size}}，已租 {{leased}}，上限 {{max}}",
+        "columns": {
+          "id": "ID",
+          "status": "状态",
+          "team": "队伍",
+          "nodes": "节点数",
+          "leaseExpireAt": "租约到期",
+          "templateKey": "拓扑指纹"
+        }
+      },
       "modals": {
         "stopTitle": "停止靶机",
         "stopConfirm": "停止",

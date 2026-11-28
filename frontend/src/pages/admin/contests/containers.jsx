@@ -11,6 +11,7 @@ import {
 import { getUserList } from '@/api/admin/user';
 import VictimInventory from '@/components/features/Admin/victims/VictimInventory';
 import ContestVictimStart from '@/components/features/Admin/victims/ContestVictimStart';
+import RangePoolPanel from '@/components/features/Admin/victims/RangePoolPanel';
 
 export default function ContestContainers() {
   const { id } = useParams();
@@ -37,10 +38,13 @@ export default function ContestContainers() {
   };
 
   return (
-    <VictimInventory
-      key={contestId}
-      scope={scope}
-      renderQuickActions={(refresh) => <ContestVictimStart contestId={contestId} onStarted={refresh} />}
-    />
+    <div className="space-y-6">
+      <RangePoolPanel contestId={contestId} />
+      <VictimInventory
+        key={contestId}
+        scope={scope}
+        renderQuickActions={(refresh) => <ContestVictimStart contestId={contestId} onStarted={refresh} />}
+      />
+    </div>
   );
 }

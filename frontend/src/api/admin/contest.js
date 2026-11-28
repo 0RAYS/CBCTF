@@ -321,6 +321,21 @@ export const getContestVictims = (contestId, params = {}) => {
   });
 };
 
+export const getContestRangePools = (contestId) => {
+  return request({
+    url: `/admin/contests/${contestId}/ranges`,
+    method: 'GET',
+  });
+};
+
+export const prewarmContestRangePools = (contestId) => {
+  return request({
+    url: `/admin/contests/${contestId}/ranges`,
+    method: 'POST',
+    noToast: true,
+  });
+};
+
 export const stopContestVictims = (contestId, victimIds) => {
   return request({
     url: `/admin/contests/${contestId}/victims`,

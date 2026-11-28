@@ -1192,6 +1192,23 @@
         "running": "Running",
         "stopped": "Stopped"
       },
+      "rangePool": {
+        "title": "Range Pools",
+        "prewarm": "Fill Pool",
+        "loading": "Loading range pools...",
+        "empty": "No range challenge in this contest",
+        "emptyHint": "A range challenge shows up here once it is copied into the contest.",
+        "noInstances": "No instance yet",
+        "summary": "pool {{size}}, leased {{leased}}, limit {{max}}",
+        "columns": {
+          "id": "ID",
+          "status": "Status",
+          "team": "Team",
+          "nodes": "Nodes",
+          "leaseExpireAt": "Lease expires",
+          "templateKey": "Template key"
+        }
+      },
       "modals": {
         "stopTitle": "Stop containers",
         "stopConfirm": "Stop",
