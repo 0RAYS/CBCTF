@@ -193,7 +193,7 @@ export function VictimTable({
                             className="px-2 py-0.5 rounded border border-amber-500/40 text-amber-400 text-xs whitespace-nowrap shrink-0"
                             title={container.template_key}
                           >
-                            {t(`${translationKey}.table.range.badge`)}
+                            {t(`${translationKey}.table.columns.range.badge`)}
                           </span>
                         )}
                       </div>
