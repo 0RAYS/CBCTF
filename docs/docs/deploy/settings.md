@@ -24,7 +24,7 @@ CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲�
 
 可在线修改的运行设置在首次启动时采用配置文件中的初始值，之后通过「系统管理」维护。升级 Helm values 不会覆盖已经保存的在线设置，在线修改也不会写回配置文件。
 
-数据库和任务日志级别分别使用 `gorm.log.level`、`asynq.log.level`。平台日志的查看与长期留存见[监控与日志](../admin/monitoring)。
+数据库、任务和应用日志级别分别使用 `gorm.log.level`、`asynq.log.level`、`log.level`，慢查询阈值使用 `gorm.log.slow_threshold`。平台日志的查看与长期留存见[监控与日志](../admin/monitoring)。
 
 ## 保存与生效
 
@@ -60,6 +60,9 @@ CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲�
 | `gin.jwt.secret`             | JWT 签名密钥。首次启动自动生成随机值写入数据库，此后一律以数据库为准；轮换请使用「系统管理」页面 | （自动生成） |
 | `gin.metrics.whitelist`      | 允许访问 `/metrics` 的 IP 或 CIDR                | `10.0.0.0/8`                |
 | `gin.pprof.whitelist`        | 允许访问 `/debug/pprof/*` 的 IP 或 CIDR           | `127.0.0.1`                 |
+| `log.level`                  | 应用日志级别，`DEBUG`/`INFO`/`WARNING`/`ERROR`         | `info`                      |
+| `gorm.log.level`             | 数据库日志级别，`INFO`/`WARNING`/`ERROR`/`SILENT`        | `silent`                    |
+| `gorm.log.slow_threshold`    | 慢查询阈值，超时的 SQL 按警告输出                      | `500ms`                     |
 | `gorm.postgres.host`         | PostgreSQL 地址                              | `postgres.cbctf.svc`        |
 | `gorm.postgres.port`         | PostgreSQL 端口                              | `5432`                      |
 | `gorm.postgres.user`         | PostgreSQL 用户名                             | `cbctf`                     |

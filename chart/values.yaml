@@ -93,6 +93,10 @@ cbctf:
   # Public URL of the platform (used in emails, links, etc.)
   host: "http://cbctf.local"
 
+  log:
+    # Application log level: DEBUG / INFO / WARNING / ERROR
+    level: info
+
   gin:
     mode: release   # debug / release / test
     host: "0.0.0.0"
@@ -154,6 +158,8 @@ cbctf:
       mxidle: 10
     log:
       level: warning   # INFO / WARNING / ERROR / SILENT
+      # Slow query threshold
+      slowThreshold: 500ms
 
   k8s:
     capture: "ghcr.io/domcyrus/rustnet:latest"

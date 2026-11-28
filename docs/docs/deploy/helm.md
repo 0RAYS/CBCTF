@@ -94,6 +94,8 @@ helm uninstall cbctf -n cbctf
 | 配置项                                | 说明                          | 示例                        |
 |------------------------------------|-----------------------------|---------------------------|
 | `cbctf.host`                       | 平台公开访问地址，不要带尾部 `/`          | `https://ctf.example.com` |
+| `cbctf.log.level`                  | 应用日志级别                     | `info`                    |
+| `cbctf.gorm.log.slowThreshold`     | 慢查询阈值                      | `500ms`                   |
 | `cbctf.gin.mode`                   | Gin 运行模式                    | `release`                 |
 | `cbctf.gin.host`                   | 容器内监听地址                     | `0.0.0.0`                 |
 | `cbctf.gin.port`                   | 容器内监听端口                     | `8000`                    |

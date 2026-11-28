@@ -10,6 +10,9 @@ data:
     host: {{ .Values.cbctf.host | quote }}
     path: /app/data
 
+    log:
+      level: {{ .Values.cbctf.log.level | quote }}
+
     asynq:
       log:
         level: {{ .Values.cbctf.asynq.log.level | quote }}
@@ -56,6 +59,7 @@ data:
         mxidle: {{ .Values.cbctf.gorm.postgres.mxidle }}
       log:
         level: {{ .Values.cbctf.gorm.log.level | quote }}
+        slow_threshold: {{ .Values.cbctf.gorm.log.slowThreshold | quote }}
 
     # The backend still names this section `redis`; the chart only supplies the
     # connection details, from the bundled Valkey or from valkey.externalHost.
