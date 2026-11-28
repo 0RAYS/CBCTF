@@ -28,5 +28,6 @@ func Cmd() {
 	_ = fs.Parse(os.Args[1:])
 
 	config.Init(path)
+	log.SetLevel(config.Env.Log.Level)
 	run()
 }

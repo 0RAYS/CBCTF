@@ -1,6 +1,9 @@
 host: http://127.0.0.1:8000
 # Data path and NFS mount path if needed
 path: ./data
+log:
+  # Application log level: DEBUG INFO WARNING ERROR
+  level: info
 asynq:
   log:
     # DEBUG INFO WARNING ERROR
