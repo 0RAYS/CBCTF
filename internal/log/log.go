@@ -1,8 +1,10 @@
 package log
 
 import (
+	"os"
 	"strings"
 
+	"github.com/mattn/go-isatty"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,7 +20,7 @@ const (
 func Init() {
 	Logger = logrus.New()
 	Logger.SetReportCaller(true)
-	Logger.SetFormatter(Formatter{})
+	Logger.SetFormatter(NewFormatter(isTerminal(os.Stderr)))
 	Logger.SetLevel(logrus.InfoLevel)
 }
 
@@ -29,4 +31,9 @@ func SetLevel(level string) {
 		parsed = logrus.InfoLevel
 	}
 	Logger.SetLevel(parsed)
+}
+
+// isTerminal keeps ANSI colors out of redirected output such as files and log collectors.
+func isTerminal(f *os.File) bool {
+	return isatty.IsTerminal(f.Fd()) || isatty.IsCygwinTerminal(f.Fd())
 }

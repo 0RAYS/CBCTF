@@ -12,74 +12,94 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var colors = map[string]func(a ...any) string{
-	"Time":    color.New(color.FgGreen).Add(color.Bold).SprintFunc(),
-	"Warning": color.New(color.FgYellow).Add(color.Bold).SprintFunc(),
-	"Panic":   color.New(color.FgRed, color.BgWhite).SprintFunc(),
-	"Fatal":   color.New(color.FgWhite, color.BgRed).Add(color.Bold).SprintFunc(),
-	"Error":   color.New(color.FgRed).Add(color.Bold).SprintFunc(),
-	"Info":    color.New(color.FgGreen).Add(color.Bold).SprintFunc(),
-	"Debug":   color.New(color.FgBlue).Add(color.Bold).SprintFunc(),
-	"GET":     color.New(color.BgBlue).SprintFunc(),
-	"POST":    color.New(color.BgCyan).SprintFunc(),
-	"PUT":     color.New(color.BgYellow).SprintFunc(),
-	"DELETE":  color.New(color.BgRed).SprintFunc(),
-	"PATCH":   color.New(color.BgGreen).SprintFunc(),
-	"HEAD":    color.New(color.BgMagenta).SprintFunc(),
-	"OPTIONS": color.New(color.BgWhite, color.FgBlack).SprintFunc(),
-	"Default": color.New().SprintFunc(),
+// timeLayout keeps the local offset so lines from different hosts stay comparable.
+const timeLayout = "2006-01-02 15:04:05 -07:00"
+
+// Formatter renders one log entry as a single line.
+type Formatter struct {
+	theme theme
 }
 
-func methodColor(method string) func(a ...any) string {
-	switch method {
-	case http.MethodGet:
-		return colors["GET"]
-	case http.MethodPost:
-		return colors["POST"]
-	case http.MethodPut:
-		return colors["PUT"]
-	case http.MethodDelete:
-		return colors["DELETE"]
-	case http.MethodPatch:
-		return colors["PATCH"]
-	case http.MethodHead:
-		return colors["HEAD"]
-	case http.MethodOptions:
-		return colors["OPTIONS"]
-	default:
-		return colors["Default"]
+// NewFormatter builds a formatter whose output carries ANSI colors when colorize is set.
+func NewFormatter(colorize bool) Formatter {
+	return Formatter{theme: newTheme(colorize)}
+}
+
+type theme struct {
+	warning func(a ...any) string
+	panic   func(a ...any) string
+	fatal   func(a ...any) string
+	error   func(a ...any) string
+	info    func(a ...any) string
+	debug   func(a ...any) string
+	methods map[string]func(a ...any) string
+}
+
+func newTheme(colorize bool) theme {
+	paint := func(attrs ...color.Attribute) func(a ...any) string {
+		c := color.New(attrs...)
+		if colorize {
+			c.EnableColor()
+		} else {
+			c.DisableColor()
+		}
+		return c.SprintFunc()
+	}
+	return theme{
+		warning: paint(color.FgYellow, color.Bold),
+		panic:   paint(color.FgRed, color.BgWhite),
+		fatal:   paint(color.FgWhite, color.BgRed, color.Bold),
+		error:   paint(color.FgRed, color.Bold),
+		info:    paint(color.FgGreen, color.Bold),
+		debug:   paint(color.FgBlue, color.Bold),
+		methods: map[string]func(a ...any) string{
+			http.MethodGet:     paint(color.BgBlue),
+			http.MethodPost:    paint(color.BgCyan),
+			http.MethodPut:     paint(color.BgYellow),
+			http.MethodDelete:  paint(color.BgRed),
+			http.MethodPatch:   paint(color.BgGreen),
+			http.MethodHead:    paint(color.BgMagenta),
+			http.MethodOptions: paint(color.BgWhite, color.FgBlack),
+		},
 	}
 }
 
-func levelColor(level logrus.Level) func(a ...any) string {
+func (t theme) levelColor(level logrus.Level) func(a ...any) string {
 	switch level {
 	case logrus.DebugLevel, logrus.TraceLevel:
-		return colors["Debug"]
+		return t.debug
 	case logrus.ErrorLevel:
-		return colors["Error"]
+		return t.error
 	case logrus.WarnLevel:
-		return colors["Warning"]
+		return t.warning
 	case logrus.InfoLevel:
-		return colors["Info"]
+		return t.info
 	case logrus.PanicLevel:
-		return colors["Panic"]
+		return t.panic
 	case logrus.FatalLevel:
-		return colors["Fatal"]
+		return t.fatal
 	default:
-		return colors["Time"]
+		return t.info
 	}
 }
 
-func statusCodeColor(code int) func(a ...any) string {
+func (t theme) methodColor(method string) func(a ...any) string {
+	if c, ok := t.methods[method]; ok {
+		return c
+	}
+	return func(a ...any) string { return fmt.Sprint(a...) }
+}
+
+func (t theme) statusCodeColor(code int) func(a ...any) string {
 	switch {
 	case code >= http.StatusOK && code < http.StatusMultipleChoices:
-		return colors["Info"]
+		return t.info
 	case code >= http.StatusMultipleChoices && code < http.StatusBadRequest:
-		return colors["Debug"]
+		return t.debug
 	case code >= http.StatusBadRequest && code < http.StatusInternalServerError:
-		return colors["Warning"]
+		return t.warning
 	default:
-		return colors["Error"]
+		return t.error
 	}
 }
 
@@ -108,38 +128,39 @@ func extraFields(entry *logrus.Entry) []string {
 	return fields
 }
 
-func shortenCaller(path string) string {
-	for len(path) > 36 {
-		trimmed := strings.TrimPrefix(path, "../")
-		parts := strings.SplitN(trimmed, "/", 2)
-		if len(parts) < 2 {
-			if len(path) > 36 {
-				return "..." + path[len(path)-33:]
-			}
-			return path
-		}
-		path = "../" + parts[1]
+// shortFile keeps the last two path segments, e.g. "internal/db/base.go:119".
+func shortFile(fileWithLine string) string {
+	path := fileWithLine
+	line := ""
+	if idx := strings.LastIndex(fileWithLine, ":"); idx >= 0 {
+		path = fileWithLine[:idx]
+		line = fileWithLine[idx+1:]
 	}
-	return path
+	segments := strings.FieldsFunc(path, func(r rune) bool { return r == '/' || r == '\\' })
+	if len(segments) > 2 {
+		segments = segments[len(segments)-2:]
+	}
+	short := strings.Join(segments, "/")
+	if line == "" {
+		return short
+	}
+	return short + ":" + line
 }
 
-type Formatter struct{}
-
-func (Formatter) Format(entry *logrus.Entry) ([]byte, error) {
-	color.NoColor = false
+func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	t, ok := entry.Data["Type"].(string)
 	if !ok {
 		t = DefaultLogType
 	}
-	LevelColor := levelColor(entry.Level)
+	LevelColor := f.theme.levelColor(entry.Level)
 	LevelText := fmt.Sprintf("%-12s", t+"-"+entry.Level.String())
 	ret := new(bytes.Buffer)
-	_, _ = fmt.Fprintf(ret, "%s %s | ", LevelColor(LevelText), entry.Time.Format("2006-01-02 15:04:05"))
+	_, _ = fmt.Fprintf(ret, "%s %s | ", LevelColor(LevelText), entry.Time.Format(timeLayout))
 	switch t {
 	case DefaultLogType:
 		var callerStr string
 		if entry.Caller != nil {
-			callerStr = shortenCaller(fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line))
+			callerStr = shortFile(fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line))
 		} else {
 			callerStr = "unknown:0"
 		}
@@ -155,8 +176,8 @@ func (Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	case TaskLogType:
 		_, _ = fmt.Fprintf(ret, "%-36s | %s", fmt.Sprintf("Async %s Task", entry.Data["Queue"]), LevelColor(entry.Message))
 	case GinLogType:
-		StatusCodeColor := statusCodeColor(safeGetValue(entry, "StatusCode", -1))
-		MethodColor := methodColor(safeGetValue(entry, "Method", "ERROR"))
+		StatusCodeColor := f.theme.statusCodeColor(safeGetValue(entry, "StatusCode", -1))
+		MethodColor := f.theme.methodColor(safeGetValue(entry, "Method", "ERROR"))
 		Latency := safeGetValue(entry, "Latency", time.Duration(0))
 		_, _ = fmt.Fprintf(ret, "%s | %s | %13v | ",
 			safeGetValue(entry, "TraceID", "00000000-0000-0000-0000-000000000000"),
@@ -175,11 +196,10 @@ func (Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			_, _ = fmt.Fprintf(ret, "\n%s", stack)
 		}
 	case GormLogType:
-		filepath := strings.SplitN(safeGetValue(entry, "FileWithLineNum", "/unknown/path:-1"), "/CBCTF/", 2)
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s | %s",
-			fmt.Sprintf("%-36s", filepath[len(filepath)-1]),
-			colors["Debug"](safeGetValue(entry, "Rows", "-1")),
-			colors["Debug"](safeGetValue(entry, "Duration", "0.000ms")),
+			fmt.Sprintf("%-36s", shortFile(safeGetValue(entry, "FileWithLineNum", "/unknown/path:-1"))),
+			f.theme.debug(safeGetValue(entry, "Rows", "-1")),
+			f.theme.debug(safeGetValue(entry, "Duration", "0.000ms")),
 			safeGetValue(entry, "SQL", "SELECT 'unknown'"),
 		)
 	}

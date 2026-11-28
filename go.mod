@@ -21,6 +21,7 @@ require (
 	github.com/hibiken/asynq v0.26.0
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.7.7
 	github.com/kubeovn/kube-ovn v1.17.1
+	github.com/mattn/go-isatty v0.0.24
 	github.com/nicksnyder/go-i18n/v2 v2.7.0
 	github.com/oschwald/geoip2-golang/v2 v2.5.0
 	github.com/pires/go-proxyproto v0.16.0
@@ -99,7 +100,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.4.2 // indirect
 	github.com/leodido/go-urn v1.5.0 // indirect
 	github.com/mattn/go-colorable v0.1.16 // indirect
-	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-shellwords v1.0.16 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
