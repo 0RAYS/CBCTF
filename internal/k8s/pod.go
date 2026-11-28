@@ -27,15 +27,16 @@ type Network struct {
 	IPv4         string
 	MAC          string
 	CIDR         string
-	Gateway      string
 	Subnet       string
 	NetAttachDef string
-	Primary      bool
 	Routes       []model.Route
 }
 
 // ovnAnnotations 生成 Multus 与 Kube-OVN 的网卡注解。
-// 静态地址、主网卡默认路由与静态路由都通过 pod 注解交给 Kube-OVN CNI。
+// 静态地址与静态路由都通过 pod 注解交给 Kube-OVN CNI。
+// default_route 固定为 false:工作负载的默认路由属于集群网络,靶场网段只做附加网卡,
+// 跨网段可达性由静态路由给出。这样 kube-ovn 无论作主 CNI 还是副 CNI,行为都一致,
+// 也不会把工作负载从集群网络上摘下来。
 func ovnAnnotations(networks []Network) map[string]string {
 	annotations := make(map[string]string)
 	for _, network := range networks {
@@ -47,9 +48,7 @@ func ovnAnnotations(networks []Network) map[string]string {
 		if network.MAC != "" {
 			annotations[prefix+"mac_address"] = network.MAC
 		}
-		if network.Primary {
-			annotations[prefix+"default_route"] = "true"
-		}
+		annotations[prefix+"default_route"] = "false"
 		if len(network.Routes) > 0 {
 			if data, err := json.Marshal(network.Routes); err == nil {
 				annotations[prefix+"routes"] = string(data)
@@ -170,6 +169,56 @@ func listPodsDirect(ctx context.Context, labels ...map[string]string) (*corev1.P
 
 const MaxPodLogLines int64 = 10000
 const MaxPodLogBytes int64 = 1 << 20
+
+// networkStatusAnnotation 是 Multus 汇总各网卡地址的注解。
+const networkStatusAnnotation = "k8s.v1.cni.cncf.io/network-status"
+
+type networkStatus struct {
+	Name      string   `json:"name"`
+	Interface string   `json:"interface"`
+	IPs       []string `json:"ips"`
+	MAC       string   `json:"mac"`
+	Default   bool     `json:"default"`
+}
+
+// podAddresses 返回 Pod 各网卡上的地址。
+// 注解缺失时无法判断实际地址,返回 false 让调用方跳过校验。
+func podAddresses(pod *corev1.Pod) (map[string]struct{}, bool) {
+	data, ok := pod.Annotations[networkStatusAnnotation]
+	if !ok {
+		return nil, false
+	}
+	var statuses []networkStatus
+	if err := json.Unmarshal([]byte(data), &statuses); err != nil {
+		return nil, false
+	}
+	addresses := make(map[string]struct{})
+	for _, status := range statuses {
+		for _, ip := range status.IPs {
+			addresses[ip] = struct{}{}
+		}
+	}
+	return addresses, true
+}
+
+// verifyPodAddresses 校验 Pod 实际拿到的地址与拓扑规划一致。
+// 注解没被 CNI 采纳时 Pod 会拿到别的地址,靶场拓扑随即失效,必须在就绪前发现。
+func verifyPodAddresses(pod *corev1.Pod, networks model.Networks) error {
+	addresses, ok := podAddresses(pod)
+	if !ok {
+		return nil
+	}
+	for _, network := range networks {
+		expected := network.Attachment.IP
+		if expected == "" {
+			continue
+		}
+		if _, found := addresses[expected]; !found {
+			return fmt.Errorf("pod %s got addresses %v, expected %s on %s", pod.Name, addresses, expected, network.Attachment.Name)
+		}
+	}
+	return nil
+}
 
 func podLogOptions(containerName string, lines int64) *corev1.PodLogOptions {
 	if lines <= 0 {

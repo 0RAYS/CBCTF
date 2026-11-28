@@ -39,10 +39,17 @@ type networkDataConfig struct {
 }
 
 type networkDataEthernet struct {
-	Match     networkDataMatch `yaml:"match"`
-	SetName   string           `yaml:"set-name"`
-	Addresses []string         `yaml:"addresses,omitempty"`
-	Gateway   string           `yaml:"gateway,omitempty"`
+	Match     networkDataMatch   `yaml:"match"`
+	SetName   string             `yaml:"set-name"`
+	Addresses []string           `yaml:"addresses,omitempty"`
+	Routes    []networkDataRoute `yaml:"routes,omitempty"`
+}
+
+// networkDataRoute 是 guest 内部的一条静态路由。
+// guest 只有靶场网卡,没有集群网络可用,跨网段可达性完全依赖这些路由。
+type networkDataRoute struct {
+	Destination string `yaml:"destination"`
+	Gateway     string `yaml:"gateway"`
 }
 
 type networkDataMatch struct {
@@ -70,8 +77,11 @@ func buildNetworkData(networks []Network) (string, error) {
 			}
 			ethernet.Addresses = []string{fmt.Sprintf("%s/%d", network.IPv4, prefix.Bits())}
 		}
-		if network.Primary {
-			ethernet.Gateway = network.Gateway
+		for _, route := range network.Routes {
+			ethernet.Routes = append(ethernet.Routes, networkDataRoute{
+				Destination: route.Dst,
+				Gateway:     route.Gw,
+			})
 		}
 		networkData.Ethernets[network.Interface] = ethernet
 	}

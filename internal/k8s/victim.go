@@ -116,7 +116,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					IPv4:         network.Attachment.IP,
 					MAC:          network.Attachment.MAC,
 					CIDR:         network.Definition.CIDR,
-					Gateway:      network.Definition.Gateway,
 					Subnet:       subnetMap[network.Definition.Name].Name,
 					NetAttachDef: netAttachDefMap[network.Definition.Name].Name,
 					Routes:       rangeRoutes(victim, network.Definition.Name),

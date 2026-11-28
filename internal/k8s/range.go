@@ -106,7 +106,6 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 			IPv4:         gateway.Network.IP,
 			MAC:          gateway.Network.MAC,
 			CIDR:         gateway.Subnet.CIDR,
-			Gateway:      gateway.Subnet.Gateway,
 			Subnet:       subnet.Name,
 			NetAttachDef: subnet.NetAttachDef.Name,
 			Routes:       rangeRoutes(victim, gateway.Subnet.Name),
