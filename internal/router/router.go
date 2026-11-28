@@ -382,6 +382,8 @@ func Init() *gin.Engine {
 			adminContest.GET("/writeups/export", ExportContestWriteups)
 
 			adminContest.GET("/teams", GetTeams)
+			adminContest.GET("/ranges", GetRangePools)
+			adminContest.POST("/ranges", PrewarmRangePools)
 			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeam)
 			{
 				adminContestTeam.GET("", GetTeam)

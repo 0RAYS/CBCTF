@@ -126,7 +126,11 @@ func (v *VictimRepo) ListRanges(challengeID uint, statuses []string) ([]model.Vi
 	if len(statuses) > 0 {
 		conditions["status"] = statuses
 	}
-	victims, _, ret := v.List(-1, -1, GetOptions{Conditions: conditions, Sort: []string{"id ASC"}})
+	victims, _, ret := v.List(-1, -1, GetOptions{
+		Conditions: conditions,
+		Sort:       []string{"id ASC"},
+		Preloads:   map[string]GetOptions{"Team": {}},
+	})
 	return victims, ret
 }
 

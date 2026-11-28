@@ -15,6 +15,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
+	"CBCTF/internal/view"
 )
 
 // rangeFlagTemplates 是实例里要清掉的 flag 模板。
@@ -272,4 +273,80 @@ func GetRangeVictim(tx *gorm.DB, teamID, challengeID uint) (model.Victim, model.
 		"challenge_id": challengeID,
 		"team_id":      teamID,
 	}})
+}
+
+// BuildRangePoolView 汇总一个靶场题目的实例池状态。
+func BuildRangePoolView(tx *gorm.DB, challenge model.Challenge) (view.RangePoolView, model.RetVal) {
+	instances, ret := db.InitVictimRepo(tx).ListRanges(challenge.ID, nil)
+	if !ret.OK {
+		return view.RangePoolView{}, ret
+	}
+	pool := view.RangePoolView{
+		ChallengeID:   challenge.ID,
+		ChallengeName: challenge.Name,
+		Instances:     make([]view.RangeInstanceView, 0, len(instances)),
+	}
+	if challenge.RangeConfig != nil {
+		pool.PoolSize = challenge.RangeConfig.PoolSize
+		pool.MaxLeased = challenge.RangeConfig.MaxLeased
+	}
+	for _, instance := range instances {
+		if instance.TeamID.Valid {
+			pool.Leased++
+		}
+		pool.Instances = append(pool.Instances, view.RangeInstanceView{
+			ID:            instance.ID,
+			Status:        instance.Status,
+			TeamID:        instance.TeamID.V,
+			TeamName:      instance.Team.Name,
+			LeaseExpireAt: instance.LeaseExpireAt,
+			TemplateKey:   instance.TemplateKey,
+			Nodes:         len(instance.Spec.Pods),
+			Start:         instance.Start,
+		})
+	}
+	return pool, model.SuccessRetVal()
+}
+
+// BuildRangePoolViews 汇总比赛里所有靶场题目的实例池状态。
+func BuildRangePoolViews(tx *gorm.DB, contestID uint) ([]view.RangePoolView, model.RetVal) {
+	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contestID},
+	})
+	if !ret.OK {
+		return nil, ret
+	}
+	pools := make([]view.RangePoolView, 0)
+	for _, challenge := range challenges {
+		if challenge.RangeConfig == nil {
+			continue
+		}
+		pool, ret := BuildRangePoolView(tx, challenge)
+		if !ret.OK {
+			return nil, ret
+		}
+		pools = append(pools, pool)
+	}
+	return pools, model.SuccessRetVal()
+}
+
+// EnsureContestRangePools 补齐比赛里所有靶场题目的实例池。
+// 与定时任务走同一条路径,手动触发只是多一个口子。
+func EnsureContestRangePools(ctx context.Context, contestID uint) model.RetVal {
+	challenges, _, ret := db.InitChallengeRepo(db.TaskDB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contestID},
+	})
+	if !ret.OK {
+		return ret
+	}
+	for _, challenge := range challenges {
+		if challenge.RangeConfig == nil {
+			continue
+		}
+		if err := EnsureRangePool(ctx, challenge); err != nil {
+			log.Logger.Warningf("Failed to ensure range pool: challenge_id=%d error=%v", challenge.ID, err)
+			return model.FailRetVal(i18n.Common.UnknownError, "RangePool", fmt.Sprintf("challenge_id=%d", challenge.ID), err)
+		}
+	}
+	return model.SuccessRetVal()
 }
