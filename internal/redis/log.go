@@ -108,16 +108,23 @@ func GetLogs(ctx context.Context, start, end int64, minLevel string) ([]string, 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	buckets := logBuckets(minLevel)
+	scan := end + 1
+	if scan > logBucketLimit {
+		scan = logBucketLimit
+	}
 	pipe := RDB.Pipeline()
 	cmds := make([]*redis.ZSliceCmd, 0, len(buckets))
 	for _, bucket := range buckets {
-		cmds = append(cmds, pipe.ZRevRangeWithScores(ctx, bucket, 0, end))
+		cmds = append(cmds, pipe.ZRevRangeWithScores(ctx, bucket, 0, scan-1))
 	}
 	if _, err := pipe.Exec(ctx); err != nil && !errors.Is(err, redis.Nil) {
 		log.Logger.Warningf("Failed to get logs: %s", err)
 		return []string{}, model.FailRetVal(i18n.Redis.GetError, "Cache", logKeyPrefix, err)
 	}
 	entries := mergeLogEntries(cmds)
+	if len(entries) > logBucketLimit {
+		entries = entries[:logBucketLimit]
+	}
 	if start >= int64(len(entries)) {
 		return []string{}, model.SuccessRetVal()
 	}
