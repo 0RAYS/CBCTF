@@ -30,6 +30,8 @@ type Network struct {
 	Subnet       string
 	NetAttachDef string
 	Routes       []model.Route
+	// GuestAddress 表示地址配在虚拟机内部,virt-launcher 的附加网卡只保留二层连接。
+	GuestAddress bool
 }
 
 // ovnAnnotations 生成 Multus 与 Kube-OVN 的网卡注解。
@@ -44,11 +46,16 @@ func ovnAnnotations(networks []Network) map[string]string {
 		annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
 		prefix := fmt.Sprintf("%s.%s.ovn.kubernetes.io/", network.NetAttachDef, globalNamespace)
 		annotations[prefix+"logical_switch"] = network.Subnet
-		annotations[prefix+"ip_address"] = network.IPv4
 		if network.MAC != "" {
 			annotations[prefix+"mac_address"] = network.MAC
 		}
 		annotations[prefix+"default_route"] = "false"
+		if network.GuestAddress {
+			// 虚拟机的地址由 guest 自己持有,Pod 侧再放一份会让 Pod 内核
+			// 直接吃掉发往该地址的流量,虚拟机反而收不到。
+			continue
+		}
+		annotations[prefix+"ip_address"] = network.IPv4
 		if len(network.Routes) > 0 {
 			if data, err := json.Marshal(network.Routes); err == nil {
 				annotations[prefix+"routes"] = string(data)

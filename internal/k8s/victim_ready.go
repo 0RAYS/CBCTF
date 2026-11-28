@@ -45,13 +45,15 @@ func VictimReady(ctx context.Context, victim *model.Victim) (bool, error) {
 			if vmi == nil {
 				return false, nil
 			}
-			expected := make([]string, 0, len(record.Spec.Networks))
+			// 虚拟机的地址在 guest 内部,VMI 状态里的地址是 virt-launcher 网卡的地址,
+			// 只能按 guest 网卡的 MAC 校验网卡是否按规划接上。
+			expectedMACs := make([]string, 0, len(record.Spec.Networks))
 			for _, network := range record.Spec.Networks {
-				if network.Attachment.IP != "" {
-					expected = append(expected, network.Attachment.IP)
+				if network.Attachment.MAC != "" {
+					expectedMACs = append(expectedMACs, network.Attachment.MAC)
 				}
 			}
-			if !vmiInterfacesReady(vmi, expected) {
+			if !vmiInterfacesReady(vmi, nil, expectedMACs) {
 				return false, nil
 			}
 			if !vm.Status.Ready {

@@ -47,9 +47,10 @@ type networkDataEthernet struct {
 
 // networkDataRoute 是 guest 内部的一条静态路由。
 // guest 只有靶场网卡,没有集群网络可用,跨网段可达性完全依赖这些路由。
+// cloud-init 的 v2 网络配置用 netplan 的字段名,写成 destination/gateway 会被整条路由丢掉。
 type networkDataRoute struct {
-	Destination string `yaml:"destination"`
-	Gateway     string `yaml:"gateway"`
+	To  string `yaml:"to"`
+	Via string `yaml:"via"`
 }
 
 type networkDataMatch struct {
@@ -79,8 +80,8 @@ func buildNetworkData(networks []Network) (string, error) {
 		}
 		for _, route := range network.Routes {
 			ethernet.Routes = append(ethernet.Routes, networkDataRoute{
-				Destination: route.Dst,
-				Gateway:     route.Gw,
+				To:  route.Dst,
+				Via: route.Gw,
 			})
 		}
 		networkData.Ethernets[network.Interface] = ethernet
@@ -113,10 +114,16 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 	networks := make([]v1.Network, 0, len(options.Networks))
 	for _, network := range options.Networks {
 		attachment := fmt.Sprintf("%s/%s", globalNamespace, network.NetAttachDef)
-		interfaces = append(interfaces, v1.Interface{
+		vmiInterface := v1.Interface{
 			Name:   network.Interface,
 			Bridge: new(v1.InterfaceBridge),
-		})
+		}
+		// guest 网卡的 MAC 必须与拓扑规划的地址一起下发:
+		// cloud-init 按 MAC 匹配网卡,地址配错网卡就拿不到。
+		if network.MAC != "" {
+			vmiInterface.MacAddress = network.MAC
+		}
+		interfaces = append(interfaces, vmiInterface)
 		networks = append(networks, v1.Network{
 			Name:   network.Interface,
 			Multus: &v1.MultusNetwork{NetworkName: attachment},

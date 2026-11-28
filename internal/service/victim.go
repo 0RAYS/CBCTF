@@ -47,6 +47,11 @@ func needVPC(pods []model.ChallengePodTemplate) bool {
 	return false
 }
 
+// isKubeVirtTemplate 判断题目里的这个节点是否按虚拟机创建。
+func isKubeVirtTemplate(pod model.ChallengePodTemplate) bool {
+	return len(pod.Containers) > 0 && pod.Containers[0].KubeVirt
+}
+
 // victimFlagSpec 靶机规格中的一条 flag。
 // Key 用于关联队伍手里的答案。
 type victimFlagSpec struct {
@@ -188,6 +193,11 @@ func buildVictimSpec(_ *gorm.DB, victim model.Victim, source victimSpecSource) (
 				}
 				networkPlans[network.Definition.Name] = subnet
 				spec.NetworkPlan.Subnets = append(spec.NetworkPlan.Subnets, subnet)
+			}
+			// 虚拟机的地址配在 guest 内部,kube-ovn 的地址池不认识这个地址,
+			// 不排除掉就可能被分给别的 Pod。
+			if isKubeVirtTemplate(podTemplate) && network.Attachment.IP != "" {
+				subnet.ExcludeIps = append(subnet.ExcludeIps, network.Attachment.IP)
 			}
 		}
 	}

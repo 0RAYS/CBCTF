@@ -119,6 +119,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Subnet:       subnetMap[network.Definition.Name].Name,
 					NetAttachDef: netAttachDefMap[network.Definition.Name].Name,
 					Routes:       rangeRoutes(victim, network.Definition.Name),
+					GuestAddress: pod.Spec.Containers[0].KubeVirt,
 				})
 			}
 

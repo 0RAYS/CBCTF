@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/labels"
 	virtv1 "kubevirt.io/api/core/v1"
@@ -36,23 +37,34 @@ func listVMIs(ctx context.Context, selector map[string]string) ([]virtv1.Virtual
 	return result, nil
 }
 
-// vmiInterfacesReady 判断实例是否运行,且每张规划内的网卡都拿到了地址。
+// vmiInterfacesReady 判断实例是否运行,且每张规划内的网卡都接上了。
 // 实例起来了但只挂上一张网卡是多网卡拓扑里最常见的故障。
-func vmiInterfacesReady(vmi *virtv1.VirtualMachineInstance, expected []string) bool {
+// 虚拟机的地址配在 guest 内部,VMI 状态里的地址属于 virt-launcher 的附加网卡,
+// 虚拟机只能按 guest 网卡的 MAC 校验。
+func vmiInterfacesReady(vmi *virtv1.VirtualMachineInstance, expectedIPs, expectedMACs []string) bool {
 	if vmi == nil || vmi.Status.Phase != virtv1.Running {
 		return false
 	}
-	if len(expected) == 0 {
+	if len(expectedIPs) == 0 && len(expectedMACs) == 0 {
 		return true
 	}
 	addresses := make(map[string]bool, len(vmi.Status.Interfaces))
+	macs := make(map[string]bool, len(vmi.Status.Interfaces))
 	for _, iface := range vmi.Status.Interfaces {
 		if iface.IP != "" {
 			addresses[iface.IP] = true
 		}
+		if iface.MAC != "" {
+			macs[strings.ToLower(iface.MAC)] = true
+		}
 	}
-	for _, ip := range expected {
+	for _, ip := range expectedIPs {
 		if !addresses[ip] {
+			return false
+		}
+	}
+	for _, mac := range expectedMACs {
+		if !macs[strings.ToLower(mac)] {
 			return false
 		}
 	}
