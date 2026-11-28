@@ -112,7 +112,7 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.K8SNamespaceSettingKey, Value: model.SettingValue{V: config.Env.K8S.Namespace}},
 		{Key: model.K8SCaptureImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.CaptureImage}},
 		{Key: model.K8SCaptureEnabledSettingKey, Value: model.SettingValue{V: config.Env.K8S.CaptureEnabled}},
-		{Key: model.K8SWorkerImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.WorkerImage}},
+		{Key: model.K8SGeneratorImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.GeneratorImage}},
 		{Key: model.K8SGeneratorPoolSizeSettingKey, Value: model.SettingValue{V: config.Env.K8S.GeneratorPoolSize}},
 		{Key: model.K8SFrpOnSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.On}},
 		{Key: model.K8SFrpFrpcImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.FrpcImage}},
@@ -229,7 +229,7 @@ func (s *SettingRepo) readSettingsInto(next *config.Config) model.RetVal {
 	if next.K8S.CaptureEnabled, ret = GetValue[bool](s, model.K8SCaptureEnabledSettingKey); !ret.OK {
 		return ret
 	}
-	if next.K8S.WorkerImage, ret = GetValue[string](s, model.K8SWorkerImageSettingKey); !ret.OK {
+	if next.K8S.GeneratorImage, ret = GetValue[string](s, model.K8SGeneratorImageSettingKey); !ret.OK {
 		return ret
 	}
 	if next.K8S.GeneratorPoolSize, ret = GetValue[int](s, model.K8SGeneratorPoolSizeSettingKey); !ret.OK {

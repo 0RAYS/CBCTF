@@ -63,11 +63,11 @@ func TestHelmRuntimeRBAC(t *testing.T) {
 		t.Run(map[bool]string{false: "default", true: "existing-service-account"}[custom], func(t *testing.T) {
 			args := []string{"template", "review", filepath.Join("..", "..", "chart"), "--namespace", globalNamespace, "--set", "image.tag=platform-only"}
 			account := "review-cbctf"
-			wantWorker := "ghcr.io/0rays/cbctf-worker:latest"
+			wantGenerator := "ghcr.io/0rays/cbctf-generator:latest"
 			if custom {
 				args = append(args, "--set", "serviceAccount.create=false,serviceAccount.name=existing-sa,startupProbe.failureThreshold=90,terminationGracePeriodSeconds=180")
-				wantWorker = "registry.example/worker:v2"
-				args = append(args, "--set", "cbctf.k8s.worker_image="+wantWorker)
+				wantGenerator = "registry.example/generator:v2"
+				args = append(args, "--set", "cbctf.k8s.generator_image="+wantGenerator)
 				account = "existing-sa"
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -132,8 +132,8 @@ func TestHelmRuntimeRBAC(t *testing.T) {
 			if err := json.Unmarshal(data, &cfg); err != nil {
 				t.Fatal(err)
 			}
-			if cfg.K8S.WorkerImage != wantWorker {
-				t.Fatalf("worker image is not independently configured: %q", cfg.K8S.WorkerImage)
+			if cfg.K8S.GeneratorImage != wantGenerator {
+				t.Fatalf("generator image is not independently configured: %q", cfg.K8S.GeneratorImage)
 			}
 			if role.Namespace != globalNamespace || binding.Namespace != globalNamespace ||
 				binding.RoleRef.Kind != "Role" || binding.RoleRef.Name != role.Name {

@@ -9,7 +9,7 @@ import (
 )
 
 func TestGeneratorResponseIncludesRuntimeImageWithoutWorkerCredentials(t *testing.T) {
-	generator := model.Generator{Image: "registry.example/generator:v2", WorkerToken: "worker-private-token", Status: model.RunningGeneratorStatus}
+	generator := model.Generator{Image: "registry.example/generator:v2", GeneratorToken: "generator-private-token", Status: model.RunningGeneratorStatus}
 	response := GetGeneratorResp(generator)
 	if response["image"] != generator.Image {
 		t.Fatal("runtime image omitted")
@@ -18,7 +18,7 @@ func TestGeneratorResponseIncludesRuntimeImageWithoutWorkerCredentials(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(string(data), generator.WorkerToken) {
+	if strings.Contains(string(data), generator.GeneratorToken) {
 		t.Fatal("worker credentials exposed")
 	}
 }

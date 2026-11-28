@@ -128,7 +128,7 @@ func SystemConfig(ctx *gin.Context) {
 		"k8s_namespace":           config.Env.K8S.Namespace,
 		"k8s_capture":             config.Env.K8S.CaptureImage,
 		"k8s_capture_enabled":     config.Env.K8S.CaptureEnabled,
-		"k8s_worker_image":        config.Env.K8S.WorkerImage,
+		"k8s_generator_image":     config.Env.K8S.GeneratorImage,
 		"k8s_generator_pool_size": config.Env.K8S.GeneratorPoolSize,
 		"k8s_frp_on":              config.Env.K8S.Frp.On,
 		"k8s_frp_frpc":            config.Env.K8S.Frp.FrpcImage,

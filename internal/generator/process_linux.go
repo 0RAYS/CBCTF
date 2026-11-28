@@ -1,4 +1,4 @@
-package worker
+package generator
 
 import (
 	"os/exec"

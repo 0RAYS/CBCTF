@@ -4,15 +4,15 @@ import (
 	"log"
 	"os"
 
-	"CBCTF/internal/worker"
+	"CBCTF/internal/generator"
 )
 
 func main() {
 	var err error
 	if len(os.Args) == 3 && os.Args[1] == "--install" {
-		err = worker.Install(os.Args[2])
+		err = generator.Install(os.Args[2])
 	} else {
-		err = worker.Serve(os.Getenv("CBCTF_WORKER_TOKEN"))
+		err = generator.Serve(os.Getenv("CBCTF_GENERATOR_TOKEN"))
 	}
 	if err != nil {
 		log.Fatal(err)

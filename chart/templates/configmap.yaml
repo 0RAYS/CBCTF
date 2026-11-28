@@ -71,7 +71,7 @@ data:
       shared_volume_claim: {{ default (printf "%s-shared-volume" .Release.Namespace) .Values.persistence.existingClaim | quote }}
       capture: {{ .Values.cbctf.k8s.capture | quote }}
       capture_enabled: {{ .Values.cbctf.k8s.capture_enabled }}
-      worker_image: {{ .Values.cbctf.k8s.worker_image | quote }}
+      generator_image: {{ .Values.cbctf.k8s.generator_image | quote }}
       generator_pool_size: {{ .Values.cbctf.k8s.generator_pool_size }}
       range:
         node_concurrency: {{ .Values.cbctf.k8s.range.node_concurrency }}

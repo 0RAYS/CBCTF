@@ -59,13 +59,13 @@ func EnsureGeneratorPool(ctx context.Context, source model.GeneratorSourceSnapsh
 		}
 		for i := capacity; i < config.Env.K8S.GeneratorPoolSize; i++ {
 			generator, ret := repo.Create(model.Generator{
-				ChallengeID:   source.ChallengeID,
-				ChallengeName: source.Name,
-				ContestID:     sql.Null[uint]{V: source.ContestID, Valid: source.ContestID > 0},
-				Name:          fmt.Sprintf("gen-%d-%d-%s", source.ContestID, source.SourceID(), utils.RandHexStr(12)),
-				WorkerToken:   utils.RandHexStr(64),
-				Image:         source.Image,
-				Status:        model.WaitingGeneratorStatus,
+				ChallengeID:    source.ChallengeID,
+				ChallengeName:  source.Name,
+				ContestID:      sql.Null[uint]{V: source.ContestID, Valid: source.ContestID > 0},
+				Name:           fmt.Sprintf("gen-%d-%d-%s", source.ContestID, source.SourceID(), utils.RandHexStr(12)),
+				GeneratorToken: utils.RandHexStr(64),
+				Image:          source.Image,
+				Status:         model.WaitingGeneratorStatus,
 			})
 			if !ret.OK {
 				return taskResourceError("create generator pool member", ret)

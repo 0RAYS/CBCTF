@@ -163,7 +163,7 @@ cbctf:
   k8s:
     capture: "ghcr.io/domcyrus/rustnet:latest"
     capture_enabled: true
-    worker_image: "ghcr.io/0rays/cbctf-worker:latest"
+    generator_image: "ghcr.io/0rays/cbctf-generator:latest"
     generator_pool_size: 2
     range:
       # Nodes created concurrently inside one range instance.

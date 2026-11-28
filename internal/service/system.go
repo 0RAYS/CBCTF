@@ -191,7 +191,7 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.K8SNamespaceSettingKey:         form.K8SNamespace,
 		model.K8SCaptureImageSettingKey:      form.K8SCaptureImage,
 		model.K8SCaptureEnabledSettingKey:    form.K8SCaptureEnabled,
-		model.K8SWorkerImageSettingKey:       form.K8SWorkerImage,
+		model.K8SGeneratorImageSettingKey:    form.K8SGeneratorImage,
 		model.K8SGeneratorPoolSizeSettingKey: form.K8SGeneratorPoolSize,
 		model.K8SFrpOnSettingKey:             form.K8SFrpOn,
 		model.K8SFrpFrpcImageSettingKey:      form.K8SFrpFrpcImage,

@@ -24,7 +24,7 @@ import (
 func challengeSidecarImages(challenge model.Challenge) []string {
 	var sidecars []string
 	if challenge.Type == model.DynamicChallengeType {
-		sidecars = append(sidecars, config.Env.K8S.WorkerImage)
+		sidecars = append(sidecars, config.Env.K8S.GeneratorImage)
 	}
 	if challenge.Type == model.PodsChallengeType {
 		if config.Env.K8S.CaptureEnabled {

@@ -21,10 +21,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"CBCTF/internal/config"
+	gen "CBCTF/internal/generator"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/worker"
 )
 
 func GeneratorLabels(generator model.Generator, tags ...map[string]string) map[string]string {
@@ -60,11 +60,11 @@ func StartGenerator(ctx context.Context, source model.GeneratorSource, generator
 		ServiceAccountName: runtimeServiceAccount(),
 		InitContainers: []corev1.Container{
 			{
-				Name:            "worker-install",
-				Image:           config.Env.K8S.WorkerImage,
+				Name:            "generator-install",
+				Image:           config.Env.K8S.GeneratorImage,
 				ImagePullPolicy: corev1.PullIfNotPresent,
-				Command:         []string{"/app/worker", "--install", "/worker/worker"},
-				VolumeMounts:    []corev1.VolumeMount{{Name: "worker", MountPath: "/worker"}},
+				Command:         []string{"/app/generator", "--install", "/generator/generator"},
+				VolumeMounts:    []corev1.VolumeMount{{Name: "generator", MountPath: "/generator"}},
 				Resources:       sidecarResources(),
 			},
 		},
@@ -74,17 +74,17 @@ func StartGenerator(ctx context.Context, source model.GeneratorSource, generator
 				Resources:       corev1.ResourceRequirements{Requests: workloadRequests(nil)},
 				Image:           source.SourceImage(),
 				ImagePullPolicy: corev1.PullIfNotPresent,
-				Env:             []corev1.EnvVar{{Name: "CBCTF_WORKER_TOKEN", Value: generator.WorkerToken}},
+				Env:             []corev1.EnvVar{{Name: "CBCTF_GENERATOR_TOKEN", Value: generator.GeneratorToken}},
 				ReadinessProbe: &corev1.Probe{
 					HTTPGet: &corev1.HTTPGetAction{
 						Path: "/ready",
-						Port: intstr.FromInt32(worker.Port),
+						Port: intstr.FromInt32(gen.Port),
 					},
 					PeriodSeconds:  1,
 					TimeoutSeconds: 1,
 				},
 				VolumeMounts: []corev1.VolumeMount{
-					{Name: "worker", MountPath: "/worker", ReadOnly: true},
+					{Name: "generator", MountPath: "/generator", ReadOnly: true},
 					{Name: "output", MountPath: "/root/mnt/attachments"},
 					{
 						Name:      nfsVolumeName,
@@ -95,11 +95,11 @@ func StartGenerator(ctx context.Context, source model.GeneratorSource, generator
 					},
 				},
 				WorkingDir: "/root",
-				Command:    []string{"/worker/worker"},
+				Command:    []string{"/generator/generator"},
 			},
 		},
 		Volumes: []corev1.Volume{
-			{Name: "worker", EmptyDir: &corev1.EmptyDirVolumeSource{}},
+			{Name: "generator", EmptyDir: &corev1.EmptyDirVolumeSource{}},
 			{Name: "output", EmptyDir: &corev1.EmptyDirVolumeSource{}},
 			{
 				Name: nfsVolumeName,
@@ -147,7 +147,7 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 	return model.SuccessRetVal()
 }
 
-// GenAttachment streams a completed artifact directly from the worker into an
+// GenAttachment streams a completed artifact directly from the generator runtime into an
 // immutable cache path. The worker's output directory is local EmptyDir, so
 // completion never depends on an NFS client's negative/attribute cache.
 func GenAttachment(ctx context.Context, source model.GeneratorSource, generator model.Generator, teamID uint, flags []string) model.RetVal {
@@ -161,7 +161,7 @@ func GenAttachment(ctx context.Context, source model.GeneratorSource, generator 
 	return model.SuccessRetVal()
 }
 
-var workerHTTP = &http.Client{
+var generatorHTTP = &http.Client{
 	Timeout: 90 * time.Second,
 	Transport: &http.Transport{
 		Proxy:               nil,
@@ -187,12 +187,12 @@ func generateAttachment(ctx context.Context, source model.GeneratorSource, gener
 	if !GeneratorOwnsPod(generator, pod) || !podReady(pod) {
 		return fmt.Errorf("generator is not ready")
 	}
-	if generator.WorkerToken == "" {
-		return fmt.Errorf("generator has no worker token")
+	if generator.GeneratorToken == "" {
+		return fmt.Errorf("generator has no token")
 	}
-	revision := worker.SourceRevision(source.SourceGeneratorPath())
+	revision := gen.SourceRevision(source.SourceGeneratorPath())
 	destination := source.SourceAttachmentCachePathForRevision(teamID, flags, revision)
-	body, err := json.Marshal(worker.Request{
+	body, err := json.Marshal(gen.Request{
 		TeamID:         teamID,
 		Flags:          flags,
 		SourceRevision: revision,
@@ -203,15 +203,15 @@ func generateAttachment(ctx context.Context, source model.GeneratorSource, gener
 	request, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		"http://"+net.JoinHostPort(pod.Status.PodIP, strconv.Itoa(worker.Port))+"/generate",
+		"http://"+net.JoinHostPort(pod.Status.PodIP, strconv.Itoa(gen.Port))+"/generate",
 		bytes.NewReader(body),
 	)
 	if err != nil {
 		return err
 	}
-	request.Header.Set("Authorization", "Bearer "+generator.WorkerToken)
+	request.Header.Set("Authorization", "Bearer "+generator.GeneratorToken)
 	request.Header.Set("Content-Type", "application/json")
-	response, err := workerHTTP.Do(request)
+	response, err := generatorHTTP.Do(request)
 	if err != nil {
 		return err
 	}

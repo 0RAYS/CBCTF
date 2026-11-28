@@ -1,15 +1,15 @@
-name: Build Worker Image
+name: Build Generator Image
 
 on:
   push:
     branches: [main]
     paths:
-      - 'worker/**'
-      - 'internal/worker/**'
+      - 'generator/**'
+      - 'internal/generator/**'
       - 'go.mod'
       - 'go.sum'
       - '.dockerignore'
-      - '.github/workflows/worker.yaml'
+      - '.github/workflows/generator.yaml'
   workflow_dispatch:
 
 concurrency:
@@ -30,7 +30,7 @@ jobs:
         id: vars
         run: |
           echo "tag=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
-          echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')-worker" >> $GITHUB_OUTPUT
+          echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')-generator" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.2.0
@@ -42,14 +42,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push worker image
+      - name: Build and push generator image
         uses: docker/build-push-action@v7.3.0
         with:
           context: .
-          file: worker/Dockerfile
+          file: generator/Dockerfile
           push: true
           tags: |
             ghcr.io/${{ steps.vars.outputs.repo }}:${{ steps.vars.outputs.tag }}
             ghcr.io/${{ steps.vars.outputs.repo }}:latest
-          cache-from: type=gha,scope=worker
-          cache-to: type=gha,scope=worker,mode=max
+          cache-from: type=gha,scope=generator
+          cache-to: type=gha,scope=generator,mode=max

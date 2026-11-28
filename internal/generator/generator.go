@@ -1,6 +1,6 @@
-// Package worker is the small, statically linked runtime injected into
+// Package generator is the small, statically linked runtime injected into
 // generator images. It has no Kubernetes, database or Redis credentials.
-package worker
+package generator
 
 import (
 	"context"
@@ -68,7 +68,7 @@ func Install(destination string) error {
 
 func Serve(token string) error {
 	if token == "" {
-		return fmt.Errorf("worker token is required")
+		return fmt.Errorf("generator token is required")
 	}
 	if err := os.MkdirAll("/root/mnt/attachments", 0700); err != nil {
 		return err
@@ -114,7 +114,7 @@ func Serve(token string) error {
 		}
 		if archiveRevision != loadedRevision {
 			if archiveRevision == "" {
-				http.Error(w, "restart worker after removing generator archive", http.StatusConflict)
+				http.Error(w, "restart generator after removing generator archive", http.StatusConflict)
 				return
 			}
 			if err := exec.CommandContext(ctx, "unzip", "-o", "/root/mnt/generator.zip", "-d", "/root").Run(); err != nil {

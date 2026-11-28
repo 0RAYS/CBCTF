@@ -1,6 +1,6 @@
 //go:build !linux
 
-package worker
+package generator
 
 import "os/exec"
 

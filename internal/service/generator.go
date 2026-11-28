@@ -56,7 +56,7 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 			continue
 		}
 		generator, ret := generatorRepo.Create(model.Generator{
-			WorkerToken:   utils.RandHexStr(64),
+			GeneratorToken: utils.RandHexStr(64),
 			Image:         source.SourceImage(),
 			ChallengeID:   source.ChallengeID,
 			ChallengeName: source.SourceName(),

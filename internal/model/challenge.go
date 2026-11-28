@@ -14,7 +14,7 @@ import (
 	netv1 "k8s.io/api/networking/v1"
 
 	"CBCTF/internal/config"
-	"CBCTF/internal/worker"
+	"CBCTF/internal/generator"
 )
 
 type ChallengeType string
@@ -55,7 +55,7 @@ type Challenge struct {
 // AttachmentCachePath Cache generations include the exact ordered team flags and source revision.
 // Old and new flags never publish to the same path, even during a reset race.
 func (c Challenge) AttachmentCachePath(teamID uint, flags []string) string {
-	return c.AttachmentCachePathForRevision(teamID, flags, worker.SourceRevision(c.GeneratorPath()))
+	return c.AttachmentCachePathForRevision(teamID, flags, generator.SourceRevision(c.GeneratorPath()))
 }
 
 func (c Challenge) AttachmentCachePathForRevision(teamID uint, flags []string, revision string) string {

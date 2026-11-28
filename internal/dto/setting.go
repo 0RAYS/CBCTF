@@ -30,7 +30,7 @@ type UpdateSettingForm struct {
 	K8SNamespace         *string              `form:"k8s_namespace" json:"k8s_namespace" binding:"omitempty,min=1,max=63"`
 	K8SCaptureImage      *string              `form:"k8s_capture" json:"k8s_capture" binding:"omitempty,min=1"`
 	K8SCaptureEnabled    *bool                `form:"k8s_capture_enabled" json:"k8s_capture_enabled"`
-	K8SWorkerImage       *string              `form:"k8s_worker_image" json:"k8s_worker_image" binding:"omitempty,min=1"`
+	K8SGeneratorImage    *string              `form:"k8s_generator_image" json:"k8s_generator_image" binding:"omitempty,min=1"`
 	K8SGeneratorPoolSize *int                 `form:"k8s_generator_pool_size" json:"k8s_generator_pool_size" binding:"omitempty,gte=0"`
 	K8SFrpOn             *bool                `form:"k8s_frp_on" json:"k8s_frp_on"`
 	K8SFrpFrpcImage      *string              `form:"k8s_frp_frpc" json:"k8s_frp_frpc" binding:"omitempty,min=1"`

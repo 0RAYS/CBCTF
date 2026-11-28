@@ -19,7 +19,7 @@ func TestSystemConfigExposesEditableSettings(t *testing.T) {
 	t.Cleanup(func() { config.Env, i18n.Bundle = previous, bundle })
 	config.Env = &config.Config{Path: t.TempDir()}
 	config.Env.K8S.CaptureEnabled = false
-	config.Env.K8S.WorkerImage = "registry.example/worker:v3"
+	config.Env.K8S.GeneratorImage = "registry.example/generator:v3"
 	config.Env.K8S.GeneratorPoolSize = 0
 	i18n.Init()
 
@@ -49,7 +49,7 @@ func TestSystemConfigExposesEditableSettings(t *testing.T) {
 	}
 	for key, want := range map[string]string{
 		"k8s_capture_enabled":     "false",
-		"k8s_worker_image":        `"registry.example/worker:v3"`,
+		"k8s_generator_image":     `"registry.example/generator:v3"`,
 		"k8s_generator_pool_size": "0",
 	} {
 		if string(response.Data[key]) != want {
@@ -60,7 +60,7 @@ func TestSystemConfigExposesEditableSettings(t *testing.T) {
 
 func TestWorkloadSettingsPreserveExplicitZeroValues(t *testing.T) {
 	var form dto.UpdateSettingForm
-	if err := json.Unmarshal([]byte(`{"k8s_capture_enabled":false,"k8s_worker_image":"worker:v1","k8s_generator_pool_size":0}`), &form); err != nil {
+	if err := json.Unmarshal([]byte(`{"k8s_capture_enabled":false,"k8s_generator_image":"generator:v1","k8s_generator_pool_size":0}`), &form); err != nil {
 		t.Fatal(err)
 	}
 	if err := binding.Validator.ValidateStruct(form); err != nil {
@@ -74,7 +74,7 @@ func TestWorkloadSettingsPreserveExplicitZeroValues(t *testing.T) {
 		t.Fatal("negative pool size accepted")
 	}
 	form.K8SGeneratorPoolSize = new(0)
-	form.K8SWorkerImage = new("")
+	form.K8SGeneratorImage = new("")
 	if err := binding.Validator.ValidateStruct(form); err == nil {
 		t.Fatal("empty worker image accepted")
 	}

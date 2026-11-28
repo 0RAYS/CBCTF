@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"CBCTF/internal/worker"
+	"CBCTF/internal/generator"
 )
 
 // GeneratorSource 生成器与附件所需的题目来源。
@@ -113,7 +113,7 @@ func (s GeneratorSourceSnapshot) SourceAttachmentPath(teamID uint) string {
 }
 
 func (s GeneratorSourceSnapshot) SourceAttachmentCachePath(teamID uint, flags []string) string {
-	return s.SourceAttachmentCachePathForRevision(teamID, flags, worker.SourceRevision(s.GeneratorFile))
+	return s.SourceAttachmentCachePathForRevision(teamID, flags, generator.SourceRevision(s.GeneratorFile))
 }
 
 func (s GeneratorSourceSnapshot) SourceAttachmentCachePathForRevision(teamID uint, flags []string, revision string) string {
