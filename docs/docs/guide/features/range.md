@@ -101,6 +101,131 @@ networks:
 
 `x-role` 取值为 `node`、`router`、`gateway`，用于拓扑图展示与角色约束：`gateway` 角色只能标在 `x-range.gateway` 指向的 service 上，声明了 `x-role` 却没有 `x-range` 的题目会被拒绝。靶场题的节点不需要暴露端口，端口由玩家网关承担。
 
+## 虚拟机节点
+
+节点可以是容器，也可以是虚拟机。声明 `x-kubevirt: true` 的 service 用 KubeVirt 起一台虚拟机，镜像需要是容器磁盘格式的 guest 系统，例如 `quay.io/kubevirt/fedora-cloud-container-disk-demo`。虚拟机节点的端口不对外暴露，出题人给它的端口声明会被忽略；选手进入虚拟机的唯一路径是经过玩家网关。
+
+guest 里的初始状态由 `x-cloudinit` 声明：
+
+| 字段 | 作用 |
+| --- | --- |
+| `users` / `groups` | guest 里的用户、用户组、sudo 权限与登录口令 |
+| `write_files` | 写进 guest 的文件，路径、内容、权限与属主 |
+| `ssh_authorized_keys` | guest 用户的公钥 |
+
+平台按出题人规划的静态地址与路由渲染 cloud-init 的 network-data：网卡按 MAC 匹配，地址与拓扑一致，到互通网段的下一跳是本网段网关。guest 里只有靶场网卡，没有集群默认路由可用，跨网段可达性完全取决于这些静态路由。
+
+写文件的属主由平台放到 cloud-init 的 `runcmd` 里用 `chown` 设置，而不是写进 `write_files`：`write-files` 在部分镜像里先于 `users-groups` 执行，那时目标用户还不存在，cloud-init 会因为改不了属主让整个模块报错，连用户都不会被创建。用户主目录同样会补一次 `chown`，避免被提前建出来的目录留在 root 名下。
+
+三层递进的完整例子：玩家从接入网段的网关进对外层跳板机，跳板机给出内网堡垒机的口令，堡垒机再给出核心机的口令，每层只在上一层拿到的网段里可达。
+
+```yaml
+x-range:
+  pool_size: 1
+  max_leased: 2
+  lease_duration: 3600
+  gateway: jump
+  access_network: access
+  routes:
+    - {from: access, to: dmz}
+    - {from: dmz, to: core}
+    - {from: core, to: vault}
+
+services:
+  jump:
+    image: nicolaka/netshoot:latest
+    x-role: gateway
+    ports:
+      - target: 22
+        published: ssh
+    networks:
+      access:
+        ipv4_address: 192.168.99.254
+
+  edge:
+    image: quay.io/kubevirt/fedora-cloud-container-disk-demo:latest
+    x-kubevirt: true
+    x-cloudinit:
+      users:
+        - name: ctf
+          groups: [sudo]
+          sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+          shell: /bin/bash
+          plain_text_passwd: edge-pass
+      write_files:
+        - path: /home/ctf/hint.txt
+          owner: ctf:ctf
+          permissions: "0644"
+          content: |
+            第二层在内网段 10.20.0.0/24,堡垒机 10.20.0.2,用户 ctf,口令 bastion-pass
+    networks:
+      dmz:
+        ipv4_address: 10.10.0.2
+        mac_address: "00:00:5e:00:02:01"
+
+  bastion:
+    image: quay.io/kubevirt/fedora-cloud-container-disk-demo:latest
+    x-kubevirt: true
+    x-cloudinit:
+      users:
+        - name: ctf
+          plain_text_passwd: bastion-pass
+      write_files:
+        - path: /home/ctf/hint.txt
+          owner: ctf:ctf
+          permissions: "0644"
+          content: |
+            核心层 10.30.0.0/24,核心机 10.30.0.2,用户 ctf,口令 vault-pass
+    networks:
+      core:
+        ipv4_address: 10.20.0.2
+        mac_address: "00:00:5e:00:03:01"
+
+  vault:
+    image: quay.io/kubevirt/fedora-cloud-container-disk-demo:latest
+    x-kubevirt: true
+    x-cloudinit:
+      users:
+        - name: ctf
+          plain_text_passwd: vault-pass
+      write_files:
+        - path: /home/ctf/asset.txt
+          owner: ctf:ctf
+          permissions: "0644"
+          content: |
+            内网核心资产:core-asset-9f3a
+    networks:
+      vault:
+        ipv4_address: 10.30.0.2
+        mac_address: "00:00:5e:00:04:01"
+
+networks:
+  access:
+    ipam:
+      config:
+        - subnet: 192.168.99.0/24
+          gateway: 192.168.99.1
+  dmz:
+    ipam:
+      config:
+        - subnet: 10.10.0.0/24
+          gateway: 10.10.0.1
+  core:
+    ipam:
+      config:
+        - subnet: 10.20.0.0/24
+          gateway: 10.20.0.1
+  vault:
+    ipam:
+      config:
+        - subnet: 10.30.0.0/24
+          gateway: 10.30.0.1
+```
+
+这份配置里 `dmz` 与 `core` 互通、`core` 与 `vault` 互通，但 `dmz` 与 `vault` 之间没有声明互通，因此两层之间只能一跳一跳地走。
+
+虚拟机起得比容器慢，实例就绪的超时按 `k8s.range.ready_timeout` 计。
+
 ## 领取与回收
 
 1. 队伍在题目页点「启动」。平台先看实例池里有没有空闲的已就绪实例，有就直接租给队伍；没有就现场启动一个。
@@ -109,6 +234,8 @@ networks:
 4. 停止或租约到期后平台销毁网关与实例，实例池补建一个新的同构实例。
 
 实例池由定时任务维护，每分钟检查一次，把就绪实例补到 `pool_size`。后台的批量开题对靶场题同样生效：平台给每队租一个实例，池里没有空闲实例就现场启动一个；靶机列表里标出「靶场」，鼠标悬停可以看到该实例的拓扑指纹，同一题目的实例指纹相同。
+
+后台「靶机」页顶部的实例池面板列出每个靶场题的池容量、已租出数量与每个实例的状态、占用队伍、租约到期时间和拓扑指纹，并提供「预热」按钮把池补齐到 `pool_size`。对应接口是 `GET /admin/contests/:contestID/ranges` 与 `POST /admin/contests/:contestID/ranges`，权限 `admin:contest_range:control`。面板只做观测与手动触发，实例的启停仍由平台调度。
 
 ## Flag 下发
 
@@ -120,6 +247,8 @@ networks:
 | `/run/range/payload/payload.json` | 凭据、环境变量与文件清单                       |
 
 Flag 的取值规则与普通题目一致：`static{}` 所有队伍相同，`leet{}` 与 `uuid{}` 每队不同。
+
+网关容器同时带着出题人在 compose 里声明的环境变量与按队伍渲染后的 Flag，同名键以渲染结果为准；环境本体里不带 Flag，因此同一题目的池实例内容完全相同。
 
 ## 网络拓扑
 
@@ -157,3 +286,5 @@ Helm 对应 `cbctf.k8s.range.node_concurrency`、`cbctf.k8s.range.ready_timeout`
 | 节点之间不通       | 检查 `x-range.routes` 是否声明了这两个网段；互通是显式声明的，不是自动的                 |
 | 实例启动失败      | 检查应用日志中的地址校验结果，静态地址没被 CNI 采纳时实例不会进入就绪态                   |
 | Flag 拿不到      | Flag 由平台下发到玩家网关，检查网关的 `/run/range/payload` 是否挂载成功                    |
+| 虚拟机节点起不来    | 查虚拟机 Pod 的 `guest-console-log` 容器日志，guest 的启动过程都在这里              |
+| guest 里用户没建出来  | 查 guest 的 `/var/log/cloud-init.log`，`config-write-files` 报错说明模块顺序与属主声明冲突 |
