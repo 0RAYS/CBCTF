@@ -2,11 +2,69 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	goredis "github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
+
+	"CBCTF/internal/log"
 )
+
+type logWriteHook struct {
+	commands []goredis.Cmder
+}
+
+func (h *logWriteHook) DialHook(next goredis.DialHook) goredis.DialHook { return next }
+func (h *logWriteHook) ProcessPipelineHook(_ goredis.ProcessPipelineHook) goredis.ProcessPipelineHook {
+	return func(_ context.Context, cmds []goredis.Cmder) error {
+		h.commands = append(h.commands, cmds...)
+		return nil
+	}
+}
+func (h *logWriteHook) ProcessHook(_ goredis.ProcessHook) goredis.ProcessHook {
+	return func(_ context.Context, _ goredis.Cmder) error { return nil }
+}
+
+func TestLogHookWritesToLevelBucket(t *testing.T) {
+	oldClient, oldLogger := RDB, log.Logger
+	client := goredis.NewClient(&goredis.Options{})
+	writer := &logWriteHook{}
+	client.AddHook(writer)
+	RDB = client
+	log.Init()
+	t.Cleanup(func() { RDB, log.Logger = oldClient, oldLogger; _ = client.Close() })
+
+	entry := logrus.NewEntry(log.Logger).WithFields(logrus.Fields{"Type": log.GinLogType})
+	entry.Level = logrus.ErrorLevel
+	entry.Message = "boom"
+	entry.Time = time.Now()
+	if err := NewLogHook(100, log.NewFormatter(true)).Fire(entry); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(writer.commands) != 2 {
+		t.Fatalf("commands = %d, want 2", len(writer.commands))
+	}
+	add := commandArgs(writer.commands[0])
+	if len(add) < 4 || add[0] != "zadd" || add[1] != "logs:error" {
+		t.Fatalf("zadd args = %v", add)
+	}
+	trim := commandArgs(writer.commands[1])
+	if len(trim) != 4 || trim[0] != "zremrangebyrank" || trim[1] != "logs:error" || trim[2] != "0" || trim[3] != "-101" {
+		t.Fatalf("trim args = %v", trim)
+	}
+}
+
+func commandArgs(cmd goredis.Cmder) []string {
+	args := cmd.Args()
+	out := make([]string, 0, len(args))
+	for _, arg := range args {
+		out = append(out, fmt.Sprint(arg))
+	}
+	return out
+}
 
 func TestLogBucketsCoverRequestedLevelAndMoreSevere(t *testing.T) {
 	for _, tc := range []struct {
