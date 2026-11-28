@@ -526,13 +526,20 @@ func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVa
 			}
 		}
 		if len(podList.Items) == 0 && vmsGone {
-			// Cache absence alone cannot prove deletion after a recent create.
-			direct, ret := listPodsDirect(ctx, labels)
-			if !ret.OK {
-				return ret
+			// The instance object can be gone while the instance still terminates.
+			vmis, err := listVMIs(ctx, labels)
+			if err != nil {
+				return model.FailRetVal(i18n.K8S.GetError, "VirtualMachineInstance", fmt.Sprintf("victim_id=%d", victim.ID), err)
 			}
-			if len(direct.Items) == 0 {
-				return model.SuccessRetVal()
+			if len(vmis) == 0 {
+				// Cache absence alone cannot prove deletion after a recent create.
+				direct, ret := listPodsDirect(ctx, labels)
+				if !ret.OK {
+					return ret
+				}
+				if len(direct.Items) == 0 {
+					return model.SuccessRetVal()
+				}
 			}
 		}
 		select {

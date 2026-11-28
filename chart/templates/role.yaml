@@ -36,3 +36,6 @@ rules:
   - apiGroups: ["kubevirt.io"]
     resources: ["virtualmachines"]
     verbs: ["create", "get", "list", "watch", "deletecollection"]
+  - apiGroups: ["kubevirt.io"]
+    resources: ["virtualmachineinstances"]
+    verbs: ["get", "list", "watch"]

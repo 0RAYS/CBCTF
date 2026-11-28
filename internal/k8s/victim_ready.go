@@ -38,6 +38,22 @@ func VictimReady(ctx context.Context, victim *model.Victim) (bool, error) {
 			if string(vm.UID) != uid || vm.DeletionTimestamp != nil {
 				return false, &StartupFailure{Err: fmt.Errorf("VM %s replaced or terminating", record.Name)}
 			}
+			vmi, err := cachedVMI(ctx, record.Name)
+			if err != nil {
+				return false, err
+			}
+			if vmi == nil {
+				return false, nil
+			}
+			expected := make([]string, 0, len(record.Spec.Networks))
+			for _, network := range record.Spec.Networks {
+				if network.Attachment.IP != "" {
+					expected = append(expected, network.Attachment.IP)
+				}
+			}
+			if !vmiInterfacesReady(vmi, expected) {
+				return false, nil
+			}
 			if !vm.Status.Ready {
 				return false, nil
 			}

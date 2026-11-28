@@ -128,6 +128,7 @@ The combined runtime permissions are:
 | `authorization.k8s.io` | `selfsubjectaccessreviews` | `create` |
 | `k8s.cni.cncf.io` | `network-attachment-definitions` | `create`, `get`, `deletecollection` |
 | `kubevirt.io` | `virtualmachines` | `create`, `get`, `list`, `watch`, `deletecollection` |
+| `kubevirt.io` | `virtualmachineinstances` | `get`, `list`, `watch` |
 | `kubeovn.io` | `subnets` | `create`, `get`, `deletecollection` |
 | `kubeovn.io` | `vpcs` | `create`, `get`, `list`, `watch`, `delete`, `deletecollection` |
 | `kubeovn.io` | `ips` | `deletecollection` |

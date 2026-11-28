@@ -93,6 +93,13 @@ func cachedObjects(ctx context.Context, kind string) (*objectCache, error) {
 				return client.List(ctx, o)
 			}
 			watchFn = client.Watch
+		case "vmis":
+			client := virtClient.KubevirtV1().VirtualMachineInstances(globalNamespace)
+			object = &virtv1.VirtualMachineInstance{}
+			list = func(ctx context.Context, o metav1.ListOptions) (runtime.Object, error) {
+				return client.List(ctx, o)
+			}
+			watchFn = client.Watch
 		case "configmaps":
 			client := kubeClient.CoreV1().ConfigMaps(globalNamespace)
 			object = &corev1.ConfigMap{}

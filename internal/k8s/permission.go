@@ -67,6 +67,10 @@ func buildPermissionChecks() []permissionCheck {
 		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "list", Namespace: ns},
 		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "watch", Namespace: ns},
 		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "deletecollection", Namespace: ns},
+		// KubeVirt: VirtualMachineInstances
+		{Group: "kubevirt.io", Resource: "virtualmachineinstances", Verb: "get", Namespace: ns},
+		{Group: "kubevirt.io", Resource: "virtualmachineinstances", Verb: "list", Namespace: ns},
+		{Group: "kubevirt.io", Resource: "virtualmachineinstances", Verb: "watch", Namespace: ns},
 		// KubeOVN: Subnets (cluster-scoped)
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "get"},
