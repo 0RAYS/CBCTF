@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -90,6 +91,23 @@ func safeGetValue[T any](entry *logrus.Entry, key string, defaultV T) T {
 	return V
 }
 
+// extraFields renders the structured fields the layout of the entry type does not consume.
+func extraFields(entry *logrus.Entry) []string {
+	keys := make([]string, 0, len(entry.Data))
+	for key := range entry.Data {
+		if key == "Type" {
+			continue
+		}
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	fields := make([]string, 0, len(keys))
+	for _, key := range keys {
+		fields = append(fields, fmt.Sprintf("%s=%v", key, entry.Data[key]))
+	}
+	return fields
+}
+
 func shortenCaller(path string) string {
 	for len(path) > 36 {
 		trimmed := strings.TrimPrefix(path, "../")
@@ -131,6 +149,9 @@ func (Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			msg = fmt.Sprintf("[%s] %s", strings.ToUpper(entry.Level.String()), entry.Message)
 		}
 		_, _ = fmt.Fprintf(ret, "%s | %s", caller, LevelColor(msg))
+		if fields := extraFields(entry); len(fields) > 0 {
+			_, _ = fmt.Fprintf(ret, " | %s", strings.Join(fields, " "))
+		}
 	case TaskLogType:
 		_, _ = fmt.Fprintf(ret, "%-36s | %s", fmt.Sprintf("Async %s Task", entry.Data["Queue"]), LevelColor(entry.Message))
 	case GinLogType:
@@ -147,6 +168,12 @@ func (Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			MethodColor(fmt.Sprintf("%-7s", safeGetValue(entry, "Method", "ERROR"))),
 			safeGetValue(entry, "Path", "/error"),
 		)
+		if entry.Message != "" {
+			_, _ = fmt.Fprintf(ret, " | %s", LevelColor(entry.Message))
+		}
+		if stack, ok := entry.Data["Stack"].(string); ok && stack != "" {
+			_, _ = fmt.Fprintf(ret, "\n%s", stack)
+		}
 	case GormLogType:
 		filepath := strings.SplitN(safeGetValue(entry, "FileWithLineNum", "/unknown/path:-1"), "/CBCTF/", 2)
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s | %s",

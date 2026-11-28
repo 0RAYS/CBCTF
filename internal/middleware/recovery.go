@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"fmt"
+	"net/http"
 	"runtime/debug"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -15,6 +17,7 @@ import (
 )
 
 func Recovery(ctx *gin.Context) {
+	start := time.Now()
 	defer func() {
 		if err := recover(); err != nil {
 			panicErr := fmt.Errorf("panic recovered: %v", err)
@@ -27,12 +30,14 @@ func Recovery(ctx *gin.Context) {
 			prometheus.HttpPanicsTotal.WithLabelValues(path).Inc()
 
 			log.Logger.WithFields(logrus.Fields{
-				"Type":     log.GinLogType,
-				"Method":   ctx.Request.Method,
-				"Path":     ctx.Request.URL.RequestURI(),
-				"ClientIP": ctx.ClientIP(),
-				"TraceID":  GetTraceID(ctx),
-				"Stack":    string(debug.Stack()),
+				"Type":       log.GinLogType,
+				"Method":     ctx.Request.Method,
+				"Path":       ctx.Request.URL.RequestURI(),
+				"ClientIP":   ctx.ClientIP(),
+				"TraceID":    GetTraceID(ctx),
+				"StatusCode": http.StatusInternalServerError,
+				"Latency":    time.Since(start),
+				"Stack":      string(debug.Stack()),
 			}).Error(panicErr)
 
 			resp.AbortJSON(ctx, model.FailRetVal(i18n.Common.UnknownError, "Request", ctx.Request.URL.Path, panicErr))
