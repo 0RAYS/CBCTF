@@ -133,6 +133,8 @@ const (
 	PermAdminVictimControl        = "admin:victim:control"
 	PermAdminContestVictimControl = "admin:contest_victim:control"
 
+	PermAdminContestRangeControl = "admin:contest_range:control"
+
 	PermAdminGeneratorControl        = "admin:generator:control"
 	PermAdminContestGeneratorControl = "admin:contest_generator:control"
 
@@ -381,6 +383,10 @@ var RoutePermissions = map[string]string{
 	"GET /admin/contests/:contestID/victims/:victimID/pods":      PermAdminContestVictimControl,
 	"GET /admin/contests/:contestID/victims/:victimID/pods/logs": PermAdminContestVictimControl,
 
+	// /admin/contests/:contestID/ranges
+	"GET /admin/contests/:contestID/ranges":  PermAdminContestRangeControl,
+	"POST /admin/contests/:contestID/ranges": PermAdminContestRangeControl,
+
 	// /admin/contests/:contestID/generators
 	"GET /admin/contests/:contestID/generators":                     PermAdminContestGeneratorControl,
 	"POST /admin/contests/:contestID/generators":                    PermAdminContestGeneratorControl,
@@ -405,6 +411,7 @@ var Permissions = []Permission{
 	{Name: PermAdminContestImagePull, Resource: "admin:contest_image", Operation: "pull", Description: "拉取比赛镜像"},
 	{Name: PermAdminContestImageDetect, Resource: "admin:contest_image", Operation: "detect", Description: "检测比赛镜像是否就绪"},
 	{Name: PermAdminContestVictimControl, Resource: "admin:contest_victim", Operation: "control", Description: "控制比赛靶机"},
+	{Name: PermAdminContestRangeControl, Resource: "admin:contest_range", Operation: "control", Description: "控制比赛靶场实例池"},
 	{Name: PermAdminContestGeneratorControl, Resource: "admin:contest_generator", Operation: "control", Description: "控制比赛生成器"},
 	{Name: PermAdminTrafficRead, Resource: "admin:traffic", Operation: "read", Description: "查看全局靶机流量"},
 	{Name: PermAdminContestTrafficRead, Resource: "admin:contest_traffic", Operation: "read", Description: "查看比赛靶机流量"},
