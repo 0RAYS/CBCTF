@@ -87,6 +87,9 @@ export function normalizeConfig(source) {
         on: fallback(source?.k8s_frp_on, fallback(source?.k8s?.frp?.on, false)),
         frps: fallback(source?.k8s_frp_frps, fallback(source?.k8s?.frp?.frps, [])),
       },
+      range: {
+        jump_image: fallback(source?.k8s_range_jump_image, fallback(source?.k8s?.range?.jump_image, '')),
+      },
     },
     cheat: {
       ip_whitelist: fallback(source?.cheat_ip_whitelist, fallback(source?.cheat?.ip_whitelist, [])),

@@ -67,6 +67,16 @@ export function K8sConfigSection({ config, updateConfig }) {
           })
         }
       />
+      <ConfigField
+        label={t('admin.system.labels.k8sRangeJumpImage')}
+        value={config.k8s.range.jump_image}
+        description={t('admin.system.hints.k8sRangeJumpImage')}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.k8s.range.jump_image = value;
+          })
+        }
+      />
       <div className="border-b border-neutral-300/20" />
 
       <div className="space-y-2">
