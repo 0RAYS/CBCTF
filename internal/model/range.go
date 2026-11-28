@@ -18,7 +18,7 @@ const (
 const DefaultRangeLeaseDuration = 2 * time.Hour
 
 // DefaultRangeJumpUser 是跳板未申明登录用户时的默认用户。
-const DefaultRangeJumpUser = "ctf"
+const DefaultRangeJumpUser = "ctfer"
 
 // RangeConfig 靶场题目的调度与接入配置。
 // PoolSize 是常驻就绪的实例数,租约结束即销毁实例并补建,不回收复用。

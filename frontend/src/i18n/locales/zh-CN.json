@@ -1677,7 +1677,7 @@
           "leaseDuration": "7200",
           "gatewayService": "网关 Service *",
           "accessNetwork": "自动",
-          "sshUser": "ctf",
+          "sshUser": "ctfer",
           "routeFrom": "起始网段",
           "routeTo": "目标网段"
         },

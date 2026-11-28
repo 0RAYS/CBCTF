@@ -1677,7 +1677,7 @@
           "leaseDuration": "7200",
           "gatewayService": "gateway service *",
           "accessNetwork": "auto",
-          "sshUser": "ctf",
+          "sshUser": "ctfer",
           "routeFrom": "from network",
           "routeTo": "to network"
         },
