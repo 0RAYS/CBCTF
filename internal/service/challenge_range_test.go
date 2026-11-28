@@ -15,6 +15,7 @@ const rangeCompose = `x-range:
   gateway: jump
   access_network: mgmt
   routes:
+    - {from: mgmt, to: internal}
     - {from: internal, to: dmz}
 services:
   jump:
@@ -66,7 +67,7 @@ func TestRangeTopologyParsesExtension(t *testing.T) {
 	if rangeConfig.LeaseDuration != 30*time.Minute {
 		t.Fatalf("lease duration: %v", rangeConfig.LeaseDuration)
 	}
-	if len(rangeConfig.Routes) != 1 || rangeConfig.Routes[0].From != "internal" || rangeConfig.Routes[0].To != "dmz" {
+	if len(rangeConfig.Routes) != 2 || rangeConfig.Routes[0].From != "mgmt" || rangeConfig.Routes[0].To != "internal" {
 		t.Fatalf("routes: %+v", rangeConfig.Routes)
 	}
 	roles := make(map[string]string)
@@ -84,8 +85,11 @@ func TestRangeTopologyRejectsInvalidDeclarations(t *testing.T) {
 		"unknown route":   strings.Replace(rangeCompose, "{from: internal, to: dmz}", "{from: internal, to: missing}", 1),
 		"self route":      strings.Replace(rangeCompose, "{from: internal, to: dmz}", "{from: internal, to: internal}", 1),
 		"role without range": strings.Replace(
-			strings.Replace(rangeCompose, "x-range:\n  pool_size: 3\n  max_leased: 10\n  lease_duration: 1800\n  gateway: jump\n  access_network: mgmt\n  routes:\n    - {from: internal, to: dmz}\n", "", 1),
+			strings.Replace(rangeCompose, "x-range:\n  pool_size: 3\n  max_leased: 10\n  lease_duration: 1800\n  gateway: jump\n  access_network: mgmt\n  routes:\n    - {from: mgmt, to: internal}\n    - {from: internal, to: dmz}\n", "", 1),
 			"x-role: router", "", 1),
+		"access network without route": strings.Replace(
+			strings.Replace(rangeCompose, "    - {from: mgmt, to: internal}\n", "", 1),
+			"access_network: mgmt", "access_network: nowhere", 1),
 	}
 	for name, compose := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -109,7 +113,7 @@ func TestRangeTopologySurvivesYamlRoundTrip(t *testing.T) {
 	if !ret.OK {
 		t.Fatalf("round trip load: %+v", ret)
 	}
-	if parsed == nil || parsed.GatewayKey != "jump" || len(parsed.Routes) != 1 {
+	if parsed == nil || parsed.GatewayKey != "jump" || len(parsed.Routes) != 2 {
 		t.Fatalf("round trip config: %+v", parsed)
 	}
 }

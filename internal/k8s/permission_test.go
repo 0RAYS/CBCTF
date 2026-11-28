@@ -67,7 +67,7 @@ func TestHelmRuntimeRBAC(t *testing.T) {
 			if custom {
 				args = append(args, "--set", "serviceAccount.create=false,serviceAccount.name=existing-sa,startupProbe.failureThreshold=90,terminationGracePeriodSeconds=180")
 				wantWorker = "registry.example/worker:v2"
-				args = append(args, "--set", "cbctf.k8s.workerImage="+wantWorker)
+				args = append(args, "--set", "cbctf.k8s.worker_image="+wantWorker)
 				account = "existing-sa"
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
