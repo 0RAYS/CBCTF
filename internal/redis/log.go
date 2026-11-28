@@ -42,6 +42,11 @@ var logLevels = []logrus.Level{
 var logSequence atomic.Uint64
 var logWriteFailures atomic.Int64
 
+// LogWriteFailures counts the log entries that could not be mirrored to Redis.
+func LogWriteFailures() int64 {
+	return logWriteFailures.Load()
+}
+
 // LogEntry carries the rendered line; the sequence and the timestamp keep the sorted
 // set members unique, a repeated member would overwrite an earlier log line.
 type LogEntry struct {

@@ -46,6 +46,7 @@ func SystemStatus(ctx *gin.Context) {
 	}
 
 	maps.Copy(ret, service.GetSystemStatus(db.DB.WithContext(ctx.Request.Context())))
+	ret["log_write_failures"] = redis.LogWriteFailures()
 	requests := middleware.TotalRequests.Load()
 	if requests == 0 {
 		ret["duration"] = 0
