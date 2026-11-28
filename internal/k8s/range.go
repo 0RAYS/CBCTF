@@ -60,8 +60,11 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 		return victim, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", cm.Name, errMissingConfigMap)
 	}
 
-	envs := make([]corev1.EnvVar, 0, len(payload.Env))
-	for key, value := range payload.Env {
+	envs := make([]corev1.EnvVar, 0, len(gateway.Environment)+len(payload.Env))
+	values := make(map[string]string, len(gateway.Environment)+len(payload.Env))
+	maps.Copy(values, gateway.Environment)
+	maps.Copy(values, payload.Env)
+	for key, value := range values {
 		envs = append(envs, corev1.EnvVar{Name: key, Value: value})
 	}
 	slices.SortFunc(envs, func(a, b corev1.EnvVar) int {
