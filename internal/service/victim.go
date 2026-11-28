@@ -404,6 +404,28 @@ func ExtendVictimDuration(tx *gorm.DB, team model.Team, challengeID uint) (model
 	return victim, model.SuccessRetVal()
 }
 
+// extendRangeLease 延长靶场实例的租约。
+func extendRangeLease(repo *db.VictimRepo, victim model.Victim) (model.Victim, model.RetVal) {
+	if victim.Status != model.RunningVictimStatus {
+		return model.Victim{}, model.FailRetVal(i18n.Model.Victim.NotExtendable, "Victim", fmt.Sprintf("victim_id=%d,status=%s", victim.ID, victim.Status), nil)
+	}
+	if !victim.LeaseExpireAt.Before(time.Now().Add(20 * time.Minute)) {
+		return model.Victim{}, model.FailRetVal(i18n.Model.Victim.HasMuchTime, "Victim", fmt.Sprintf("victim_id=%d,lease_expire_at=%s", victim.ID, victim.LeaseExpireAt), nil)
+	}
+	duration := victim.Duration + time.Hour
+	leaseExpire := victim.LeaseExpireAt.Add(time.Hour)
+	if ret := repo.Update(victim.ID, db.UpdateVictimOptions{
+		Duration:      &duration,
+		LeaseExpireAt: &leaseExpire,
+	}); !ret.OK {
+		return model.Victim{}, ret
+	}
+	victim.Duration = duration
+	victim.LeaseExpireAt = leaseExpire
+	log.Logger.Infof("Range lease extended: victim_id=%d team_id=%d challenge_id=%d lease_expire_at=%s", victim.ID, victim.TeamID.V, victim.ChallengeID, leaseExpire)
+	return victim, model.SuccessRetVal()
+}
+
 func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	if victim.Status != model.RunningVictimStatus {
 		return model.FailRetVal(i18n.Model.Victim.NotStoppable, "Victim", fmt.Sprintf("victim_id=%d,status=%s", victim.ID, victim.Status), nil)
@@ -435,12 +457,12 @@ func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	if err != nil {
 		log.Logger.Warningf(
 			"Failed to enqueue stop victim task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v",
-			victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err,
+			victim.ID, victim.UserID.V, victim.TeamID.V, victim.ChallengeID, err,
 		)
 		_ = repo.UpdateIfStatus(victim.ID, model.TerminatingVictimStatus, db.UpdateVictimOptions{Status: new(originalStatus)})
 		return model.FailRetVal(i18n.Common.UnknownError, "Victim", fmt.Sprintf("victim_id=%d", victim.ID), err)
 	}
-	log.Logger.Infof("Stop victim queued: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
+	log.Logger.Infof("Stop victim queued: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID.V, victim.TeamID.V, victim.ChallengeID)
 	return model.SuccessRetVal()
 }
 
