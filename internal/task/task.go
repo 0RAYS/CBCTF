@@ -82,6 +82,9 @@ func Init() {
 	addServer(resizeImageTaskType, config.Env.AsyncQ.Queues.Image)
 	addServer(prepullTaskType, 2)
 	addServer(imageDetectTaskType, 1)
+	addServer(startRangeTaskType, config.Env.AsyncQ.Queues.Range)
+	addServer(stopRangeTaskType, config.Env.AsyncQ.Queues.Range)
+	addServer(gatewayRangeTaskType, config.Env.AsyncQ.Queues.Range)
 
 	mux.HandleFunc(sendEmailTaskType, wrapHandler(sendEmailTaskType, HandleSendEmailTask))
 	mux.HandleFunc(startGeneratorTaskType, wrapHandler(startGeneratorTaskType, HandleStartGeneratorTask))
