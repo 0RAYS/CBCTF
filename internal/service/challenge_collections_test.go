@@ -18,7 +18,7 @@ func TestNativeVolumeCollectionKeepsComposeFlagsAndValidation(t *testing.T) {
       - path: /flag
         content: static{volume-flag}
 `
-	template, flags, ret := buildChallengeTemplate(compose)
+	template, flags, _, ret := buildChallengeTemplate(compose)
 	if !ret.OK {
 		t.Fatalf("compose load: %+v", ret)
 	}
@@ -32,7 +32,7 @@ func TestNativeVolumeCollectionKeepsComposeFlagsAndValidation(t *testing.T) {
 	if len(flags) != 1 || flags[0].Value != "static{volume-flag}" || flags[0].Binding.Type != model.FileFlagBindingType {
 		t.Fatalf("flag extension lost: %+v", flags)
 	}
-	_, _, ret = buildChallengeTemplate(compose + "      - path: /flag\n        content: duplicate\n")
+	_, _, _, ret = buildChallengeTemplate(compose + "      - path: /flag\n        content: duplicate\n")
 	if ret.OK {
 		t.Fatal("duplicate flag paths bypassed validation after collection change")
 	}

@@ -7,10 +7,13 @@ import (
 	"CBCTF/internal/model"
 )
 
-func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.ChallengeFlag) string {
+func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.ChallengeFlag, rangeConfig *model.RangeConfig) string {
 	cfg := types.Project{
 		Services: make(types.Services),
 		Networks: make(types.Networks),
+	}
+	if rangeConfig != nil {
+		cfg.Extensions = types.Extensions{model.XRangeExtension: rangeConfig.XRange()}
 	}
 
 	networks := make(map[string]model.NetworkDefinition)
@@ -62,6 +65,9 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 			extensions := make(types.Extensions)
 			if len(xVolumes) > 0 {
 				extensions[model.XVolumesExtension] = xVolumes
+			}
+			if pod.Role != "" {
+				extensions[model.XRoleExtension] = pod.Role
 			}
 			if container.KubeVirt {
 				extensions[model.XKubeVirtExtension] = true

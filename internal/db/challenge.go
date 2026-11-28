@@ -23,11 +23,13 @@ type UpdateChallengeOptions struct {
 	GeneratorImage  *string
 	NetworkPolicies *model.NetworkPolicies
 	Template        *model.ChallengeTemplate
-	ContestID       *sql.Null[uint]
-	Hidden          *bool
-	Attempt         *int64
-	Hints           *[]string
-	Tags            *[]string
+	// RangeConfig 用二级指针:nil 表示不更新,指向 nil 表示清空靶场配置。
+	RangeConfig **model.RangeConfig
+	ContestID   *sql.Null[uint]
+	Hidden      *bool
+	Attempt     *int64
+	Hints       *[]string
+	Tags        *[]string
 }
 
 func (u UpdateChallengeOptions) Convert2Map() map[string]any {
@@ -49,6 +51,9 @@ func (u UpdateChallengeOptions) Convert2Map() map[string]any {
 	}
 	if u.Template != nil {
 		options["template"] = *u.Template
+	}
+	if u.RangeConfig != nil {
+		options["range_config"] = *u.RangeConfig
 	}
 	if u.ContestID != nil {
 		options["contest_id"] = *u.ContestID

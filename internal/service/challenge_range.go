@@ -1,0 +1,118 @@
+package service
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/compose-spec/compose-go/v2/types"
+
+	"CBCTF/internal/model"
+)
+
+// rangeChallenge 判断 compose 是否声明了靶场拓扑。
+func rangeChallenge(config *types.Project) bool {
+	_, ok := config.Extensions[model.XRangeExtension].(model.XRange)
+	return ok
+}
+
+// definedNetworkNames 返回 compose 中定义的自定义网段名。
+// compose 会给网段名加上项目名前缀,作者在 x-range 里写的是不带前缀的名字。
+func definedNetworkNames(config *types.Project) map[string]struct{} {
+	names := make(map[string]struct{})
+	for _, network := range config.Networks {
+		name := strings.TrimPrefix(network.Name, config.Name+"_")
+		if name == "" || name == "default" {
+			continue
+		}
+		names[name] = struct{}{}
+	}
+	return names
+}
+
+// parseRangeTopology 解析 x-range 声明并校验拓扑约束。
+// 玩家网关是选手的唯一入口,由平台在租约时创建,不进入实例拓扑;
+// 网段互通是双向的,平台据此互相放行对方网段。
+func parseRangeTopology(config *types.Project) (*model.RangeConfig, model.RetVal) {
+	xRange, ok := config.Extensions[model.XRangeExtension].(model.XRange)
+	if !ok {
+		return nil, model.SuccessRetVal()
+	}
+	rangeConfig := xRange.RangeConfig()
+	if rangeConfig.PoolSize < 0 || rangeConfig.MaxLeased < 0 {
+		return nil, invalidComposeYamlRetVal("x-range pool_size and max_leased must not be negative")
+	}
+	if rangeConfig.LeaseDuration <= 0 {
+		rangeConfig.LeaseDuration = model.DefaultRangeLeaseDuration
+	}
+	networks := definedNetworkNames(config)
+	gateway, ok := config.Services[rangeConfig.GatewayKey]
+	if !ok {
+		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range gateway %s is not a defined service", rangeConfig.GatewayKey))
+	}
+	if len(gateway.Ports) == 0 {
+		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range gateway %s must expose at least one port", rangeConfig.GatewayKey))
+	}
+	if kubeVirt, _ := gateway.Extensions[model.XKubeVirtExtension].(bool); kubeVirt {
+		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range gateway %s must not run as a virtual machine", rangeConfig.GatewayKey))
+	}
+	if rangeConfig.AccessNetwork == "" {
+		if len(gateway.Networks) != 1 {
+			return nil, invalidComposeYamlRetVal("x-range access_network is required when the gateway has more than one network")
+		}
+		for name := range gateway.Networks {
+			rangeConfig.AccessNetwork = name
+		}
+	}
+	if _, ok := gateway.Networks[rangeConfig.AccessNetwork]; !ok {
+		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range gateway %s is not attached to access network %s", rangeConfig.GatewayKey, rangeConfig.AccessNetwork))
+	}
+	if _, ok := networks[rangeConfig.AccessNetwork]; !ok {
+		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range access network %s is not defined", rangeConfig.AccessNetwork))
+	}
+	seen := make(map[string]struct{})
+	for _, route := range rangeConfig.Routes {
+		if route.From == route.To {
+			return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range route %s to %s must connect two different networks", route.From, route.To))
+		}
+		for _, name := range []string{route.From, route.To} {
+			if _, ok := networks[name]; !ok {
+				return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range route network %s is not defined", name))
+			}
+		}
+		key := route.From + "|" + route.To
+		if _, ok := seen[key]; ok {
+			return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range route %s to %s is duplicated", route.From, route.To))
+		}
+		if _, ok := seen[route.To+"|"+route.From]; ok {
+			return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range route %s to %s is duplicated", route.From, route.To))
+		}
+		seen[key] = struct{}{}
+	}
+	for _, service := range config.Services {
+		role, _ := service.Extensions[model.XRoleExtension].(string)
+		switch role {
+		case "", model.RangeNodeRole, model.RangeRouterRole:
+		case model.RangeGatewayRole:
+			if service.Name != rangeConfig.GatewayKey {
+				return nil, invalidComposeYamlRetVal(fmt.Sprintf("service %s has the gateway role but x-range gateway is %s", service.Name, rangeConfig.GatewayKey))
+			}
+		default:
+			return nil, invalidComposeYamlRetVal(fmt.Sprintf("service %s has an unknown role %s", service.Name, role))
+		}
+	}
+	return &rangeConfig, model.SuccessRetVal()
+}
+
+// rangeRole 返回 service 在靶场拓扑中的角色。
+func rangeRole(rangeConfig *model.RangeConfig, service types.ServiceConfig) string {
+	if rangeConfig == nil {
+		return ""
+	}
+	if service.Name == rangeConfig.GatewayKey {
+		return model.RangeGatewayRole
+	}
+	if role, _ := service.Extensions[model.XRoleExtension].(string); role != "" {
+		return role
+	}
+	return model.RangeNodeRole
+}

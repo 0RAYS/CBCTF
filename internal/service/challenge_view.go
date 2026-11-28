@@ -44,7 +44,7 @@ func BuildChallengeView(tx *gorm.DB, challenge model.Challenge) view.ChallengeVi
 			})
 		}
 	} else {
-		result.DockerCompose = Template2Yaml(challenge.Template, challenge.ChallengeFlags)
+		result.DockerCompose = Template2Yaml(challenge.Template, challenge.ChallengeFlags, challenge.RangeConfig)
 	}
 
 	file, ret := sourceFileRecord(tx, challenge)

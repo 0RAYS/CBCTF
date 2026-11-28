@@ -98,6 +98,9 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 		if kubeVirt && !hasVpcNetworks {
 			return invalidComposeYamlRetVal(fmt.Sprintf("%s x-kubevirt requires VPC networks", label))
 		}
+		if _, ok := service.Extensions[model.XRoleExtension]; ok && !rangeChallenge(config) {
+			return invalidComposeYamlRetVal(fmt.Sprintf("%s x-role requires an x-range topology", label))
+		}
 		if boot, ok := service.Extensions[model.XBootExtension].(model.XBoot); ok {
 			bootloader := strings.TrimSpace(boot.Bootloader)
 			if kubeVirt && bootloader != "" && bootloader != "bios" && bootloader != "efi" {
@@ -201,30 +204,37 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 		}
 	}
 
-	if nonKubeVirtServiceCount > 0 && openPortCount == 0 {
+	// 靶场题的网络节点可以没有对外端口,选手只通过玩家网关接入。
+	if nonKubeVirtServiceCount > 0 && openPortCount == 0 && !rangeChallenge(config) {
 		return invalidComposeYamlRetVal("Container challenges must expose at least one port")
 	}
 	return model.SuccessRetVal()
 }
 
-func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []model.ChallengeFlag, model.RetVal) {
+func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []model.ChallengeFlag, *model.RangeConfig, model.RetVal) {
 	prefix := utils.RandHexStr(10)
 	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix, map[string]any{
 		model.XVolumesExtension:   []model.XVolume{},
 		model.XKubeVirtExtension:  false,
 		model.XBootExtension:      model.XBoot{},
 		model.XCloudInitExtension: model.XCloudInit{},
+		model.XRangeExtension:     model.XRange{},
+		model.XRoleExtension:      "",
 	})
 	if err != nil {
 		log.Logger.Warningf("Failed to load DockerCompose: %v", err)
-		return model.ChallengeTemplate{}, nil, model.FailRetVal(i18n.Common.UnknownError, "ChallengeTemplate", "", err)
+		return model.ChallengeTemplate{}, nil, nil, model.FailRetVal(i18n.Common.UnknownError, "ChallengeTemplate", "", err)
 	}
 	if ret := validateChallengeCompose(config); !ret.OK {
-		return model.ChallengeTemplate{}, nil, ret
+		return model.ChallengeTemplate{}, nil, nil, ret
+	}
+	rangeConfig, ret := parseRangeTopology(config)
+	if !ret.OK {
+		return model.ChallengeTemplate{}, nil, nil, ret
 	}
 	networkDefinitions, ret := parseChallengeNetworks(config.Networks, prefix+"_")
 	if !ret.OK {
-		return model.ChallengeTemplate{}, nil, ret
+		return model.ChallengeTemplate{}, nil, nil, ret
 	}
 
 	template := model.ChallengeTemplate{
@@ -237,7 +247,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 			name = app.ContainerName
 		}
 		if app.Image == "" {
-			return model.ChallengeTemplate{}, nil, model.FailRetVal(i18n.Model.Challenge.EmptyImage, "Challenge", "service="+name, nil)
+			return model.ChallengeTemplate{}, nil, nil, model.FailRetVal(i18n.Model.Challenge.EmptyImage, "Challenge", "service="+name, nil)
 		}
 		containerKey := strings.ToLower(name)
 		podKey := containerKey
@@ -262,7 +272,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 		}
 		networks, ret := buildChallengeNetworks(app.Networks, networkDefinitions)
 		if !ret.OK {
-			return model.ChallengeTemplate{}, nil, ret
+			return model.ChallengeTemplate{}, nil, nil, ret
 		}
 		containerTemplate := model.ChallengeContainerTemplate{
 			Key:         containerKey,
@@ -320,6 +330,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 		template.Pods = append(template.Pods, model.ChallengePodTemplate{
 			Key:          podKey,
 			Name:         name,
+			Role:         rangeRole(rangeConfig, app),
 			ServicePorts: append(model.Exposes(nil), ports...),
 			Networks:     networks,
 			Containers:   []model.ChallengeContainerTemplate{containerTemplate},
@@ -338,7 +349,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 			}
 		}
 	}
-	return template, flagOptions, model.SuccessRetVal()
+	return template, flagOptions, rangeConfig, model.SuccessRetVal()
 }
 
 func parseChallengeNetworks(networks types.Networks, prefix string) (map[string]model.NetworkDefinition, model.RetVal) {
@@ -452,11 +463,12 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 		}
 		var podFlagOptions []model.ChallengeFlag
 		if form.Type == model.PodsChallengeType {
-			template, flags, ret := buildChallengeTemplate(form.DockerCompose)
+			template, flags, rangeConfig, ret := buildChallengeTemplate(form.DockerCompose)
 			if !ret.OK {
 				return ret
 			}
 			options.Template = template
+			options.RangeConfig = rangeConfig
 			podFlagOptions = flags
 		}
 		challenge, ret := challengeRepo.Create(options)
@@ -542,7 +554,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 			})
 		case model.PodsChallengeType:
 			if form.DockerCompose != nil {
-				template, flags, ret := buildChallengeTemplate(*form.DockerCompose)
+				template, flags, rangeConfig, ret := buildChallengeTemplate(*form.DockerCompose)
 				if !ret.OK {
 					return ret
 				}
@@ -552,6 +564,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 					Category:        form.Category,
 					NetworkPolicies: form.NetworkPolicies,
 					Template:        &template,
+					RangeConfig:     &rangeConfig,
 					Hidden:          form.Hidden,
 					Attempt:         form.Attempt,
 					Hints:           form.Hints,

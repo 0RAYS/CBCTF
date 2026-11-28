@@ -14,6 +14,9 @@ const (
 	RangeGatewayRole = "gateway"
 )
 
+// DefaultRangeLeaseDuration 是作者未声明租约时长时的默认值。
+const DefaultRangeLeaseDuration = 2 * time.Hour
+
 // RangeConfig 靶场题目的调度与接入配置。
 // PoolSize 是常驻就绪的实例数,租约结束即销毁实例并补建,不回收复用。
 type RangeConfig struct {
@@ -36,6 +39,21 @@ type GatewayPayload struct {
 	Credentials string            `json:"credentials"`
 	Files       map[string]string `json:"files"`
 	Env         map[string]string `json:"env"`
+}
+
+// XRange 转换回 compose 声明,保证题目 YAML 往返不丢字段。
+func (c RangeConfig) XRange() XRange {
+	xRange := XRange{
+		PoolSize:      c.PoolSize,
+		MaxLeased:     c.MaxLeased,
+		LeaseDuration: int(c.LeaseDuration / time.Second),
+		Gateway:       c.GatewayKey,
+		AccessNetwork: c.AccessNetwork,
+	}
+	for _, route := range c.Routes {
+		xRange.Routes = append(xRange.Routes, XRangeRoute{From: route.From, To: route.To})
+	}
+	return xRange
 }
 
 // RoutedNetworks 返回与给定网段互通的网段名,互通关系是双向的。

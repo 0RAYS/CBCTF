@@ -235,6 +235,7 @@ func (t ChallengeTemplate) DeepCopy() ChallengeTemplate {
 		pods = append(pods, ChallengePodTemplate{
 			Key:          pod.Key,
 			Name:         pod.Name,
+			Role:         pod.Role,
 			ServicePorts: pod.ServicePorts.DeepCopy(),
 			Networks:     pod.Networks.DeepCopy(),
 			Containers:   copyChallengeContainers(pod.Containers),
