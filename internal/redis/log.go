@@ -222,19 +222,18 @@ func mergeLogEntries(cmds []*redis.ZSliceCmd) []logEntryRef {
 	return entries
 }
 
-// logBuckets returns the buckets holding the requested level and the more severe ones.
+// logBuckets returns the bucket holding the requested level. An empty or
+// unknown level selects every bucket.
 func logBuckets(level string) []string {
-	weight, ok := parseLogLevel(level)
+	parsed, ok := parseLogLevel(level)
 	if !ok {
-		weight = logrus.TraceLevel
-	}
-	buckets := make([]string, 0, len(logLevels))
-	for _, l := range logLevels {
-		if l <= weight {
+		buckets := make([]string, 0, len(logLevels))
+		for _, l := range logLevels {
 			buckets = append(buckets, logKeyPrefix+l.String())
 		}
+		return buckets
 	}
-	return buckets
+	return []string{logKeyPrefix + parsed.String()}
 }
 
 func parseLogLevel(level string) (logrus.Level, bool) {

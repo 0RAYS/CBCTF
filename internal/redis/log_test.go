@@ -111,18 +111,20 @@ func TestDedupeLogEntriesDropsRepeatedLines(t *testing.T) {
 	}
 }
 
-func TestLogBucketsCoverRequestedLevelAndMoreSevere(t *testing.T) {
+func TestLogBucketsSelectRequestedLevelOnly(t *testing.T) {
 	for _, tc := range []struct {
 		level string
 		want  []string
 	}{
 		{level: "PANIC", want: []string{"logs:panic"}},
-		{level: "FATAL", want: []string{"logs:panic", "logs:fatal"}},
-		{level: "ERROR", want: []string{"logs:panic", "logs:fatal", "logs:error"}},
-		{level: "WARNING", want: []string{"logs:panic", "logs:fatal", "logs:error", "logs:warning"}},
-		{level: "INFO", want: []string{"logs:panic", "logs:fatal", "logs:error", "logs:warning", "logs:info"}},
-		{level: "DEBUG", want: []string{"logs:panic", "logs:fatal", "logs:error", "logs:warning", "logs:info", "logs:debug"}},
+		{level: "FATAL", want: []string{"logs:fatal"}},
+		{level: "ERROR", want: []string{"logs:error"}},
+		{level: "WARNING", want: []string{"logs:warning"}},
+		{level: "INFO", want: []string{"logs:info"}},
+		{level: "DEBUG", want: []string{"logs:debug"}},
+		{level: "TRACE", want: []string{"logs:trace"}},
 		{level: "", want: []string{"logs:panic", "logs:fatal", "logs:error", "logs:warning", "logs:info", "logs:debug", "logs:trace"}},
+		{level: "nonsense", want: []string{"logs:panic", "logs:fatal", "logs:error", "logs:warning", "logs:info", "logs:debug", "logs:trace"}},
 	} {
 		got := logBuckets(tc.level)
 		if len(got) != len(tc.want) {
