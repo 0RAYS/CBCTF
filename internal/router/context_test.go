@@ -27,8 +27,8 @@ type cancelledRequestHook struct {
 	observed bool
 }
 
-func (h *cancelledRequestHook) ProcessHook(_ goredis.ProcessHook) goredis.ProcessHook {
-	return func(ctx context.Context, _ goredis.Cmder) error {
+func (h *cancelledRequestHook) ProcessPipelineHook(_ goredis.ProcessPipelineHook) goredis.ProcessPipelineHook {
+	return func(ctx context.Context, _ []goredis.Cmder) error {
 		h.observed = errors.Is(ctx.Err(), context.Canceled)
 		return ctx.Err()
 	}

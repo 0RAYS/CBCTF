@@ -31,8 +31,12 @@ func Init() {
 		log.Logger.Fatalf("Failed to connect to Redis: %s", err)
 	}
 	log.Logger.Infof("Connected to Redis: %s", addr)
-	// Mirror all logs to Redis list after a successful connection
-	log.Logger.AddHook(NewLogHook(5000, log.NewFormatter(true)))
+	// The per-level sorted sets replace the legacy single log list.
+	if err := RDB.Del(ctx, legacyLogKey).Err(); err != nil {
+		log.Logger.Warningf("Failed to drop legacy log list: %s", err)
+	}
+	// Mirror all logs to Redis after a successful connection
+	log.Logger.AddHook(NewLogHook(logBucketLimit, log.NewFormatter(true)))
 }
 
 func Stop() {

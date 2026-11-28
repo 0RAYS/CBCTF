@@ -27,14 +27,29 @@ func (systemLogsRedisHook) DialHook(next goredis.DialHook) goredis.DialHook {
 	return next
 }
 
-func (systemLogsRedisHook) ProcessPipelineHook(next goredis.ProcessPipelineHook) goredis.ProcessPipelineHook {
-	return next
+// The logs live in one sorted set per level, so the mock fills the first bucket only.
+func (h systemLogsRedisHook) ProcessPipelineHook(_ goredis.ProcessPipelineHook) goredis.ProcessPipelineHook {
+	return func(_ context.Context, cmds []goredis.Cmder) error {
+		for i, cmd := range cmds {
+			slice, ok := cmd.(*goredis.ZSliceCmd)
+			if !ok {
+				continue
+			}
+			values := make([]goredis.Z, 0, len(h.lines))
+			if i == 0 {
+				for j, line := range h.lines {
+					values = append(values, goredis.Z{Score: float64(len(h.lines) - j), Member: line})
+				}
+			}
+			slice.SetVal(values)
+		}
+		return h.err
+	}
 }
 
-func (h systemLogsRedisHook) ProcessHook(_ goredis.ProcessHook) goredis.ProcessHook {
-	return func(_ context.Context, cmd goredis.Cmder) error {
-		cmd.(*goredis.StringSliceCmd).SetVal(h.lines)
-		return h.err
+func (systemLogsRedisHook) ProcessHook(_ goredis.ProcessHook) goredis.ProcessHook {
+	return func(_ context.Context, _ goredis.Cmder) error {
+		return errors.New("unexpected single command")
 	}
 }
 
