@@ -93,10 +93,6 @@ cbctf:
   # Public URL of the platform (used in emails, links, etc.)
   host: "http://cbctf.local"
 
-  log:
-    # Application log level: DEBUG / INFO / WARNING / ERROR
-    level: info
-
   gin:
     mode: release   # debug / release / test
     host: "0.0.0.0"

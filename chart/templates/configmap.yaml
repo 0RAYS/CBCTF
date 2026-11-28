@@ -10,9 +10,6 @@ data:
     host: {{ .Values.cbctf.host | quote }}
     path: /app/data
 
-    log:
-      level: {{ .Values.cbctf.log.level | quote }}
-
     asynq:
       log:
         level: {{ .Values.cbctf.asynq.log.level | quote }}

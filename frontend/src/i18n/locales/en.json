@@ -2311,7 +2311,6 @@
       "labels": {
         "host": "External Host",
         "path": "Data Path",
-        "logLevel": "Application Log Level",
         "geocity_db": "GeoCityDB Database",
         "workerLog": "Task Queue Log Level",
         "victimConcurrency": "Victim Task Concurrency",

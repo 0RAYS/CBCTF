@@ -2311,7 +2311,6 @@
       "labels": {
         "host": "外部访问地址",
         "path": "数据路径",
-        "logLevel": "应用日志级别",
         "geocity_db": "GeoCityDB 数据库",
         "workerLog": "任务队列日志级别",
         "victimConcurrency": "Victim 任务并发数",

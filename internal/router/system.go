@@ -87,8 +87,6 @@ func SystemConfig(ctx *gin.Context) {
 		"host": config.Env.Host,
 		"path": config.Env.Path,
 
-		"log_level": config.Env.Log.Level,
-
 		"asyncq_log_level":              config.Env.AsyncQ.Log.Level,
 		"asyncq_victim_concurrency":     config.Env.AsyncQ.Queues.Victim,
 		"asyncq_traffic_concurrency":    config.Env.AsyncQ.Queues.Traffic,

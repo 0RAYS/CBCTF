@@ -2,6 +2,9 @@
 
 const fallback = (value, defaultValue) => (value !== undefined && value !== null ? value : defaultValue);
 
+// The backend stores log levels in lower case, the selects expect upper case.
+const upperLevel = (value) => (typeof value === 'string' ? value.toUpperCase() : value);
+
 export function normalizeConfig(source) {
   if (!source) {
     return null;
@@ -9,12 +12,9 @@ export function normalizeConfig(source) {
   return {
     host: fallback(source?.host, ''),
     path: fallback(source?.path, ''),
-    log: {
-      level: fallback(source?.log_level, fallback(source?.log?.level, '')),
-    },
     asyncq: {
       log: {
-        level: fallback(source?.asyncq_log_level, fallback(source?.asynq?.log?.level, '')),
+        level: upperLevel(fallback(source?.asyncq_log_level, fallback(source?.asynq?.log?.level, ''))),
       },
       queues: {
         victim: fallback(source?.asyncq_victim_concurrency, fallback(source?.asynq?.queues?.victim, 0)),

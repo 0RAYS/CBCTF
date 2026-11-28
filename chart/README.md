@@ -93,7 +93,7 @@ before the upgrade, the Bitnami chart starts from an empty data directory.
 - Disabling the bundled PostgreSQL's persistence uses `emptyDir`; so does `valkey.persistence.enabled: false` together with an empty `valkey.persistence.size`. Their data is lost on Pod replacement.
 - `persistence.existingClaim` must exist in the release namespace. The application and runtime workloads now use the same claim; deploy a matching backend image with this chart.
 - `imagePullSecrets` / `imageCredentials` apply to the chart-managed application Pod. The bundled Valkey and PostgreSQL are rendered by their upstream charts and read `valkey.imagePullSecrets` (plus `valkey.global.*`) and `postgres.global.imagePullSecrets` instead. The runtime workloads the backend creates — victims, generators, FRPC pods and the image jobs — run under the ServiceAccount `cbctf.runtimeServiceAccountName` (`<release>-cbctf-runtime` by default), which carries the same pull secrets and mounts no token. Partial `imageCredentials` fail the render instead of leaving the workloads without credentials.
-- The removed `cbctf.log.level` / `cbctf.log.save` values had no effect on the current backend. Collect container output for persistent application logs.
+- The `cbctf.log.level` / `cbctf.log.save` values are gone; the application always records at `DEBUG` and the admin log page filters by level. Collect container output for persistent application logs.
 - Changing `postgres.auth.password` does not change the password inside an already initialized PostgreSQL data directory.
 
 `cbctf.gin.pprof.whitelist` controls the IP/CIDR sources allowed to access `/debug/pprof/*`. Keep it limited to loopback or trusted operator networks in production.

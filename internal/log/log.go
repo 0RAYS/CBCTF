@@ -2,7 +2,6 @@ package log
 
 import (
 	"os"
-	"strings"
 
 	"github.com/mattn/go-isatty"
 	"github.com/sirupsen/logrus"
@@ -21,16 +20,8 @@ func Init() {
 	Logger = logrus.New()
 	Logger.SetReportCaller(true)
 	Logger.SetFormatter(NewFormatter(isTerminal(os.Stderr)))
-	Logger.SetLevel(logrus.InfoLevel)
-}
-
-// SetLevel applies the configured application log level, keeping Info for unknown values.
-func SetLevel(level string) {
-	parsed, err := logrus.ParseLevel(strings.ToLower(strings.TrimSpace(level)))
-	if err != nil {
-		parsed = logrus.InfoLevel
-	}
-	Logger.SetLevel(parsed)
+	// The admin log page filters by level, so every level has to reach the mirror.
+	Logger.SetLevel(logrus.DebugLevel)
 }
 
 // isTerminal keeps ANSI colors out of redirected output such as files and log collectors.

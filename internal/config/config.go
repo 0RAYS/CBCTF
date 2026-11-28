@@ -48,9 +48,6 @@ type Config struct {
 	} `mapstructure:"redis" json:"redis"`
 	Host string `mapstructure:"host" json:"host"`
 	Path string `mapstructure:"path" json:"path"`
-	Log  struct {
-		Level string `mapstructure:"level" json:"level"`
-	} `mapstructure:"log" json:"log"`
 	Gin  struct {
 		Mode   string `mapstructure:"mode" json:"mode"`
 		Host   string `mapstructure:"host" json:"host"`
