@@ -60,26 +60,31 @@ func Init() {
 	default:
 		level = log.Silent
 	}
+	gormConfig := log.Config{
+		SlowThreshold:             slowQueryThreshold(),
+		LogLevel:                  level,
+		IgnoreRecordNotFoundError: true,
+	}
 
-	DB = openPostgresPool("http", config.Env.Gorm.Postgres.MaxOpenConns, config.Env.Gorm.Postgres.MaxIdleConns, level)
+	DB = openPostgresPool("http", config.Env.Gorm.Postgres.MaxOpenConns, config.Env.Gorm.Postgres.MaxIdleConns, gormConfig)
 	HTTPDB = DB
 	TaskDB = openPostgresPool(
 		"task",
 		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxOpenConns, 4),
 		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxIdleConns, 4),
-		level,
+		gormConfig,
 	)
 	WorkloadLockDB = openPostgresPool(
 		"workload-lock",
 		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxOpenConns, 4),
 		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxIdleConns, 4),
-		level,
+		gormConfig,
 	)
 	CronDB = openPostgresPool(
 		"cron",
 		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxOpenConns, 10),
 		backgroundPoolLimit(config.Env.Gorm.Postgres.MaxIdleConns, 10),
-		level,
+		gormConfig,
 	)
 
 	if err := DB.Exec(`CREATE EXTENSION IF NOT EXISTS pg_trgm`).Error; err != nil {
@@ -141,7 +146,7 @@ func Init() {
 	}
 }
 
-func openPostgresPool(name string, maxOpenConns, maxIdleConns int, level log.Level) *gorm.DB {
+func openPostgresPool(name string, maxOpenConns, maxIdleConns int, gormConfig log.Config) *gorm.DB {
 	sslMode := "disable"
 	if config.Env.Gorm.Postgres.SSLMode {
 		sslMode = "require"
@@ -160,7 +165,7 @@ func openPostgresPool(name string, maxOpenConns, maxIdleConns int, level log.Lev
 		name, config.Env.Gorm.Postgres.Host, config.Env.Gorm.Postgres.Port, maxOpenConns, maxIdleConns,
 	)
 	pool, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: log.NewGormLogger(level),
+		Logger: log.NewGormLogger(gormConfig),
 	})
 	if err != nil {
 		log.Logger.Fatalf("Failed to connect database pool %q: %s", name, err)
@@ -177,6 +182,15 @@ func openPostgresPool(name string, maxOpenConns, maxIdleConns int, level log.Lev
 	sqlDB.SetConnMaxIdleTime(time.Hour)
 	sqlDB.SetConnMaxLifetime(24 * time.Hour)
 	return pool
+}
+
+// slowQueryThreshold reads the configured threshold, keeping the default for unset or invalid values.
+func slowQueryThreshold() time.Duration {
+	threshold, err := time.ParseDuration(config.Env.Gorm.Log.SlowThreshold)
+	if err != nil || threshold <= 0 {
+		return 500 * time.Millisecond
+	}
+	return threshold
 }
 
 func backgroundPoolLimit(limit, divisor int) int {

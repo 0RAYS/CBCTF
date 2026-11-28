@@ -37,6 +37,7 @@ export function BasicConfigSection({ config, updateConfig, onUploadGeoCityDB, is
         }
       />
       <ConfigField label={t('admin.system.labels.path')} value={config.path} disabled />
+      <ConfigField label={t('admin.system.labels.logLevel')} value={config.log.level} disabled />
       <div className="space-y-2">
         <ConfigField label={t('admin.system.labels.geocity_db')} value={config.geocity_db} />
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

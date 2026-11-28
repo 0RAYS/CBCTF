@@ -9,6 +9,9 @@ export function normalizeConfig(source) {
   return {
     host: fallback(source?.host, ''),
     path: fallback(source?.path, ''),
+    log: {
+      level: fallback(source?.log_level, fallback(source?.log?.level, '')),
+    },
     asyncq: {
       log: {
         level: fallback(source?.asyncq_log_level, fallback(source?.asynq?.log?.level, '')),
@@ -54,6 +57,7 @@ export function normalizeConfig(source) {
     gorm: {
       log: {
         level: fallback(source?.gorm_log_level, fallback(source?.gorm?.log?.level, '')),
+        slow_threshold: fallback(source?.gorm_slow_threshold, fallback(source?.gorm?.log?.slow_threshold, '')),
       },
       postgres: {
         host: fallback(source?.gorm_postgres_host, fallback(source?.gorm?.postgres?.host, '')),

@@ -2311,6 +2311,7 @@
       "labels": {
         "host": "External Host",
         "path": "Data Path",
+        "logLevel": "Application Log Level",
         "geocity_db": "GeoCityDB Database",
         "workerLog": "Task Queue Log Level",
         "victimConcurrency": "Victim Task Concurrency",
@@ -2341,6 +2342,7 @@
         "dbIdle": "Max Idle Connections",
         "dbOpen": "Max Open Connections",
         "dbLogLevel": "DB Log Level",
+        "dbSlowThreshold": "Slow Query Threshold",
         "redisHost": "Valkey Host",
         "redisPort": "Valkey Port",
         "redisPassword": "Password",

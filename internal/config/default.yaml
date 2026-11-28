@@ -65,6 +65,8 @@ gorm:
   log:
     # INFO WARNING ERROR SILENT
     level: silent
+    # Slow query threshold
+    slow_threshold: 500ms
 redis:
   host: 127.0.0.1
   port: 6379

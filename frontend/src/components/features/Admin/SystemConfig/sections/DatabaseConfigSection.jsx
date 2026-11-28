@@ -18,6 +18,7 @@ export function DatabaseConfigSection({ config }) {
       <ConfigField label={t('admin.system.labels.dbIdle')} type="number" value={postgres.mxidle} disabled />
       <ConfigField label={t('admin.system.labels.dbOpen')} type="number" value={postgres.mxopen} disabled />
       <ConfigField label={t('admin.system.labels.dbLogLevel')} value={config.gorm.log.level} disabled />
+      <ConfigField label={t('admin.system.labels.dbSlowThreshold')} value={config.gorm.log.slow_threshold} disabled />
     </ConfigSection>
   );
 }

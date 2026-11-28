@@ -31,18 +31,12 @@ type Config struct {
 	LogLevel                  Level
 }
 
-func NewGormLogger(level Level) gormLogger.Interface {
+func NewGormLogger(config Config) gormLogger.Interface {
 	const (
 		infoStr = "%s\n[info] "
 		warnStr = "%s\n[warn] "
 		errStr  = "%s\n[error] "
 	)
-
-	config := Config{
-		SlowThreshold:             500 * time.Millisecond,
-		LogLevel:                  level,
-		IgnoreRecordNotFoundError: true,
-	}
 
 	return &gormTraceLogger{
 		Entry:   Logger.WithField("Type", GormLogType),

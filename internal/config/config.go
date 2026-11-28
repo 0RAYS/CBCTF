@@ -37,7 +37,8 @@ type Config struct {
 			MaxIdleConns int    `mapstructure:"mxidle" json:"mxidle"`
 		} `mapstructure:"postgres" json:"postgres"`
 		Log struct {
-			Level string `mapstructure:"level" json:"level"`
+			Level         string `mapstructure:"level" json:"level"`
+			SlowThreshold string `mapstructure:"slow_threshold" json:"slow_threshold"`
 		} `mapstructure:"log" json:"log"`
 	} `mapstructure:"gorm" json:"gorm"`
 	Redis struct {
