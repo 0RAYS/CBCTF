@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"gorm.io/gorm"
+
 	corev1 "k8s.io/api/core/v1"
 
 	"CBCTF/internal/db"
@@ -15,6 +17,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/service"
+	"CBCTF/internal/task"
 )
 
 // closeTimeoutVictimsTask 关闭超时的靶机
@@ -53,7 +56,37 @@ func closeTimeoutVictimsTask() model.RetVal {
 			batch.Skip(key, "not_expired")
 		}
 	}
+	if ret = requeueStuckVictims(root, batch); !ret.OK {
+		return ret
+	}
 	return batch.Result(ctx)
+}
+
+// stuckVictimGrace 是实例卡在 terminating 之后重新投递停止任务的等待时间。
+// 停止任务重试耗尽实例就会一直卡住,资源留在集群里,这里兜底重投。
+const stuckVictimGrace = 5 * time.Minute
+
+// requeueStuckVictims 重新投递卡在 terminating 的实例的停止任务。
+func requeueStuckVictims(root *gorm.DB, batch *model.BatchResult) model.RetVal {
+	victims, _, ret := db.InitVictimRepo(root).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"status": model.TerminatingVictimStatus},
+	})
+	if !ret.OK {
+		return ret
+	}
+	for _, victim := range victims {
+		if time.Since(victim.UpdatedAt) < stuckVictimGrace {
+			continue
+		}
+		key := fmt.Sprint(victim.ID)
+		if err := task.EnqueueStopVictimTask(victim); err != nil {
+			batch.Fail(key, "requeue", model.FailRetVal(i18n.Task.EnqueueError, "Victim", key, err))
+			continue
+		}
+		batch.Success(key, "requeued")
+		log.Logger.Infof("Stuck victim stop requeued: victim_id=%d team_id=%d challenge_id=%d", victim.ID, victim.TeamID.V, victim.ChallengeID)
+	}
+	return model.SuccessRetVal()
 }
 
 // closeUnCtrlVictimsTask 关闭数据库中记录关闭, 但仍在运行的靶机
