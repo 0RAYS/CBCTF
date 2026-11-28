@@ -17,12 +17,12 @@ const (
 // RangeConfig 靶场题目的调度与接入配置。
 // PoolSize 是常驻就绪的实例数,租约结束即销毁实例并补建,不回收复用。
 type RangeConfig struct {
-	PoolSize       int          `json:"pool_size"`
-	MaxLeased      int          `json:"max_leased"`
-	LeaseDuration  time.Duration `json:"lease_duration"`
-	GatewayKey     string       `json:"gateway"`
-	AccessNetwork  string       `json:"access_network"`
-	Routes         []RouteLink  `json:"routes"`
+	PoolSize      int           `json:"pool_size"`
+	MaxLeased     int           `json:"max_leased"`
+	LeaseDuration time.Duration `json:"lease_duration"`
+	GatewayKey    string        `json:"gateway"`
+	AccessNetwork string        `json:"access_network"`
+	Routes        []RouteLink   `json:"routes"`
 }
 
 // RouteLink 声明两个网段之间三层互通,平台据此互相放行对方网段。
