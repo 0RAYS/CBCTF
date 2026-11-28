@@ -102,9 +102,9 @@ image:
 
 cbctf:
   k8s:
-    captureEnabled: false
-    workerImage: ghcr.io/0rays/cbctf-worker:your-worker-tag
-    generatorPoolSize: 4
+    capture_enabled: false
+    worker_image: ghcr.io/0rays/cbctf-worker:your-worker-tag
+    generator_pool_size: 4
   asynq:
     queues:
       victim: 8
@@ -112,6 +112,6 @@ cbctf:
       attachment: 32
 ```
 
-Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
+Chart 将 `cbctf.k8s.worker_image` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
 
 开赛前建议按预计并发启动一批测试实例，检查镜像拉取、附件耗时和资源占用，再确定池容量与队列并发。

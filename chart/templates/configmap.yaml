@@ -59,7 +59,7 @@ data:
         mxidle: {{ .Values.cbctf.gorm.postgres.mxidle }}
       log:
         level: {{ .Values.cbctf.gorm.log.level | quote }}
-        slow_threshold: {{ .Values.cbctf.gorm.log.slowThreshold | quote }}
+        slow_threshold: {{ .Values.cbctf.gorm.log.slow_threshold | quote }}
 
     # The backend still names this section `redis`; the chart only supplies the
     # connection details, from the bundled Valkey or from valkey.externalHost.
@@ -72,9 +72,9 @@ data:
       namespace: {{ .Release.Namespace | quote }}
       shared_volume_claim: {{ default (printf "%s-shared-volume" .Release.Namespace) .Values.persistence.existingClaim | quote }}
       capture: {{ .Values.cbctf.k8s.capture | quote }}
-      capture_enabled: {{ .Values.cbctf.k8s.captureEnabled }}
-      worker_image: {{ .Values.cbctf.k8s.workerImage | quote }}
-      generator_pool_size: {{ .Values.cbctf.k8s.generatorPoolSize }}
+      capture_enabled: {{ .Values.cbctf.k8s.capture_enabled }}
+      worker_image: {{ .Values.cbctf.k8s.worker_image | quote }}
+      generator_pool_size: {{ .Values.cbctf.k8s.generator_pool_size }}
       service_account: {{ include "cbctf.runtimeServiceAccountName" . | quote }}
       frp:
         on: {{ .Values.cbctf.k8s.frp.on }}

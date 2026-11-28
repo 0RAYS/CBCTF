@@ -159,16 +159,16 @@ cbctf:
     log:
       level: warning   # INFO / WARNING / ERROR / SILENT
       # Slow query threshold
-      slowThreshold: 500ms
+      slow_threshold: 500ms
 
   k8s:
     capture: "ghcr.io/domcyrus/rustnet:latest"
-    captureEnabled: true
-    workerImage: "ghcr.io/0rays/cbctf-worker:latest"
-    generatorPoolSize: 2
+    capture_enabled: true
+    worker_image: "ghcr.io/0rays/cbctf-worker:latest"
+    generator_pool_size: 2
     # ServiceAccount of the runtime workloads, it carries the pull secrets of
     # the private registries. Empty uses {fullname}-runtime.
-    serviceAccount: ""
+    service_account: ""
     frp:
       "on": false
       frpc: "ghcr.io/fatedier/frpc:v0.69.0"

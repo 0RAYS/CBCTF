@@ -65,7 +65,7 @@ ServiceAccount of the runtime workloads; it carries the pull secrets of the
 private registries.
 */}}
 {{- define "cbctf.runtimeServiceAccountName" -}}
-{{- default (printf "%s-runtime" (include "cbctf.fullname" .)) .Values.cbctf.k8s.serviceAccount -}}
+{{- default (printf "%s-runtime" (include "cbctf.fullname" .)) .Values.cbctf.k8s.service_account -}}
 {{- end }}
 
 {{/*

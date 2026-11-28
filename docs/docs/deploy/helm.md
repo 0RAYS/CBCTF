@@ -39,7 +39,7 @@ helm upgrade --install cbctf cbctf/cbctf -n cbctf --create-namespace -f values.y
 ```
 
 :::info
-本文与仓库 Chart `0.0.39` 对应。使用仓库代码时可将命令中的 `cbctf/cbctf` 换成 `./chart`；新配置能力需要匹配版本的后端镜像。
+本文与仓库 Chart `0.0.41` 对应。使用仓库代码时可将命令中的 `cbctf/cbctf` 换成 `./chart`；新配置能力需要匹配版本的后端镜像。
 
 运行时设置首次写入数据库后，以数据库为准。修改 values 中的 `host`、JWT、注册、上传限制或 Kubernetes 运行参数再升级，并不会覆盖已经保存的设置；请到「系统管理」修改并按需重启。参见[配置来源与生效时机](./settings)。
 :::
@@ -95,7 +95,7 @@ helm uninstall cbctf -n cbctf
 |------------------------------------|-----------------------------|---------------------------|
 | `cbctf.host`                       | 平台公开访问地址，不要带尾部 `/`          | `https://ctf.example.com` |
 | `cbctf.log.level`                  | 应用日志级别                     | `info`                    |
-| `cbctf.gorm.log.slowThreshold`     | 慢查询阈值                      | `500ms`                   |
+| `cbctf.gorm.log.slow_threshold`    | 慢查询阈值                      | `500ms`                   |
 | `cbctf.gin.mode`                   | Gin 运行模式                    | `release`                 |
 | `cbctf.gin.host`                   | 容器内监听地址                     | `0.0.0.0`                 |
 | `cbctf.gin.port`                   | 容器内监听端口                     | `8000`                    |
@@ -207,10 +207,10 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 |-------------------------|-----------------------|-----------------------------------|
 | `serviceAccount.create` | 是否创建应用 ServiceAccount | `true`                            |
 | `cbctf.k8s.capture`     | 流量捕获镜像                | `ghcr.io/domcyrus/rustnet:latest` |
-| `cbctf.k8s.captureEnabled` | 是否开启抓包容器 | `true` |
-| `cbctf.k8s.workerImage` | 独立 worker 镜像地址，与主程序版本分开配置 | `ghcr.io/0rays/cbctf-worker:latest` |
-| `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量 | `2` |
-| `cbctf.k8s.serviceAccount` | 运行时工作负载使用的 ServiceAccount，留空用 `{release}-cbctf-runtime` | `cbctf-runtime` |
+| `cbctf.k8s.capture_enabled` | 是否开启抓包容器 | `true` |
+| `cbctf.k8s.worker_image` | 独立 worker 镜像地址，与主程序版本分开配置 | `ghcr.io/0rays/cbctf-worker:latest` |
+| `cbctf.k8s.generator_pool_size` | 每比赛、每动态题的生成器池容量 | `2` |
+| `cbctf.k8s.service_account` | 运行时工作负载使用的 ServiceAccount，留空用 `{release}-cbctf-runtime` | `cbctf-runtime` |
 | `cbctf.k8s.frp.on`      | 是否启用 FRP 端口暴露         | `false`                           |
 | `cbctf.k8s.frp.frpc`    | FRP client 镜像         | `ghcr.io/fatedier/frpc:v0.69.0`   |
 | `cbctf.k8s.frp.nginx`   | FRP 转发辅助 Nginx 镜像     | `nginx:latest`                    |

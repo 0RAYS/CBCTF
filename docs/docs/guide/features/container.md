@@ -142,7 +142,7 @@ VM 必须接入至少一个 VPC 网络
 
 ## 流量捕获
 
-`k8s.capture_enabled` 控制是否创建抓包 sidecar，镜像由 `k8s.capture` 指定，Helm 对应 `cbctf.k8s.captureEnabled` / `capture`。管理员可在靶机或队伍详情查看并下载抓包产物。关闭后新实例不再挂载抓包所需共享卷，已有实例不会自动重建。
+`k8s.capture_enabled` 控制是否创建抓包 sidecar，镜像由 `k8s.capture` 指定，Helm 对应 `cbctf.k8s.capture_enabled` / `capture`。管理员可在靶机或队伍详情查看并下载抓包产物。关闭后新实例不再挂载抓包所需共享卷，已有实例不会自动重建。
 
 ## FRP 配置
 
