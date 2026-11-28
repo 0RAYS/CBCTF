@@ -1933,6 +1933,7 @@
     },
     "logs": {
       "levelFilter": "日志等级",
+      "allLevels": "全部",
       "loadMore": "下拉加载更多",
       "noMore": "没有更多了",
       "toast": {

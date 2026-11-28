@@ -8,7 +8,7 @@ import IpLookupDialog from '@/components/features/Admin/network/IpLookupDialog';
 import useIpLookup from '@/components/features/Admin/network/useIpLookup';
 import { injectClickableIps, isPublicIp } from '@/components/features/Admin/network/logIps';
 
-const LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'FATAL', 'PANIC'];
+const LOG_LEVELS = ['', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'FATAL', 'PANIC'];
 
 const IP_ALLOWED_ATTR = ['data-ip', 'role', 'tabindex'];
 
@@ -131,8 +131,8 @@ function AdminLogs() {
             className="rounded-md border border-neutral-300/20 bg-black/30 px-3 py-2 text-sm text-neutral-100 outline-none focus:border-geek-400"
           >
             {LOG_LEVELS.map((item) => (
-              <option key={item} value={item}>
-                {item}
+              <option key={item || 'all'} value={item}>
+                {item === '' ? t('admin.logs.allLevels') : item}
               </option>
             ))}
           </select>

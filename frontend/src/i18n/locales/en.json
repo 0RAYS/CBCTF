@@ -1933,6 +1933,7 @@
     },
     "logs": {
       "levelFilter": "Log Level",
+      "allLevels": "All",
       "loadMore": "Load more",
       "noMore": "No more logs",
       "toast": {
