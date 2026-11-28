@@ -531,7 +531,7 @@ func addPodServicesByIP(servicesByIP map[string][]string, podSpec model.PodSpec)
 
 func isTrafficInfraContainer(name string) bool {
 	switch strings.ToLower(strings.TrimSpace(name)) {
-	case k8s.CaptureContainerName, k8s.NginxContainerName, k8s.FrpcContainerName:
+	case k8s.CaptureContainerName, k8s.NginxContainerName, k8s.FrpcContainerName, k8s.JumpContainerName:
 		return true
 	default:
 		return false

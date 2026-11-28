@@ -51,6 +51,7 @@ type Victim struct {
 	UserID           sql.Null[uint]  `gorm:"index" json:"user_id"`
 	Duration         time.Duration   `json:"duration"`
 	AccessKey        string          `gorm:"type:text" json:"-"`
+	FlagValues       map[string]string `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
 	BaseModel
 }
 

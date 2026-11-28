@@ -68,6 +68,8 @@ type victimSpecSource struct {
 	NetworkPolicies  model.NetworkPolicies
 	Flags            []victimFlagSpec
 	ChallengeFlagIDs []uint
+	// TestMode 表示实例还没有队伍,flag 用占位值渲染。
+	TestMode bool
 }
 
 // buildVictimSpecSource 依据题目构造规格来源，队伍已持有的 flag 用队伍自己的值。
@@ -75,9 +77,10 @@ func buildVictimSpecSource(tx *gorm.DB, victim model.Victim, challenge model.Cha
 	source := victimSpecSource{
 		Template:        challenge.Template,
 		NetworkPolicies: challenge.NetworkPolicies,
+		TestMode:        !victim.TeamID.Valid,
 	}
 	for _, flag := range challenge.ChallengeFlags {
-		if !flag.Active {
+		if !flag.Active || flag.IsFixed() {
 			continue
 		}
 		source.Flags = append(source.Flags, victimFlagSpec{
@@ -126,7 +129,7 @@ func buildVictimSpec(_ *gorm.DB, victim model.Victim, source victimSpecSource) (
 		key := containerKey{flag.Binding.PodKey, flag.Binding.ContainerKey}
 		containerFlags[key] = append(containerFlags[key], flag)
 	}
-	testMode := !victim.TeamID.Valid
+	testMode := source.TestMode
 	if !needVPC(source.Template.Pods) {
 		containerCount := 0
 		for _, podTemplate := range source.Template.Pods {
@@ -249,6 +252,8 @@ func buildVictimContainerSpec(template model.ChallengeContainerTemplate, flags [
 					file.Content = strings.ReplaceAll(file.Content, flag.Value, value)
 				}
 			}
+		case model.FixedFlagBindingType:
+			// 固定 flag 申明在环境里,平台不注入。
 		default:
 			return model.VictimContainerSpec{}, model.FailRetVal(i18n.Model.ChallengeFlag.InvalidType, "ChallengeFlag", "type="+string(flag.Binding.Type), nil)
 		}

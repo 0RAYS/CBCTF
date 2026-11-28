@@ -112,7 +112,8 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, challen
 			Solved:          false,
 			Value:           model.RenderFlagValue(flag.Value),
 		}
-		if prefix := contest.Prefix; prefix != "" {
+		// 固定 flag 的答案就是环境里的申明值,不加比赛前缀。
+		if prefix := contest.Prefix; prefix != "" && !flag.IsFixed() {
 			options.Value = fmt.Sprintf("%s{%s}", contest.Prefix, options.Value)
 		}
 		teamFlag, ret = teamFlagRepo.CreateIfAbsent(options)

@@ -214,12 +214,13 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []model.ChallengeFlag, *model.RangeConfig, model.RetVal) {
 	prefix := utils.RandHexStr(10)
 	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix, map[string]any{
-		model.XVolumesExtension:   []model.XVolume{},
-		model.XKubeVirtExtension:  false,
-		model.XBootExtension:      model.XBoot{},
-		model.XCloudInitExtension: model.XCloudInit{},
-		model.XRangeExtension:     model.XRange{},
-		model.XRoleExtension:      "",
+		model.XVolumesExtension:    []model.XVolume{},
+		model.XKubeVirtExtension:   false,
+		model.XBootExtension:       model.XBoot{},
+		model.XCloudInitExtension:  model.XCloudInit{},
+		model.XRangeExtension:      model.XRange{},
+		model.XRoleExtension:       "",
+		model.XFixedFlagsExtension: []model.XFixedFlag{},
 	})
 	if err != nil {
 		log.Logger.Warningf("Failed to load DockerCompose: %v", err)
@@ -286,8 +287,10 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 			Exposes:     append(model.Exposes(nil), ports...),
 		}
 		if rangeRole(rangeConfig, app) == model.RangeGatewayRole {
-			// 玩家网关是平台固定的跳板容器,镜像由平台决定。
-			containerTemplate.Image = rangeJumpImage()
+			// 玩家网关是平台固定的跳板容器,镜像由平台决定,作者写的镜像只用于 compose 校验。
+			if image := rangeJumpImage(); image != "" {
+				containerTemplate.Image = image
+			}
 		}
 		if boot, ok := app.Extensions[model.XBootExtension].(model.XBoot); ok {
 			containerTemplate.Bootloader = boot.Bootloader
@@ -329,6 +332,23 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 						},
 					})
 				}
+			}
+		}
+		// 环境里自带的固定 flag,平台不注入,只按申明值判定答案。
+		if fixedFlags, ok := app.Extensions[model.XFixedFlagsExtension].([]model.XFixedFlag); ok {
+			for _, fixed := range fixedFlags {
+				if fixed.Name == "" || fixed.Value == "" {
+					continue
+				}
+				flagOptions = append(flagOptions, model.ChallengeFlag{
+					Value: fixed.Value,
+					Binding: model.FlagBinding{
+						PodKey:       podKey,
+						ContainerKey: containerKey,
+						Type:         model.FixedFlagBindingType,
+						Target:       fixed.Name,
+					},
+				})
 			}
 		}
 		template.Pods = append(template.Pods, model.ChallengePodTemplate{

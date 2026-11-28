@@ -63,6 +63,12 @@ type ChallengeFlag struct {
 	BaseModel
 }
 
+// IsFixed 判断这个 flag 是申明在环境里的固定 flag。
+// 固定 flag 不由平台注入,答案就是申明值。
+func (c ChallengeFlag) IsFixed() bool {
+	return c.Binding.Type == FixedFlagBindingType
+}
+
 func (c ChallengeFlag) CalcScore(solvers int64) float64 {
 	if solvers < 0 {
 		solvers = 0

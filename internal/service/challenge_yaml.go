@@ -45,6 +45,7 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 				}
 			}
 			xVolumes := make([]model.XVolume, 0)
+			fixedFlags := make([]model.XFixedFlag, 0)
 			for _, flag := range challengeFlags {
 				if flag.Binding.PodKey != pod.Key || flag.Binding.ContainerKey != container.Key {
 					continue
@@ -60,11 +61,19 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 						Path:    flag.Binding.Target,
 						Content: flag.Value,
 					})
+				case model.FixedFlagBindingType:
+					fixedFlags = append(fixedFlags, model.XFixedFlag{
+						Name:  flag.Binding.Target,
+						Value: flag.Value,
+					})
 				}
 			}
 			extensions := make(types.Extensions)
 			if len(xVolumes) > 0 {
 				extensions[model.XVolumesExtension] = xVolumes
+			}
+			if len(fixedFlags) > 0 {
+				extensions[model.XFixedFlagsExtension] = fixedFlags
 			}
 			if pod.Role != "" {
 				extensions[model.XRoleExtension] = pod.Role

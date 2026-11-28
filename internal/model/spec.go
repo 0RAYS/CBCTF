@@ -19,11 +19,19 @@ const (
 	XCloudInitExtension = "x-cloudinit"
 	XRangeExtension     = "x-range"
 	XRoleExtension      = "x-role"
+	XFixedFlagsExtension = "x-fixed-flags"
 )
 
 type XVolume struct {
 	Path    string `yaml:"path"`
 	Content string `yaml:"content"`
+}
+
+// XFixedFlag 申明环境里自带的一个固定 flag。
+// 平台不注入它,答案就是申明值,用于不支持注入 flag 的虚拟机等靶机。
+type XFixedFlag struct {
+	Name  string `yaml:"name" json:"name"`
+	Value string `yaml:"value" json:"value"`
 }
 
 type XBoot struct {
@@ -184,6 +192,7 @@ const (
 	EnvFlagBindingType           FlagBindingType = "env"
 	FileFlagBindingType          FlagBindingType = "file"
 	CloudInitFileFlagBindingType FlagBindingType = "cloudinit_file"
+	FixedFlagBindingType         FlagBindingType = "fixed"
 )
 
 type FlagBinding struct {

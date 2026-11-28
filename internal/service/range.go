@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"regexp"
+	"strconv"
 	"time"
 
 	"gorm.io/gorm"
@@ -18,12 +18,9 @@ import (
 	"CBCTF/internal/view"
 )
 
-// rangeFlagTemplates 是实例里要清掉的 flag 模板。
-var rangeFlagTemplates = []*regexp.Regexp{model.StaticFlagTmpl, model.DynamicFlagTmpl, model.UUIDFlagTmpl}
-
 // buildRangeSpec 构造池化靶场实例的规格。
-// 实例不携带队伍 flag,玩家网关也不在实例里,环境因此与队伍无关。
-func buildRangeSpec(challenge model.Challenge, victim model.Victim) (model.VictimSpec, model.RetVal) {
+// flag 渲染进实例环境,取值随实例而定,队伍领取时按这个取值给答案。
+func buildRangeSpec(challenge model.Challenge, victim model.Victim, flags []victimFlagSpec) (model.VictimSpec, model.RetVal) {
 	template := model.ChallengeTemplate{Pods: make([]model.ChallengePodTemplate, 0, len(challenge.Template.Pods))}
 	for _, pod := range challenge.Template.Pods {
 		if pod.Role == model.RangeGatewayRole {
@@ -31,7 +28,11 @@ func buildRangeSpec(challenge model.Challenge, victim model.Victim) (model.Victi
 		}
 		template.Pods = append(template.Pods, pod)
 	}
-	source := victimSpecSource{Template: template, NetworkPolicies: challenge.NetworkPolicies}
+	source := victimSpecSource{
+		Template:        template,
+		NetworkPolicies: challenge.NetworkPolicies,
+		Flags:           flags,
+	}
 	spec, ret := buildVictimSpec(nil, victim, source)
 	if !ret.OK {
 		return model.VictimSpec{}, ret
@@ -43,8 +44,48 @@ func buildRangeSpec(challenge model.Challenge, victim model.Victim) (model.Victi
 	if ret = addRangeAccessSubnet(&spec, challenge, victim); !ret.OK {
 		return model.VictimSpec{}, ret
 	}
-	stripRangeFlags(&spec)
 	return spec, model.SuccessRetVal()
+}
+
+// rangeFlagSpecs 返回实例环境里要注入的 flag 及其取值。
+// 取值在实例创建时渲染,队伍领取时按这个取值同步答案。
+func rangeFlagSpecs(challenge model.Challenge, contest model.Contest) ([]victimFlagSpec, map[uint]string) {
+	flags := make([]victimFlagSpec, 0, len(challenge.ChallengeFlags))
+	values := make(map[uint]string)
+	for _, flag := range challenge.ChallengeFlags {
+		if !flag.Active || flag.IsFixed() {
+			continue
+		}
+		value := model.RenderFlagValue(flag.Value)
+		if contest.Prefix != "" {
+			value = fmt.Sprintf("%s{%s}", contest.Prefix, value)
+		}
+		flags = append(flags, victimFlagSpec{
+			Key:       flag.ID,
+			Value:     flag.Value,
+			Binding:   flag.Binding,
+			TeamValue: value,
+			HasTeam:   true,
+		})
+		values[flag.ID] = value
+	}
+	return flags, values
+}
+
+// rangeTemplateKey 计算靶场实例的拓扑指纹。
+// flag 取值按模板算,实例里的实际取值不参与,同构实例的指纹因此一致。
+func rangeTemplateKey(challenge model.Challenge, victim model.Victim, flags []victimFlagSpec) string {
+	templateFlags := make([]victimFlagSpec, len(flags))
+	for i, flag := range flags {
+		templateFlags[i] = flag
+		templateFlags[i].HasTeam = false
+		templateFlags[i].TeamValue = ""
+	}
+	spec, ret := buildRangeSpec(challenge, victim, templateFlags)
+	if !ret.OK {
+		return ""
+	}
+	return model.TemplateKey(spec)
 }
 
 // addRangeAccessSubnet 把玩家接入网段写进实例的网段规划。
@@ -75,26 +116,45 @@ func addRangeAccessSubnet(spec *model.VictimSpec, challenge model.Challenge, vic
 	return model.SuccessRetVal()
 }
 
-// stripRangeFlags 清掉实例里的 flag 模板。
-// 靶场环境不携带 flag,flag 由平台下发到玩家网关。
-func stripRangeFlags(spec *model.VictimSpec) {
-	for i := range spec.Pods {
-		for j := range spec.Pods[i].Containers {
-			container := &spec.Pods[i].Containers[j]
-			for k := range container.VolumeMounts {
-				volume := &container.VolumeMounts[k]
-				for _, template := range rangeFlagTemplates {
-					volume.Content = template.ReplaceAllString(volume.Content, "")
-				}
+// syncRangeTeamFlags 把队伍在该题的答案同步成实例里的取值。
+// 实例里的 flag 是渲染过的,队伍拿到的答案必须与之一致。
+func syncRangeTeamFlags(tx *gorm.DB, team model.Team, challenge model.Challenge, instance model.Victim) model.RetVal {
+	if len(instance.FlagValues) == 0 {
+		return model.SuccessRetVal()
+	}
+	repo := db.InitTeamFlagRepo(tx)
+	for _, flag := range challenge.ChallengeFlags {
+		if !flag.Active || flag.IsFixed() {
+			continue
+		}
+		value, ok := instance.FlagValues[strconv.FormatUint(uint64(flag.ID), 10)]
+		if !ok || value == "" {
+			continue
+		}
+		teamFlag, ret := repo.Get(db.GetOptions{
+			Conditions: map[string]any{"team_id": team.ID, "challenge_flag_id": flag.ID},
+		})
+		if !ret.OK {
+			if ret.Msg != i18n.Model.NotFound {
+				return ret
 			}
-			for k := range container.UserData.WriteFiles {
-				file := &container.UserData.WriteFiles[k]
-				for _, template := range rangeFlagTemplates {
-					file.Content = template.ReplaceAllString(file.Content, "")
-				}
+			if _, ret = repo.CreateIfAbsent(model.TeamFlag{
+				TeamID:          team.ID,
+				ChallengeFlagID: flag.ID,
+				Value:           value,
+			}); !ret.OK {
+				return ret
 			}
+			continue
+		}
+		if teamFlag.Solved || teamFlag.Value == value {
+			continue
+		}
+		if ret = repo.Update(teamFlag.ID, db.UpdateTeamFlagRepo{Value: &value}); !ret.OK {
+			return ret
 		}
 	}
+	return model.SuccessRetVal()
 }
 
 // CreateRangeInstance 创建池中的一个靶场实例。
@@ -110,12 +170,18 @@ func CreateRangeInstance(tx *gorm.DB, challenge model.Challenge) (model.Victim, 
 	if challenge.RangeConfig != nil {
 		instance.Duration = challenge.RangeConfig.LeaseDuration
 	}
-	spec, ret := buildRangeSpec(challenge, instance)
+	contest, ret := rangeContest(tx, challenge)
+	if !ret.OK {
+		return model.Victim{}, ret
+	}
+	flags, values := rangeFlagSpecs(challenge, contest)
+	spec, ret := buildRangeSpec(challenge, instance, flags)
 	if !ret.OK {
 		return model.Victim{}, ret
 	}
 	instance.Spec = spec
-	instance.TemplateKey = model.TemplateKey(spec)
+	instance.FlagValues = flagValueMap(values)
+	instance.TemplateKey = rangeTemplateKey(challenge, instance, flags)
 	repo := db.InitVictimRepo(tx)
 	created, ret := repo.Create(instance)
 	if !ret.OK {
@@ -127,6 +193,23 @@ func CreateRangeInstance(tx *gorm.DB, challenge model.Challenge) (model.Victim, 
 	}
 	created.Pods = pods
 	return created, model.SuccessRetVal()
+}
+
+// rangeContest 返回题目所属比赛,题目不归属比赛时返回空比赛。
+func rangeContest(tx *gorm.DB, challenge model.Challenge) (model.Contest, model.RetVal) {
+	if !challenge.ContestID.Valid {
+		return model.Contest{}, model.SuccessRetVal()
+	}
+	return db.InitContestRepo(tx).GetByID(challenge.ContestID.V)
+}
+
+// flagValueMap 把 flag 取值按 id 存进实例,领取时据此同步队伍答案。
+func flagValueMap(values map[uint]string) map[string]string {
+	result := make(map[string]string, len(values))
+	for id, value := range values {
+		result[strconv.FormatUint(uint64(id), 10)] = value
+	}
+	return result
 }
 
 // EnsureRangePool 补齐靶场实例池。
@@ -183,6 +266,14 @@ func StartRange(tx *gorm.DB, team model.Team, contest model.Contest, challenge m
 	if ret.Msg != i18n.Model.NotFound {
 		return model.Victim{}, ret
 	}
+	// 领取时要把队伍在该题的答案同步成实例里的取值。
+	flags, _, ret := db.InitChallengeFlagRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID},
+	})
+	if !ret.OK {
+		return model.Victim{}, ret
+	}
+	challenge.ChallengeFlags = flags
 	if challenge.RangeConfig.MaxLeased > 0 {
 		leased, ret := repo.Count(db.CountOptions{Conditions: map[string]any{
 			"kind":         model.VictimKindRange,
@@ -225,6 +316,9 @@ func StartRange(tx *gorm.DB, team model.Team, contest model.Contest, challenge m
 			return model.Victim{}, ret
 		}
 		log.Logger.Infof("Range instance leased: victim_id=%d team_id=%d challenge_id=%d", instance.ID, team.ID, challenge.ID)
+		if ret = syncRangeTeamFlags(tx, team, challenge, instance); !ret.OK {
+			return model.Victim{}, ret
+		}
 		if _, err := task.EnqueueRangeGatewayTask(instance); err != nil {
 			log.Logger.Warningf("Failed to enqueue range gateway task: victim_id=%d error=%v", instance.ID, err)
 			return model.Victim{}, model.FailRetVal(i18n.Task.EnqueueError, "Range", fmt.Sprintf("victim_id=%d", instance.ID), err)
@@ -247,6 +341,9 @@ func StartRange(tx *gorm.DB, team model.Team, contest model.Contest, challenge m
 		TeamID:        &instance.TeamID,
 		LeaseExpireAt: &leaseExpire,
 	}); !ret.OK {
+		return model.Victim{}, ret
+	}
+	if ret = syncRangeTeamFlags(tx, team, challenge, instance); !ret.OK {
 		return model.Victim{}, ret
 	}
 	if _, err := task.EnqueueStartRangeTask(instance); err != nil {
