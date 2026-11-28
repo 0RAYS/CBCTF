@@ -1488,10 +1488,17 @@
         },
         "egress": {
           "internet": "Allow public internet egress",
-          "publicScope": "0.0.0.0/0 with private ranges excluded",
+          "publicScope": "0.0.0.0/0, minus the ranges listed below",
           "ranges": "Extra allowed egress ranges",
-          "noRanges": "No extra range, private networks stay unreachable.",
-          "scopeHint": "Egress is denied by default in every mode. Enabling it only covers public addresses; add the ranges you need to reach private networks."
+          "noRanges": "No extra range, private and vendor networks stay unreachable.",
+          "scopeHint": "Egress is denied by default in every mode. Enabling it only covers public addresses; add the ranges you need to reach private networks.",
+          "scopes": {
+            "rfc1918": "RFC1918 private",
+            "cgnat": "CGNAT carrier-grade NAT",
+            "aliyun": "Aliyun 100.100 internal",
+            "linkLocal": "Link-local, cloud metadata",
+            "reserved": "Reserved and documentation"
+          }
         },
         "peers": {
           "label": "Interconnected with",

@@ -19,6 +19,7 @@ import {buildChallengePayload} from '@/components/features/Admin/challenges/edit
 import {
     buildNetworkContext,
     defaultNetworkPolicy,
+    isPublicIp,
     normalizeNetworkPolicy,
     policyAllowsEgressIp,
     resolvePolicies,
@@ -445,6 +446,18 @@ test('topology layout keeps three same-network containers off a straight line', 
   const ys = points.map((point) => point.y);
   assert.ok(Math.max(...xs) - Math.min(...xs) > 1);
   assert.ok(Math.max(...ys) - Math.min(...ys) > 1);
+});
+
+test('public egress excludes private, vendor and reserved ranges', () => {
+  assert.equal(isPublicIp('8.8.8.8'), true);
+  assert.equal(isPublicIp('10.1.0.3'), false);
+  assert.equal(isPublicIp('172.16.0.5'), false);
+  assert.equal(isPublicIp('192.168.1.1'), false);
+  assert.equal(isPublicIp('100.64.1.1'), false);
+  assert.equal(isPublicIp('100.100.100.200'), false);
+  assert.equal(isPublicIp('169.254.169.254'), false);
+  assert.equal(isPublicIp('198.18.0.1'), false);
+  assert.equal(isPublicIp('240.0.0.1'), false);
 });
 
 test('containers on the same subnet are interconnected without an explicit peer', () => {

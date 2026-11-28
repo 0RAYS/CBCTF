@@ -8,6 +8,7 @@ import { inputBaseClass } from '@/components/features/Admin/challenges/editor/ed
 import {
   defaultNetworkPolicy,
   normalizeNetworkPolicy,
+  PUBLIC_EGRESS_EXCEPT,
   resolvePolicies,
   resolveSharedPolicy,
 } from '@/components/features/Admin/challenges/editor/networkPolicy.js';
@@ -133,7 +134,17 @@ function PolicyCard({ title, subtitle, policy, showPeers, peerOptions, onChange,
           label={t(nt('egress.internet'))}
         />
         {policy.allow_internet && (
-          <div className="pl-6 text-[11px] font-mono text-neutral-500">{t(nt('egress.publicScope'))}</div>
+          <div className="pl-6 space-y-1 text-[11px] font-mono text-neutral-500">
+            <div>{t(nt('egress.publicScope'))}</div>
+            <div className="space-y-0.5">
+              {PUBLIC_EGRESS_EXCEPT.map((group) => (
+                <div key={group.scope} className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="text-neutral-400">{t(nt(`egress.scopes.${group.scope}`))}</span>
+                  <span className="text-neutral-600">{group.cidrs.join('  ')}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
       <div className="space-y-2">

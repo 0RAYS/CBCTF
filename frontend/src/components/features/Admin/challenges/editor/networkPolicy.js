@@ -1,10 +1,13 @@
-// 出公网范围：0.0.0.0/0 扣除私有网段，私网需要题目显式放行。
+// 出公网范围：0.0.0.0/0 扣除私有网段、厂商内网与保留网段，私网需要题目显式放行。
 export const PUBLIC_EGRESS_EXCEPT = [
-  '10.0.0.0/8',
-  '172.16.0.0/12',
-  '192.168.0.0/16',
-  '100.64.0.0/10',
-  '169.254.0.0/16',
+  { scope: 'rfc1918', cidrs: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'] },
+  { scope: 'cgnat', cidrs: ['100.64.0.0/10'] },
+  { scope: 'aliyun', cidrs: ['100.100.0.0/16'] },
+  { scope: 'linkLocal', cidrs: ['169.254.0.0/16'] },
+  {
+    scope: 'reserved',
+    cidrs: ['192.0.0.0/24', '192.0.2.0/24', '198.18.0.0/15', '198.51.100.0/24', '203.0.113.0/24', '240.0.0.0/4'],
+  },
 ];
 
 const ipToNumber = (ip) => {
@@ -34,7 +37,8 @@ export const blockAllowsIp = (block, ip) => {
   return !(block?.except || []).some((exceptCidr) => cidrContainsIp(exceptCidr, ip));
 };
 
-export const isPublicIp = (ip) => !PUBLIC_EGRESS_EXCEPT.some((cidr) => cidrContainsIp(cidr, ip));
+export const isPublicIp = (ip) =>
+  !PUBLIC_EGRESS_EXCEPT.some((group) => group.cidrs.some((cidr) => cidrContainsIp(cidr, ip)));
 
 // isVpcIp 判断地址是否落在题目的 VPC 网段内。
 export const isVpcIp = (ip, context = {}) => (context.vpcCIDRs || []).some((cidr) => cidrContainsIp(cidr, ip));
