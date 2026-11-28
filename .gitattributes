@@ -1,0 +1,2 @@
+# 跳板入口脚本在容器里由 /bin/sh 执行,必须保持 LF。
+jump/*.sh text eol=lf
