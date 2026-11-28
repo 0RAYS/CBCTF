@@ -33,6 +33,11 @@ func ensureRangePoolsTask() model.RetVal {
 			batch.Skip(key, "not_range")
 			continue
 		}
+		// 题库里的题目只是模板,比赛用的是复制过去的副本,池只跟着比赛里的题目走。
+		if !challenge.ContestID.Valid {
+			batch.Skip(key, "not_in_contest")
+			continue
+		}
 		if err := service.EnsureRangePool(ctx, challenge); err != nil {
 			batch.Fail(key, "pool", model.FailRetVal(i18n.Common.UnknownError, "RangePool", key, err))
 			continue
