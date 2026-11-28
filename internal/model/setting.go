@@ -41,6 +41,7 @@ const (
 	K8SFrpFrpcImageSettingKey      = "k8s.frp.frpc"
 	K8SFrpNginxImageSettingKey     = "k8s.frp.nginx"
 	K8SFrpFrpsSettingKey           = "k8s.frp.frps"
+	K8SRangeJumpImageSettingKey    = "k8s.range.jump_image"
 
 	CheatIPWhitelistSettingKey         = "cheat.ip.whitelist"
 	WebhookWhitelistSettingKey         = "webhook.whitelist"
