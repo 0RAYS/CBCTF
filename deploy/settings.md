@@ -119,7 +119,7 @@ Helm 会把以下值渲染进 ConfigMap：
 | `postgres.auth.password`                | 数据库密码                                    |
 | `valkey.auth.aclUsers.default.password` | 内置 Valkey 密码                             |
 | `valkey.password`                       | 外部 Valkey 或使用 `usersExistingSecret` 时的密码 |
-| `cbctf.k8s.serviceAccount`              | 运行时工作负载使用的 ServiceAccount                |
+| `cbctf.k8s.service_account`             | 运行时工作负载使用的 ServiceAccount                |
 
 上述值保存在应用配置 ConfigMap 中，请妥善限制其访问权限。镜像仓库拉取凭据另由 Secret 管理。
 

@@ -515,7 +515,7 @@ helm upgrade --install cbctf cbctf/cbctf -n cbctf --create-namespace -f values.y
 ```
 
 :::info
-本文与仓库 Chart `0.0.39` 对应。使用仓库代码时可将命令中的 `cbctf/cbctf` 换成 `./chart`；新配置能力需要匹配版本的后端镜像。
+本文与仓库 Chart `0.0.41` 对应。使用仓库代码时可将命令中的 `cbctf/cbctf` 换成 `./chart`；新配置能力需要匹配版本的后端镜像。
 
 运行时设置首次写入数据库后，以数据库为准。修改 values 中的 `host`、JWT、注册、上传限制或 Kubernetes 运行参数再升级，并不会覆盖已经保存的设置；请到「系统管理」修改并按需重启。参见[配置来源与生效时机](/deploy/settings.md)。
 :::
@@ -571,7 +571,7 @@ helm uninstall cbctf -n cbctf
 | ---------------------------------- | --------------------------------- | ------------------------- |
 | `cbctf.host`                       | 平台公开访问地址，不要带尾部 `/`                | `https://ctf.example.com` |
 | `cbctf.log.level`                  | 应用日志级别                            | `info`                    |
-| `cbctf.gorm.log.slowThreshold`     | 慢查询阈值                             | `500ms`                   |
+| `cbctf.gorm.log.slow_threshold`    | 慢查询阈值                             | `500ms`                   |
 | `cbctf.gin.mode`                   | Gin 运行模式                          | `release`                 |
 | `cbctf.gin.host`                   | 容器内监听地址                           | `0.0.0.0`                 |
 | `cbctf.gin.port`                   | 容器内监听端口                           | `8000`                    |
@@ -679,18 +679,18 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 
 ## Kubernetes 靶机配置
 
-| 配置项                           | 说明                                                      | 示例                                  |
-| ----------------------------- | ------------------------------------------------------- | ----------------------------------- |
-| `serviceAccount.create`       | 是否创建应用 ServiceAccount                                   | `true`                              |
-| `cbctf.k8s.capture`           | 流量捕获镜像                                                  | `ghcr.io/domcyrus/rustnet:latest`   |
-| `cbctf.k8s.captureEnabled`    | 是否开启抓包容器                                                | `true`                              |
-| `cbctf.k8s.workerImage`       | 独立 worker 镜像地址，与主程序版本分开配置                               | `ghcr.io/0rays/cbctf-worker:latest` |
-| `cbctf.k8s.generatorPoolSize` | 每比赛、每动态题的生成器池容量                                         | `2`                                 |
-| `cbctf.k8s.serviceAccount`    | 运行时工作负载使用的 ServiceAccount，留空用 `{release}-cbctf-runtime` | `cbctf-runtime`                     |
-| `cbctf.k8s.frp.on`            | 是否启用 FRP 端口暴露                                           | `false`                             |
-| `cbctf.k8s.frp.frpc`          | FRP client 镜像                                           | `ghcr.io/fatedier/frpc:v0.69.0`     |
-| `cbctf.k8s.frp.nginx`         | FRP 转发辅助 Nginx 镜像                                       | `nginx:latest`                      |
-| `cbctf.k8s.frp.frps`          | FRPS 服务端、token 和端口池                                     | `host: frps.example.com`            |
+| 配置项                             | 说明                                                      | 示例                                  |
+| ------------------------------- | ------------------------------------------------------- | ----------------------------------- |
+| `serviceAccount.create`         | 是否创建应用 ServiceAccount                                   | `true`                              |
+| `cbctf.k8s.capture`             | 流量捕获镜像                                                  | `ghcr.io/domcyrus/rustnet:latest`   |
+| `cbctf.k8s.capture_enabled`     | 是否开启抓包容器                                                | `true`                              |
+| `cbctf.k8s.worker_image`        | 独立 worker 镜像地址，与主程序版本分开配置                               | `ghcr.io/0rays/cbctf-worker:latest` |
+| `cbctf.k8s.generator_pool_size` | 每比赛、每动态题的生成器池容量                                         | `2`                                 |
+| `cbctf.k8s.service_account`     | 运行时工作负载使用的 ServiceAccount，留空用 `{release}-cbctf-runtime` | `cbctf-runtime`                     |
+| `cbctf.k8s.frp.on`              | 是否启用 FRP 端口暴露                                           | `false`                             |
+| `cbctf.k8s.frp.frpc`            | FRP client 镜像                                           | `ghcr.io/fatedier/frpc:v0.69.0`     |
+| `cbctf.k8s.frp.nginx`           | FRP 转发辅助 Nginx 镜像                                       | `nginx:latest`                      |
+| `cbctf.k8s.frp.frps`            | FRPS 服务端、token 和端口池                                     | `host: frps.example.com`            |
 
 Chart 使用命名空间 Role 管理 Pod、Service、Job、NetworkPolicy、ConfigMap、Multus NAD 和 VM，使用 ClusterRole 管理节点读取及 Kube-OVN 集群级资源。Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
 
@@ -927,7 +927,7 @@ Helm 会把以下值渲染进 ConfigMap：
 | `postgres.auth.password`                | 数据库密码                                    |
 | `valkey.auth.aclUsers.default.password` | 内置 Valkey 密码                             |
 | `valkey.password`                       | 外部 Valkey 或使用 `usersExistingSecret` 时的密码 |
-| `cbctf.k8s.serviceAccount`              | 运行时工作负载使用的 ServiceAccount                |
+| `cbctf.k8s.service_account`             | 运行时工作负载使用的 ServiceAccount                |
 
 上述值保存在应用配置 ConfigMap 中，请妥善限制其访问权限。镜像仓库拉取凭据另由 Secret 管理。
 
@@ -1064,9 +1064,9 @@ image:
 
 cbctf:
   k8s:
-    captureEnabled: false
-    workerImage: ghcr.io/0rays/cbctf-worker:your-worker-tag
-    generatorPoolSize: 4
+    capture_enabled: false
+    worker_image: ghcr.io/0rays/cbctf-worker:your-worker-tag
+    generator_pool_size: 4
   asynq:
     queues:
       victim: 8
@@ -1074,7 +1074,7 @@ cbctf:
       attachment: 32
 ```
 
-Chart 将 `cbctf.k8s.workerImage` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
+Chart 将 `cbctf.k8s.worker_image` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
 
 开赛前建议按预计并发启动一批测试实例，检查镜像拉取、附件耗时和资源占用，再确定池容量与队列并发。
 
@@ -1989,7 +1989,7 @@ VM 必须接入至少一个 VPC 网络
 
 ## 流量捕获
 
-`k8s.capture_enabled` 控制是否创建抓包 sidecar，镜像由 `k8s.capture` 指定，Helm 对应 `cbctf.k8s.captureEnabled` / `capture`。管理员可在靶机或队伍详情查看并下载抓包产物。关闭后新实例不再挂载抓包所需共享卷，已有实例不会自动重建。
+`k8s.capture_enabled` 控制是否创建抓包 sidecar，镜像由 `k8s.capture` 指定，Helm 对应 `cbctf.k8s.capture_enabled` / `capture`。管理员可在靶机或队伍详情查看并下载抓包产物。关闭后新实例不再挂载抓包所需共享卷，已有实例不会自动重建。
 
 ## FRP 配置
 
