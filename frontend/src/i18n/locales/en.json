@@ -1179,6 +1179,7 @@
           "user": "User",
           "remote": "Remote",
           "startTime": "Start time",
+        "range": { "badge": "Range" },
           "status": "Status",
           "remaining": "Remaining"
         },

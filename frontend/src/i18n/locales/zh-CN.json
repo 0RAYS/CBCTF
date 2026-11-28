@@ -1179,6 +1179,7 @@
           "user": "用户",
           "remote": "远程地址",
           "startTime": "开始时间",
+        "range": { "badge": "靶场" },
           "status": "状态",
           "remaining": "剩余时间"
         },

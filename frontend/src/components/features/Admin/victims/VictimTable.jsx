@@ -185,7 +185,19 @@ export function VictimTable({
                         </TruncatedText>
                       </TableCell>
                     )}
-                    <TableCell>{container.challenge}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <TruncatedText>{container.challenge}</TruncatedText>
+                        {container.kind === 'range' && (
+                          <span
+                            className="px-2 py-0.5 rounded border border-amber-500/40 text-amber-400 text-xs whitespace-nowrap shrink-0"
+                            title={container.template_key}
+                          >
+                            {t(`${translationKey}.table.range.badge`)}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{container.team}</TableCell>
                     <TableCell>{container.user}</TableCell>
                     <td className="p-4 text-neutral-300 font-mono">
