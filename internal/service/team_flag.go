@@ -63,14 +63,14 @@ func enqueueDynamicAttachment(userID uint, team model.Team, challenge model.Chal
 }
 
 // applyTeamChallenge applies a team flag change to a challenge and
-// queues the attachment of a dynamic challenge. The challenge must
-// carry its flags so that the change can resolve them.
+// queues the attachment of a dynamic challenge. The challenge handed to
+// apply carries its flags so that the change can resolve them.
 func applyTeamChallenge(
 	tx *gorm.DB,
 	user model.User,
 	team model.Team,
 	challenge model.Challenge,
-	apply func(*gorm.DB) ([]model.TeamFlag, model.RetVal),
+	apply func(*gorm.DB, model.Challenge) ([]model.TeamFlag, model.RetVal),
 ) model.RetVal {
 	flags, _, ret := db.InitChallengeFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID},
@@ -80,7 +80,7 @@ func applyTeamChallenge(
 	}
 	challenge.ChallengeFlags = flags
 	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
-		teamFlags, applyRet := apply(tx2)
+		teamFlags, applyRet := apply(tx2, challenge)
 		if !applyRet.OK {
 			return applyRet
 		}
@@ -214,13 +214,13 @@ func ListTeamFlagViews(tx *gorm.DB, team model.Team) ([]view.TeamFlagChallengeVi
 }
 
 func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, challenge model.Challenge) model.RetVal {
-	return applyTeamChallenge(tx, user, team, challenge, func(tx2 *gorm.DB) ([]model.TeamFlag, model.RetVal) {
+	return applyTeamChallenge(tx, user, team, challenge, func(tx2 *gorm.DB, challenge model.Challenge) ([]model.TeamFlag, model.RetVal) {
 		return CreateTeamFlag(tx2, team, contest, challenge)
 	})
 }
 
 func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, challenge model.Challenge) model.RetVal {
-	ret := applyTeamChallenge(tx, user, team, challenge, func(tx2 *gorm.DB) ([]model.TeamFlag, model.RetVal) {
+	ret := applyTeamChallenge(tx, user, team, challenge, func(tx2 *gorm.DB, challenge model.Challenge) ([]model.TeamFlag, model.RetVal) {
 		return UpdateTeamFlag(tx2, team, contest, challenge)
 	})
 	if !ret.OK {
