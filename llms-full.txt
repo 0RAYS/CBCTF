@@ -181,7 +181,7 @@ CBCTF 需要部署在 Kubernetes 集群内，包括只使用静态题的场景�
 
 ## 1. 准备集群和存储
 
-- 准备 Kubernetes、kubectl、Helm，以及可拉取平台、worker 和题目镜像的节点。
+- 准备 Kubernetes、kubectl、Helm，以及可拉取平台、生成器和题目镜像的节点。
 - 为平台数据选择支持 `ReadWriteMany` 的 StorageClass。动态附件输入与抓包文件需要与运行时 Pod 共享数据。
 - 使用 VPC 题目时安装 Kube-OVN 和 Multus；使用虚拟机题目时再安装 KubeVirt。
 - Chart 不会替你安装 CNI、KubeVirt、Ingress Controller 或存储 provisioner。具体步骤见[集群准备](/deploy/cluster.md)。
@@ -678,18 +678,18 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 
 ## Kubernetes 靶机配置
 
-| 配置项                             | 说明                                                      | 示例                                  |
-| ------------------------------- | ------------------------------------------------------- | ----------------------------------- |
-| `serviceAccount.create`         | 是否创建应用 ServiceAccount                                   | `true`                              |
-| `cbctf.k8s.capture`             | 流量捕获镜像                                                  | `ghcr.io/domcyrus/rustnet:latest`   |
-| `cbctf.k8s.capture_enabled`     | 是否开启抓包容器                                                | `true`                              |
-| `cbctf.k8s.worker_image`        | 独立 worker 镜像地址，与主程序版本分开配置                               | `ghcr.io/0rays/cbctf-worker:latest` |
-| `cbctf.k8s.generator_pool_size` | 每比赛、每动态题的生成器池容量                                         | `2`                                 |
-| `cbctf.k8s.service_account`     | 运行时工作负载使用的 ServiceAccount，留空用 `{release}-cbctf-runtime` | `cbctf-runtime`                     |
-| `cbctf.k8s.frp.on`              | 是否启用 FRP 端口暴露                                           | `false`                             |
-| `cbctf.k8s.frp.frpc`            | FRP client 镜像                                           | `ghcr.io/fatedier/frpc:v0.69.0`     |
-| `cbctf.k8s.frp.nginx`           | FRP 转发辅助 Nginx 镜像                                       | `nginx:latest`                      |
-| `cbctf.k8s.frp.frps`            | FRPS 服务端、token 和端口池                                     | `host: frps.example.com`            |
+| 配置项                             | 说明                                                      | 示例                                     |
+| ------------------------------- | ------------------------------------------------------- | -------------------------------------- |
+| `serviceAccount.create`         | 是否创建应用 ServiceAccount                                   | `true`                                 |
+| `cbctf.k8s.capture`             | 流量捕获镜像                                                  | `ghcr.io/domcyrus/rustnet:latest`      |
+| `cbctf.k8s.capture_enabled`     | 是否开启抓包容器                                                | `true`                                 |
+| `cbctf.k8s.generator_image`     | 独立生成器镜像地址，与主程序版本分开配置                                    | `ghcr.io/0rays/cbctf-generator:latest` |
+| `cbctf.k8s.generator_pool_size` | 每比赛、每动态题的生成器池容量                                         | `2`                                    |
+| `cbctf.k8s.service_account`     | 运行时工作负载使用的 ServiceAccount，留空用 `{release}-cbctf-runtime` | `cbctf-runtime`                        |
+| `cbctf.k8s.frp.on`              | 是否启用 FRP 端口暴露                                           | `false`                                |
+| `cbctf.k8s.frp.frpc`            | FRP client 镜像                                           | `ghcr.io/fatedier/frpc:v0.69.0`        |
+| `cbctf.k8s.frp.nginx`           | FRP 转发辅助 Nginx 镜像                                       | `nginx:latest`                         |
+| `cbctf.k8s.frp.frps`            | FRPS 服务端、token 和端口池                                     | `host: frps.example.com`               |
 
 Chart 使用命名空间 Role 管理 Pod、Service、Job、NetworkPolicy、ConfigMap、Multus NAD 和 VM，使用 ClusterRole 管理节点读取及 Kube-OVN 集群级资源。Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
 
@@ -837,7 +837,7 @@ CBCTF 从内置默认值和 `config.yaml` 读取配置。Helm 会把 values 渲�
 | 设置                                              | 生效时机                                 |
 | ----------------------------------------------- | ------------------------------------ |
 | 注册开关、默认分组、公开地址、Webhook/作弊白名单                    | 当前平台实例的后续操作使用新值                      |
-| 抓包开关、worker 镜像、生成器池容量、FRP 镜像等                   | 后续新建工作负载使用；已有实例不自动重建                 |
+| 抓包开关、生成器镜像、生成器池容量、FRP 镜像等                       | 后续新建工作负载使用；已有实例不自动重建                 |
 | Gin 模式、可信代理、CORS、上传限制、全局限流；任务并发；Kubernetes 命名空间 | 需要在后台执行「重启」                          |
 | 固定部署配置                                          | 修改文件/values 后重新创建 Pod；后台重启不会重新读取配置文件 |
 
@@ -897,21 +897,21 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 
 ## Kubernetes 配置
 
-| 配置项                       | 说明                            | 示例                                  |
-| ------------------------- | ----------------------------- | ----------------------------------- |
-| `k8s.namespace`           | 靶机、生成器等资源所在命名空间               | `cbctf`                             |
-| `k8s.shared_volume_claim` | 平台和运行时工作负载共用的 PVC；部署参数，后台不修改  | `cbctf-data`                        |
-| `k8s.capture`             | 流量捕获 sidecar 镜像               | `ghcr.io/domcyrus/rustnet:latest`   |
-| `k8s.capture_enabled`     | 是否创建抓包容器及相关挂载                 | `true`                              |
-| `k8s.worker_image`        | 含 `/app/worker` 的独立 worker 镜像 | `ghcr.io/0rays/cbctf-worker:latest` |
-| `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量     | `2`                                 |
-| `k8s.range.jump_image`    | 靶场题玩家跳板容器镜像                   | `ghcr.io/0rays/cbctf-jump:latest`   |
-| `k8s.frp.on`              | 是否启用 FRP 暴露靶机端口               | `false`                             |
-| `k8s.frp.frpc`            | FRP client 镜像                 | `ghcr.io/fatedier/frpc:v0.69.0`     |
-| `k8s.frp.nginx`           | FRP 辅助 Nginx 镜像               | `nginx:latest`                      |
-| `k8s.frp.frps`            | FRPS 地址、端口、token、端口池          | `host: frps.example.com`            |
+| 配置项                       | 说明                           | 示例                                     |
+| ------------------------- | ---------------------------- | -------------------------------------- |
+| `k8s.namespace`           | 靶机、生成器等资源所在命名空间              | `cbctf`                                |
+| `k8s.shared_volume_claim` | 平台和运行时工作负载共用的 PVC；部署参数，后台不修改 | `cbctf-data`                           |
+| `k8s.capture`             | 流量捕获 sidecar 镜像              | `ghcr.io/domcyrus/rustnet:latest`      |
+| `k8s.capture_enabled`     | 是否创建抓包容器及相关挂载                | `true`                                 |
+| `k8s.generator_image`     | 含 `/app/generator` 的独立生成器镜像  | `ghcr.io/0rays/cbctf-generator:latest` |
+| `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量    | `2`                                    |
+| `k8s.range.jump_image`    | 靶场题玩家跳板容器镜像                  | `ghcr.io/0rays/cbctf-jump:latest`      |
+| `k8s.frp.on`              | 是否启用 FRP 暴露靶机端口              | `false`                                |
+| `k8s.frp.frpc`            | FRP client 镜像                | `ghcr.io/fatedier/frpc:v0.69.0`        |
+| `k8s.frp.nginx`           | FRP 辅助 Nginx 镜像              | `nginx:latest`                         |
+| `k8s.frp.frps`            | FRPS 地址、端口、token、端口池         | `host: frps.example.com`               |
 
-抓包开关、worker 镜像、生成器池容量与靶场跳板镜像均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
+抓包开关、生成器镜像、生成器池容量与靶场跳板镜像均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
 
 私有镜像仓库的拉取凭据不在后台配置：运行时 Pod 使用 Helm 写入的 `k8s.service_account` ServiceAccount，它带着 Chart 的 `imagePullSecrets` 与 `imageCredentials`。
 
@@ -1019,19 +1019,19 @@ url: /deploy/workloads.md
 
 动态附件题加入比赛或发布时，会提前启动生成器。选手初始化题目后，由空闲生成器制作该队附件；繁忙时任务排队等待。
 
-| 设置                        | 用途                                         |
-| ------------------------- | ------------------------------------------ |
-| `k8s.generator_pool_size` | 每场比赛、每道动态题预建的生成器数量，默认 `2`；设为 `0` 时由管理员手动启动 |
-| `asynq.queues.generator`  | 生成器启停任务并发数，默认 `3`                          |
-| `asynq.queues.attachment` | 平台同时处理附件生成任务的上限，默认 `32`                    |
-| `k8s.worker_image`        | 附件执行服务镜像，默认使用 `ghcr.io/0rays/cbctf-worker` |
+| 设置                        | 用途                                            |
+| ------------------------- | --------------------------------------------- |
+| `k8s.generator_pool_size` | 每场比赛、每道动态题预建的生成器数量，默认 `2`；设为 `0` 时由管理员手动启动    |
+| `asynq.queues.generator`  | 生成器启停任务并发数，默认 `3`                             |
+| `asynq.queues.attachment` | 平台同时处理附件生成任务的上限，默认 `32`                       |
+| `k8s.generator_image`     | 附件执行服务镜像，默认使用 `ghcr.io/0rays/cbctf-generator` |
 
 比赛前在「比赛 → 生成器」确认实例已就绪，并根据脚本耗时和参赛队伍数增加实例。全局生成器用于题库测试，不能代替比赛专用生成器。
 
 生成失败时，检查：
 
 1. 平台和生成器使用同一共享 PVC。Helm 通过 `persistence.existingClaim` 指定已有卷；默认卷名为 `{namespace}-shared-volume`。
-2. 节点能拉取题目镜像和 worker 镜像，平台可访问生成器 Pod 的 TCP 8080 端口。
+2. 节点能拉取题目镜像和生成器镜像，平台可访问生成器 Pod 的 TCP 8080 端口。
 3. 生成脚本在 1 分钟内完成，并输出有效 ZIP。入口和参数见[动态附件生成](/guide/features/attachment.md)。
 
 同一队伍重复请求可复用已有附件。重置 Flag 或更新题目源文件后会生成相应的新附件，选手应重新下载。
@@ -1064,7 +1064,7 @@ image:
 cbctf:
   k8s:
     capture_enabled: false
-    worker_image: ghcr.io/0rays/cbctf-worker:your-worker-tag
+    generator_image: ghcr.io/0rays/cbctf-generator:your-tag
     generator_pool_size: 4
   asynq:
     queues:
@@ -1073,7 +1073,7 @@ cbctf:
       attachment: 32
 ```
 
-Chart 将 `cbctf.k8s.worker_image` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
+Chart 将 `cbctf.k8s.generator_image` 写入 `k8s.generator_image`，生成器镜像的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、生成器镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
 
 开赛前建议按预计并发启动一批测试实例，检查镜像拉取、附件耗时和资源占用，再确定池容量与队列并发。
 
@@ -1846,7 +1846,7 @@ zip -j "$OUTPUT" "$WORKDIR/flag.txt"
 1. 镜像必须包含 `sleep` 与 `unzip`
 2. 脚本入口固定为 `/root/run.sh`，工作目录为 `/root`
 3. 输出文件必须是 `/root/mnt/attachments/{team_id}.zip`
-4. 此示例还需要 `bash`、`base64`、`mktemp` 和 `zip`；将 `/root/run.sh` 设置为可执行。镜像入口会被 worker 覆盖，初始化逻辑应放在脚本中
+4. 此示例还需要 `bash`、`base64`、`mktemp` 和 `zip`；将 `/root/run.sh` 设置为可执行。镜像入口会被生成器运行时覆盖，初始化逻辑应放在脚本中
 5. 共享存储不可用时，动态附件无法生成
 
 ## 管理入口
@@ -2102,7 +2102,7 @@ x-range:
   lease_duration: 7200    # 单次租约时长（秒）
   gateway: jump           # 玩家网关对应的 service
   access_network: mgmt    # 网关接入的网段，省略时取网关唯一的网段
-  ssh_user: ctf           # 跳板的登录用户，省略时为 ctf
+  ssh_user: ctfer         # 跳板的登录用户，省略时为 ctfer
   routes:                 # 网段间的三层互通声明
     - {from: mgmt, to: internal}
     - {from: internal, to: dmz}
@@ -2155,7 +2155,7 @@ networks:
 | `lease_duration` | 大于 0，秒；省略时为 7200                              |
 | `gateway`        | 必填，必须指向存在的 service，该 service 不能是 `x-kubevirt` |
 | `access_network` | 必须是已定义的网段；省略时取网关唯一的网段，因此网关只能接一个网段             |
-| `ssh_user`       | 跳板的登录用户，省略时为 `ctf`                            |
+| `ssh_user`       | 跳板的登录用户，省略时为 `ctfer`                          |
 | `routes`         | 每条的两个网段都必须已定义、不能相同、不能重复；省略表示各网段之间不互通          |
 
 接入网段是选手进入拓扑的落脚点，节点在别的网段时必须用互通声明把接入网段连过去，否则选手够不到节点，平台会直接拒绝这份配置。互通是逐跳的：接入网段只连到 `internal` 时，选手到 `dmz` 要经 `internal` 转发。
@@ -2187,7 +2187,7 @@ x-range:
   lease_duration: 3600
   gateway: jump
   access_network: access
-  ssh_user: ctf
+  ssh_user: ctfer
   routes:
     - {from: access, to: dmz}
     - {from: dmz, to: core}
@@ -2944,10 +2944,10 @@ url: /admin/challenges.md
 
 ## 附件
 
-| 题型        | 上传内容与下载行为                                                                      |
-| --------- | ------------------------------------------------------------------------------ |
-| 静态题 / 容器题 | 所有队伍共享一个附件，下载时使用上传文件名                                                          |
-| 动态附件题     | 可选上传 ZIP 源文件，保存为 `generator.zip`，由 worker 解压到 `/root`；每队下载按 Flag 和源文件版本生成的 ZIP |
+| 题型        | 上传内容与下载行为                                                                    |
+| --------- | ---------------------------------------------------------------------------- |
+| 静态题 / 容器题 | 所有队伍共享一个附件，下载时使用上传文件名                                                        |
+| 动态附件题     | 可选上传 ZIP 源文件，保存为 `generator.zip`，由生成器运行时解压到 `/root`；每队下载按 Flag 和源文件版本生成的 ZIP |
 
 静态附件可按题目需要选择文件格式，动态生成器源文件需打包为有效 ZIP。上传大小由「系统管理」中的题目附件限制控制（`gin.upload.challenge`）。上传完成即保存，取消编辑不会撤销附件上传。
 
@@ -3061,7 +3061,7 @@ url: /admin/contests.md
 | 页面  | 实际行为                                               |
 | --- | -------------------------------------------------- |
 | 镜像  | 选择镜像与拉取策略，向可调度节点提交预拉取 Job                          |
-| 生成器 | 为所选动态附件题启动比赛专用 worker；平台也会按池容量自动预建                 |
+| 生成器 | 为所选动态附件题启动比赛专用生成器；平台也会按池容量自动预建                     |
 | 靶机  | 选择容器题、队伍比例（1–100%）和持续秒数，为随机选择的已有队伍初始化 Flag 并提交启动任务 |
 
 批量启动按所选题目和队伍比例随机抽取已有队伍，已解题或已有实例的项目可能跳过。提交后查看运行状态，等待实例就绪再访问。部分失败时可展开结果查看原因；再次启动会重新随机选择队伍。

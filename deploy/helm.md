@@ -199,18 +199,18 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 
 ## Kubernetes 靶机配置
 
-| 配置项                             | 说明                                                      | 示例                                  |
-| ------------------------------- | ------------------------------------------------------- | ----------------------------------- |
-| `serviceAccount.create`         | 是否创建应用 ServiceAccount                                   | `true`                              |
-| `cbctf.k8s.capture`             | 流量捕获镜像                                                  | `ghcr.io/domcyrus/rustnet:latest`   |
-| `cbctf.k8s.capture_enabled`     | 是否开启抓包容器                                                | `true`                              |
-| `cbctf.k8s.worker_image`        | 独立 worker 镜像地址，与主程序版本分开配置                               | `ghcr.io/0rays/cbctf-worker:latest` |
-| `cbctf.k8s.generator_pool_size` | 每比赛、每动态题的生成器池容量                                         | `2`                                 |
-| `cbctf.k8s.service_account`     | 运行时工作负载使用的 ServiceAccount，留空用 `{release}-cbctf-runtime` | `cbctf-runtime`                     |
-| `cbctf.k8s.frp.on`              | 是否启用 FRP 端口暴露                                           | `false`                             |
-| `cbctf.k8s.frp.frpc`            | FRP client 镜像                                           | `ghcr.io/fatedier/frpc:v0.69.0`     |
-| `cbctf.k8s.frp.nginx`           | FRP 转发辅助 Nginx 镜像                                       | `nginx:latest`                      |
-| `cbctf.k8s.frp.frps`            | FRPS 服务端、token 和端口池                                     | `host: frps.example.com`            |
+| 配置项                             | 说明                                                      | 示例                                     |
+| ------------------------------- | ------------------------------------------------------- | -------------------------------------- |
+| `serviceAccount.create`         | 是否创建应用 ServiceAccount                                   | `true`                                 |
+| `cbctf.k8s.capture`             | 流量捕获镜像                                                  | `ghcr.io/domcyrus/rustnet:latest`      |
+| `cbctf.k8s.capture_enabled`     | 是否开启抓包容器                                                | `true`                                 |
+| `cbctf.k8s.generator_image`     | 独立生成器镜像地址，与主程序版本分开配置                                    | `ghcr.io/0rays/cbctf-generator:latest` |
+| `cbctf.k8s.generator_pool_size` | 每比赛、每动态题的生成器池容量                                         | `2`                                    |
+| `cbctf.k8s.service_account`     | 运行时工作负载使用的 ServiceAccount，留空用 `{release}-cbctf-runtime` | `cbctf-runtime`                        |
+| `cbctf.k8s.frp.on`              | 是否启用 FRP 端口暴露                                           | `false`                                |
+| `cbctf.k8s.frp.frpc`            | FRP client 镜像                                           | `ghcr.io/fatedier/frpc:v0.69.0`        |
+| `cbctf.k8s.frp.nginx`           | FRP 转发辅助 Nginx 镜像                                       | `nginx:latest`                         |
+| `cbctf.k8s.frp.frps`            | FRPS 服务端、token 和端口池                                     | `host: frps.example.com`               |
 
 Chart 使用命名空间 Role 管理 Pod、Service、Job、NetworkPolicy、ConfigMap、Multus NAD 和 VM，使用 ClusterRole 管理节点读取及 Kube-OVN 集群级资源。Chart 不会安装 KubeVirt、Kube-OVN 或 Multus，需要时请先在集群层面安装这些组件。
 

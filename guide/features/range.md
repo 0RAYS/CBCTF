@@ -40,7 +40,7 @@ x-range:
   lease_duration: 7200    # 单次租约时长（秒）
   gateway: jump           # 玩家网关对应的 service
   access_network: mgmt    # 网关接入的网段，省略时取网关唯一的网段
-  ssh_user: ctf           # 跳板的登录用户，省略时为 ctf
+  ssh_user: ctfer         # 跳板的登录用户，省略时为 ctfer
   routes:                 # 网段间的三层互通声明
     - {from: mgmt, to: internal}
     - {from: internal, to: dmz}
@@ -93,7 +93,7 @@ networks:
 | `lease_duration` | 大于 0，秒；省略时为 7200                              |
 | `gateway`        | 必填，必须指向存在的 service，该 service 不能是 `x-kubevirt` |
 | `access_network` | 必须是已定义的网段；省略时取网关唯一的网段，因此网关只能接一个网段             |
-| `ssh_user`       | 跳板的登录用户，省略时为 `ctf`                            |
+| `ssh_user`       | 跳板的登录用户，省略时为 `ctfer`                          |
 | `routes`         | 每条的两个网段都必须已定义、不能相同、不能重复；省略表示各网段之间不互通          |
 
 接入网段是选手进入拓扑的落脚点，节点在别的网段时必须用互通声明把接入网段连过去，否则选手够不到节点，平台会直接拒绝这份配置。互通是逐跳的：接入网段只连到 `internal` 时，选手到 `dmz` 要经 `internal` 转发。
@@ -125,7 +125,7 @@ x-range:
   lease_duration: 3600
   gateway: jump
   access_network: access
-  ssh_user: ctf
+  ssh_user: ctfer
   routes:
     - {from: access, to: dmz}
     - {from: dmz, to: core}

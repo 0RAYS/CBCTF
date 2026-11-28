@@ -55,19 +55,19 @@
 
 动态附件题加入比赛或发布时，会提前启动生成器。选手初始化题目后，由空闲生成器制作该队附件；繁忙时任务排队等待。
 
-| 设置                        | 用途                                         |
-| ------------------------- | ------------------------------------------ |
-| `k8s.generator_pool_size` | 每场比赛、每道动态题预建的生成器数量，默认 `2`；设为 `0` 时由管理员手动启动 |
-| `asynq.queues.generator`  | 生成器启停任务并发数，默认 `3`                          |
-| `asynq.queues.attachment` | 平台同时处理附件生成任务的上限，默认 `32`                    |
-| `k8s.worker_image`        | 附件执行服务镜像，默认使用 `ghcr.io/0rays/cbctf-worker` |
+| 设置                        | 用途                                            |
+| ------------------------- | --------------------------------------------- |
+| `k8s.generator_pool_size` | 每场比赛、每道动态题预建的生成器数量，默认 `2`；设为 `0` 时由管理员手动启动    |
+| `asynq.queues.generator`  | 生成器启停任务并发数，默认 `3`                             |
+| `asynq.queues.attachment` | 平台同时处理附件生成任务的上限，默认 `32`                       |
+| `k8s.generator_image`     | 附件执行服务镜像，默认使用 `ghcr.io/0rays/cbctf-generator` |
 
 比赛前在「比赛 → 生成器」确认实例已就绪，并根据脚本耗时和参赛队伍数增加实例。全局生成器用于题库测试，不能代替比赛专用生成器。
 
 生成失败时，检查：
 
 1. 平台和生成器使用同一共享 PVC。Helm 通过 `persistence.existingClaim` 指定已有卷；默认卷名为 `{namespace}-shared-volume`。
-2. 节点能拉取题目镜像和 worker 镜像，平台可访问生成器 Pod 的 TCP 8080 端口。
+2. 节点能拉取题目镜像和生成器镜像，平台可访问生成器 Pod 的 TCP 8080 端口。
 3. 生成脚本在 1 分钟内完成，并输出有效 ZIP。入口和参数见[动态附件生成](/guide/features/attachment.md)。
 
 同一队伍重复请求可复用已有附件。重置 Flag 或更新题目源文件后会生成相应的新附件，选手应重新下载。
@@ -100,7 +100,7 @@ image:
 cbctf:
   k8s:
     capture_enabled: false
-    worker_image: ghcr.io/0rays/cbctf-worker:your-worker-tag
+    generator_image: ghcr.io/0rays/cbctf-generator:your-tag
     generator_pool_size: 4
   asynq:
     queues:
@@ -109,6 +109,6 @@ cbctf:
       attachment: 32
 ```
 
-Chart 将 `cbctf.k8s.worker_image` 写入 `k8s.worker_image`，worker 的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、worker 镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
+Chart 将 `cbctf.k8s.generator_image` 写入 `k8s.generator_image`，生成器镜像的仓库和版本独立于主程序镜像。配置文件提供初始值，随后以数据库设置为准。抓包开关、生成器镜像和池容量可在「系统管理 → Kubernetes 配置」中修改，对后续新建实例及补池生效；不会自动重建或停止已有实例。其他平台副本需重新加载配置。
 
 开赛前建议按预计并发启动一批测试实例，检查镜像拉取、附件耗时和资源占用，再确定池容量与队列并发。
