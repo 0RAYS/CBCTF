@@ -5,6 +5,7 @@
   "scoring",
   "attachment",
   "container",
+  "range",
   "contest",
   "auth",
   "cronjobs",

@@ -7,6 +7,8 @@ description: 说明 CBCTF 动态容器、Pod 模式、VPC 模式、端口转发�
 
 容器题类型为 `pods`。选手启动题目后，平台会为队伍创建独立的 Kubernetes 资源，并在页面返回可访问端点。管理员可以在后台查看、预热、停止靶机，并下载流量文件。
 
+需要把一整套网络拓扑交给队伍、且多支队伍共用同一套环境时，可以把容器题配置成[渗透靶场](./range)。
+
 ## 基础要求
 
 | 要求         | 说明                                                                                          |
@@ -64,6 +66,8 @@ VPC 模式适合需要多子网、静态 IP、网络隔离或模拟内网拓扑�
 :::
 
 VPC 模式下使用了同一 subnet 的容器默认互通，跨 subnet 的容器需要在「网络策略」中勾选允许互通，配置方式见[网络策略](../../admin/challenges)。
+
+跨 subnet 的互通在容器题里由「网络策略」表达；渗透靶场改用 `x-range.routes` 声明，平台据此同时放行路由与策略，详见[渗透靶场](./range)。
 
 ## KubeVirt VM 模式
 
@@ -177,6 +181,7 @@ Helm 的层级为 `cbctf.k8s.frp`。FRPS 服务器的配置和防火墙需允许
 | VM 创建失败     | 检查 KubeVirt 是否安装、`virtualmachines` RBAC、节点虚拟化能力和 containerDisk 镜像 |
 | 页面没有访问地址    | 普通 Pod 题检查暴露端口、Service、FRP 配置；VM 题不会由 `ports` 自动生成访问地址            |
 | VPC/VM 模式失败 | 检查 Kube-OVN、Multus、KubeVirt、静态 IP 和 MAC 地址                        |
+| 靶场节点之间不通   | 检查 `x-range.routes` 是否声明了这两个网段，互通是显式声明的，见[渗透靶场](./range)       |
 
 ## 运维建议
 

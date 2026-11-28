@@ -145,6 +145,9 @@ cbctf:
       email: 10
       webhook: 15
       image: 10
+      # Range instances start and stop as a whole topology, they need their own
+      # queue so a batch of instances does not starve the per-team victims.
+      range: 2
 
   gorm:
     postgres:
@@ -162,6 +165,11 @@ cbctf:
     capture_enabled: true
     worker_image: "ghcr.io/0rays/cbctf-worker:latest"
     generator_pool_size: 2
+    range:
+      # Nodes created concurrently inside one range instance.
+      node_concurrency: 8
+      # Seconds a range instance may take to become ready.
+      ready_timeout: 600
     # ServiceAccount of the runtime workloads, it carries the pull secrets of
     # the private registries. Empty uses {fullname}-runtime.
     service_account: ""

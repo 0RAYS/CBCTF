@@ -21,6 +21,7 @@ data:
         email: {{ .Values.cbctf.asynq.queues.email }}
         webhook: {{ .Values.cbctf.asynq.queues.webhook }}
         image: {{ .Values.cbctf.asynq.queues.image }}
+        range: {{ .Values.cbctf.asynq.queues.range }}
 
     gin:
       mode: {{ .Values.cbctf.gin.mode | quote }}
@@ -72,6 +73,9 @@ data:
       capture_enabled: {{ .Values.cbctf.k8s.capture_enabled }}
       worker_image: {{ .Values.cbctf.k8s.worker_image | quote }}
       generator_pool_size: {{ .Values.cbctf.k8s.generator_pool_size }}
+      range:
+        node_concurrency: {{ .Values.cbctf.k8s.range.node_concurrency }}
+        ready_timeout: {{ .Values.cbctf.k8s.range.ready_timeout }}
       service_account: {{ include "cbctf.runtimeServiceAccountName" . | quote }}
       frp:
         on: {{ .Values.cbctf.k8s.frp.on }}
