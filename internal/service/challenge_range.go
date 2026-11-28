@@ -88,6 +88,19 @@ func parseRangeTopology(config *types.Project) (*model.RangeConfig, model.RetVal
 		}
 		seen[key] = struct{}{}
 	}
+	// 选手从接入网段进入拓扑,接入网段不与任何网段互通时选手够不到别的网段上的节点。
+	if !rangeAccessRouted(rangeConfig) {
+		for _, service := range config.Services {
+			if service.Name == rangeConfig.GatewayKey {
+				continue
+			}
+			for name := range service.Networks {
+				if name != rangeConfig.AccessNetwork {
+					return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range access network %s must be connected by a route", rangeConfig.AccessNetwork))
+				}
+			}
+		}
+	}
 	for _, service := range config.Services {
 		role, _ := service.Extensions[model.XRoleExtension].(string)
 		switch role {
@@ -101,6 +114,16 @@ func parseRangeTopology(config *types.Project) (*model.RangeConfig, model.RetVal
 		}
 	}
 	return &rangeConfig, model.SuccessRetVal()
+}
+
+// rangeAccessRouted 判断玩家接入网段是否与其它网段互通。
+func rangeAccessRouted(rangeConfig model.RangeConfig) bool {
+	for _, route := range rangeConfig.Routes {
+		if route.From == rangeConfig.AccessNetwork || route.To == rangeConfig.AccessNetwork {
+			return true
+		}
+	}
+	return false
 }
 
 // rangeRole 返回 service 在靶场拓扑中的角色。

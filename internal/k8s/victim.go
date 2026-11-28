@@ -298,6 +298,28 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	return victim, model.SuccessRetVal()
 }
 
+// vpcSubnetCIDRs 返回实例 VPC 的全部网段。
+// 玩家接入网段只有网关一个节点，也在网段规划里，同样算 VPC 内部。
+func vpcSubnetCIDRs(victim model.Victim) []string {
+	cidrs := make([]string, 0)
+	appendCIDR := func(cidr string) {
+		if cidr != "" && !slices.Contains(cidrs, cidr) {
+			cidrs = append(cidrs, cidr)
+		}
+	}
+	for _, podSpec := range victim.Spec.Pods {
+		for _, network := range podSpec.Networks {
+			appendCIDR(network.Definition.CIDR)
+		}
+	}
+	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
+		if subnet != nil {
+			appendCIDR(subnet.CIDRBlock)
+		}
+	}
+	return cidrs
+}
+
 func createVictimNetworkResources(
 	ctx context.Context,
 	victim *model.Victim,
@@ -309,14 +331,7 @@ func createVictimNetworkResources(
 	wg := utils.NewGroup(ctx)
 
 	// 题目 VPC 的网段不计入集群外部范围，VPC 内的容器按互通规则放行。
-	vpcSubnets := make([]string, 0)
-	for _, podSpec := range victim.Spec.Pods {
-		for _, network := range podSpec.Networks {
-			if network.Definition.CIDR != "" && !slices.Contains(vpcSubnets, network.Definition.CIDR) {
-				vpcSubnets = append(vpcSubnets, network.Definition.CIDR)
-			}
-		}
-	}
+	vpcSubnets := vpcSubnetCIDRs(*victim)
 
 	createNetworkPolicy := func(selector map[string]string, service string, subnetCIDRs []string, peerIPs map[string][]string, routedCIDRs []string) error {
 		name := victimResourceName("np", victim.ID, selector[ServiceLabel])

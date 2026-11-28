@@ -14,6 +14,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
+	"CBCTF/internal/utils"
 )
 
 // rangeFlagTemplates 是实例里要清掉的 flag 模板。
@@ -38,8 +39,39 @@ func buildRangeSpec(challenge model.Challenge, victim model.Victim) (model.Victi
 	if challenge.RangeConfig != nil {
 		spec.Routes = challenge.RangeConfig.Routes
 	}
+	if ret = addRangeAccessSubnet(&spec, challenge, victim); !ret.OK {
+		return model.VictimSpec{}, ret
+	}
 	stripRangeFlags(&spec)
 	return spec, model.SuccessRetVal()
+}
+
+// addRangeAccessSubnet 把玩家接入网段写进实例的网段规划。
+// 网关在租约时挂到这个网段上,网段因此由实例创建,随实例一起回收。
+func addRangeAccessSubnet(spec *model.VictimSpec, challenge model.Challenge, victim model.Victim) model.RetVal {
+	if challenge.RangeConfig == nil {
+		return model.SuccessRetVal()
+	}
+	gateway, ok := model.GatewayOf(challenge.Template, challenge.RangeConfig.AccessNetwork)
+	if !ok || gateway.Subnet.CIDR == "" || gateway.Subnet.Gateway == "" {
+		return model.FailRetVal(i18n.Model.CreateError, "RangeAccessNetwork", challenge.RangeConfig.AccessNetwork, nil)
+	}
+	for _, subnet := range spec.NetworkPlan.Subnets {
+		if subnet == nil || subnet.DefName != gateway.Subnet.Name {
+			continue
+		}
+		subnet.ExcludeIps = append(subnet.ExcludeIps, gateway.Network.IP)
+		return model.SuccessRetVal()
+	}
+	spec.NetworkPlan.Subnets = append(spec.NetworkPlan.Subnets, &model.Subnet{
+		DefName:      gateway.Subnet.Name,
+		Name:         fmt.Sprintf("net-%d-%d-%s", victim.ChallengeID, victim.UserID.V, utils.RandHexStr(6)),
+		CIDRBlock:    gateway.Subnet.CIDR,
+		Gateway:      gateway.Subnet.Gateway,
+		ExcludeIps:   []string{gateway.Network.IP},
+		NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%d-%d-%s", victim.ChallengeID, victim.UserID.V, utils.RandHexStr(6))},
+	})
+	return model.SuccessRetVal()
 }
 
 // stripRangeFlags 清掉实例里的 flag 模板。

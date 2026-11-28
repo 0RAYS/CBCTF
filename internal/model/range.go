@@ -44,6 +44,7 @@ type GatewayPayload struct {
 // RangeGateway 玩家网关的声明,来自出题人的 compose。
 // 网关不属于实例拓扑,平台在租约时单独创建它,选手只拿到它的地址。
 type RangeGateway struct {
+	Service     string
 	Name        string
 	Image       string
 	Command     []string
@@ -63,9 +64,10 @@ func GatewayOf(template ChallengeTemplate, accessNetwork string) (RangeGateway, 
 			continue
 		}
 		gateway := RangeGateway{
-			Name:   pod.Name,
-			Ports:  pod.ServicePorts,
-			Subnet: NetworkDefinition{Name: accessNetwork},
+			Service: pod.Key,
+			Name:    pod.Name,
+			Ports:   pod.ServicePorts,
+			Subnet:  NetworkDefinition{Name: accessNetwork},
 		}
 		for _, container := range pod.Containers {
 			gateway.Image = container.Image
@@ -100,6 +102,16 @@ func (c RangeConfig) XRange() XRange {
 		xRange.Routes = append(xRange.Routes, XRangeRoute{From: route.From, To: route.To})
 	}
 	return xRange
+}
+
+// DeepCopy 返回靶场配置的副本。
+func (c *RangeConfig) DeepCopy() *RangeConfig {
+	if c == nil {
+		return nil
+	}
+	copied := *c
+	copied.Routes = append([]RouteLink(nil), c.Routes...)
+	return &copied
 }
 
 // RoutedNetworks 返回与给定网段互通的网段名,互通关系是双向的。
