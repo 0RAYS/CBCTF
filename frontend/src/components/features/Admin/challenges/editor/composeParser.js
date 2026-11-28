@@ -1,4 +1,5 @@
 import {
+  createGuideFixedFlag,
   createGuideGroup,
   createGuideRange,
   createGuideService,
@@ -97,6 +98,7 @@ export const parseComposeYamlToGuideConfig = (
   let currentUser = null;
   let currentGroup = null;
   let currentWriteFile = null;
+  let currentFixedFlag = null;
   let cloudConfigList = '';
   let cloudConfigNestedList = '';
   let blockScalar = null;
@@ -129,6 +131,7 @@ export const parseComposeYamlToGuideConfig = (
       currentUser = null;
       currentGroup = null;
       currentWriteFile = null;
+      currentFixedFlag = null;
       cloudConfigList = '';
       cloudConfigNestedList = '';
       blockScalar = null;
@@ -154,6 +157,7 @@ export const parseComposeYamlToGuideConfig = (
         currentUser = null;
         currentGroup = null;
         currentWriteFile = null;
+        currentFixedFlag = null;
         cloudConfigList = '';
         cloudConfigNestedList = '';
         blockScalar = null;
@@ -172,11 +176,21 @@ export const parseComposeYamlToGuideConfig = (
         currentUser = null;
         currentGroup = null;
         currentWriteFile = null;
+        currentFixedFlag = null;
         cloudConfigList = '';
         cloudConfigNestedList = '';
         blockScalar = null;
         if (
-          ['ports', 'environment', 'x-volumes', 'x-boot', 'x-cloudinit', 'command', 'networks'].includes(pair.key) &&
+          [
+            'ports',
+            'environment',
+            'x-volumes',
+            'x-boot',
+            'x-cloudinit',
+            'x-fixed-flags',
+            'command',
+            'networks',
+          ].includes(pair.key) &&
           pair.value === ''
         ) {
           serviceList = pair.key;
@@ -328,6 +342,28 @@ export const parseComposeYamlToGuideConfig = (
         else if (pair?.key === 'content') currentVolume.content = pair.value;
         continue;
       }
+      if (indent === 6 && serviceList === 'x-fixed-flags' && text.startsWith('- ')) {
+        const body = text.slice(2).trim();
+        currentFixedFlag = createGuideFixedFlag();
+        service.fixedFlags.push(currentFixedFlag);
+        if (body.startsWith('{')) {
+          const flow = parseFlowMapping(body);
+          currentFixedFlag.name = flow.name || '';
+          currentFixedFlag.value = flow.value || '';
+          currentFixedFlag = null;
+        } else {
+          const pair = parseKeyValueLine(body);
+          if (pair?.key === 'name') currentFixedFlag.name = pair.value;
+          else if (pair?.key === 'value') currentFixedFlag.value = pair.value;
+        }
+        continue;
+      }
+      if (indent === 8 && serviceList === 'x-fixed-flags' && currentFixedFlag) {
+        const pair = parseKeyValueLine(text);
+        if (pair?.key === 'name') currentFixedFlag.name = pair.value;
+        else if (pair?.key === 'value') currentFixedFlag.value = pair.value;
+        continue;
+      }
       if (indent === 6 && serviceList === 'ports' && text.startsWith('- ')) {
         const value = text.slice(2).trim();
         if (value.includes(':')) {
@@ -398,6 +434,7 @@ export const parseComposeYamlToGuideConfig = (
           else range.leaseDuration = parsed;
         } else if (pair.key === 'gateway') range.gateway = pair.value;
         else if (pair.key === 'access_network') range.accessNetwork = pair.value;
+        else if (pair.key === 'ssh_user') range.sshUser = pair.value;
         else {
           errors.push(
             t('admin.challengeModal.composeGuide.validation.unsupportedRangeField', {

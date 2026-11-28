@@ -686,6 +686,7 @@ test('range topology parses x-range and x-role without unsupported field errors'
     leaseDuration: 7200,
     gateway: 'jump',
     accessNetwork: 'mgmt',
+    sshUser: '',
     routes: [
       { from: 'mgmt', to: 'internal' },
       { from: 'internal', to: 'dmz' },
@@ -711,6 +712,49 @@ test('range topology survives a serializer round trip', () => {
     reparsed.config.services.map((entry) => entry.role),
     ['gateway', 'node']
   );
+});
+
+test('range ssh user is parsed and serialized', () => {
+  const parsed = parseComposeYamlToGuideConfig('x-range:\n  gateway: jump\n  ssh_user: player\nservices:\n  jump:\n    image: alpine\n');
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.config.range.sshUser, 'player');
+  const yaml = buildGuidedComposeYaml(parsed.config);
+  assert.ok(yaml.includes('  ssh_user: player'));
+});
+
+test('fixed flags survive a parser and serializer round trip', () => {
+  const yaml = [
+    'services:',
+    '  web:',
+    '    image: nginx',
+    '    x-fixed-flags:',
+    '      - name: user.txt',
+    '        value: static{flag-in-file}',
+  ].join('\n');
+  const parsed = parseComposeYamlToGuideConfig(yaml);
+  assert.equal(parsed.ok, true);
+  assert.deepEqual(parsed.config.services[0].fixedFlags, [{ name: 'user.txt', value: 'static{flag-in-file}' }]);
+  const built = buildGuidedComposeYaml(parsed.config);
+  assert.ok(built.includes('    x-fixed-flags:'));
+  assert.ok(built.includes('      - name: "user.txt"'));
+  assert.ok(built.includes('        value: "static{flag-in-file}"'));
+});
+
+test('the range gateway takes its image from the platform', () => {
+  const config = {
+    services: [service({ name: 'jump', image: '', ports: [] })],
+    networks: [],
+    range: {
+      poolSize: 1,
+      maxLeased: 1,
+      leaseDuration: 7200,
+      gateway: 'jump',
+      accessNetwork: '',
+      sshUser: '',
+      routes: [],
+    },
+  };
+  assert.equal(validateGuidedCompose(config).fields['service.0.image'], undefined);
 });
 
 test('range routes accept the flow mapping notation', () => {
@@ -751,7 +795,7 @@ test('range validation mirrors the backend topology constraints', () => {
   config.range.gateway = 'jump';
   config.range.accessNetwork = 'nowhere';
   const attached = validateGuidedCompose(config).fields;
-  assert.deepEqual(attached['range.gateway'], [errorKey('rangeGatewayPortRequired')]);
+  assert.equal(attached['range.gateway'], undefined);
   assert.deepEqual(attached['range.accessNetwork'], [
     errorKey('rangeAccessNetworkNotAttached'),
     errorKey('rangeAccessNetworkUndefined'),

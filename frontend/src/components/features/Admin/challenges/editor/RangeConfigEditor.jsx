@@ -87,6 +87,12 @@ export default function RangeConfigEditor({ config, errors, onChange }) {
               </select>
               <GuideErrors errors={errors['range.accessNetwork']} />
             </GuideField>
+            <GuideInput
+              label={ct('fields.sshUser')}
+              value={range.sshUser || ''}
+              placeholder={ct('placeholders.sshUser')}
+              onChange={(value) => updateRange({ sshUser: value })}
+            />
           </div>
           <GuideListHeader
             title={ct('sections.rangeRoutes')}

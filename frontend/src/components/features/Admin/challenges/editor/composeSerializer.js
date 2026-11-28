@@ -141,6 +141,7 @@ export const buildGuidedComposeYaml = (config) => {
     lines.push(`  lease_duration: ${Number(range.leaseDuration) || 0}`);
     if ((range.gateway || '').trim()) lines.push(`  gateway: ${range.gateway.trim()}`);
     if ((range.accessNetwork || '').trim()) lines.push(`  access_network: ${range.accessNetwork.trim()}`);
+    if ((range.sshUser || '').trim()) lines.push(`  ssh_user: ${range.sshUser.trim()}`);
     const routes = (range.routes || []).filter((route) => route.from?.trim() || route.to?.trim());
     if (routes.length > 0) {
       lines.push('  routes:');
@@ -159,7 +160,7 @@ export const buildGuidedComposeYaml = (config) => {
     const serviceName = service.name.trim() || `service${index + 1}`;
     lines.push(`  ${serviceName}:`);
     if (service.containerName.trim()) lines.push(`    container_name: ${service.containerName.trim()}`);
-    lines.push(`    image: ${service.image.trim()}`);
+    if ((service.image || '').trim()) lines.push(`    image: ${service.image.trim()}`);
     if (service.cpus.trim()) lines.push(`    cpus: ${service.cpus.trim()}`);
     if (service.memLimit.trim()) lines.push(`    mem_limit: ${service.memLimit.trim()}`);
     const ports = kubeVirt ? [] : (service.ports || []).filter((port) => port.target.trim());
@@ -190,6 +191,14 @@ export const buildGuidedComposeYaml = (config) => {
       });
     }
     if (kubeVirt) lines.push('    x-kubevirt: true');
+    const fixedFlags = (service.fixedFlags || []).filter((flag) => (flag.name || '').trim());
+    if (fixedFlags.length > 0) {
+      lines.push('    x-fixed-flags:');
+      fixedFlags.forEach((flag) => {
+        lines.push(`      - name: ${yamlQuote(flag.name.trim())}`);
+        lines.push(`        value: ${yamlQuote((flag.value || '').trim())}`);
+      });
+    }
     if (kubeVirt && (service.bootloader.trim() || service.secureBoot)) {
       lines.push('    x-boot:');
       if (service.bootloader.trim()) lines.push(`      bootloader: ${service.bootloader.trim()}`);

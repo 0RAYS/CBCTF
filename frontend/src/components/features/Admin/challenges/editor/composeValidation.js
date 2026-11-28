@@ -75,13 +75,8 @@ const validateRangeTopology = (config, t, networkNames) => {
     addError('range.gateway', t(validationKey('rangeGatewayRequired')));
   } else if (!gateway) {
     addError('range.gateway', t(validationKey('rangeGatewayUndefined'), { gateway: gatewayName }));
-  } else {
-    if (!(gateway.ports || []).some((port) => port.target.trim())) {
-      addError('range.gateway', t(validationKey('rangeGatewayPortRequired'), { gateway: gatewayName }));
-    }
-    if (gateway.kubeVirt) {
-      addError('range.gateway', t(validationKey('rangeGatewayVirtual'), { gateway: gatewayName }));
-    }
+  } else if (gateway.kubeVirt) {
+    addError('range.gateway', t(validationKey('rangeGatewayVirtual'), { gateway: gatewayName }));
   }
 
   const accessNetwork = (range.accessNetwork || '').trim();
@@ -167,6 +162,7 @@ export const validateGuidedCompose = (config, t = (key) => key) => {
   const serviceContainerNames = new Set();
   const networkDefinitionNames = new Set();
   const networkIps = new Set();
+  const rangeGatewayName = (config.range?.gateway || '').trim();
   const definedNetworks = (config.networks || []).filter((network) => network.name.trim());
   const networkNames = new Set(definedNetworks.map((network) => network.name.trim()));
   const networkCidrs = new Map(definedNetworks.map((network) => [network.name.trim(), network.subnet.trim()]));
@@ -204,7 +200,8 @@ export const validateGuidedCompose = (config, t = (key) => key) => {
       );
     }
     if (containerName) serviceContainerNames.add(containerName);
-    if (!service.image.trim())
+    // 玩家网关是平台固定的跳板容器,镜像由平台提供,题目里不用写。
+    if (!(rangeGatewayName && name === rangeGatewayName) && !service.image.trim())
       addError(
         `service.${serviceIndex}.image`,
         t('admin.challengeModal.composeGuide.validation.imageRequired', { label })
@@ -288,6 +285,27 @@ export const validateGuidedCompose = (config, t = (key) => key) => {
           t('admin.challengeModal.composeGuide.validation.volumeTargetUnique', { label, index: volumeIndex + 1 })
         );
       if (target) serviceVolumeTargets.add(target);
+    });
+    const fixedFlagNames = new Set();
+    (service.fixedFlags || []).forEach((flag, flagIndex) => {
+      const flagName = (flag.name || '').trim();
+      const flagValue = (flag.value || '').trim();
+      if (!flagName)
+        addError(
+          `service.${serviceIndex}.fixedFlags.${flagIndex}.name`,
+          t(validationKey('fixedFlagNameRequired'), { label, index: flagIndex + 1 })
+        );
+      if (flagName && fixedFlagNames.has(flagName))
+        addError(
+          `service.${serviceIndex}.fixedFlags.${flagIndex}.name`,
+          t(validationKey('fixedFlagNameUnique'), { label, index: flagIndex + 1 })
+        );
+      if (flagName) fixedFlagNames.add(flagName);
+      if (!flagValue)
+        addError(
+          `service.${serviceIndex}.fixedFlags.${flagIndex}.value`,
+          t(validationKey('fixedFlagValueRequired'), { label, index: flagIndex + 1 })
+        );
     });
     if (networkNames.size === 0 && service.networks?.length > 0) {
       addError(

@@ -24,11 +24,6 @@ export default function ComposeEditor({ challenge, onChange, compose }) {
   const vpcMode = hasVpcNetworks(guideConfig);
   const range = guideConfig.range;
   const gatewayName = range ? range.gateway.trim() : '';
-  const gatewayService = guideConfig.services.find((service) => service.name.trim() === gatewayName);
-  const gatewayPorts = (gatewayService?.ports || [])
-    .filter((port) => port.target.trim())
-    .map((port) => (port.published.trim() ? `${port.target.trim()} (${port.published.trim()})` : port.target.trim()))
-    .join(', ');
   const yamlNoticeLines = [
     t('admin.challengeModal.yamlNotice.flagFormat', { format: '`static{}`, `leet{}`, `uuid{}`' }),
     ...[
@@ -70,7 +65,6 @@ export default function ComposeEditor({ challenge, onChange, compose }) {
                   rangeMode={Boolean(range)}
                   isGateway={Boolean(range) && service.name.trim() === gatewayName}
                   gatewayName={gatewayName}
-                  gatewayPorts={gatewayPorts}
                   errors={guideValidation.fields}
                   onChange={(next) =>
                     syncGuideConfig({

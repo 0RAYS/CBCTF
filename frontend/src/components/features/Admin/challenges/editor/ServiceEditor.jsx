@@ -19,7 +19,6 @@ export default function ServiceEditor({
   rangeMode = false,
   isGateway = false,
   gatewayName = '',
-  gatewayPorts = '',
   errors,
   onChange,
   onRemove,
@@ -47,20 +46,22 @@ export default function ServiceEditor({
         {onRemove && <IconButton onClick={onRemove} />}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {['name', 'containerName', 'image', 'cpus', 'memLimit'].map((field) => {
-          const label = field === 'name' ? 'serviceName' : field;
-          return (
-            <GuideInput
-              key={field}
-              label={ct(`fields.${label}`)}
-              value={service[field]}
-              required={['name', 'image'].includes(field)}
-              placeholder={ct(`placeholders.${label}`)}
-              errors={fieldErrors(field)}
-              onChange={(value) => update(field, value)}
-            />
-          );
-        })}
+        {['name', 'containerName', 'image', 'cpus', 'memLimit']
+          .filter((field) => !(isGateway && field !== 'name'))
+          .map((field) => {
+            const label = field === 'name' ? 'serviceName' : field;
+            return (
+              <GuideInput
+                key={field}
+                label={ct(`fields.${label}`)}
+                value={service[field]}
+                required={['name', 'image'].includes(field)}
+                placeholder={ct(`placeholders.${label}`)}
+                errors={fieldErrors(field)}
+                onChange={(value) => update(field, value)}
+              />
+            );
+          })}
         {!service.kubeVirt && (
           <>
             <GuideInput
@@ -123,13 +124,11 @@ export default function ServiceEditor({
 
       {rangeMode && (
         <p className="text-[11px] font-mono text-neutral-500">
-          {isGateway
-            ? ct('range.playerEntry', { ports: gatewayPorts || '-' })
-            : ct('range.gatewayEntry', { gateway: gatewayName || '-', ports: gatewayPorts || '-' })}
+          {isGateway ? ct('range.gatewayPlatform') : ct('range.gatewayEntry', { gateway: gatewayName || '-' })}
         </p>
       )}
 
-      {service.kubeVirt ? (
+      {isGateway ? null : service.kubeVirt ? (
         <CloudInitEditor value={service.userData} onChange={(value) => update('userData', value)} />
       ) : (
         <>
@@ -217,6 +216,37 @@ export default function ServiceEditor({
                 onChange={(value) => updateItem('volumes', index, 'content', value)}
               />
               <IconButton onClick={() => removeItem('volumes', index)} />
+            </div>
+          ))}
+        </>
+      )}
+
+      {!isGateway && (
+        <>
+          <GuideListHeader
+            title={ct('sections.fixedFlags')}
+            addLabel={ct('actions.add')}
+            onAdd={() => addItem('fixedFlags', { name: '', value: '' })}
+          />
+          {service.fixedFlags.map((flag, index) => (
+            <div key={index} className="grid grid-cols-[1fr_1fr_32px] gap-2">
+              <GuideInput
+                label={ct('fields.name')}
+                value={flag.name}
+                required
+                placeholder={ct('placeholders.fixedFlagName')}
+                errors={fieldErrors(`fixedFlags.${index}.name`)}
+                onChange={(value) => updateItem('fixedFlags', index, 'name', value)}
+              />
+              <GuideInput
+                label={ct('fields.value')}
+                value={flag.value}
+                required
+                placeholder={ct('placeholders.fixedFlagValue')}
+                errors={fieldErrors(`fixedFlags.${index}.value`)}
+                onChange={(value) => updateItem('fixedFlags', index, 'value', value)}
+              />
+              <IconButton onClick={() => removeItem('fixedFlags', index)} />
             </div>
           ))}
         </>

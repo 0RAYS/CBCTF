@@ -25,6 +25,8 @@ export const createGuideUser = () => ({
 
 export const createGuideGroup = () => ({ name: '', members: [] });
 
+export const createGuideFixedFlag = () => ({ name: '', value: '' });
+
 export const createGuideCloudConfig = () => ({ users: [], groups: [], writeFiles: [], sshAuthorizedKeys: [] });
 
 export const createGuideService = () => ({
@@ -43,6 +45,7 @@ export const createGuideService = () => ({
   ports: [],
   environment: [],
   volumes: [],
+  fixedFlags: [],
   networks: [],
 });
 
@@ -55,6 +58,7 @@ export const createGuideRange = () => ({
   leaseDuration: 7200,
   gateway: '',
   accessNetwork: '',
+  sshUser: '',
   routes: [],
 });
 
