@@ -48,7 +48,7 @@ func (cronLogger) Info(msg string, keysAndValues ...any) {
 }
 
 func (cronLogger) Error(err error, msg string, keysAndValues ...any) {
-	log.Logger.WithField("Values", keysAndValues).Warningf("%s: %s", msg, err)
+	log.Logger.WithField("Values", keysAndValues).Errorf("%s: %s", msg, err)
 }
 
 // cronLogAttrs keeps the attributes the RetVal rendering does not print, so a
