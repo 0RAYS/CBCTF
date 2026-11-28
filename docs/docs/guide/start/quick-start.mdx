@@ -9,7 +9,7 @@ CBCTF 需要部署在 Kubernetes 集群内，包括只使用静态题的场景�
 
 ## 1. 准备集群和存储
 
-- 准备 Kubernetes、kubectl、Helm，以及可拉取平台、worker 和题目镜像的节点。
+- 准备 Kubernetes、kubectl、Helm，以及可拉取平台、生成器和题目镜像的节点。
 - 为平台数据选择支持 `ReadWriteMany` 的 StorageClass。动态附件输入与抓包文件需要与运行时 Pod 共享数据。
 - 使用 VPC 题目时安装 Kube-OVN 和 Multus；使用虚拟机题目时再安装 KubeVirt。
 - Chart 不会替你安装 CNI、KubeVirt、Ingress Controller 或存储 provisioner。具体步骤见[集群准备](../../deploy/cluster)。
