@@ -42,6 +42,9 @@ func challengeSidecarImages(challenge model.Challenge) []string {
 
 // rangeJumpImage 返回玩家跳板容器的镜像,玩家网关的镜像由平台决定。
 func rangeJumpImage() string {
+	if config.Env == nil {
+		return ""
+	}
 	return config.Env.K8S.Range.JumpImage
 }
 

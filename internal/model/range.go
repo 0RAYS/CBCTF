@@ -47,7 +47,6 @@ type RangeAccess struct {
 type RangeGateway struct {
 	Service string
 	Name    string
-	Ports   Exposes
 	Network NetworkAttachment
 	Subnet  NetworkDefinition
 }
@@ -61,7 +60,6 @@ func GatewayOf(template ChallengeTemplate, accessNetwork string) (RangeGateway, 
 		gateway := RangeGateway{
 			Service: pod.Key,
 			Name:    pod.Name,
-			Ports:   pod.ServicePorts,
 			Subnet:  NetworkDefinition{Name: accessNetwork},
 		}
 		for _, network := range pod.Networks {

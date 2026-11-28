@@ -1,50 +1,37 @@
 package k8s
 
 import (
-	"strconv"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"CBCTF/internal/config"
+	"CBCTF/internal/model"
 )
 
 const (
-	// jumpContainerName 是跳板 Pod 里 SSH 容器的名字。
-	jumpContainerName = "ssh"
+	// jumpSSHPort 是跳板容器内 sshd 监听的端口,固定不变。
+	jumpSSHPort int32 = 22
 
-	// jumpSSHVolume 是跳板 SSH 配置的卷名。
-	jumpSSHVolume = "jump-ssh"
+	// jumpSSHPortName 是跳板端口在端点列表里的名字。
+	jumpSSHPortName = "ssh"
 
-	// jumpSSHMountPath 是 SSH 配置的挂载点,镜像里的入口脚本按这个路径读取。
-	jumpSSHMountPath = "/run/range/ssh"
-
-	// jumpSSHPortEnv 告诉镜像里的 sshd 监听哪个端口。
-	jumpSSHPortEnv = "RANGE_SSH_PORT"
+	// jumpSSHUserEnv 与 jumpSSHKeyEnv 是跳板容器的登录账号与公钥。
+	jumpSSHUserEnv = "RANGE_SSH_USER"
+	jumpSSHKeyEnv  = "RANGE_SSH_KEY"
 )
 
 // jumpContainer 构造玩家跳板的 SSH 容器。
 // 跳板只提供 SSH 登录,题目的环境变量、flag 与文件都不进这个容器。
-func jumpContainer(sshPort int32) corev1.Container {
+func jumpContainer(access model.RangeAccess) corev1.Container {
 	return corev1.Container{
-		Name:            jumpContainerName,
+		Name:            JumpContainerName,
 		Image:           config.Env.K8S.Range.JumpImage,
 		ImagePullPolicy: corev1.PullIfNotPresent,
-		Env:             []corev1.EnvVar{{Name: jumpSSHPortEnv, Value: strconv.Itoa(int(sshPort))}},
-		Resources:       jumpResources(),
-		VolumeMounts: []corev1.VolumeMount{{
-			Name:      jumpSSHVolume,
-			MountPath: jumpSSHMountPath,
-			ReadOnly:  true,
-		}},
-	}
-}
-
-// jumpSSHConfig 是跳板 SSH 容器的配置内容。
-func jumpSSHConfig(user, publicKey string) map[string]string {
-	return map[string]string{
-		"user":            user,
-		"authorized_keys": publicKey,
+		Env: []corev1.EnvVar{
+			{Name: jumpSSHUserEnv, Value: access.User},
+			{Name: jumpSSHKeyEnv, Value: access.PublicKey},
+		},
+		Resources: jumpResources(),
 	}
 }
 

@@ -25,6 +25,7 @@ const (
 	CaptureContainerName = "capture"
 	NginxContainerName   = "nginx"
 	FrpcContainerName    = "frpc"
+	JumpContainerName    = "ssh"
 	nfsVolumeName        = "shared-data"
 	frpcConfigVolume     = "frpc-volume"
 	nginxConfigVolume    = "nginx-volume"

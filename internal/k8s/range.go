@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -24,33 +23,15 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	if subnet == nil {
 		return victim, model.FailRetVal(i18n.K8S.GetError, "Subnet", gateway.Subnet.Name, errMissingSubnet)
 	}
-	sshPort, ret := gatewaySSHPort(gateway)
-	if !ret.OK {
-		return victim, ret
-	}
-	ctx, ret = withVictimRootOwner(ctx, victim, "workloads")
+	ctx, ret := withVictimRootOwner(ctx, victim, "workloads")
 	if !ret.OK {
 		return victim, ret
 	}
 	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag, rangeGatewayLabel: "true"})
 	podName := victimResourceName("rgt", victim.ID, "gateway")
-	sshConfig, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-		Name:   victimResourceName("rpay", victim.ID, "gateway"),
-		Labels: labels,
-		Data:   jumpSSHConfig(access.User, access.PublicKey),
-	})
-	if !ret.OK {
-		return victim, ret
-	}
-	if sshConfig == nil {
-		return victim, model.FailRetVal(i18n.K8S.CreateError, "ConfigMap", sshConfig.Name, errMissingConfigMap)
-	}
 
-	containers := []corev1.Container{jumpContainer(sshPort)}
-	volumes := []corev1.Volume{{
-		Name:      jumpSSHVolume,
-		ConfigMap: &corev1.ConfigMapVolumeSource{Name: sshConfig.Name},
-	}}
+	containers := []corev1.Container{jumpContainer(access)}
+	volumes := make([]corev1.Volume, 0, 2)
 	if config.Env.K8S.CaptureEnabled {
 		// The capture sidecar writes into the traffic directory, which has to
 		// exist and belong to the capture user before the pod is created.
@@ -60,7 +41,7 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 		containers = append(containers, captureContainer(victim, "jump.pcap"))
 		volumes = append(volumes, nfsVolume())
 	}
-	frpSidecar, ret := jumpFrpSidecars(ctx, victim, labels, gateway, sshPort)
+	frpSidecar, ret := jumpFrpSidecars(ctx, victim, labels)
 	if !ret.OK {
 		return victim, ret
 	}
@@ -100,7 +81,7 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	service, ret := CreateService(ctx, CreateServiceOptions{
 		Name:     victimResourceName("rsvc", victim.ID, "gateway"),
 		Labels:   labels,
-		Ports:    gateway.Ports,
+		Ports:    model.Exposes{{Port: jumpSSHPort, Protocol: "tcp", Published: jumpSSHPortName}},
 		Selector: labels,
 	})
 	if !ret.OK {
@@ -115,7 +96,7 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	}
 	for _, port := range service.Spec.Ports {
 		victim.Endpoints = append(victim.Endpoints, model.Endpoint{
-			Name:     findExposeDisplayName(gateway.Ports, port.Port, string(port.Protocol)),
+			Name:     jumpSSHPortName,
 			IP:       hostIP,
 			Port:     port.NodePort,
 			Protocol: string(port.Protocol),
@@ -131,25 +112,15 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	return victim, model.SuccessRetVal()
 }
 
-// gatewaySSHPort 返回跳板对外暴露的 SSH 端口。
-func gatewaySSHPort(gateway model.RangeGateway) (int32, model.RetVal) {
-	for _, port := range gateway.Ports {
-		if strings.EqualFold(port.Protocol, "tcp") {
-			return port.Port, model.SuccessRetVal()
-		}
-	}
-	return 0, model.FailRetVal(i18n.K8S.CreateError, "RangeGateway", "ssh port", nil)
-}
-
 // jumpFrpSidecars 给跳板注入 frpc 与 nginx 侧车,SSH 端口同时经 frps 对外暴露。
-func jumpFrpSidecars(ctx context.Context, victim model.Victim, labels map[string]string, gateway model.RangeGateway, sshPort int32) (frpSidecars, model.RetVal) {
+func jumpFrpSidecars(ctx context.Context, victim model.Victim, labels map[string]string) (frpSidecars, model.RetVal) {
 	if !config.Env.K8S.Frp.On || len(config.Env.K8S.Frp.Frps) == 0 {
 		return frpSidecars{}, model.SuccessRetVal()
 	}
 	sidecars, ret := buildFrpSidecars(victimResourceName("rfrp", victim.ID, "gateway"), []model.Endpoint{{
-		Name:     findExposeDisplayName(gateway.Ports, sshPort, "tcp"),
+		Name:     jumpSSHPortName,
 		IP:       "127.0.0.1",
-		Port:     sshPort,
+		Port:     jumpSSHPort,
 		Protocol: "tcp",
 	}})
 	if !ret.OK {
