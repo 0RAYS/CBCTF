@@ -63,6 +63,10 @@ description: 按实际管理界面创建和发布比赛，维护比赛题目、�
 
 停止时勾选需要关闭的运行中实例，再确认操作。部分停止失败时，列表会保留剩余选择供核对和重试。更多状态说明见[工作负载调度](../deploy/workloads)。
 
+## 靶场实例池
+
+「靶机」页顶部是靶场实例池面板，列出本场比赛里每个靶场题的池容量、已租出数量与每个实例的状态、占用队伍、租约到期时间和拓扑指纹。「预热」按钮把各靶场题的实例补齐到 `pool_size`，与每分钟跑一次的定时任务效果相同。面板只做观测与手动触发，实例的启停仍由平台调度。相关接口为 `GET /admin/contests/:contestID/ranges` 与 `POST /admin/contests/:contestID/ranges`，权限是 `admin:contest_range:control`。
+
 ## 排行榜与赛后题解
 
 - 在排行榜查看队伍总分、各题解解出情况，并切换时间线查看分数变化。
@@ -73,6 +77,6 @@ description: 按实际管理界面创建和发布比赛，维护比赛题目、�
 
 ## 主要权限
 
-比赛管理使用 `admin:contest:*`；题目使用 `admin:challenge:*`，题目 Flag 使用 `admin:challenge:flag:*`。比赛范围的镜像、靶机、生成器分别使用 `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_generator:control`，不要与全局权限混淆。节点镜像检测使用 `admin:image:detect`，比赛范围的镜像检测使用 `admin:contest_image:detect`。
+比赛管理使用 `admin:contest:*`；题目使用 `admin:challenge:*`，题目 Flag 使用 `admin:challenge:flag:*`。比赛范围的镜像、靶机、靶场实例池、生成器分别使用 `admin:contest_image:pull`、`admin:contest_victim:control`、`admin:contest_range:control`、`admin:contest_generator:control`，不要与全局权限混淆。节点镜像检测使用 `admin:image:detect`，比赛范围的镜像检测使用 `admin:contest_image:detect`。
 
 题解列表/下载使用 `admin:team_writeup:list/read`，整场导出使用 `admin:contest_writeup:export`。完整权限名称可在后台「权限」页查看。
