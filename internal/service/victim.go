@@ -620,7 +620,7 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 				}
 				if challenge.RangeConfig != nil {
 					// 靶场题给每队租一个池化实例,不是给每队复制一份环境。
-					if _, rangeRet := StartRange(tx, team, contest, challenge); rangeRet.OK {
+					if _, rangeRet := StartRange(tx, team, challenge); rangeRet.OK {
 						batch.Success(id, "leased")
 					} else if rangeRet.Msg == i18n.Model.Victim.Limited {
 						batch.Skip(id, "max_leased")

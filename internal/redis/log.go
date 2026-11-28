@@ -133,10 +133,7 @@ func GetLogs(ctx context.Context, start, end int64, minLevel string) ([]string, 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	buckets := logBuckets(minLevel)
-	scan := end + 1
-	if scan > logBucketLimit {
-		scan = logBucketLimit
-	}
+	scan := min(end+1, logBucketLimit)
 	pipe := RDB.Pipeline()
 	cmds := make([]*redis.ZSliceCmd, 0, len(buckets))
 	for _, bucket := range buckets {

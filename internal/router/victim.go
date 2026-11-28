@@ -33,7 +33,7 @@ func StartVictim(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.WithContext(ctx.Request.Context())
 	if challenge.RangeConfig != nil {
-		victim, ret := service.StartRange(tx, team, contest, challenge)
+		victim, ret := service.StartRange(tx, team, challenge)
 		if !ret.OK {
 			resp.JSON(ctx, ret)
 			return

@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"maps"
 	"net/netip"
 	"strconv"
 	"strings"
@@ -129,9 +130,7 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 			Multus: &v1.MultusNetwork{NetworkName: attachment},
 		})
 	}
-	for key, value := range ovnAnnotations(options.Networks) {
-		annotations[key] = value
-	}
+	maps.Copy(annotations, ovnAnnotations(options.Networks))
 	bootloader := &v1.Bootloader{BIOS: &v1.BIOS{}}
 	if strings.ToLower(options.Bootloader) == "efi" {
 		bootloader = &v1.Bootloader{EFI: &v1.EFI{SecureBoot: &options.SecureBoot}}

@@ -6,10 +6,6 @@ import (
 	netv1 "k8s.io/api/networking/v1"
 )
 
-func boolPointer(value bool) *bool {
-	return &value
-}
-
 func TestResolveNetworkPolicyDefaultsToDeniedEgress(t *testing.T) {
 	resolved := ResolveNetworkPolicy(nil, "web")
 	if resolved.Internet {
@@ -37,8 +33,8 @@ func TestResolveNetworkPolicyKeepsLegacyCIDRSemantics(t *testing.T) {
 
 func TestResolveNetworkPolicyScopesEntriesPerService(t *testing.T) {
 	policies := NetworkPolicies{
-		{Service: "web", AllowInternet: boolPointer(true), Peers: []string{"db"}},
-		{Service: "db", AllowInternet: boolPointer(false)},
+		{Service: "web", AllowInternet: new(true), Peers: []string{"db"}},
+		{Service: "db", AllowInternet: new(false)},
 	}
 	web := ResolveNetworkPolicy(policies, "web")
 	if !web.Internet {
@@ -58,7 +54,7 @@ func TestResolveNetworkPolicyScopesEntriesPerService(t *testing.T) {
 
 func TestResolveNetworkPolicyAggregatesSharedPodEntries(t *testing.T) {
 	policies := NetworkPolicies{
-		{Service: "web", AllowInternet: boolPointer(true)},
+		{Service: "web", AllowInternet: new(true)},
 		{Service: "db", EgressCIDRs: []string{"10.1.0.0/24"}},
 	}
 	shared := ResolveNetworkPolicy(policies, "")

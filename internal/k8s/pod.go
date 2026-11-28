@@ -90,9 +90,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 	}
 	annotations := make(map[string]string)
 	maps.Copy(annotations, options.Annotations)
-	for key, value := range ovnAnnotations(options.Networks) {
-		annotations[key] = value
-	}
+	maps.Copy(annotations, ovnAnnotations(options.Networks))
 	if len(annotations) == 0 {
 		annotations = nil
 	}

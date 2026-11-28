@@ -253,7 +253,7 @@ func EnsureRangePool(ctx context.Context, challenge model.Challenge) error {
 
 // StartRange 为队伍领取一个靶场实例。
 // 池中有空闲实例就直接租出,否则现场启动一个,实例就绪后再创建玩家网关。
-func StartRange(tx *gorm.DB, team model.Team, contest model.Contest, challenge model.Challenge) (model.Victim, model.RetVal) {
+func StartRange(tx *gorm.DB, team model.Team, challenge model.Challenge) (model.Victim, model.RetVal) {
 	if challenge.RangeConfig == nil {
 		return model.Victim{}, model.FailRetVal(i18n.Model.Victim.NotStartable, "Range", fmt.Sprintf("challenge_id=%d", challenge.ID), nil)
 	}

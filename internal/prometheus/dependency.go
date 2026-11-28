@@ -70,7 +70,7 @@ func (c *DependencyCollector) Collect(ch chan<- prometheus.Metric) {
 
 	ch <- prometheus.MustNewConstMetric(c.readyDesc, prometheus.GaugeValue, boolValue(c.postgresReady(ctx)), "postgres")
 	ch <- prometheus.MustNewConstMetric(c.readyDesc, prometheus.GaugeValue, boolValue(c.valkeyReady(ctx)), "valkey")
-	ch <- prometheus.MustNewConstMetric(c.readyDesc, prometheus.GaugeValue, boolValue(k8s.Ping(ctx) == nil), "kubernetes")
+	ch <- prometheus.MustNewConstMetric(c.readyDesc, prometheus.GaugeValue, boolValue(k8s.Ping() == nil), "kubernetes")
 }
 
 func (c *DependencyCollector) postgresReady(ctx context.Context) bool {
