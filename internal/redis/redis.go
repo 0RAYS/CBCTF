@@ -36,7 +36,7 @@ func Init() {
 		log.Logger.Warningf("Failed to drop legacy log list: %s", err)
 	}
 	// Mirror all logs to Redis after a successful connection
-	log.Logger.AddHook(NewLogHook(logBucketLimit, log.NewFormatter(true)))
+	installLogHook(logBucketLimit, log.NewFormatter(true))
 }
 
 func Stop() {

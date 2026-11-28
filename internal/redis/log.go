@@ -42,6 +42,13 @@ var logLevels = []logrus.Level{
 var logSequence atomic.Uint64
 var logWriteFailures atomic.Int64
 
+// mirrorHook is the Redis mirror installed on the platform logger, together
+// with the logger it was installed on.
+var (
+	mirrorHook   *LogHook
+	mirrorLogger *logrus.Logger
+)
+
 // LogWriteFailures counts the log entries that could not be mirrored to Redis.
 func LogWriteFailures() int64 {
 	return logWriteFailures.Load()
@@ -65,6 +72,19 @@ func NewLogHook(max int64, formatter logrus.Formatter) *LogHook {
 		max = 1000
 	}
 	return &LogHook{Max: max, Formatter: formatter}
+}
+
+// installLogHook mirrors the platform logs into Redis. The mirror lives as long
+// as the logger it is attached to: an in-place system restart re-runs Init
+// against the same logger, and a second hook would store every log line once
+// per hook.
+func installLogHook(max int64, formatter logrus.Formatter) {
+	if mirrorHook != nil && mirrorLogger == log.Logger {
+		return
+	}
+	mirrorHook = NewLogHook(max, formatter)
+	mirrorLogger = log.Logger
+	log.Logger.AddHook(mirrorHook)
 }
 
 func (*LogHook) Levels() []logrus.Level {
@@ -126,7 +146,7 @@ func GetLogs(ctx context.Context, start, end int64, minLevel string) ([]string, 
 		log.Logger.Warningf("Failed to get logs: %s", err)
 		return []string{}, model.FailRetVal(i18n.Redis.GetError, "Cache", logKeyPrefix, err)
 	}
-	entries := mergeLogEntries(cmds)
+	entries := dedupeLogEntries(mergeLogEntries(cmds))
 	if len(entries) > logBucketLimit {
 		entries = entries[:logBucketLimit]
 	}
@@ -150,6 +170,31 @@ func GetLogs(ctx context.Context, start, end int64, minLevel string) ([]string, 
 type logEntryRef struct {
 	score  float64
 	member string
+}
+
+// dedupeLogEntries drops entries repeating the same line at the same
+// timestamp, the signature of one log line mirrored by several hooks at once.
+func dedupeLogEntries(entries []logEntryRef) []logEntryRef {
+	type lineKey struct {
+		score float64
+		line  string
+	}
+	seen := make(map[lineKey]struct{}, len(entries))
+	deduped := make([]logEntryRef, 0, len(entries))
+	for _, entry := range entries {
+		parsed, ok := parseLogEntry(entry.member)
+		if !ok {
+			deduped = append(deduped, entry)
+			continue
+		}
+		key := lineKey{score: entry.score, line: parsed.Line}
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		deduped = append(deduped, entry)
+	}
+	return deduped
 }
 
 // mergeLogEntries orders the buckets by timestamp, the newest entry first.

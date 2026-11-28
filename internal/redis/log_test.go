@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -64,6 +65,50 @@ func commandArgs(cmd goredis.Cmder) []string {
 		out = append(out, fmt.Sprint(arg))
 	}
 	return out
+}
+
+func TestInstallLogHookKeepsSingleMirrorAcrossRestarts(t *testing.T) {
+	oldClient, oldLogger := RDB, log.Logger
+	client := goredis.NewClient(&goredis.Options{})
+	writer := &logWriteHook{}
+	client.AddHook(writer)
+	RDB = client
+	log.Init()
+	mirrorHook, mirrorLogger = nil, nil
+	t.Cleanup(func() {
+		RDB, log.Logger = oldClient, oldLogger
+		mirrorHook, mirrorLogger = nil, nil
+		_ = client.Close()
+	})
+
+	// A system restart re-runs Init against the same logger.
+	installLogHook(100, log.NewFormatter(true))
+	installLogHook(100, log.NewFormatter(true))
+
+	log.Logger.Info("boom")
+	if len(writer.commands) != 2 {
+		t.Fatalf("commands = %d, want 2 (one zadd and one trim)", len(writer.commands))
+	}
+}
+
+func TestDedupeLogEntriesDropsRepeatedLines(t *testing.T) {
+	entry := func(seq uint64, line string) logEntryRef {
+		payload, err := json.Marshal(LogEntry{Seq: seq, Time: "2026-01-01T00:00:00Z", Line: line})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return logEntryRef{score: 10, member: string(payload)}
+	}
+
+	entries := []logEntryRef{entry(2, "same"), entry(1, "same"), entry(3, "other")}
+	deduped := dedupeLogEntries(entries)
+	if len(deduped) != 2 {
+		t.Fatalf("entries = %d, want 2", len(deduped))
+	}
+	first, ok := parseLogEntry(deduped[0].member)
+	if !ok || first.Seq != 2 {
+		t.Fatalf("first entry = %+v, want seq 2", first)
+	}
 }
 
 func TestLogBucketsCoverRequestedLevelAndMoreSevere(t *testing.T) {
