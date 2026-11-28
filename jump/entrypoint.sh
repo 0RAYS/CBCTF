@@ -9,6 +9,9 @@ ssh_key="${RANGE_SSH_KEY:?RANGE_SSH_KEY is required}"
 if ! id "$ssh_user" >/dev/null 2>&1; then
     adduser -D -s /bin/bash -h /home "$ssh_user"
 fi
+# adduser 建出来的账号是锁定的,锁定状态下 sshd 会拒绝公钥登录,
+# 把锁定标记换成不可用口令,账号即可用公钥登录。
+sed -i -E "s/^(${ssh_user}):[^:]*!/\1:*/" /etc/shadow
 
 mkdir -p /home/.ssh
 printf '%s\n' "$ssh_key" > /home/.ssh/authorized_keys
@@ -30,7 +33,6 @@ PasswordAuthentication no
 KbdInteractiveAuthentication no
 PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys
-UsePAM no
 X11Forwarding no
 PrintMotd no
 AllowTcpForwarding yes
