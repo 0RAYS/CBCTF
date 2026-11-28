@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"strconv"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	"CBCTF/internal/i18n"
@@ -56,6 +56,49 @@ func createVictimRoot(ctx context.Context, victim model.Victim, kind string) (co
 		Name:       root.Name,
 		UID:        root.UID,
 	}), ret
+}
+
+// withVictimRootOwner 把 ctx 绑到实例的资源树上。
+// 租约期创建的资源(如玩家网关)挂在实例的根对象下,实例销毁时一并回收。
+func withVictimRootOwner(ctx context.Context, victim model.Victim, kind string) (context.Context, model.RetVal) {
+	name := victimRootName(victim.ID, kind)
+	root, ret := GetConfigMap(ctx, name)
+	if !ret.OK {
+		return ctx, ret
+	}
+	if root == nil {
+		return ctx, model.FailRetVal(i18n.K8S.GetError, "ConfigMap", name, errMissingConfigMap)
+	}
+	return withResourceOwner(ctx, metav1.OwnerReference{
+		APIVersion: "v1",
+		Kind:       "ConfigMap",
+		Name:       root.Name,
+		UID:        root.UID,
+	}), model.SuccessRetVal()
+}
+
+// VictimIdentityLabels 返回实例资源的稳定身份标签。
+// 租约会改写队伍与用户,归属校验只比对不会变的部分。
+func VictimIdentityLabels(victim model.Victim, tags ...map[string]string) map[string]string {
+	labels := map[string]string{
+		"cbctf.io/namespace": globalNamespace,
+		"victim_id":          strconv.Itoa(int(victim.ID)),
+		"challenge_id":       strconv.Itoa(int(victim.ChallengeID)),
+	}
+	if len(tags) > 0 {
+		maps.Copy(labels, tags[0])
+	}
+	return labels
+}
+
+// hasVictimIdentity 判断资源的标签是否属于该实例。
+func hasVictimIdentity(resourceLabels map[string]string, victim model.Victim, tags ...map[string]string) bool {
+	for key, value := range VictimIdentityLabels(victim, tags...) {
+		if resourceLabels[key] != value {
+			return false
+		}
+	}
+	return true
 }
 
 // ListVictimRoots finds the victims from their root ConfigMaps, so they stay
@@ -123,7 +166,7 @@ func deleteVictimRoot(ctx context.Context, victim model.Victim, kind string) err
 	if err != nil {
 		return err
 	}
-	if !labels.SelectorFromSet(VictimLabels(victim, map[string]string{"cbctf.io/root": kind})).Matches(labels.Set(root.Labels)) {
+	if !hasVictimIdentity(root.Labels, victim, map[string]string{"cbctf.io/root": kind}) {
 		return fmt.Errorf("root %s is not owned by victim %d", name, victim.ID)
 	}
 	uid := root.UID
@@ -167,7 +210,7 @@ func deleteVictimVPC(ctx context.Context, victim model.Victim) error {
 	if err != nil {
 		return err
 	}
-	if !labels.SelectorFromSet(VictimLabels(victim)).Matches(labels.Set(vpc.Labels)) {
+	if !hasVictimIdentity(vpc.Labels, victim) {
 		return fmt.Errorf("VPC %s is not owned by victim %d", name, victim.ID)
 	}
 	uid := vpc.UID

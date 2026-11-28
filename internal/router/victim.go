@@ -176,7 +176,7 @@ func GetVictimPods(ctx *gin.Context) {
 		return
 	}
 
-	labels := k8s.VictimLabels(victim)
+	labels := k8s.VictimIdentityLabels(victim)
 	ctxTimeout, cancel := context.WithTimeout(ctx.Request.Context(), 15*time.Second)
 	defer cancel()
 	podList, ret := k8s.ListPods(ctxTimeout, labels)
@@ -219,7 +219,7 @@ func GetVictimPodLogs(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	if !k8s.PodMatchesLabels(pod, k8s.VictimLabels(victim)) {
+	if !k8s.PodMatchesLabels(pod, k8s.VictimIdentityLabels(victim)) {
 		resp.JSON(ctx, model.FailRetVal(i18n.K8S.GetError, "PodLog", form.PodName, errPodNotOwnedByVictim))
 		return
 	}

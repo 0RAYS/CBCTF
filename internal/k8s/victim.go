@@ -523,7 +523,7 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 }
 
 func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVal {
-	labels := VictimLabels(victim)
+	labels := VictimIdentityLabels(victim)
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 	for {
