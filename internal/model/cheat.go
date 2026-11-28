@@ -40,13 +40,13 @@ type Cheat struct {
 	Hash       string            `gorm:"type:varchar(32);uniqueIndex:idx_cheats_hash_active,where:deleted_at IS NULL;not null" json:"hash"`
 	Comment    string            `json:"comment"`
 	Evidence   CheatEvidence     `gorm:"serializer:json;type:jsonb;default:'{}'" json:"evidence"`
+	ContestID  uint              `gorm:"index" json:"contest_id"`
+	Checked    bool              `gorm:"index" json:"checked"`
+	ReviewedBy uint              `gorm:"index" json:"reviewed_by"`
+	ReviewedAt time.Time         `gorm:"default:null" json:"reviewed_at"`
+	DedupKey   string            `gorm:"-" json:"-"`
+	LegacyHash string            `gorm:"-" json:"-"`
 	BaseModel
-	ContestID  uint      `gorm:"index" json:"contest_id"`
-	Checked    bool      `gorm:"index" json:"checked"`
-	ReviewedBy uint      `gorm:"index" json:"reviewed_by"`
-	ReviewedAt time.Time `gorm:"default:null" json:"reviewed_at"`
-	DedupKey   string    `gorm:"-" json:"-"`
-	LegacyHash string    `gorm:"-" json:"-"`
 }
 
 // CheatHash 由比赛、判定类型和线索指向的对象派生线索身份。

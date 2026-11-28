@@ -36,12 +36,12 @@ type Victim struct {
 	Contest          Contest         `json:"-"`
 	User             User            `json:"-"`
 	Challenge        Challenge       `json:"-"`
+	ContestID        sql.Null[uint]  `gorm:"index" json:"contest_id"`
+	TeamID           sql.Null[uint]  `gorm:"index" json:"team_id"`
+	ChallengeID      uint            `gorm:"index" json:"challenge_id"`
+	UserID           uint            `gorm:"index" json:"user_id"`
+	Duration         time.Duration   `json:"duration"`
 	BaseModel
-	ContestID   sql.Null[uint] `gorm:"index" json:"contest_id"`
-	TeamID      sql.Null[uint] `gorm:"index" json:"team_id"`
-	ChallengeID uint           `gorm:"index" json:"challenge_id"`
-	UserID      uint           `gorm:"index" json:"user_id"`
-	Duration    time.Duration  `json:"duration"`
 }
 
 func (v Victim) TrafficBasePath() string {
