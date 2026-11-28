@@ -24,6 +24,7 @@
 - [计分系统](/guide/features/scoring.md): 说明 CBCTF 的静态、线性、对数计分方式，以及一血、二血、三血奖励。
 - [动态附件生成](/guide/features/attachment.md): 配置动态附件生成器容器、执行入口、Flag 参数和附件输出路径。
 - [动态靶机](/guide/features/container.md): 说明 CBCTF 动态容器、Pod 模式、VPC 模式、端口转发和 KubeVirt VM 靶机。
+- [渗透靶场](/guide/features/range.md): 说明 CBCTF 渗透靶场的实例池、租约、玩家网关、网络拓扑与出题人配置方式。
 - [比赛配置](/guide/features/contest.md): 创建和配置 CBCTF 比赛时间、队伍、题目、公告、奖项和排行榜规则。
 - [认证与 OAuth](/guide/features/auth.md): 配置 CBCTF 本地认证、邮箱验证、OAuth/OIDC 登录和用户组自动分配。
 - [定时任务](/guide/features/cronjobs.md): 调整定时任务的运行间隔和启动执行设置，查看最近运行时间与成功、失败记录。
