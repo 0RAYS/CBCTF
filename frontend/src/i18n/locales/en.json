@@ -2792,7 +2792,10 @@
         "running": "RUNNING",
         "notRunning": "NOT RUNNING",
         "time": "Time:",
-        "address": "Address:"
+        "address": "Address:",
+        "sshAccess": "SSH Access",
+        "sshUser": "User",
+        "downloadKey": "Download private key"
       },
       "actions": {
         "launching": "LAUNCHING...",

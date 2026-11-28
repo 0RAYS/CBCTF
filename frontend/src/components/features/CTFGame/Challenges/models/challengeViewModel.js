@@ -5,6 +5,17 @@ export const normalizeInstanceStatus = (status) => {
 
 export const isInstanceTransitioning = (status) => ['waiting', 'pending', 'terminating'].includes(status);
 
+// 靶场跳板的入口在地址列表里,名字是 ssh,后面跟着协议、地址与节点端口。
+export function parseSshEndpoint(targets = []) {
+  for (const item of targets) {
+    const [name, location] = String(item || '').split(': ');
+    if (name !== 'ssh') continue;
+    const matched = /^(\w+):\/\/([^:]+):(\d+)$/.exec(String(location || ''));
+    if (matched) return { host: matched[2], port: matched[3] };
+  }
+  return null;
+}
+
 export const normalizeCategories = (categories) => (Array.isArray(categories) ? categories.filter(Boolean) : []);
 
 export function mapChallengeStatusToViewModel(challenge, statusData = null) {
@@ -33,6 +44,8 @@ export function mapChallengeStatusToViewModel(challenge, statusData = null) {
     instanceWaiting: instanceStatus === 'waiting',
     instanceTerminating: instanceStatus === 'terminating',
     instanceIP: remote.target || challenge.instanceIP || [''],
+    instanceAccessKey: remote.access_key || challenge.instanceAccessKey || '',
+    instanceAccessUser: remote.access_user || challenge.instanceAccessUser || '',
     instanceDuration,
     instanceTimeLeft: timeLeft,
     solves: challenge.solves ?? challenge.solvers ?? 0,

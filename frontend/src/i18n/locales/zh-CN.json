@@ -2792,7 +2792,10 @@
         "running": "运行中",
         "notRunning": "未运行",
         "time": "时间: ",
-        "address": "地址: "
+        "address": "地址: ",
+        "sshAccess": "SSH 接入",
+        "sshUser": "用户",
+        "downloadKey": "下载私钥"
       },
       "actions": {
         "launching": "启动中...",
