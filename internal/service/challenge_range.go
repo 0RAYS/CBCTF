@@ -6,21 +6,22 @@ import (
 
 	"github.com/compose-spec/compose-go/v2/types"
 
+	"CBCTF/internal/config"
 	"CBCTF/internal/model"
 )
 
 // rangeChallenge 判断 compose 是否声明了靶场拓扑。
-func rangeChallenge(config *types.Project) bool {
-	_, ok := config.Extensions[model.XRangeExtension].(model.XRange)
+func rangeChallenge(project *types.Project) bool {
+	_, ok := project.Extensions[model.XRangeExtension].(model.XRange)
 	return ok
 }
 
 // definedNetworkNames 返回 compose 中定义的自定义网段名。
 // compose 会给网段名加上项目名前缀,作者在 x-range 里写的是不带前缀的名字。
-func definedNetworkNames(config *types.Project) map[string]struct{} {
+func definedNetworkNames(project *types.Project) map[string]struct{} {
 	names := make(map[string]struct{})
-	for _, network := range config.Networks {
-		name := strings.TrimPrefix(network.Name, config.Name+"_")
+	for _, network := range project.Networks {
+		name := strings.TrimPrefix(network.Name, project.Name+"_")
 		if name == "" || name == "default" {
 			continue
 		}
@@ -32,8 +33,8 @@ func definedNetworkNames(config *types.Project) map[string]struct{} {
 // parseRangeTopology 解析 x-range 声明并校验拓扑约束。
 // 玩家网关是选手的唯一入口,由平台在租约时创建,不进入实例拓扑;
 // 网段互通是双向的,平台据此互相放行对方网段。
-func parseRangeTopology(config *types.Project) (*model.RangeConfig, model.RetVal) {
-	xRange, ok := config.Extensions[model.XRangeExtension].(model.XRange)
+func parseRangeTopology(project *types.Project) (*model.RangeConfig, model.RetVal) {
+	xRange, ok := project.Extensions[model.XRangeExtension].(model.XRange)
 	if !ok {
 		return nil, model.SuccessRetVal()
 	}
@@ -44,8 +45,8 @@ func parseRangeTopology(config *types.Project) (*model.RangeConfig, model.RetVal
 	if rangeConfig.LeaseDuration <= 0 {
 		rangeConfig.LeaseDuration = model.DefaultRangeLeaseDuration
 	}
-	networks := definedNetworkNames(config)
-	gateway, ok := config.Services[rangeConfig.GatewayKey]
+	networks := definedNetworkNames(project)
+	gateway, ok := project.Services[rangeConfig.GatewayKey]
 	if !ok {
 		return nil, invalidComposeYamlRetVal(fmt.Sprintf("x-range gateway %s is not a defined service", rangeConfig.GatewayKey))
 	}
@@ -87,7 +88,7 @@ func parseRangeTopology(config *types.Project) (*model.RangeConfig, model.RetVal
 	}
 	// 选手从接入网段进入拓扑,接入网段不与任何网段互通时选手够不到别的网段上的节点。
 	if !rangeAccessRouted(rangeConfig) {
-		for _, service := range config.Services {
+		for _, service := range project.Services {
 			if service.Name == rangeConfig.GatewayKey {
 				continue
 			}
@@ -98,7 +99,7 @@ func parseRangeTopology(config *types.Project) (*model.RangeConfig, model.RetVal
 			}
 		}
 	}
-	for _, service := range config.Services {
+	for _, service := range project.Services {
 		role, _ := service.Extensions[model.XRoleExtension].(string)
 		switch role {
 		case "", model.RangeNodeRole, model.RangeRouterRole:
@@ -121,6 +122,37 @@ func rangeAccessRouted(rangeConfig model.RangeConfig) bool {
 		}
 	}
 	return false
+}
+
+// fillPlatformContainerImages 给平台固定容器补上镜像。
+// 玩家网关是平台固定的跳板容器,作者只写需要配置的字段,镜像由平台提供。
+func fillPlatformContainerImages(raw map[string]any) error {
+	services, _ := raw["services"].(map[string]any)
+	if services == nil {
+		return nil
+	}
+	gateway := ""
+	if xRange, ok := raw[model.XRangeExtension].(map[string]any); ok {
+		gateway, _ = xRange["gateway"].(string)
+	}
+	for name, value := range services {
+		service, _ := value.(map[string]any)
+		if service == nil {
+			continue
+		}
+		role, _ := service[model.XRoleExtension].(string)
+		if name != gateway && role != model.RangeGatewayRole {
+			continue
+		}
+		if image, _ := service["image"].(string); strings.TrimSpace(image) != "" {
+			continue
+		}
+		if config.Env.K8S.Range.JumpImage == "" {
+			return fmt.Errorf("the player gateway image is not configured")
+		}
+		service["image"] = config.Env.K8S.Range.JumpImage
+	}
+	return nil
 }
 
 // rangeRole 返回 service 在靶场拓扑中的角色。

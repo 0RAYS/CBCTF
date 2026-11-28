@@ -85,9 +85,8 @@ k8s:
     node_concurrency: 8
     # 靶场实例的就绪超时,秒
     ready_timeout: 600
-    # 玩家跳板的镜像与登录用户
+    # 玩家跳板的镜像,登录用户在题目里用 x-range.ssh_user 申明
     jump_image: ghcr.io/0rays/cbctf-jump:latest
-    jump_user: ctf
   # ServiceAccount of the runtime workloads, empty uses the namespace default one
   service_account: ""
   frp:

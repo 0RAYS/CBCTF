@@ -27,6 +27,10 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 				WorkingDir: container.WorkingDir,
 				Command:    types.ShellCommand(container.Command),
 			}
+			if pod.Role == model.RangeGatewayRole {
+				// 玩家网关是平台固定的跳板容器,镜像由平台决定,题目 YAML 里不写镜像。
+				service.Image = ""
+			}
 			if len(container.Exposes) > 0 {
 				service.Ports = make([]types.ServicePortConfig, 0, len(container.Exposes))
 				for _, expose := range container.Exposes {

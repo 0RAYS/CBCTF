@@ -13,12 +13,12 @@ type FlagBindingType string
 const EnvFlagPrefix = "FLAG"
 
 const (
-	XVolumesExtension   = "x-volumes"
-	XKubeVirtExtension  = "x-kubevirt"
-	XBootExtension      = "x-boot"
-	XCloudInitExtension = "x-cloudinit"
-	XRangeExtension     = "x-range"
-	XRoleExtension      = "x-role"
+	XVolumesExtension    = "x-volumes"
+	XKubeVirtExtension   = "x-kubevirt"
+	XBootExtension       = "x-boot"
+	XCloudInitExtension  = "x-cloudinit"
+	XRangeExtension      = "x-range"
+	XRoleExtension       = "x-role"
 	XFixedFlagsExtension = "x-fixed-flags"
 )
 
@@ -53,6 +53,7 @@ type XRange struct {
 	LeaseDuration int           `yaml:"lease_duration,omitempty" json:"lease_duration,omitempty"`
 	Gateway       string        `yaml:"gateway,omitempty" json:"gateway,omitempty"`
 	AccessNetwork string        `yaml:"access_network,omitempty" json:"access_network,omitempty"`
+	SSHUser       string        `yaml:"ssh_user,omitempty" json:"ssh_user,omitempty"`
 	Routes        []XRangeRoute `yaml:"routes,omitempty" json:"routes,omitempty"`
 }
 
@@ -69,6 +70,7 @@ func (x XRange) RangeConfig() RangeConfig {
 		LeaseDuration: time.Duration(x.LeaseDuration) * time.Second,
 		GatewayKey:    x.Gateway,
 		AccessNetwork: x.AccessNetwork,
+		SSHUser:       x.SSHUser,
 		Routes:        make([]RouteLink, 0, len(x.Routes)),
 	}
 	for _, route := range x.Routes {

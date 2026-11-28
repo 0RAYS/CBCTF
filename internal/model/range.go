@@ -17,6 +17,9 @@ const (
 // DefaultRangeLeaseDuration 是作者未声明租约时长时的默认值。
 const DefaultRangeLeaseDuration = 2 * time.Hour
 
+// DefaultRangeJumpUser 是跳板未申明登录用户时的默认用户。
+const DefaultRangeJumpUser = "ctf"
+
 // RangeConfig 靶场题目的调度与接入配置。
 // PoolSize 是常驻就绪的实例数,租约结束即销毁实例并补建,不回收复用。
 type RangeConfig struct {
@@ -25,7 +28,16 @@ type RangeConfig struct {
 	LeaseDuration time.Duration `json:"lease_duration"`
 	GatewayKey    string        `json:"gateway"`
 	AccessNetwork string        `json:"access_network"`
+	SSHUser       string        `json:"ssh_user"`
 	Routes        []RouteLink   `json:"routes"`
+}
+
+// AccessUser 返回玩家跳板的登录用户:题目申明优先,否则用默认用户。
+func (c *RangeConfig) AccessUser() string {
+	if c != nil && c.SSHUser != "" {
+		return c.SSHUser
+	}
+	return DefaultRangeJumpUser
 }
 
 // RouteLink 声明两个网段之间三层互通,平台据此互相放行对方网段。
@@ -81,6 +93,7 @@ func (c RangeConfig) XRange() XRange {
 		LeaseDuration: int(c.LeaseDuration / time.Second),
 		Gateway:       c.GatewayKey,
 		AccessNetwork: c.AccessNetwork,
+		SSHUser:       c.SSHUser,
 	}
 	for _, route := range c.Routes {
 		xRange.Routes = append(xRange.Routes, XRangeRoute{From: route.From, To: route.To})

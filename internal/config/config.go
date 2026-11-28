@@ -88,7 +88,6 @@ type Config struct {
 			NodeConcurrency int    `mapstructure:"node_concurrency" json:"node_concurrency"`
 			ReadyTimeout    int    `mapstructure:"ready_timeout" json:"ready_timeout"`
 			JumpImage       string `mapstructure:"jump_image" json:"jump_image"`
-			JumpUser        string `mapstructure:"jump_user" json:"jump_user"`
 		} `mapstructure:"range" json:"range"`
 		Frp struct {
 			On         bool         `mapstructure:"on" json:"on"`
@@ -156,12 +155,4 @@ func tidy() {
 	if Env.Gin.JWT.Secret == "" {
 		Env.Gin.JWT.Secret = utils.UUID()
 	}
-}
-
-// RangeJumpUser 返回玩家跳板的登录用户,未配置时用默认用户。
-func RangeJumpUser() string {
-	if Env.K8S.Range.JumpUser == "" {
-		return "ctf"
-	}
-	return Env.K8S.Range.JumpUser
 }

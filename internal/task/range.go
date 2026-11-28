@@ -12,7 +12,6 @@ import (
 	"github.com/hibiken/asynq"
 	"golang.org/x/crypto/ssh"
 
-	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
@@ -78,7 +77,7 @@ func HandleRangeGatewayTask(ctx context.Context, t *asynq.Task) error {
 		if !ok {
 			return fmt.Errorf("challenge %d has no player gateway", challenge.ID)
 		}
-		access, privateKey, err := rangeAccess()
+		access, privateKey, err := rangeAccess(challenge.RangeConfig.AccessUser())
 		if err != nil {
 			return fmt.Errorf("generate range access key failed: %w", err)
 		}
@@ -119,7 +118,7 @@ func HandleRangeGatewayTask(ctx context.Context, t *asynq.Task) error {
 
 // rangeAccess 生成队伍登录跳板的密钥对。
 // 公钥进跳板容器,私钥随状态接口下发给队伍。
-func rangeAccess() (model.RangeAccess, string, error) {
+func rangeAccess(user string) (model.RangeAccess, string, error) {
 	public, private, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return model.RangeAccess{}, "", err
@@ -132,7 +131,6 @@ func rangeAccess() (model.RangeAccess, string, error) {
 	if err != nil {
 		return model.RangeAccess{}, "", err
 	}
-	user := config.RangeJumpUser()
 	return model.RangeAccess{
 		User:      user,
 		PublicKey: strings.TrimSpace(string(ssh.MarshalAuthorizedKey(sshPublic))),

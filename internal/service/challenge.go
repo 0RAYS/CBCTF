@@ -14,6 +14,7 @@ import (
 	"github.com/compose-spec/compose-go/v2/types"
 	"gorm.io/gorm"
 
+	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -31,16 +32,16 @@ func invalidComposeYamlRetVal(err string) model.RetVal {
 	return model.FailRetVal(i18n.Model.Docker.InvalidComposeYaml, "DockerCompose", "", errors.New(err))
 }
 
-func validateChallengeCompose(config *types.Project) model.RetVal {
-	if len(config.Services) == 0 {
+func validateChallengeCompose(project *types.Project) model.RetVal {
+	if len(project.Services) == 0 {
 		return invalidComposeYamlRetVal("At least one service is required")
 	}
 
 	hasVpcNetworks := false
 	networkSubnets := make(map[string]struct{})
 	networkGateways := make(map[string]struct{})
-	for _, network := range config.Networks {
-		name := strings.TrimSpace(strings.TrimPrefix(network.Name, config.Name+"_"))
+	for _, network := range project.Networks {
+		name := strings.TrimSpace(strings.TrimPrefix(network.Name, project.Name+"_"))
 		if name == "" || name == "default" {
 			continue
 		}
@@ -72,7 +73,7 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 	openPortCount := 0
 	assignedIPs := make(map[string]map[string]struct{})
 
-	for _, service := range config.Services {
+	for _, service := range project.Services {
 		name := strings.TrimSpace(service.Name)
 		if name == "" {
 			return invalidComposeYamlRetVal("service name is required")
@@ -98,7 +99,7 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 		if kubeVirt && !hasVpcNetworks {
 			return invalidComposeYamlRetVal(fmt.Sprintf("%s x-kubevirt requires VPC networks", label))
 		}
-		if _, ok := service.Extensions[model.XRoleExtension]; ok && !rangeChallenge(config) {
+		if _, ok := service.Extensions[model.XRoleExtension]; ok && !rangeChallenge(project) {
 			return invalidComposeYamlRetVal(fmt.Sprintf("%s x-role requires an x-range topology", label))
 		}
 		if boot, ok := service.Extensions[model.XBootExtension].(model.XBoot); ok {
@@ -205,7 +206,7 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 	}
 
 	// 靶场题的网络节点可以没有对外端口,选手只通过玩家网关接入。
-	if nonKubeVirtServiceCount > 0 && openPortCount == 0 && !rangeChallenge(config) {
+	if nonKubeVirtServiceCount > 0 && openPortCount == 0 && !rangeChallenge(project) {
 		return invalidComposeYamlRetVal("Container challenges must expose at least one port")
 	}
 	return model.SuccessRetVal()
@@ -213,7 +214,15 @@ func validateChallengeCompose(config *types.Project) model.RetVal {
 
 func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []model.ChallengeFlag, *model.RangeConfig, model.RetVal) {
 	prefix := utils.RandHexStr(10)
-	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix, map[string]any{
+	raw, err := utils.ParseComposeYaml(dockerCompose)
+	if err != nil {
+		log.Logger.Warningf("Failed to parse DockerCompose: %v", err)
+		return model.ChallengeTemplate{}, nil, nil, model.FailRetVal(i18n.Common.UnknownError, "ChallengeTemplate", "", err)
+	}
+	if err := fillPlatformContainerImages(raw); err != nil {
+		return model.ChallengeTemplate{}, nil, nil, model.FailRetVal(i18n.Model.Challenge.EmptyImage, "Challenge", "gateway", err)
+	}
+	project, err := utils.LoadComposeProject(raw, prefix, map[string]any{
 		model.XVolumesExtension:    []model.XVolume{},
 		model.XKubeVirtExtension:   false,
 		model.XBootExtension:       model.XBoot{},
@@ -226,23 +235,23 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 		log.Logger.Warningf("Failed to load DockerCompose: %v", err)
 		return model.ChallengeTemplate{}, nil, nil, model.FailRetVal(i18n.Common.UnknownError, "ChallengeTemplate", "", err)
 	}
-	if ret := validateChallengeCompose(config); !ret.OK {
+	if ret := validateChallengeCompose(project); !ret.OK {
 		return model.ChallengeTemplate{}, nil, nil, ret
 	}
-	rangeConfig, ret := parseRangeTopology(config)
+	rangeConfig, ret := parseRangeTopology(project)
 	if !ret.OK {
 		return model.ChallengeTemplate{}, nil, nil, ret
 	}
-	networkDefinitions, ret := parseChallengeNetworks(config.Networks, prefix+"_")
+	networkDefinitions, ret := parseChallengeNetworks(project.Networks, prefix+"_")
 	if !ret.OK {
 		return model.ChallengeTemplate{}, nil, nil, ret
 	}
 
 	template := model.ChallengeTemplate{
-		Pods: make([]model.ChallengePodTemplate, 0, len(config.Services)),
+		Pods: make([]model.ChallengePodTemplate, 0, len(project.Services)),
 	}
 	flagOptions := make([]model.ChallengeFlag, 0)
-	for _, app := range config.Services {
+	for _, app := range project.Services {
 		name := app.Name
 		if app.ContainerName != "" {
 			name = app.ContainerName
@@ -287,10 +296,8 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 			Exposes:     append(model.Exposes(nil), ports...),
 		}
 		if rangeRole(rangeConfig, app) == model.RangeGatewayRole {
-			// 玩家网关是平台固定的跳板容器,镜像由平台决定,作者写的镜像只用于 compose 校验。
-			if image := rangeJumpImage(); image != "" {
-				containerTemplate.Image = image
-			}
+			// 玩家网关是平台固定的跳板容器,镜像由平台决定。
+			containerTemplate.Image = config.Env.K8S.Range.JumpImage
 		}
 		if boot, ok := app.Extensions[model.XBootExtension].(model.XBoot); ok {
 			containerTemplate.Bootloader = boot.Bootloader

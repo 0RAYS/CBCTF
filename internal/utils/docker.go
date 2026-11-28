@@ -11,7 +11,8 @@ import (
 	"go.yaml.in/yaml/v4"
 )
 
-func LoadDockerComposeYaml(data, project string, knownExtensions ...map[string]any) (*types.Project, error) {
+// ParseComposeYaml 解析 compose 原文,调用方可以在加载前补齐平台固定容器的镜像。
+func ParseComposeYaml(data string) (map[string]any, error) {
 	if strings.TrimSpace(data) == "" {
 		return nil, errors.New("empty yaml")
 	}
@@ -19,6 +20,10 @@ func LoadDockerComposeYaml(data, project string, knownExtensions ...map[string]a
 	if err := yaml.Unmarshal([]byte(data), &raw); err != nil {
 		return nil, err
 	}
+	return raw, nil
+}
+
+func LoadComposeProject(raw map[string]any, project string, knownExtensions map[string]any) (*types.Project, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	return loader.LoadWithContext(ctx, types.ConfigDetails{
@@ -30,8 +35,8 @@ func LoadDockerComposeYaml(data, project string, knownExtensions ...map[string]a
 		},
 	}, func(options *loader.Options) {
 		options.SetProjectName(project, true)
-		if len(knownExtensions) > 0 {
-			options.KnownExtensions = knownExtensions[0]
+		if knownExtensions != nil {
+			options.KnownExtensions = knownExtensions
 		}
 	})
 }
