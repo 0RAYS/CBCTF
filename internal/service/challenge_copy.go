@@ -38,6 +38,7 @@ func CopyChallenge(tx *gorm.DB, source model.Challenge, contestID uint) (model.C
 		Template:        source.Template.DeepCopy(),
 		GeneratorImage:  source.GeneratorImage,
 		NetworkPolicies: source.NetworkPolicies.DeepCopy(),
+		RangeConfig:     source.RangeConfig.DeepCopy(),
 	})
 	if !ret.OK {
 		return model.Challenge{}, ret
