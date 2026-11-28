@@ -103,7 +103,7 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 | `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量 | `2` |
 | `k8s.range.jumper_image` | 靶场题玩家跳板容器镜像 | `ghcr.io/0rays/cbctf-jumper:latest` |
 | `k8s.frp.on`    | 是否启用 FRP 暴露靶机端口                             | `false`                           |
-| `k8s.frp.frpc`  | FRP client 镜像                               | `ghcr.io/fatedier/frpc:v0.69.0`   |
+| `k8s.frp.frpc`  | FRP client 镜像                               | `ghcr.io/fatedier/frpc:v0.72.0`   |
 | `k8s.frp.nginx` | FRP 辅助 Nginx 镜像                             | `nginx:latest`                    |
 | `k8s.frp.frps`  | FRPS 地址、端口、token、端口池                        | `host: frps.example.com`          |
 

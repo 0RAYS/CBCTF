@@ -178,7 +178,7 @@ cbctf:
     service_account: ""
     frp:
       "on": false
-      frpc: "ghcr.io/fatedier/frpc:v0.69.0"
+      frpc: "ghcr.io/fatedier/frpc:v0.72.0"
       nginx: "nginx:latest"
       frps: []
 
