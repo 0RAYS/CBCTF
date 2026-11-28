@@ -2432,7 +2432,7 @@
         "k8sNamespace": "Namespace",
         "k8sCapture": "Capture Image",
         "k8sCaptureEnabled": "Enable Traffic Capture",
-        "k8sWorkerImage": "Worker Image",
+        "k8sGeneratorImage": "Generator Image",
         "k8sGeneratorPoolSize": "Generator Pool Size",
         "k8sRangeJumpImage": "Range Jump Image",
         "frpOn": "Use Frp to Expose Victims",
@@ -2452,7 +2452,7 @@
       "hints": {
         "k8sCapture": "Capture image used by the capture sidecar. The sidecar runs as root and needs CAP_NET_RAW, CAP_BPF and CAP_PERFMON to keep the eBPF process attribution of the captured connections. rustnet 1.3 to 1.7 are verified; from 1.7 on the capture binary validates the owner of the output directory, and the platform declares the unprivileged capture user as the invoking user.",
         "k8sCaptureEnabled": "Applies to new victim and FRPC Pods. Disabling capture removes their capture container and related storage mounts.",
-        "k8sWorkerImage": "Independent image containing /app/worker, such as ghcr.io/0rays/cbctf-worker:latest. Applies to new generators.",
+        "k8sGeneratorImage": "Independent image containing /app/generator, such as ghcr.io/0rays/cbctf-generator:latest. Applies to new generators.",
         "k8sRangeJumpImage": "Image of the player jump host used by range challenges. The player gateway is a platform container, the challenge file declares no image for it.",
         "k8sGeneratorPoolSize": "Target pool capacity per contest and dynamic challenge. 0 disables automatic provisioning. Changes apply when pools are provisioned or replenished; existing instances are not automatically stopped.",
         "uploadGeoCityDB": "The file is always saved as GeoLite2-City.mmdb under the data path."

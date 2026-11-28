@@ -79,7 +79,7 @@ export function normalizeConfig(source) {
       namespace: fallback(source?.k8s_namespace, fallback(source?.k8s?.namespace, '')),
       capture: fallback(source?.k8s_capture, fallback(source?.k8s?.capture, '')),
       capture_enabled: source.k8s_capture_enabled,
-      worker_image: source.k8s_worker_image,
+      generator_image: source.k8s_generator_image,
       generator_pool_size: source.k8s_generator_pool_size,
       frp: {
         frpc: fallback(source?.k8s_frp_frpc, fallback(source?.k8s?.frp?.frpc, '')),

@@ -14,12 +14,12 @@ test('workload settings round-trip false and zero', () => {
   for (const source of [
     {
       k8s_capture_enabled: true,
-      k8s_worker_image: 'registry.example/worker:v3',
+      k8s_generator_image: 'registry.example/generator:v3',
       k8s_generator_pool_size: 4,
     },
     {
       k8s_capture_enabled: false,
-      k8s_worker_image: 'ghcr.io/0rays/cbctf-worker:latest',
+      k8s_generator_image: 'ghcr.io/0rays/cbctf-generator:latest',
       k8s_generator_pool_size: 0,
     },
   ]) {

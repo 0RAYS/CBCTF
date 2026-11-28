@@ -45,12 +45,12 @@ export function K8sConfigSection({ config, updateConfig }) {
         }
       />
       <ConfigField
-        label={t('admin.system.labels.k8sWorkerImage')}
-        value={config.k8s.worker_image}
-        description={t('admin.system.hints.k8sWorkerImage')}
+        label={t('admin.system.labels.k8sGeneratorImage')}
+        value={config.k8s.generator_image}
+        description={t('admin.system.hints.k8sGeneratorImage')}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.k8s.worker_image = value;
+            draft.k8s.generator_image = value;
           })
         }
       />

@@ -165,7 +165,7 @@ test('node normalization trims, filters, deduplicates, and sorts without changin
 });
 
 test('canonical and digest image inventory from warmup is retained and does not appear missing', () => {
-  const digest = `ghcr.io/0rays/cbctf-worker@sha256:${'a'.repeat(64)}`;
+  const digest = `ghcr.io/0rays/cbctf-generator@sha256:${'a'.repeat(64)}`;
   const images = ['docker.io/library/nginx:latest', digest];
   const payload = normalizePayload({ nodes: [{ node: 'worker-a', images }], target_images: images });
   assert.deepEqual(payload.targetImages, images);

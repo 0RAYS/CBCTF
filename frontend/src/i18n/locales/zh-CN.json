@@ -2432,7 +2432,7 @@
         "k8sNamespace": "命名空间",
         "k8sCapture": "流量捕获容器镜像",
         "k8sCaptureEnabled": "启用流量抓包",
-        "k8sWorkerImage": "Worker 镜像",
+        "k8sGeneratorImage": "生成器镜像",
         "k8sGeneratorPoolSize": "生成器池容量",
         "k8sRangeJumpImage": "靶场跳板镜像",
         "frpOn": "是否启用 Frp 暴露靶机",
@@ -2452,7 +2452,7 @@
       "hints": {
         "k8sCapture": "抓包容器使用的镜像。抓包容器以 root 运行，并需要 CAP_NET_RAW、CAP_BPF 与 CAP_PERFMON，才能保留捕获连接的 eBPF 进程归因。平台已验证 rustnet 1.3 至 1.7；1.7 起抓包程序会校验输出目录属主，平台已声明降权后的抓包用户为调用者身份。",
         "k8sCaptureEnabled": "对新建靶机和 FRPC Pod 生效。关闭后不创建抓包容器及其存储挂载。",
-        "k8sWorkerImage": "包含 /app/worker 的独立镜像，例如 ghcr.io/0rays/cbctf-worker:latest，对新建生成器生效。",
+        "k8sGeneratorImage": "包含 /app/generator 的独立镜像，例如 ghcr.io/0rays/cbctf-generator:latest，对新建生成器生效。",
         "k8sRangeJumpImage": "靶场题里玩家跳板容器使用的镜像。玩家网关是平台容器，题目文件里不写它的镜像。",
         "k8sGeneratorPoolSize": "每场比赛、每道动态题的目标池容量。0 表示关闭自动预建；修改在预建或补池时生效，不会自动停止已有实例。",
         "uploadGeoCityDB": "文件将固定保存到数据目录下的 GeoLite2-City.mmdb。"
