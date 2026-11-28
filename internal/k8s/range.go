@@ -30,6 +30,10 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	if subnet == nil {
 		return victim, model.FailRetVal(i18n.K8S.GetError, "Subnet", gateway.Subnet.Name, errMissingSubnet)
 	}
+	ctx, ret := withVictimRootOwner(ctx, victim, "workloads")
+	if !ret.OK {
+		return victim, ret
+	}
 	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag, rangeGatewayLabel: "true"})
 	podName := victimResourceName("rgt", victim.ID, "gateway")
 
@@ -120,6 +124,10 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	victim.Resources.UIDs[podName] = string(pod.UID)
 	victim.Pods = append(victim.Pods, model.Pod{VictimID: victim.ID, Name: podName})
 
+	if ret = createRangeGatewayPolicy(ctx, victim, gateway); !ret.OK {
+		return victim, ret
+	}
+
 	service, ret := CreateService(ctx, CreateServiceOptions{
 		Name:     victimResourceName("rsvc", victim.ID, "gateway"),
 		Labels:   labels,
@@ -160,6 +168,60 @@ func rangeSubnet(victim model.Victim, name string) *model.Subnet {
 		}
 	}
 	return nil
+}
+
+// createRangeGatewayPolicy 给玩家网关建出站策略。
+// 拓扑节点的策略按 service 选择器绑定,网关在拓扑之外,
+// 没有策略的 Pod 出站不受限制,网关因此要自己带上放行范围。
+func createRangeGatewayPolicy(ctx context.Context, victim model.Victim, gateway model.RangeGateway) model.RetVal {
+	labels := VictimLabels(victim, map[string]string{rangeGatewayLabel: "true"})
+	selector := map[string]string{
+		"victim_id":       labels["victim_id"],
+		rangeGatewayLabel: "true",
+	}
+	routedCIDRs := make([]string, 0)
+	for _, link := range victim.Spec.Routes {
+		peer := ""
+		switch gateway.Subnet.Name {
+		case link.From:
+			peer = link.To
+		case link.To:
+			peer = link.From
+		default:
+			continue
+		}
+		if subnet := rangeSubnet(victim, peer); subnet != nil {
+			routedCIDRs = append(routedCIDRs, subnet.CIDRBlock)
+		}
+	}
+	peerIPs := make(map[string][]string)
+	for _, podSpec := range victim.Spec.Pods {
+		service := podServiceName(podSpec)
+		if service == "" {
+			continue
+		}
+		ips := make([]string, 0, len(podSpec.Networks))
+		for _, network := range podSpec.Networks {
+			if network.Attachment.IP != "" {
+				ips = append(ips, network.Attachment.IP)
+			}
+		}
+		if len(ips) > 0 {
+			peerIPs[service] = ips
+		}
+	}
+	_, ret := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
+		Name:        victimResourceName("npg", victim.ID, "gateway"),
+		Labels:      labels,
+		Selector:    selector,
+		Service:     gateway.Service,
+		Policies:    victim.Spec.NetworkPolicies,
+		SubnetCIDRs: []string{gateway.Subnet.CIDR},
+		PeerIPs:     peerIPs,
+		VPCSubnets:  vpcSubnetCIDRs(victim),
+		RoutedCIDRs: routedCIDRs,
+	})
+	return ret
 }
 
 // rangeRoutes 返回节点到对端网段的静态路由。

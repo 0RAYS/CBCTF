@@ -37,6 +37,14 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	return configMap, model.SuccessRetVal()
 }
 
+func GetConfigMap(ctx context.Context, name string) (*corev1.ConfigMap, model.RetVal) {
+	configMap, err := kubeClient.CoreV1().ConfigMaps(globalNamespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return nil, getFailed("ConfigMap", name, err)
+	}
+	return configMap, model.SuccessRetVal()
+}
+
 func DeleteConfigMapCollection(ctx context.Context, labels map[string]string) model.RetVal {
 	return deleteCollection("ConfigMap", "ConfigMaps", labels, func(options metav1.ListOptions) error {
 		return kubeClient.CoreV1().ConfigMaps(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
