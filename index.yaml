@@ -3,6 +3,36 @@ entries:
   cbctf:
   - apiVersion: v2
     appVersion: latest
+    created: "2026-11-28T13:27:21.732129975Z"
+    dependencies:
+    - condition: valkey.enabled
+      name: valkey
+      repository: https://valkey.io/valkey-helm/
+      version: 1.0.0
+    - alias: postgres
+      condition: postgres.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 18.12.28
+    description: A Kubernetes-native CTF competition platform
+    digest: bae6cf94f7efeb48b6087203d6e73851fa7f3be16d00ae5b3864c3367c2e2344
+    home: https://github.com/0RAYS/CBCTF
+    keywords:
+    - ctf
+    - cybersecurity
+    - competition
+    - 0RAYS
+    maintainers:
+    - name: JBNRZ
+    name: cbctf
+    sources:
+    - https://github.com/0RAYS/CBCTF
+    type: application
+    urls:
+    - https://github.com/0RAYS/CBCTF/releases/download/cbctf-0.0.46/cbctf-0.0.46.tgz
+    version: 0.0.46
+  - apiVersion: v2
+    appVersion: latest
     created: "2026-11-28T12:47:23.388304404Z"
     dependencies:
     - condition: valkey.enabled
@@ -531,4 +561,4 @@ entries:
     urls:
     - https://github.com/0RAYS/CBCTF/releases/download/cbctf-0.0.15/cbctf-0.0.15.tgz
     version: 0.0.15
-generated: "2026-11-28T12:47:23.388452611Z"
+generated: "2026-11-28T13:27:21.732196005Z"
