@@ -64,11 +64,8 @@ func (c Challenge) AttachmentCachePathForRevision(teamID uint, flags []string, r
 	return filepath.Join(c.BasicDir(), "cache", fmt.Sprintf("%d-%x.zip", teamID, hash))
 }
 
-// DataPath 返回数据根目录。配置尚未初始化时返回空字符串。
+// DataPath 返回数据根目录。
 func DataPath() string {
-	if config.Env == nil {
-		return ""
-	}
 	return config.Env.Path
 }
 

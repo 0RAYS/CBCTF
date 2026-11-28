@@ -34,18 +34,10 @@ func challengeSidecarImages(challenge model.Challenge) []string {
 			sidecars = append(sidecars, config.Env.K8S.Frp.FrpcImage, config.Env.K8S.Frp.NginxImage)
 		}
 		if challenge.RangeConfig != nil {
-			sidecars = append(sidecars, rangeJumpImage())
+			sidecars = append(sidecars, config.Env.K8S.Range.JumpImage)
 		}
 	}
 	return sidecars
-}
-
-// rangeJumpImage 返回玩家跳板容器的镜像,玩家网关的镜像由平台决定。
-func rangeJumpImage() string {
-	if config.Env == nil {
-		return ""
-	}
-	return config.Env.K8S.Range.JumpImage
 }
 
 func ChallengeImages(challenge model.Challenge) []string {
@@ -76,7 +68,7 @@ func ListChallengeImages(tx *gorm.DB) ([]string, model.RetVal) {
 		return nil, ret
 	}
 	sidecars := append(challengeSidecarImages(model.Challenge{Type: model.DynamicChallengeType}), challengeSidecarImages(model.Challenge{Type: model.PodsChallengeType})...)
-	sidecars = append(sidecars, rangeJumpImage())
+	sidecars = append(sidecars, config.Env.K8S.Range.JumpImage)
 	images := k8s.ChallengeImages(model.Challenge{}, sidecars...)
 	for _, challenge := range challenges {
 		images = append(images, ChallengeImages(challenge)...)

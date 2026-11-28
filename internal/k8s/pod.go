@@ -80,9 +80,6 @@ type CreatePodOptions struct {
 // runtimeServiceAccount is the ServiceAccount of the runtime workloads. It is
 // empty when the platform runs with the ServiceAccount of the namespace.
 func runtimeServiceAccount() string {
-	if config.Env == nil {
-		return ""
-	}
 	return config.Env.K8S.ServiceAccount
 }
 

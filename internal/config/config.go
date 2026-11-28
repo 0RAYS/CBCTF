@@ -126,7 +126,7 @@ type Config struct {
 	} `mapstructure:"registration" json:"registration"`
 }
 
-var Env *Config
+var Env = &Config{}
 
 //go:embed default.yaml
 var defaultConf []byte
@@ -144,7 +144,7 @@ func Init(path string) {
 			log.Logger.Fatalf("Failed to read config: %s", err)
 		}
 	}
-	if err := v.Unmarshal(&Env); err != nil {
+	if err := v.Unmarshal(Env); err != nil {
 		log.Logger.Fatalf("error unmarshalling config: %s", err)
 	}
 	tidy()
@@ -160,7 +160,7 @@ func tidy() {
 
 // RangeJumpUser 返回玩家跳板的登录用户,未配置时用默认用户。
 func RangeJumpUser() string {
-	if Env == nil || Env.K8S.Range.JumpUser == "" {
+	if Env.K8S.Range.JumpUser == "" {
 		return "ctf"
 	}
 	return Env.K8S.Range.JumpUser
