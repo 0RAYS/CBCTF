@@ -23,10 +23,19 @@ const (
 	StoppedVictimStatus     = StoppedStatus
 )
 
+// 靶机实例的种类。range 实例是池化的同构靶场实例,内容与队伍无关。
+const (
+	VictimKindTarget = "target"
+	VictimKindRange  = "range"
+)
+
 // Victim 靶机实例
 type Victim struct {
 	Start            time.Time       `gorm:"default:null" json:"start"`
 	Status           string          `gorm:"index" json:"status"`
+	Kind             string          `gorm:"index;default:'target'" json:"kind"`
+	TemplateKey      string          `gorm:"index" json:"template_key"`
+	LeaseExpireAt    time.Time       `gorm:"default:null" json:"lease_expire_at"`
 	Resources        VictimResources `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
 	Pods             []Pod           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Endpoints        Endpoints       `gorm:"default:null;type:jsonb" json:"-"`
@@ -42,6 +51,16 @@ type Victim struct {
 	UserID           uint            `gorm:"index" json:"user_id"`
 	Duration         time.Duration   `json:"duration"`
 	BaseModel
+}
+
+// IsRange 判断该实例是否为池化靶场实例。
+func (v Victim) IsRange() bool {
+	return v.Kind == VictimKindRange
+}
+
+// Leased 判断该靶场实例当前是否已租给队伍。
+func (v Victim) Leased() bool {
+	return v.IsRange() && v.TeamID.Valid
 }
 
 func (v Victim) TrafficBasePath() string {

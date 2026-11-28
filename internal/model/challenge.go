@@ -48,6 +48,7 @@ type Challenge struct {
 	GeneratorImage  string            `json:"generator_image"`
 	NetworkPolicies NetworkPolicies   `gorm:"type:jsonb" json:"network_policies"`
 	Template        ChallengeTemplate `gorm:"serializer:json;type:jsonb;default:'{}'" json:"-"`
+	RangeConfig     *RangeConfig      `gorm:"serializer:json;type:jsonb" json:"range_config,omitempty"`
 	BaseModel
 }
 

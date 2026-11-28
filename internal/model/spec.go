@@ -17,6 +17,8 @@ const (
 	XKubeVirtExtension  = "x-kubevirt"
 	XBootExtension      = "x-boot"
 	XCloudInitExtension = "x-cloudinit"
+	XRangeExtension     = "x-range"
+	XRoleExtension      = "x-role"
 )
 
 type XVolume struct {
@@ -34,6 +36,37 @@ type XCloudInit struct {
 	Groups            []CloudInitGroup     `yaml:"groups,omitempty" json:"groups"`
 	WriteFiles        []CloudInitWriteFile `yaml:"write_files,omitempty" json:"write_files"`
 	SSHAuthorizedKeys []string             `yaml:"ssh_authorized_keys,omitempty" json:"ssh_authorized_keys"`
+}
+
+// XRange compose 顶层的靶场声明。
+type XRange struct {
+	PoolSize      int           `yaml:"pool_size,omitempty" json:"pool_size,omitempty"`
+	MaxLeased     int           `yaml:"max_leased,omitempty" json:"max_leased,omitempty"`
+	LeaseDuration int           `yaml:"lease_duration,omitempty" json:"lease_duration,omitempty"`
+	Gateway       string        `yaml:"gateway,omitempty" json:"gateway,omitempty"`
+	AccessNetwork string        `yaml:"access_network,omitempty" json:"access_network,omitempty"`
+	Routes        []XRangeRoute `yaml:"routes,omitempty" json:"routes,omitempty"`
+}
+
+type XRangeRoute struct {
+	From string `yaml:"from" json:"from"`
+	To   string `yaml:"to" json:"to"`
+}
+
+// RangeConfig 转换 compose 声明的靶场配置。
+func (x XRange) RangeConfig() RangeConfig {
+	config := RangeConfig{
+		PoolSize:      x.PoolSize,
+		MaxLeased:     x.MaxLeased,
+		LeaseDuration: time.Duration(x.LeaseDuration) * time.Second,
+		GatewayKey:    x.Gateway,
+		AccessNetwork: x.AccessNetwork,
+		Routes:        make([]RouteLink, 0, len(x.Routes)),
+	}
+	for _, route := range x.Routes {
+		config.Routes = append(config.Routes, RouteLink{From: route.From, To: route.To})
+	}
+	return config
 }
 
 type CloudInitConfig struct {
@@ -130,6 +163,7 @@ type ChallengeContainerTemplate struct {
 type ChallengePodTemplate struct {
 	Key          string                       `json:"key"`
 	Name         string                       `json:"name"`
+	Role         string                       `json:"role"`
 	ServicePorts Exposes                      `json:"service_ports"`
 	Networks     Networks                     `json:"networks"`
 	Containers   []ChallengeContainerTemplate `json:"containers"`
@@ -172,6 +206,7 @@ type VictimSpec struct {
 	NetworkPlan     VPC             `json:"network_plan"`
 	NetworkPolicies NetworkPolicies `json:"network_policies"`
 	FrpEnabled      bool            `json:"frp_enabled"`
+	Routes          []RouteLink     `json:"routes"`
 }
 
 type VictimResources struct {

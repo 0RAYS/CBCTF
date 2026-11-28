@@ -69,6 +69,12 @@ type Expose struct {
 	Port      int32  `json:"port"`
 }
 
+// Route 静态路由条目,下一跳必须落在该网卡所在的网段。
+type Route struct {
+	Dst string `json:"dst"`
+	Gw  string `json:"gw"`
+}
+
 type Exposes []Expose
 
 // DeepCopy 返回 Exposes 的副本。Expose 为值类型，复制切片即可隔离底层数组。
