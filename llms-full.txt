@@ -905,12 +905,13 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 | `k8s.capture_enabled`     | 是否创建抓包容器及相关挂载                 | `true`                              |
 | `k8s.worker_image`        | 含 `/app/worker` 的独立 worker 镜像 | `ghcr.io/0rays/cbctf-worker:latest` |
 | `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量     | `2`                                 |
+| `k8s.range.jump_image`    | 靶场题玩家跳板容器镜像                   | `ghcr.io/0rays/cbctf-jump:latest`   |
 | `k8s.frp.on`              | 是否启用 FRP 暴露靶机端口               | `false`                             |
 | `k8s.frp.frpc`            | FRP client 镜像                 | `ghcr.io/fatedier/frpc:v0.69.0`     |
 | `k8s.frp.nginx`           | FRP 辅助 Nginx 镜像               | `nginx:latest`                      |
 | `k8s.frp.frps`            | FRPS 地址、端口、token、端口池          | `host: frps.example.com`            |
 
-抓包开关、worker 镜像和生成器池容量均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
+抓包开关、worker 镜像、生成器池容量与靶场跳板镜像均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
 
 私有镜像仓库的拉取凭据不在后台配置：运行时 Pod 使用 Helm 写入的 `k8s.service_account` ServiceAccount，它带着 Chart 的 `imagePullSecrets` 与 `imageCredentials`。
 
@@ -1477,7 +1478,7 @@ CBCTF 支持三种题目类型，覆盖从传统静态题到复杂网络靶机�
 
 详见[动态靶机](/guide/features/container.md)。
 
-同一套环境要交给多支队伍、且环境本身包含复杂网络拓扑时，把容器题配置成[渗透靶场](/guide/features/range.md)：平台预热一批内容相同的实例，队伍领取一个，Flag 由平台下发到玩家网关，租约结束实例即销毁。
+同一套环境要交给多支队伍、且环境本身包含复杂网络拓扑时，把容器题配置成[渗透靶场](/guide/features/range.md)：平台预热一批内容相同的实例，队伍领取一个，Flag 落在实例环境里，选手经平台跳板登录，租约结束实例即销毁。
 
 ## 题目测试模式
 
@@ -1604,6 +1605,21 @@ services:
 
 每个 `x-volumes` 条目对应容器内一个文件。`content` 中出现的 `static{}`、`leet{}` 或 `uuid{}` 会被识别为 flag
 模板并在启动时替换为实际 flag 值，其余内容原样写入文件。
+
+## 固定 Flag
+
+环境里本来就有 Flag 时，用 service 上的 `x-fixed-flags` 申明，平台不注入任何内容：
+
+```yaml
+services:
+  vault:
+    image: registry.example.com/challenges/vault:latest
+    x-fixed-flags:
+      - name: vault-token
+        value: static{vault-token-9f3a}
+```
+
+答案就是申明值渲染后的文本：静态 Flag 取花括号里的字面量，动态 Flag 取变形后的结果，UUID Flag 每次生成新的 UUID。固定 Flag 不加比赛前缀，环境里是什么文本，选手提交什么。
 
 ## Flag 生成时机
 
@@ -2055,25 +2071,29 @@ url: /guide/features/range.md
 | 维度   |    普通容器题   |        渗透靶场       |
 | ---- | :--------: | :---------------: |
 | 实例数量 |  每队一份，按需创建 |   常驻一批相同实例，队伍领取   |
-| Flag |   写进实例环境   |  平台下发到玩家网关，环境里没有  |
-| 对外入口 | 每个暴露端口一个端点 |     只有玩家网关一个入口    |
+| Flag |   写进实例环境   |   写进实例环境，取值按实例渲染  |
+| 对外入口 | 每个暴露端口一个端点 |     只有平台跳板一个入口    |
 | 使用后  |    停止即销毁   |    租约到期销毁，不回收复用   |
 | 网络   |  可选 VPC 模式 | 多网段 + 三层互通 + 静态地址 |
 
 ## 概念
 
-| 概念   | 载体                                    | 说明                        |
-| ---- | ------------------------------------- | ------------------------- |
-| 靶场题  | `challenges.range_config`             | 出题人声明的节点、网段、互通关系与玩家网关     |
-| 靶场实例 | `victims`，`kind=range`                | 一套跑起来的拓扑，每个实例的内容完全相同      |
-| 玩家网关 | 租约级 Pod                               | 每队一台，选手唯一拿到的入口，承载该队的 Flag |
-| 租约   | `victims.team_id` 与 `lease_expire_at` | 一个实例同时只属于一个队伍，到期回收        |
+| 概念   | 载体                                    | 说明                     |
+| ---- | ------------------------------------- | ---------------------- |
+| 靶场题  | `challenges.range_config`             | 出题人声明的节点、网段、互通关系与玩家网关  |
+| 靶场实例 | `victims`，`kind=range`                | 一套跑起来的拓扑，各实例的拓扑与配置相同   |
+| 玩家跳板 | 租约级 Pod                               | 平台固定的 SSH 容器，选手唯一拿到的入口 |
+| 租约   | `victims.team_id` 与 `lease_expire_at` | 一个实例同时只属于一个队伍，到期回收     |
+
+玩家跳板是平台固定容器，和 `capture`、`frpc`、`nginx` 一样由平台提供：镜像取自系统配置项 `k8s.range.jump_image`，SSH 端口固定 22。跳板只提供 SSH 登录，不注入题目的环境变量、Flag 与文件；队伍登录用的密钥对由平台按队伍生成，私钥随实例状态接口下发给选手。
 
 实例用完即销毁，不做回收复用：渗透过程会改环境（留后门、改配置），复用就不再是同一套环境。租约结束后平台补建一个新的同构实例。
 
 ## 出题人配置
 
 靶场题仍是 `pods` 类型，在 Compose 顶层用 `x-range` 声明调度与接入参数，在 service 上用 `x-role` 声明节点角色。
+
+玩家网关是平台固定的跳板容器，出题人只写需要配置的字段：镜像由平台提供，SSH 端口固定 22，因此网关 service 不写 `image` 也不写 `ports`。
 
 ```yaml
 x-range:
@@ -2082,17 +2102,14 @@ x-range:
   lease_duration: 7200    # 单次租约时长（秒）
   gateway: jump           # 玩家网关对应的 service
   access_network: mgmt    # 网关接入的网段，省略时取网关唯一的网段
+  ssh_user: ctf           # 跳板的登录用户，省略时为 ctf
   routes:                 # 网段间的三层互通声明
     - {from: mgmt, to: internal}
     - {from: internal, to: dmz}
 
 services:
   jump:
-    image: registry.example.com/challenges/range-gateway:latest
     x-role: gateway
-    ports:
-      - target: 22
-        published: ssh
     networks:
       mgmt:
         ipv4_address: 192.168.99.254
@@ -2131,22 +2148,23 @@ networks:
 
 `x-range` 字段：
 
-| 字段               | 要求                                                  |
-| ---------------- | --------------------------------------------------- |
-| `pool_size`      | 大于等于 0，常驻就绪的实例数，选手领取后平台自动补建                         |
-| `max_leased`     | 大于等于 0，同时租出的上限，0 表示不限                               |
-| `lease_duration` | 大于 0，秒；省略时为 7200                                    |
-| `gateway`        | 必填，必须指向存在的 service，该 service 需要有端口且不能是 `x-kubevirt` |
-| `access_network` | 必须是已定义的网段；省略时取网关唯一的网段，因此网关只能接一个网段                   |
-| `routes`         | 每条的两个网段都必须已定义、不能相同、不能重复；省略表示各网段之间不互通                |
+| 字段               | 要求                                            |
+| ---------------- | --------------------------------------------- |
+| `pool_size`      | 大于等于 0，常驻就绪的实例数，选手领取后平台自动补建                   |
+| `max_leased`     | 大于等于 0，同时租出的上限，0 表示不限                         |
+| `lease_duration` | 大于 0，秒；省略时为 7200                              |
+| `gateway`        | 必填，必须指向存在的 service，该 service 不能是 `x-kubevirt` |
+| `access_network` | 必须是已定义的网段；省略时取网关唯一的网段，因此网关只能接一个网段             |
+| `ssh_user`       | 跳板的登录用户，省略时为 `ctf`                            |
+| `routes`         | 每条的两个网段都必须已定义、不能相同、不能重复；省略表示各网段之间不互通          |
 
 接入网段是选手进入拓扑的落脚点，节点在别的网段时必须用互通声明把接入网段连过去，否则选手够不到节点，平台会直接拒绝这份配置。互通是逐跳的：接入网段只连到 `internal` 时，选手到 `dmz` 要经 `internal` 转发。
 
-`x-role` 取值为 `node`、`router`、`gateway`，用于拓扑图展示与角色约束：`gateway` 角色只能标在 `x-range.gateway` 指向的 service 上，声明了 `x-role` 却没有 `x-range` 的题目会被拒绝。靶场题的节点不需要暴露端口，端口由玩家网关承担。
+`x-role` 取值为 `node`、`router`、`gateway`，用于拓扑图展示与角色约束：`gateway` 角色只能标在 `x-range.gateway` 指向的 service 上，声明了 `x-role` 却没有 `x-range` 的题目会被拒绝。靶场题的节点不需要暴露端口，端口由平台跳板承担。
 
 ## 虚拟机节点
 
-节点可以是容器，也可以是虚拟机。声明 `x-kubevirt: true` 的 service 用 KubeVirt 起一台虚拟机，镜像需要是容器磁盘格式的 guest 系统，例如 `quay.io/kubevirt/fedora-cloud-container-disk-demo`。虚拟机节点的端口不对外暴露，出题人给它的端口声明会被忽略；选手进入虚拟机的唯一路径是经过玩家网关。
+节点可以是容器，也可以是虚拟机。声明 `x-kubevirt: true` 的 service 用 KubeVirt 起一台虚拟机，镜像需要是容器磁盘格式的 guest 系统，例如 `quay.io/kubevirt/fedora-cloud-container-disk-demo`。虚拟机节点的端口不对外暴露，出题人给它的端口声明会被忽略；选手进入虚拟机的唯一路径是经过平台跳板。
 
 guest 里的初始状态由 `x-cloudinit` 声明：
 
@@ -2160,7 +2178,7 @@ guest 里的初始状态由 `x-cloudinit` 声明：
 
 写文件的属主由平台放到 cloud-init 的 `runcmd` 里用 `chown` 设置，而不是写进 `write_files`：`write-files` 在部分镜像里先于 `users-groups` 执行，那时目标用户还不存在，cloud-init 会因为改不了属主让整个模块报错，连用户都不会被创建。用户主目录同样会补一次 `chown`，避免被提前建出来的目录留在 root 名下。
 
-三层递进的完整例子：玩家从接入网段的网关进对外层跳板机，跳板机给出内网堡垒机的口令，堡垒机再给出核心机的口令，每层只在上一层拿到的网段里可达。
+三层递进的完整例子：玩家先登录平台跳板，跳板落在接入网段上，再从跳板进对外层的堡垒机，堡垒机给出内网核心机的口令，核心机再给出保险箱的口令，每层只在上一层拿到的网段里可达。
 
 ```yaml
 x-range:
@@ -2169,6 +2187,7 @@ x-range:
   lease_duration: 3600
   gateway: jump
   access_network: access
+  ssh_user: ctf
   routes:
     - {from: access, to: dmz}
     - {from: dmz, to: core}
@@ -2176,11 +2195,7 @@ x-range:
 
 services:
   jump:
-    image: nicolaka/netshoot:latest
     x-role: gateway
-    ports:
-      - target: 22
-        published: ssh
     networks:
       access:
         ipv4_address: 192.168.99.254
@@ -2272,26 +2287,45 @@ networks:
 ## 领取与回收
 
 1. 队伍在题目页点「启动」。平台先看实例池里有没有空闲的已就绪实例，有就直接租给队伍；没有就现场启动一个。
-2. 实例就绪后平台创建玩家网关，把该队的 Flag 渲染后挂到网关的 `/run/range/payload`，并为网关开一个 NodePort，页面返回的就是这个地址。
-3. 队伍用网关地址进入拓扑。拓扑节点本身不对外暴露，选手只能从网关访问。
-4. 停止或租约到期后平台销毁网关与实例，实例池补建一个新的同构实例。
+2. 实例就绪后平台创建玩家跳板：按队伍生成一对 ed25519 密钥，公钥写进跳板容器，私钥记在实例上，并为跳板开一个 NodePort。
+3. 页面返回跳板的地址与私钥。队伍用私钥登录跳板，再从跳板进入拓扑。拓扑节点本身不对外暴露，选手只能从跳板访问。
+4. 停止或租约到期后平台销毁跳板与实例，实例池补建一个新的同构实例。
 
 实例池由定时任务维护，每分钟检查一次，把就绪实例补到 `pool_size`。后台的批量开题对靶场题同样生效：平台给每队租一个实例，池里没有空闲实例就现场启动一个；靶机列表里标出「靶场」，鼠标悬停可以看到该实例的拓扑指纹，同一题目的实例指纹相同。
 
 后台「靶机」页顶部的实例池面板列出每个靶场题的池容量、已租出数量与每个实例的状态、占用队伍、租约到期时间和拓扑指纹，并提供「预热」按钮把池补齐到 `pool_size`。对应接口是 `GET /admin/contests/:contestID/ranges` 与 `POST /admin/contests/:contestID/ranges`，权限 `admin:contest_range:control`。面板只做观测与手动触发，实例的启停仍由平台调度。
 
-## Flag 下发
+## Flag 与登录凭据
 
-靶场环境本体不携带 Flag，实例因此与队伍无关，池中的实例才是真正相同的。Flag 在领取时按队伍渲染，随网关的载荷一起下发：
+靶场题的 Flag 落在实例环境里，注入规则与普通容器题一致：
 
-| 载荷                                | 内容           |
-| --------------------------------- | ------------ |
-| `/run/range/payload/flags/*`      | 该队的 Flag 文件  |
-| `/run/range/payload/payload.json` | 凭据、环境变量与文件清单 |
+| 绑定方式             | 落点                           |
+| ---------------- | ---------------------------- |
+| 环境变量             | 节点的容器环境变量                    |
+| `x-volumes` 文件   | 挂进容器的文件内容                    |
+| `x-cloudinit` 文件 | 写进虚拟机 guest 的文件              |
+| `x-fixed-flags`  | 只申明环境里已有的 Flag，平台不注入，答案就是申明值 |
 
-Flag 的取值规则与普通题目一致：`static{}` 所有队伍相同，`leet{}` 与 `uuid{}` 每队不同。
+取值在实例创建时渲染：`static{}` 所有队伍相同，`leet{}` 按队伍变形，`uuid{}` 每个实例不同。队伍领取实例时，平台把队伍在该题的答案同步成实例里的实际取值，未解出的队伍才改，因此提交的答案与实例环境里看到的文本始终一致。
 
-网关容器同时带着出题人在 compose 里声明的环境变量与按队伍渲染后的 Flag，同名键以渲染结果为准；环境本体里不带 Flag，因此同一题目的池实例内容完全相同。
+实例指纹只按拓扑与配置计算，Flag 取值不参与，同一道题的各实例指纹相同。
+
+登录跳板用的密钥对由平台按队伍生成：公钥写进跳板容器，私钥随实例状态接口下发给队伍，题目页面上可以下载并直接看到 `ssh` 命令行。跳板容器只跑 SSH，不带题目的环境变量与 Flag。
+
+`x-fixed-flags` 用于环境里本来就有 Flag 的场景，例如虚拟机启动脚本自己写出的凭据。申明后平台不注入，队伍提交的答案就是申明值渲染后的文本（`static{}` 取其中的字面量，比赛中不加比赛前缀）：
+
+```yaml
+services:
+  vault:
+    image: registry.example.com/challenges/vault:latest
+    x-role: node
+    x-fixed-flags:
+      - name: vault-token
+        value: static{vault-token-9f3a}
+    networks:
+      vault:
+        ipv4_address: 10.30.0.2
+```
 
 ## 网络拓扑
 
@@ -2304,31 +2338,35 @@ Flag 的取值规则与普通题目一致：`static{}` 所有队伍相同，`lee
 
 平台不给靶场子网设置 ACL，跨网段转发由 VPC 逻辑路由器完成；真正挡住不该互通的方向是平台生成的 NetworkPolicy。删掉 `x-range.routes` 里的声明后重建实例，节点之间就不再互通。
 
-玩家接入网段也是实例的一个子网，由实例创建、随实例销毁，网关在租约时挂到上面。网关自己带一份出站策略，出站范围与出题人给该 service 声明的策略一致。
+玩家接入网段也是实例的一个子网，由实例创建、随实例销毁，跳板在租约时挂到上面。跳板自己带一份出站策略，按题目声明的网络策略放行；NetworkPolicy 按 Pod 生效，注入跳板的 frpc 躲不开这份策略，平台因此把 frps 地址单独加白。
 
 靶场网段一律以附加网卡的形式接入，默认路由仍属于集群网络，跨网段只依赖上面那条静态路由。因此 Kube-OVN 作主 CNI 或副 CNI 时行为一致，靶场节点也不会因为网络实现不同而改变可达范围。平台在实例就绪前会比对 Pod 各网卡的实际地址，与出题人规划的静态地址不符即判定启动失败，避免拓扑静默跑偏。
 
 ## 容量与调参
 
-| 配置                           | 默认值 | 说明                   |
-| ---------------------------- | --- | -------------------- |
-| `k8s.range.node_concurrency` | 8   | 单个实例同时创建的节点数上限       |
-| `k8s.range.ready_timeout`    | 600 | 实例就绪超时（秒），含 VM 启动时间  |
-| `asynq.queues.range`         | 2   | 靶场启停队列的并发度，与每队靶机队列分开 |
+| 配置                           | 默认值                               | 说明                   |
+| ---------------------------- | --------------------------------- | -------------------- |
+| `k8s.range.node_concurrency` | 8                                 | 单个实例同时创建的节点数上限       |
+| `k8s.range.ready_timeout`    | 600                               | 实例就绪超时（秒），含 VM 启动时间  |
+| `k8s.range.jump_image`       | `ghcr.io/0rays/cbctf-jump:latest` | 玩家跳板容器镜像，可在「系统管理」修改  |
+| `asynq.queues.range`         | 2                                 | 靶场启停队列的并发度，与每队靶机队列分开 |
 
 Helm 对应 `cbctf.k8s.range.node_concurrency`、`cbctf.k8s.range.ready_timeout` 与 `cbctf.asynq.queues.range`。
 
 实例池的常驻数量与同时租出上限共同决定集群压力：每个实例的节点数、CPU 与内存之和乘以 `pool_size` 就是常驻开销，`max_leased` 决定比赛高峰期的峰值。
+
+启用 FRP 时跳板 Pod 会多出 `frpc` 与 `nginx` 两个容器，SSH 端口同时经 NodePort 与 frps 对外暴露，选手拿到哪个入口都能登录。
 
 ## 排查
 
 | 问题            | 排查方向                                                                     |
 | ------------- | ------------------------------------------------------------------------ |
 | 队伍启动后一直排队     | 实例池为空时平台会现场启动一个，检查就绪超时与节点资源；`pool_size` 偏小会明显增加等待                        |
-| 网关地址打不开       | 检查网关 Pod 是否就绪、NodePort 是否被节点放行、集群 CNI 是否支持 NodePort 到靶场网段的转发             |
+| 跳板地址打不开       | 检查跳板 Pod 是否就绪、NodePort 是否被节点放行、集群 CNI 是否支持 NodePort 到靶场网段的转发             |
+| 登录跳板被拒        | 检查题目的 `x-range.ssh_user` 与页面上给出的私钥是否配对，私钥在租约结束后随实例销毁                     |
 | 节点之间不通        | 检查 `x-range.routes` 是否声明了这两个网段；互通是显式声明的，不是自动的                            |
 | 实例启动失败        | 检查应用日志中的地址校验结果，静态地址没被 CNI 采纳时实例不会进入就绪态                                   |
-| Flag 拿不到      | Flag 由平台下发到玩家网关，检查网关的 `/run/range/payload` 是否挂载成功                        |
+| Flag 拿不到      | Flag 落在实例环境里，检查节点容器的环境变量、挂载文件与 guest 文件；固定 Flag 核对申明值                    |
 | 虚拟机节点起不来      | 查虚拟机 Pod 的 `guest-console-log` 容器日志，guest 的启动过程都在这里                      |
 | guest 里用户没建出来 | 查 guest 的 `/var/log/cloud-init.log`，`config-write-files` 报错说明模块顺序与属主声明冲突 |
 
@@ -2952,7 +2990,7 @@ url: /admin/challenges.md
 
 **容器互通**：Compose 中定义了 `networks:` 时，每个容器独占一个 Pod 并使用静态 IP。使用了同一 subnet 的容器默认互通，跨 subnet 的组合需要在容器卡片中勾选「允许互通」才会放行。未定义 `networks:` 时所有容器共享同一个 Pod，通过 127.0.0.1 天然互通，出网策略对整个 Pod 生效。
 
-**靶场互通**：渗透靶场题在 Compose 顶层用 `x-range.routes` 声明网段间的互通，平台据此同时放行路由与策略，不使用上面的「允许互通」勾选。配置方式见[渗透靶场](/guide/features/range.md)。
+**靶场互通**：渗透靶场题在 Compose 顶层用 `x-range.routes` 声明网段间的互通，平台据此同时放行路由与策略，不使用上面的「允许互通」勾选。玩家网关是平台固定的跳板容器，编辑器里只填名称、接入网段与静态地址，镜像由平台提供，登录用户在 `x-range.ssh_user` 里申明。Flag 落在实例环境里，环境里本来就有的 Flag 用 service 上的 `x-fixed-flags` 申明。配置方式见[渗透靶场](/guide/features/range.md)。
 
 **入站**：容器默认接受集群外部的访问，题目 VPC 内的容器按互通规则放行。填写「自定义入站 CIDR」后只有这些来源可以访问该容器，互通容器与同 subnet 的容器仍然可达。同一实例的 frpc Pod 始终放行，否则 FRP 反向代理的流量无法到达容器；因此自定义入站 CIDR 无法限制 FRP 暴露的端口。
 

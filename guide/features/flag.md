@@ -112,6 +112,21 @@ services:
 每个 `x-volumes` 条目对应容器内一个文件。`content` 中出现的 `static{}`、`leet{}` 或 `uuid{}` 会被识别为 flag
 模板并在启动时替换为实际 flag 值，其余内容原样写入文件。
 
+## 固定 Flag
+
+环境里本来就有 Flag 时，用 service 上的 `x-fixed-flags` 申明，平台不注入任何内容：
+
+```yaml
+services:
+  vault:
+    image: registry.example.com/challenges/vault:latest
+    x-fixed-flags:
+      - name: vault-token
+        value: static{vault-token-9f3a}
+```
+
+答案就是申明值渲染后的文本：静态 Flag 取花括号里的字面量，动态 Flag 取变形后的结果，UUID Flag 每次生成新的 UUID。固定 Flag 不加比赛前缀，环境里是什么文本，选手提交什么。
+
 ## Flag 生成时机
 
 队伍 Flag 在题目初始化、重置，以及管理员批量预启动等需要初始化的流程中生成；容器单纯停止再启动不重新生成 Flag。

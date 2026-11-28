@@ -98,12 +98,13 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 | `k8s.capture_enabled`     | 是否创建抓包容器及相关挂载                 | `true`                              |
 | `k8s.worker_image`        | 含 `/app/worker` 的独立 worker 镜像 | `ghcr.io/0rays/cbctf-worker:latest` |
 | `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量     | `2`                                 |
+| `k8s.range.jump_image`    | 靶场题玩家跳板容器镜像                   | `ghcr.io/0rays/cbctf-jump:latest`   |
 | `k8s.frp.on`              | 是否启用 FRP 暴露靶机端口               | `false`                             |
 | `k8s.frp.frpc`            | FRP client 镜像                 | `ghcr.io/fatedier/frpc:v0.69.0`     |
 | `k8s.frp.nginx`           | FRP 辅助 Nginx 镜像               | `nginx:latest`                      |
 | `k8s.frp.frps`            | FRPS 地址、端口、token、端口池          | `host: frps.example.com`            |
 
-抓包开关、worker 镜像和生成器池容量均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
+抓包开关、worker 镜像、生成器池容量与靶场跳板镜像均可在「系统管理 → Kubernetes 配置」中查看和修改，保存到数据库后供后续新建实例及补池使用。已有实例不会自动重建或缩容，其他平台副本需重新加载配置。
 
 私有镜像仓库的拉取凭据不在后台配置：运行时 Pod 使用 Helm 写入的 `k8s.service_account` ServiceAccount，它带着 Chart 的 `imagePullSecrets` 与 `imageCredentials`。
 
