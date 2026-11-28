@@ -33,10 +33,13 @@ const status = (file = '', remote = '') => ({ code: 200, data: { file, init: tru
 test('frontend polling budgets cover the backend startup and attachment deadlines', () => {
   const victim = readFileSync(new URL('../../internal/task/victim.go', import.meta.url), 'utf8');
   const attachment = readFileSync(new URL('../../internal/task/attachment.go', import.meta.url), 'utf8');
-  const startup = victim.match(/ReadyDeadline\s*=\s*time\.Now\(\)\.Add\((\d+)\s*\*\s*time\.Minute\)/);
+  const defaults = readFileSync(new URL('../../internal/config/default.yaml', import.meta.url), 'utf8');
+  const startup = victim.match(/return\s+(\d+)\s*\*\s*time\.Minute/);
+  const rangeReady = defaults.match(/ready_timeout:\s*(\d+)/);
   const queued = attachment.match(/asynq\.Deadline\(time\.Now\(\)\.Add\((\d+)\s*\*\s*time\.Minute\)\)/);
-  assert.ok(startup && queued, 'review the polling contract when backend deadline definitions change');
-  assert.ok(POLL_TIMEOUT.running > Number(startup[1]) * 60000);
+  assert.ok(startup && queued && rangeReady, 'review the polling contract when backend deadline definitions change');
+  const startupBudget = Math.max(Number(startup[1]) * 60000, Number(rangeReady[1]) * 1000);
+  assert.ok(POLL_TIMEOUT.running > startupBudget);
   assert.ok(POLL_TIMEOUT.attachment > Number(queued[1]) * 60000);
 });
 

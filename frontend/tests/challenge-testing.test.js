@@ -6,6 +6,7 @@ import {
     isInstanceTransitioning,
     normalizeInstanceStatus,
 } from '@/components/features/Admin/challenges/testing/testSession.js';
+import { POLL_TIMEOUT } from '@/config/workload.js';
 
 const response = (status, extra = {}) => ({
   code: 200,
@@ -102,13 +103,13 @@ test('polling waits five seconds after completion and never overlaps slow reques
   assert.equal(getStatus.mock.callCount(), 2);
 });
 
-test('the five-minute startup deadline clears loading and rejects late poll responses', async (t) => {
+test('the startup deadline clears loading and rejects late poll responses', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
   const pending = Promise.withResolvers();
   const h = setup(t, { getTestChallengeStatus: () => pending.promise });
   await h.session.start();
   t.mock.timers.tick(5000);
-  t.mock.timers.tick(295000);
+  t.mock.timers.tick(POLL_TIMEOUT.running - 5000);
   assert.equal(h.state().loading.starting, false);
   const count = h.changes.length;
   pending.resolve(response('running'));
