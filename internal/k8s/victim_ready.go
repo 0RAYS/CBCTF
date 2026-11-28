@@ -76,6 +76,9 @@ func VictimReady(ctx context.Context, victim *model.Victim) (bool, error) {
 		if !ready {
 			return false, nil
 		}
+		if err = verifyPodAddresses(pod, record.Spec.Networks); err != nil {
+			return false, &StartupFailure{Err: err}
+		}
 		hosts[record.Name] = pod.Status.HostIP
 	}
 	if !victim.Spec.FrpEnabled {
