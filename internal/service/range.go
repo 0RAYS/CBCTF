@@ -174,6 +174,14 @@ func CreateRangeInstance(tx *gorm.DB, challenge model.Challenge) (model.Victim, 
 	if !ret.OK {
 		return model.Victim{}, ret
 	}
+	// flag 随题目走,池里的实例与现场启动的实例要带同一份声明。
+	challengeFlags, _, ret := db.InitChallengeFlagRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID},
+	})
+	if !ret.OK {
+		return model.Victim{}, ret
+	}
+	challenge.ChallengeFlags = challengeFlags
 	flags, values := rangeFlagSpecs(challenge, contest)
 	spec, ret := buildRangeSpec(challenge, instance, flags)
 	if !ret.OK {
