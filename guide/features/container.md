@@ -153,7 +153,7 @@ VM 必须接入至少一个 VPC 网络
 k8s:
   frp:
     on: true
-    frpc: ghcr.io/fatedier/frpc:v0.69.0
+    frpc: ghcr.io/fatedier/frpc:v0.72.0
     nginx: nginx:latest
     frps:
       - host: frps.example.com

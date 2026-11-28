@@ -208,7 +208,7 @@ Valkey 需提供可直接连接的单实例地址；平台使用 go-redis 客户
 | `cbctf.k8s.generator_pool_size` | 每比赛、每动态题的生成器池容量                                         | `2`                                    |
 | `cbctf.k8s.service_account`     | 运行时工作负载使用的 ServiceAccount，留空用 `{release}-cbctf-runtime` | `cbctf-runtime`                        |
 | `cbctf.k8s.frp.on`              | 是否启用 FRP 端口暴露                                           | `false`                                |
-| `cbctf.k8s.frp.frpc`            | FRP client 镜像                                           | `ghcr.io/fatedier/frpc:v0.69.0`        |
+| `cbctf.k8s.frp.frpc`            | FRP client 镜像                                           | `ghcr.io/fatedier/frpc:v0.72.0`        |
 | `cbctf.k8s.frp.nginx`           | FRP 转发辅助 Nginx 镜像                                       | `nginx:latest`                         |
 | `cbctf.k8s.frp.frps`            | FRPS 服务端、token 和端口池                                     | `host: frps.example.com`               |
 
