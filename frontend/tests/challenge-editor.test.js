@@ -635,7 +635,7 @@ const rangeYaml = [
   '  pool_size: 4',
   '  max_leased: 20',
   '  lease_duration: 7200',
-  '  gateway: jump',
+  '  gateway: jumper',
   '  access_network: mgmt',
   '  routes:',
   '    - from: mgmt',
@@ -644,7 +644,7 @@ const rangeYaml = [
   '      to: dmz',
   '',
   'services:',
-  '  jump:',
+  '  jumper:',
   '    image: alpine',
   '    ports:',
   '      - mode: ingress',
@@ -684,7 +684,7 @@ test('range topology parses x-range and x-role without unsupported field errors'
     poolSize: 4,
     maxLeased: 20,
     leaseDuration: 7200,
-    gateway: 'jump',
+    gateway: 'jumper',
     accessNetwork: 'mgmt',
     sshUser: '',
     routes: [
@@ -702,7 +702,7 @@ test('range topology survives a serializer round trip', () => {
   parsed.config.services[1].role = 'node';
   const yaml = buildGuidedComposeYaml(parsed.config);
   assert.ok(yaml.startsWith('x-range:\n'));
-  assert.ok(yaml.includes('  gateway: jump'));
+  assert.ok(yaml.includes('  gateway: jumper'));
   assert.ok(yaml.includes('    - from: internal'));
   assert.ok(yaml.includes('    x-role: gateway'));
   const reparsed = parseComposeYamlToGuideConfig(yaml);
@@ -715,7 +715,7 @@ test('range topology survives a serializer round trip', () => {
 });
 
 test('range ssh user is parsed and serialized', () => {
-  const parsed = parseComposeYamlToGuideConfig('x-range:\n  gateway: jump\n  ssh_user: player\nservices:\n  jump:\n    image: alpine\n');
+  const parsed = parseComposeYamlToGuideConfig('x-range:\n  gateway: jumper\n  ssh_user: player\nservices:\n  jump:\n    image: alpine\n');
   assert.equal(parsed.ok, true);
   assert.equal(parsed.config.range.sshUser, 'player');
   const yaml = buildGuidedComposeYaml(parsed.config);
@@ -742,13 +742,13 @@ test('fixed flags survive a parser and serializer round trip', () => {
 
 test('the range gateway takes its image from the platform', () => {
   const config = {
-    services: [service({ name: 'jump', image: '', ports: [] })],
+    services: [service({ name: 'jumper', image: '', ports: [] })],
     networks: [],
     range: {
       poolSize: 1,
       maxLeased: 1,
       leaseDuration: 7200,
-      gateway: 'jump',
+      gateway: 'jumper',
       accessNetwork: '',
       sshUser: '',
       routes: [],
@@ -766,7 +766,7 @@ test('range routes accept the flow mapping notation', () => {
 test('range validation mirrors the backend topology constraints', () => {
   const config = {
     services: [
-      service({ name: 'jump', ports: [], networks: [{ name: 'mgmt', ipv4Address: '192.168.99.254' }] }),
+      service({ name: 'jumper', ports: [], networks: [{ name: 'mgmt', ipv4Address: '192.168.99.254' }] }),
       service({ name: 'web', role: 'gateway', networks: [{ name: 'internal', ipv4Address: '10.10.0.2' }] }),
     ],
     networks: [
@@ -792,7 +792,7 @@ test('range validation mirrors the backend topology constraints', () => {
   ]);
   assert.deepEqual(fields['range.routes.0.to'], [errorKey('rangeRouteSelfLoop')]);
   assert.deepEqual(fields['service.1.role'], [errorKey('rangeRoleGatewayMismatch')]);
-  config.range.gateway = 'jump';
+  config.range.gateway = 'jumper';
   config.range.accessNetwork = 'nowhere';
   const attached = validateGuidedCompose(config).fields;
   assert.equal(attached['range.gateway'], undefined);

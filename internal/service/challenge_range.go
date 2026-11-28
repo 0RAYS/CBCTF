@@ -147,10 +147,10 @@ func fillPlatformContainerImages(raw map[string]any) error {
 		if image, _ := service["image"].(string); strings.TrimSpace(image) != "" {
 			continue
 		}
-		if config.Env.K8S.Range.JumpImage == "" {
+		if config.Env.K8S.Range.JumperImage == "" {
 			return fmt.Errorf("the player gateway image is not configured")
 		}
-		service["image"] = config.Env.K8S.Range.JumpImage
+		service["image"] = config.Env.K8S.Range.JumperImage
 	}
 	return nil
 }

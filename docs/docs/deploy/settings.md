@@ -101,7 +101,7 @@ Valkey 同时用于缓存和 Asynq 任务队列。以下配置影响后台任务
 | `k8s.capture_enabled` | 是否创建抓包容器及相关挂载 | `true` |
 | `k8s.generator_image` | 含 `/app/generator` 的独立生成器镜像 | `ghcr.io/0rays/cbctf-generator:latest` |
 | `k8s.generator_pool_size` | 每比赛、每动态题的 generator 目标池容量 | `2` |
-| `k8s.range.jump_image` | 靶场题玩家跳板容器镜像 | `ghcr.io/0rays/cbctf-jump:latest` |
+| `k8s.range.jumper_image` | 靶场题玩家跳板容器镜像 | `ghcr.io/0rays/cbctf-jumper:latest` |
 | `k8s.frp.on`    | 是否启用 FRP 暴露靶机端口                             | `false`                           |
 | `k8s.frp.frpc`  | FRP client 镜像                               | `ghcr.io/fatedier/frpc:v0.69.0`   |
 | `k8s.frp.nginx` | FRP 辅助 Nginx 镜像                             | `nginx:latest`                    |

@@ -36,7 +36,7 @@ type UpdateSettingForm struct {
 	K8SFrpFrpcImage      *string              `form:"k8s_frp_frpc" json:"k8s_frp_frpc" binding:"omitempty,min=1"`
 	K8SFrpNginxImage     *string              `form:"k8s_frp_nginx" json:"k8s_frp_nginx" binding:"omitempty,min=1"`
 	K8SFrpFrps           *[]config.FrpsConfig `form:"k8s_frp_frps" json:"k8s_frp_frps" binding:"omitempty,dive"`
-	K8SRangeJumpImage    *string              `form:"k8s_range_jump_image" json:"k8s_range_jump_image" binding:"omitempty,min=1"`
+	K8SRangeJumperImage  *string              `form:"k8s_range_jumper_image" json:"k8s_range_jumper_image" binding:"omitempty,min=1"`
 
 	CheatIPWhitelist         *[]string `form:"cheat_ip_whitelist" json:"cheat_ip_whitelist" binding:"omitempty,dive,ip|cidr"`
 	WebhookWhitelist         *[]string `form:"webhook_whitelist" json:"webhook_whitelist" binding:"omitempty,dive,ip|cidr|hostname|hostname_port"`

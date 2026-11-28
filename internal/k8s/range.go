@@ -28,7 +28,7 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	labels := VictimLabels(victim, map[string]string{RoleLabel: JumperPodTag})
 	podName := victimResourceName("rgt", victim.ID, "gateway")
 
-	containers := []corev1.Container{jumpContainer(access)}
+	containers := []corev1.Container{jumperContainer(access)}
 	volumes := make([]corev1.Volume, 0, 2)
 	if config.Env.K8S.CaptureEnabled {
 		// The capture sidecar writes into the traffic directory, which has to
@@ -36,10 +36,10 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 		if err := prepareCaptureTrafficDir(victim); err != nil {
 			log.Logger.Warningf("Failed to prepare traffic directory for victim %d: %s", victim.ID, err)
 		}
-		containers = append(containers, captureContainer(victim, "jump.pcap"))
+		containers = append(containers, captureContainer(victim, "jumper.pcap"))
 		volumes = append(volumes, nfsVolume())
 	}
-	frpSidecar, ret := jumpFrpSidecars(ctx, victim, labels)
+	frpSidecar, ret := jumperFrpSidecars(ctx, victim, labels)
 	if !ret.OK {
 		return victim, ret
 	}
@@ -79,7 +79,7 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	service, ret := CreateService(ctx, CreateServiceOptions{
 		Name:     svcName,
 		Labels:   labels,
-		Ports:    model.Exposes{{Port: jumpSSHPort, Protocol: "tcp", Published: jumpSSHPortName}},
+		Ports:    model.Exposes{{Port: jumperSSHPort, Protocol: "tcp", Published: jumperSSHPortName}},
 		Selector: labels,
 	})
 	if !ret.OK {
@@ -94,7 +94,7 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	}
 	for _, port := range service.Spec.Ports {
 		victim.Endpoints = append(victim.Endpoints, model.Endpoint{
-			Name:     jumpSSHPortName,
+			Name:     jumperSSHPortName,
 			IP:       hostIP,
 			Port:     port.NodePort,
 			Protocol: string(port.Protocol),
@@ -110,15 +110,15 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	return victim, model.SuccessRetVal()
 }
 
-// jumpFrpSidecars 给跳板注入 frpc 与 nginx 侧车,SSH 端口同时经 frps 对外暴露。
-func jumpFrpSidecars(ctx context.Context, victim model.Victim, labels map[string]string) (frpSidecars, model.RetVal) {
+// jumperFrpSidecars 给跳板注入 frpc 与 nginx 侧车,SSH 端口同时经 frps 对外暴露。
+func jumperFrpSidecars(ctx context.Context, victim model.Victim, labels map[string]string) (frpSidecars, model.RetVal) {
 	if !config.Env.K8S.Frp.On || len(config.Env.K8S.Frp.Frps) == 0 {
 		return frpSidecars{}, model.SuccessRetVal()
 	}
 	sidecars, ret := buildFrpSidecars(victimResourceName("rfrp", victim.ID, "gateway"), []model.Endpoint{{
-		Name:     jumpSSHPortName,
+		Name:     jumperSSHPortName,
 		IP:       "127.0.0.1",
-		Port:     jumpSSHPort,
+		Port:     jumperSSHPort,
 		Protocol: "tcp",
 	}})
 	if !ret.OK {

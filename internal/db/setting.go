@@ -118,7 +118,7 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.K8SFrpFrpcImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.FrpcImage}},
 		{Key: model.K8SFrpNginxImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.NginxImage}},
 		{Key: model.K8SFrpFrpsSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.Frps}},
-		{Key: model.K8SRangeJumpImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.Range.JumpImage}},
+		{Key: model.K8SRangeJumperImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.Range.JumperImage}},
 
 		{Key: model.CheatIPWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Cheat.IP.Whitelist}},
 		{Key: model.WebhookWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Webhook.Whitelist}},
@@ -247,7 +247,7 @@ func (s *SettingRepo) readSettingsInto(next *config.Config) model.RetVal {
 	if next.K8S.Frp.Frps, ret = GetValue[[]config.FrpsConfig](s, model.K8SFrpFrpsSettingKey); !ret.OK {
 		return ret
 	}
-	if next.K8S.Range.JumpImage, ret = GetValue[string](s, model.K8SRangeJumpImageSettingKey); !ret.OK {
+	if next.K8S.Range.JumperImage, ret = GetValue[string](s, model.K8SRangeJumperImageSettingKey); !ret.OK {
 		return ret
 	}
 

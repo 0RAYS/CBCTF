@@ -87,7 +87,7 @@ type Config struct {
 		Range             struct {
 			NodeConcurrency int    `mapstructure:"node_concurrency" json:"node_concurrency"`
 			ReadyTimeout    int    `mapstructure:"ready_timeout" json:"ready_timeout"`
-			JumpImage       string `mapstructure:"jump_image" json:"jump_image"`
+			JumperImage     string `mapstructure:"jumper_image" json:"jumper_image"`
 		} `mapstructure:"range" json:"range"`
 		Frp struct {
 			On         bool         `mapstructure:"on" json:"on"`

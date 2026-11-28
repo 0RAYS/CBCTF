@@ -297,7 +297,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []mo
 		}
 		if rangeRole(rangeConfig, app) == model.RangeGatewayRole {
 			// 玩家网关是平台固定的跳板容器,镜像由平台决定。
-			containerTemplate.Image = config.Env.K8S.Range.JumpImage
+			containerTemplate.Image = config.Env.K8S.Range.JumperImage
 		}
 		if boot, ok := app.Extensions[model.XBootExtension].(model.XBoot); ok {
 			containerTemplate.Bootloader = boot.Bootloader

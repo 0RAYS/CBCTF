@@ -17,8 +17,8 @@ const (
 // DefaultRangeLeaseDuration 是作者未声明租约时长时的默认值。
 const DefaultRangeLeaseDuration = 2 * time.Hour
 
-// DefaultRangeJumpUser 是跳板未申明登录用户时的默认用户。
-const DefaultRangeJumpUser = "ctfer"
+// DefaultRangeJumperUser 是跳板未申明登录用户时的默认用户。
+const DefaultRangeJumperUser = "ctfer"
 
 // RangeConfig 靶场题目的调度与接入配置。
 // PoolSize 是常驻就绪的实例数,租约结束即销毁实例并补建,不回收复用。
@@ -37,7 +37,7 @@ func (c *RangeConfig) AccessUser() string {
 	if c != nil && c.SSHUser != "" {
 		return c.SSHUser
 	}
-	return DefaultRangeJumpUser
+	return DefaultRangeJumperUser
 }
 
 // RouteLink 声明两个网段之间三层互通,平台据此互相放行对方网段。

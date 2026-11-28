@@ -88,7 +88,7 @@ export function normalizeConfig(source) {
         frps: fallback(source?.k8s_frp_frps, fallback(source?.k8s?.frp?.frps, [])),
       },
       range: {
-        jump_image: fallback(source?.k8s_range_jump_image, fallback(source?.k8s?.range?.jump_image, '')),
+        jumper_image: fallback(source?.k8s_range_jumper_image, fallback(source?.k8s?.range?.jumper_image, '')),
       },
     },
     cheat: {

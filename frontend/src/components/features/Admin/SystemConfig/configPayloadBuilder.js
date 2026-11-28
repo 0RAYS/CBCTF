@@ -31,7 +31,7 @@ export function buildPayload(config) {
     k8s_frp_frpc: config.k8s.frp.frpc,
     k8s_frp_nginx: config.k8s.frp.nginx,
     k8s_frp_frps: config.k8s.frp.frps,
-    k8s_range_jump_image: config.k8s.range.jump_image,
+    k8s_range_jumper_image: config.k8s.range.jumper_image,
     cheat_ip_whitelist: config.cheat.ip_whitelist,
     webhook_whitelist: config.webhook.whitelist,
     registration_enabled: config.registration.enabled,

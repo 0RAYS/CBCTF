@@ -26,7 +26,7 @@ description: 说明 CBCTF 渗透靶场的实例池、租约、玩家网关、网
 | 玩家跳板   | 租约级 Pod           | 平台固定的 SSH 容器，选手唯一拿到的入口      |
 | 租约     | `victims.team_id` 与 `lease_expire_at` | 一个实例同时只属于一个队伍，到期回收 |
 
-玩家跳板是平台固定容器，和 `capture`、`frpc`、`nginx` 一样由平台提供：镜像取自系统配置项 `k8s.range.jump_image`，SSH 端口固定 22。跳板只提供 SSH 登录，不注入题目的环境变量、Flag 与文件；队伍登录用的密钥对由平台按队伍生成，私钥随实例状态接口下发给选手。
+玩家跳板是平台固定容器，和 `capture`、`frpc`、`nginx` 一样由平台提供：镜像取自系统配置项 `k8s.range.jumper_image`，SSH 端口固定 22。跳板只提供 SSH 登录，不注入题目的环境变量、Flag 与文件；队伍登录用的密钥对由平台按队伍生成，私钥随实例状态接口下发给选手。
 
 实例用完即销毁，不做回收复用：渗透过程会改环境（留后门、改配置），复用就不再是同一套环境。租约结束后平台补建一个新的同构实例。
 
@@ -41,7 +41,7 @@ x-range:
   pool_size: 4            # 常驻就绪的实例数，0 表示不预热
   max_leased: 20          # 同时租出的上限，0 表示不限
   lease_duration: 7200    # 单次租约时长（秒）
-  gateway: jump           # 玩家网关对应的 service
+  gateway: jumper         # 玩家网关对应的 service
   access_network: mgmt    # 网关接入的网段，省略时取网关唯一的网段
   ssh_user: ctfer         # 跳板的登录用户，省略时为 ctfer
   routes:                 # 网段间的三层互通声明
@@ -49,7 +49,7 @@ x-range:
     - {from: internal, to: dmz}
 
 services:
-  jump:
+  jumper:
     x-role: gateway
     networks:
       mgmt:
@@ -126,7 +126,7 @@ x-range:
   pool_size: 1
   max_leased: 2
   lease_duration: 3600
-  gateway: jump
+  gateway: jumper
   access_network: access
   ssh_user: ctfer
   routes:
@@ -135,7 +135,7 @@ x-range:
     - {from: core, to: vault}
 
 services:
-  jump:
+  jumper:
     x-role: gateway
     networks:
       access:
@@ -289,7 +289,7 @@ services:
 |------------------------------------------|-------|---------------------------------|
 | `k8s.range.node_concurrency`              | 8     | 单个实例同时创建的节点数上限                 |
 | `k8s.range.ready_timeout`                 | 600   | 实例就绪超时（秒），含 VM 启动时间             |
-| `k8s.range.jump_image`                    | `ghcr.io/0rays/cbctf-jump:latest` | 玩家跳板容器镜像，可在「系统管理」修改 |
+| `k8s.range.jumper_image`                  | `ghcr.io/0rays/cbctf-jumper:latest` | 玩家跳板容器镜像，可在「系统管理」修改 |
 | `asynq.queues.range`                      | 2     | 靶场启停队列的并发度，与每队靶机队列分开          |
 
 Helm 对应 `cbctf.k8s.range.node_concurrency`、`cbctf.k8s.range.ready_timeout` 与 `cbctf.asynq.queues.range`。

@@ -34,7 +34,7 @@ func challengeSidecarImages(challenge model.Challenge) []string {
 			sidecars = append(sidecars, config.Env.K8S.Frp.FrpcImage, config.Env.K8S.Frp.NginxImage)
 		}
 		if challenge.RangeConfig != nil {
-			sidecars = append(sidecars, config.Env.K8S.Range.JumpImage)
+			sidecars = append(sidecars, config.Env.K8S.Range.JumperImage)
 		}
 	}
 	return sidecars
@@ -68,7 +68,7 @@ func ListChallengeImages(tx *gorm.DB) ([]string, model.RetVal) {
 		return nil, ret
 	}
 	sidecars := append(challengeSidecarImages(model.Challenge{Type: model.DynamicChallengeType}), challengeSidecarImages(model.Challenge{Type: model.PodsChallengeType})...)
-	sidecars = append(sidecars, config.Env.K8S.Range.JumpImage)
+	sidecars = append(sidecars, config.Env.K8S.Range.JumperImage)
 	images := k8s.ChallengeImages(model.Challenge{}, sidecars...)
 	for _, challenge := range challenges {
 		images = append(images, ChallengeImages(challenge)...)

@@ -170,9 +170,9 @@ cbctf:
       node_concurrency: 8
       # Seconds a range instance may take to become ready.
       ready_timeout: 600
-      # Player jump host image. The login user is declared per challenge in
+      # Player jumper image. The login user is declared per challenge in
       # the compose file with x-range.ssh_user.
-      jump_image: "ghcr.io/0rays/cbctf-jump:latest"
+      jumper_image: "ghcr.io/0rays/cbctf-jumper:latest"
     # ServiceAccount of the runtime workloads, it carries the pull secrets of
     # the private registries. Empty uses {fullname}-runtime.
     service_account: ""

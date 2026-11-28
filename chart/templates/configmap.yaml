@@ -76,7 +76,7 @@ data:
       range:
         node_concurrency: {{ .Values.cbctf.k8s.range.node_concurrency }}
         ready_timeout: {{ .Values.cbctf.k8s.range.ready_timeout }}
-        jump_image: {{ .Values.cbctf.k8s.range.jump_image | quote }}
+        jumper_image: {{ .Values.cbctf.k8s.range.jumper_image | quote }}
       service_account: {{ include "cbctf.runtimeServiceAccountName" . | quote }}
       frp:
         on: {{ .Values.cbctf.k8s.frp.on }}

@@ -134,7 +134,7 @@ func SystemConfig(ctx *gin.Context) {
 		"k8s_frp_frpc":            config.Env.K8S.Frp.FrpcImage,
 		"k8s_frp_nginx":           config.Env.K8S.Frp.NginxImage,
 		"k8s_frp_frps":            maskedFrps,
-		"k8s_range_jump_image":    config.Env.K8S.Range.JumpImage,
+		"k8s_range_jumper_image":  config.Env.K8S.Range.JumperImage,
 
 		"cheat_ip_whitelist":         config.Env.Cheat.IP.Whitelist,
 		"webhook_whitelist":          config.Env.Webhook.Whitelist,

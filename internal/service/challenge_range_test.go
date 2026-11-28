@@ -13,14 +13,14 @@ const rangeCompose = `x-range:
   pool_size: 3
   max_leased: 10
   lease_duration: 1800
-  gateway: jump
+  gateway: jumper
   access_network: mgmt
   ssh_user: player
   routes:
     - {from: mgmt, to: internal}
     - {from: internal, to: dmz}
 services:
-  jump:
+  jumper:
     x-role: gateway
     networks:
       mgmt: {ipv4_address: 192.168.99.254}
@@ -53,16 +53,16 @@ networks:
 `
 
 // 玩家网关的镜像来自平台配置,题目里不写。
-func withPlatformJumpImage(t *testing.T) {
+func withPlatformJumperImage(t *testing.T) {
 	t.Helper()
 	previous := config.Env
 	config.Env = &config.Config{}
-	config.Env.K8S.Range.JumpImage = "ghcr.io/0rays/cbctf-jump:latest"
+	config.Env.K8S.Range.JumperImage = "ghcr.io/0rays/cbctf-jumper:latest"
 	t.Cleanup(func() { config.Env = previous })
 }
 
 func TestRangeTopologyParsesExtension(t *testing.T) {
-	withPlatformJumpImage(t)
+	withPlatformJumperImage(t)
 	template, _, rangeConfig, ret := buildChallengeTemplate(rangeCompose)
 	if !ret.OK {
 		t.Fatalf("compose load: %+v", ret)
@@ -70,7 +70,7 @@ func TestRangeTopologyParsesExtension(t *testing.T) {
 	if rangeConfig == nil {
 		t.Fatal("range config missing")
 	}
-	if rangeConfig.PoolSize != 3 || rangeConfig.MaxLeased != 10 || rangeConfig.GatewayKey != "jump" || rangeConfig.AccessNetwork != "mgmt" {
+	if rangeConfig.PoolSize != 3 || rangeConfig.MaxLeased != 10 || rangeConfig.GatewayKey != "jumper" || rangeConfig.AccessNetwork != "mgmt" {
 		t.Fatalf("range config: %+v", rangeConfig)
 	}
 	if rangeConfig.LeaseDuration != 30*time.Minute {
@@ -86,27 +86,27 @@ func TestRangeTopologyParsesExtension(t *testing.T) {
 	for _, pod := range template.Pods {
 		roles[pod.Name] = pod.Role
 	}
-	if roles["jump"] != model.RangeGatewayRole || roles["router"] != model.RangeRouterRole || roles["web"] != model.RangeNodeRole {
+	if roles["jumper"] != model.RangeGatewayRole || roles["router"] != model.RangeRouterRole || roles["web"] != model.RangeNodeRole {
 		t.Fatalf("roles: %+v", roles)
 	}
 	for _, pod := range template.Pods {
 		if pod.Role != model.RangeGatewayRole {
 			continue
 		}
-		if pod.Containers[0].Image != config.Env.K8S.Range.JumpImage {
+		if pod.Containers[0].Image != config.Env.K8S.Range.JumperImage {
 			t.Fatalf("gateway image: %q", pod.Containers[0].Image)
 		}
 	}
 }
 
 func TestRangeTopologyRejectsInvalidDeclarations(t *testing.T) {
-	withPlatformJumpImage(t)
+	withPlatformJumperImage(t)
 	cases := map[string]string{
-		"unknown gateway": strings.Replace(rangeCompose, "gateway: jump", "gateway: missing", 1),
+		"unknown gateway": strings.Replace(rangeCompose, "gateway: jumper", "gateway: missing", 1),
 		"unknown route":   strings.Replace(rangeCompose, "{from: internal, to: dmz}", "{from: internal, to: missing}", 1),
 		"self route":      strings.Replace(rangeCompose, "{from: internal, to: dmz}", "{from: internal, to: internal}", 1),
 		"role without range": strings.Replace(
-			strings.Replace(rangeCompose, "x-range:\n  pool_size: 3\n  max_leased: 10\n  lease_duration: 1800\n  gateway: jump\n  access_network: mgmt\n  ssh_user: player\n  routes:\n    - {from: mgmt, to: internal}\n    - {from: internal, to: dmz}\n", "", 1),
+			strings.Replace(rangeCompose, "x-range:\n  pool_size: 3\n  max_leased: 10\n  lease_duration: 1800\n  gateway: jumper\n  access_network: mgmt\n  ssh_user: player\n  routes:\n    - {from: mgmt, to: internal}\n    - {from: internal, to: dmz}\n", "", 1),
 			"x-role: router", "", 1),
 		"access network without route": strings.Replace(
 			strings.Replace(rangeCompose, "    - {from: mgmt, to: internal}\n", "", 1),
@@ -122,7 +122,7 @@ func TestRangeTopologyRejectsInvalidDeclarations(t *testing.T) {
 }
 
 func TestRangeTopologySurvivesYamlRoundTrip(t *testing.T) {
-	withPlatformJumpImage(t)
+	withPlatformJumperImage(t)
 	template, flags, rangeConfig, ret := buildChallengeTemplate(rangeCompose)
 	if !ret.OK {
 		t.Fatalf("compose load: %+v", ret)
@@ -134,14 +134,14 @@ func TestRangeTopologySurvivesYamlRoundTrip(t *testing.T) {
 	if !strings.Contains(yaml, "ssh_user:") {
 		t.Fatalf("ssh user lost: %s", yaml)
 	}
-	if strings.Contains(yaml, "cbctf-jump") {
+	if strings.Contains(yaml, "cbctf-jumper") {
 		t.Fatalf("platform image leaked into the challenge yaml: %s", yaml)
 	}
 	_, _, parsed, ret := buildChallengeTemplate(yaml)
 	if !ret.OK {
 		t.Fatalf("round trip load: %+v", ret)
 	}
-	if parsed == nil || parsed.GatewayKey != "jump" || len(parsed.Routes) != 2 || parsed.SSHUser != "player" {
+	if parsed == nil || parsed.GatewayKey != "jumper" || len(parsed.Routes) != 2 || parsed.SSHUser != "player" {
 		t.Fatalf("round trip config: %+v", parsed)
 	}
 }

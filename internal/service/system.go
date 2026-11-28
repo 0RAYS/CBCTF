@@ -197,7 +197,7 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.K8SFrpFrpcImageSettingKey:      form.K8SFrpFrpcImage,
 		model.K8SFrpNginxImageSettingKey:     form.K8SFrpNginxImage,
 		model.K8SFrpFrpsSettingKey:           form.K8SFrpFrps,
-		model.K8SRangeJumpImageSettingKey:    form.K8SRangeJumpImage,
+		model.K8SRangeJumperImageSettingKey:  form.K8SRangeJumperImage,
 
 		model.CheatIPWhitelistSettingKey:         form.CheatIPWhitelist,
 		model.WebhookWhitelistSettingKey:         form.WebhookWhitelist,
