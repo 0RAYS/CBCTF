@@ -38,6 +38,7 @@ var (
 		model.ClearJoinTeamMutexCronJob:   {name: model.ClearJoinTeamMutexCronJob, run: clearJoinTeamMutexTask},
 		model.ReindexPostgresCronJob:      {name: model.ReindexPostgresCronJob, run: reindexPostgresTask},
 		model.DetectImagesCronJob:         {name: model.DetectImagesCronJob, run: detectImagesTask},
+		model.EnsureRangePoolsCronJob:     {name: model.EnsureRangePoolsCronJob, run: ensureRangePoolsTask},
 	}
 )
 

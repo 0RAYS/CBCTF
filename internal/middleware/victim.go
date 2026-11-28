@@ -15,6 +15,11 @@ import (
 func CheckTeamVictimCount(ctx *gin.Context) {
 	contest := GetContest(ctx)
 	team := GetTeam(ctx)
+	// 靶场实例按池领取,不受每队靶机数量限制。
+	if challenge := GetChallenge(ctx); challenge.RangeConfig != nil {
+		ctx.Next()
+		return
+	}
 	count, ret := service.CountTeamVictims(db.DB.WithContext(ctx.Request.Context()), team)
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)

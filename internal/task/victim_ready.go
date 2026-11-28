@@ -106,6 +106,12 @@ func reconcileVictim(ctx context.Context, id uint) error {
 	prometheus.RecordVictimTransition("ready", true)
 	prometheus.RecordVictimLifecycle(time.Since(victim.CreatedAt).Seconds(), true)
 	log.Logger.Infof("Victim is running: victim_id=%d", id)
+	// 租出的靶场实例在就绪后才有网关,选手要等的就是这一步。
+	if victim.IsRange() && victim.TeamID.Valid {
+		if _, err := EnqueueRangeGatewayTask(victim); err != nil {
+			return fmt.Errorf("enqueue range gateway failed: %w", err)
+		}
+	}
 	return nil
 }
 

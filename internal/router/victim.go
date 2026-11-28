@@ -31,7 +31,23 @@ func StartVictim(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	challenge := middleware.GetChallenge(ctx)
-	ret := service.StartVictim(db.DB.WithContext(ctx.Request.Context()), user.ID, team.ID, contest.ID, challenge.ID)
+	tx := db.DB.WithContext(ctx.Request.Context())
+	if challenge.RangeConfig != nil {
+		victim, ret := service.StartRange(tx, team, contest, challenge)
+		if !ret.OK {
+			resp.JSON(ctx, ret)
+			return
+		}
+		ctx.Set(middleware.CTXEventSuccessKey, true)
+		resp.JSON(ctx, model.SuccessRetVal(gin.H{
+			"victim_id": victim.ID,
+			"status":    victim.Status,
+			"target":    victim.RemoteAddr(),
+			"remaining": victim.Remaining().Seconds(),
+		}))
+		return
+	}
+	ret := service.StartVictim(tx, user.ID, team.ID, contest.ID, challenge.ID)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -56,7 +72,23 @@ func ExtendVictimDuration(ctx *gin.Context) {
 
 func StopVictim(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
-	if ret := service.StopAliveVictim(db.DB.WithContext(ctx.Request.Context()), middleware.GetTeam(ctx), middleware.GetChallenge(ctx).ID); !ret.OK {
+	challenge := middleware.GetChallenge(ctx)
+	tx := db.DB.WithContext(ctx.Request.Context())
+	if challenge.RangeConfig != nil {
+		victim, ret := service.GetRangeVictim(tx, middleware.GetTeam(ctx).ID, challenge.ID)
+		if !ret.OK {
+			resp.JSON(ctx, ret)
+			return
+		}
+		if ret = service.StopRange(tx, victim); !ret.OK {
+			resp.JSON(ctx, ret)
+			return
+		}
+		ctx.Set(middleware.CTXEventSuccessKey, true)
+		resp.JSON(ctx, model.SuccessRetVal())
+		return
+	}
+	if ret := service.StopAliveVictim(tx, middleware.GetTeam(ctx), challenge.ID); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}

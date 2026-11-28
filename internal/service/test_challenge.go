@@ -80,7 +80,7 @@ func GetTestChallengeStatus(tx *gorm.DB, challenge model.Challenge) view.Challen
 		Attempts: 0,
 		Init:     true,
 		Solved:   false,
-		Remote:   GetVictimStatus(tx, 0, challenge.ID, challenge.Type),
+		Remote:   GetVictimStatus(tx, 0, challenge.ID, challenge),
 		FileName: buildSourceFileName(tx, challenge, 0),
 	}
 }

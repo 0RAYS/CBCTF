@@ -95,7 +95,14 @@ func closeUnCtrlVictimsTask() model.RetVal {
 }
 
 func victimExpired(victim model.Victim, now time.Time) bool {
-	return victim.Status == model.RunningVictimStatus && !victim.Start.IsZero() && victim.Start.Add(victim.Duration).Before(now)
+	if victim.Status != model.RunningVictimStatus {
+		return false
+	}
+	// 靶场实例按租约到期回收,池中未租出的实例不计时。
+	if victim.IsRange() {
+		return victim.TeamID.Valid && !victim.LeaseExpireAt.IsZero() && victim.LeaseExpireAt.Before(now)
+	}
+	return !victim.Start.IsZero() && victim.Start.Add(victim.Duration).Before(now)
 }
 
 // Build the complete deletion candidate set before any destructive API call.

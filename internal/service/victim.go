@@ -338,18 +338,26 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID, challengeID uint, durat
 }
 
 // GetVictimStatus 返回队伍在指定题目上的靶机状态。
-func GetVictimStatus(tx *gorm.DB, teamID, challengeID uint, challengeType model.ChallengeType) view.VictimStatusView {
+func GetVictimStatus(tx *gorm.DB, teamID, challengeID uint, challenge model.Challenge) view.VictimStatusView {
 	data := view.VictimStatusView{
 		Targets:   make([]string, 0),
 		Duration:  0,
 		Remaining: 0,
 		Status:    "Down",
 	}
-	if challengeType != model.PodsChallengeType {
+	if challenge.Type != model.PodsChallengeType {
 		data.Status = "not_docker"
 		return data
 	}
-	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(teamID, challengeID)
+	var (
+		victim model.Victim
+		ret    model.RetVal
+	)
+	if challenge.RangeConfig != nil {
+		victim, ret = GetRangeVictim(tx, teamID, challengeID)
+	} else {
+		victim, ret = db.InitVictimRepo(tx).HasAliveVictim(teamID, challengeID)
+	}
 	if !ret.OK {
 		return data
 	}
@@ -425,7 +433,10 @@ func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 }
 
 func CountTeamVictims(tx *gorm.DB, team model.Team) (int64, model.RetVal) {
-	return db.InitVictimRepo(tx).Count(db.CountOptions{Conditions: map[string]any{"team_id": team.ID}})
+	return db.InitVictimRepo(tx).Count(db.CountOptions{Conditions: map[string]any{
+		"kind":    model.VictimKindTarget,
+		"team_id": team.ID,
+	}})
 }
 
 func GetVictims(tx *gorm.DB, contest model.Contest, form dto.GetVictimsForm) ([]model.Victim, int64, int64, model.RetVal) {

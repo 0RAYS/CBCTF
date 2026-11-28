@@ -175,7 +175,7 @@ func BuildChallengeRuntimeView(tx *gorm.DB, team model.Team, challenge model.Cha
 		Attempts:  attempts,
 		Init:      generated,
 		Solved:    solved,
-		Remote:    GetVictimStatus(tx, team.ID, challenge.ID, challenge.Type),
+		Remote:    GetVictimStatus(tx, team.ID, challenge.ID, challenge),
 		FileName:  buildSourceFileName(tx, challenge, team.ID),
 	}, model.SuccessRetVal()
 }
