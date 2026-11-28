@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"maps"
@@ -25,8 +26,37 @@ type Network struct {
 	Interface    string
 	IPv4         string
 	MAC          string
+	CIDR         string
+	Gateway      string
 	Subnet       string
 	NetAttachDef string
+	Primary      bool
+	Routes       []model.Route
+}
+
+// ovnAnnotations 生成 Multus 与 Kube-OVN 的网卡注解。
+// 静态地址、主网卡默认路由与静态路由都通过 pod 注解交给 Kube-OVN CNI。
+func ovnAnnotations(networks []Network) map[string]string {
+	annotations := make(map[string]string)
+	for _, network := range networks {
+		annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
+		annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
+		prefix := fmt.Sprintf("%s.%s.ovn.kubernetes.io/", network.NetAttachDef, globalNamespace)
+		annotations[prefix+"logical_switch"] = network.Subnet
+		annotations[prefix+"ip_address"] = network.IPv4
+		if network.MAC != "" {
+			annotations[prefix+"mac_address"] = network.MAC
+		}
+		if network.Primary {
+			annotations[prefix+"default_route"] = "true"
+		}
+		if len(network.Routes) > 0 {
+			if data, err := json.Marshal(network.Routes); err == nil {
+				annotations[prefix+"routes"] = string(data)
+			}
+		}
+	}
+	return annotations
 }
 
 type CreatePodOptions struct {
@@ -57,15 +87,8 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 	}
 	annotations := make(map[string]string)
 	maps.Copy(annotations, options.Annotations)
-	for _, network := range options.Networks {
-		annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
-		annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-		prefix := fmt.Sprintf("%s.%s.ovn.kubernetes.io/", network.NetAttachDef, globalNamespace)
-		annotations[prefix+"logical_switch"] = network.Subnet
-		annotations[prefix+"ip_address"] = network.IPv4
-		if network.MAC != "" {
-			annotations[prefix+"mac_address"] = network.MAC
-		}
+	for key, value := range ovnAnnotations(options.Networks) {
+		annotations[key] = value
 	}
 	if len(annotations) == 0 {
 		annotations = nil

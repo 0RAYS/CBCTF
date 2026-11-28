@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"net/netip"
 	"strconv"
 	"strings"
 	"time"
@@ -38,28 +39,41 @@ type networkDataConfig struct {
 }
 
 type networkDataEthernet struct {
-	Match   networkDataMatch `yaml:"match"`
-	SetName string           `yaml:"set-name"`
-	DHCP4   bool             `yaml:"dhcp4"`
+	Match     networkDataMatch `yaml:"match"`
+	SetName   string           `yaml:"set-name"`
+	Addresses []string         `yaml:"addresses,omitempty"`
+	Gateway   string           `yaml:"gateway,omitempty"`
 }
 
 type networkDataMatch struct {
 	MACAddress string `yaml:"macaddress"`
 }
 
+// buildNetworkData 渲染 cloud-init 的 network-data。
+// 地址必须与拓扑规划的静态地址一致,DHCP 会拿到网段里的任意地址。
 func buildNetworkData(networks []Network) (string, error) {
 	networkData := networkDataConfig{
 		Version:   2,
 		Ethernets: make(map[string]networkDataEthernet, len(networks)),
 	}
 	for _, network := range networks {
-		networkData.Ethernets[network.Interface] = networkDataEthernet{
+		ethernet := networkDataEthernet{
 			Match: networkDataMatch{
 				MACAddress: network.MAC,
 			},
 			SetName: network.Interface,
-			DHCP4:   true,
 		}
+		if network.CIDR != "" && network.IPv4 != "" {
+			prefix, err := netip.ParsePrefix(network.CIDR)
+			if err != nil {
+				return "", err
+			}
+			ethernet.Addresses = []string{fmt.Sprintf("%s/%d", network.IPv4, prefix.Bits())}
+		}
+		if network.Primary {
+			ethernet.Gateway = network.Gateway
+		}
+		networkData.Ethernets[network.Interface] = ethernet
 	}
 	data, err := yaml.Marshal(networkData)
 	if err != nil {
@@ -89,12 +103,6 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 	networks := make([]v1.Network, 0, len(options.Networks))
 	for _, network := range options.Networks {
 		attachment := fmt.Sprintf("%s/%s", globalNamespace, network.NetAttachDef)
-		annotations["k8s.v1.cni.cncf.io/networks"] += "," + attachment
-		annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-		prefix := fmt.Sprintf("%s.%s.ovn.kubernetes.io/", network.NetAttachDef, globalNamespace)
-		annotations[prefix+"logical_switch"] = network.Subnet
-		annotations[prefix+"ip_address"] = network.IPv4
-		annotations[prefix+"mac_address"] = network.MAC
 		interfaces = append(interfaces, v1.Interface{
 			Name:   network.Interface,
 			Bridge: new(v1.InterfaceBridge),
@@ -103,6 +111,9 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 			Name:   network.Interface,
 			Multus: &v1.MultusNetwork{NetworkName: attachment},
 		})
+	}
+	for key, value := range ovnAnnotations(options.Networks) {
+		annotations[key] = value
 	}
 	bootloader := &v1.Bootloader{BIOS: &v1.BIOS{}}
 	if strings.ToLower(options.Bootloader) == "efi" {
