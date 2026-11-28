@@ -38,7 +38,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 		victim := payload.Victim
 		log.Logger.Debugf(
 			"Start victim task received: victim_id=%d user_id=%d team_id=%d challenge_id=%d pods=%d",
-			victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods),
+			victim.ID, victim.UserID.V, victim.TeamID.V, victim.ChallengeID, len(victim.Pods),
 		)
 		cleanupQueued := false
 		claimed := false
@@ -113,7 +113,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			basePodCount := len(victim.Pods)
 			log.Logger.Infof(
 				"Starting victim provisioning: victim_id=%d user_id=%d team_id=%d challenge_id=%d",
-				victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID,
+				victim.ID, victim.UserID.V, victim.TeamID.V, victim.ChallengeID,
 			)
 			victim, ret = k8s.StartVictim(ctx, victim)
 			if !ret.OK {
@@ -147,7 +147,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			}
 			log.Logger.Infof(
 				"Victim resources submitted: victim_id=%d user_id=%d team_id=%d challenge_id=%d endpoints=%d exposed_endpoints=%d",
-				victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, len(victim.Endpoints), len(victim.ExposedEndpoints),
+				victim.ID, victim.UserID.V, victim.TeamID.V, victim.ChallengeID, len(victim.Endpoints), len(victim.ExposedEndpoints),
 			)
 			return nil
 		}()
@@ -199,7 +199,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 		if len(victim.Pods) == 0 {
 			victim.Pods = payload.Victim.Pods
 		}
-		log.Logger.Infof("Stopping victim: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
+		log.Logger.Infof("Stopping victim: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID.V, victim.TeamID.V, victim.ChallengeID)
 		ret = k8s.StopVictim(ctx, victim)
 		if !ret.OK {
 			prometheus.RecordK8sOperationError("stop_victim")
@@ -210,7 +210,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 		if _, err := EnqueueLoadTrafficTask(victim); err != nil {
 			log.Logger.Warningf(
 				"Failed to enqueue load traffic task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v",
-				victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err,
+				victim.ID, victim.UserID.V, victim.TeamID.V, victim.ChallengeID, err,
 			)
 		}
 		ret = db.WithTransactionDB(db.TaskDB.WithContext(ctx), func(tx *db.Tx) model.RetVal {
@@ -227,7 +227,7 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 		if !ret.OK {
 			return fmt.Errorf("stop victim cleanup failed: %w", ret.AsError())
 		}
-		log.Logger.Infof("Victim stopped: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
+		log.Logger.Infof("Victim stopped: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID.V, victim.TeamID.V, victim.ChallengeID)
 		return nil
 	})
 }

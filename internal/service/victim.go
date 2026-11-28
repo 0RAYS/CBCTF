@@ -155,7 +155,7 @@ func buildVictimSpec(_ *gorm.DB, victim model.Victim, source victimSpecSource) (
 	}
 
 	spec.NetworkPlan = model.VPC{
-		Name:    fmt.Sprintf("vpc-%d-%d-%s", victim.ChallengeID, victim.UserID, utils.RandHexStr(6)),
+		Name:    fmt.Sprintf("vpc-%d-%d-%s", victim.ChallengeID, victim.UserID.V, utils.RandHexStr(6)),
 		Subnets: make([]*model.Subnet, 0),
 	}
 	networkPlans := make(map[string]*model.Subnet)
@@ -181,10 +181,10 @@ func buildVictimSpec(_ *gorm.DB, victim model.Victim, source victimSpecSource) (
 			if !ok {
 				subnet = &model.Subnet{
 					DefName:      network.Definition.Name,
-					Name:         fmt.Sprintf("net-%d-%d-%s", victim.ChallengeID, victim.UserID, utils.RandHexStr(6)),
+					Name:         fmt.Sprintf("net-%d-%d-%s", victim.ChallengeID, victim.UserID.V, utils.RandHexStr(6)),
 					CIDRBlock:    network.Definition.CIDR,
 					Gateway:      network.Definition.Gateway,
-					NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%d-%d-%s", victim.ChallengeID, victim.UserID, utils.RandHexStr(6))},
+					NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%d-%d-%s", victim.ChallengeID, victim.UserID.V, utils.RandHexStr(6))},
 				}
 				networkPlans[network.Definition.Name] = subnet
 				spec.NetworkPlan.Subnets = append(spec.NetworkPlan.Subnets, subnet)
@@ -253,7 +253,7 @@ func buildPodRecords(victim model.Victim) []model.Pod {
 		name = name[:min(len(name), 15)]
 		pods = append(pods, model.Pod{
 			VictimID: victim.ID,
-			Name:     fmt.Sprintf("pod-%d-%d-%s-%s", victim.ChallengeID, victim.UserID, name, utils.RandHexStr(6)),
+			Name:     fmt.Sprintf("pod-%d-%d-%s-%s", victim.ChallengeID, victim.UserID.V, name, utils.RandHexStr(6)),
 			Spec:     podSpec,
 		})
 	}
@@ -281,7 +281,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID, challengeID uint, durat
 		ChallengeID: challengeID,
 		ContestID:   sql.Null[uint]{V: contestID, Valid: contestID > 0},
 		TeamID:      sql.Null[uint]{V: teamID, Valid: teamID > 0},
-		UserID:      userID,
+		UserID:      sql.Null[uint]{V: userID, Valid: userID > 0},
 	}
 	source, ret := buildVictimSpecSource(tx, baseVictim, challenge)
 	if !ret.OK {
@@ -299,7 +299,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID, challengeID uint, durat
 		victimRepo := db.InitVictimRepo(tx2)
 		podRepo := db.InitPodRepo(tx2)
 		created, createRet := victimRepo.Create(model.Victim{
-			UserID:      userID,
+			UserID:      sql.Null[uint]{V: userID, Valid: userID > 0},
 			TeamID:      sql.Null[uint]{V: teamID, Valid: teamID > 0},
 			ContestID:   sql.Null[uint]{V: contestID, Valid: contestID > 0},
 			ChallengeID: challengeID,
@@ -369,8 +369,20 @@ func GetVictimStatus(tx *gorm.DB, teamID, challengeID uint, challenge model.Chal
 }
 
 // ExtendVictimDuration 延长队伍在题目上的靶机时长。
+// 靶场实例延长的是租约,回收时间由 lease_expire_at 决定。
 func ExtendVictimDuration(tx *gorm.DB, team model.Team, challengeID uint) (model.Victim, model.RetVal) {
 	repo := db.InitVictimRepo(tx)
+	leased, ret := repo.Get(db.GetOptions{Conditions: map[string]any{
+		"kind":         model.VictimKindRange,
+		"challenge_id": challengeID,
+		"team_id":      team.ID,
+	}})
+	if ret.OK {
+		return extendRangeLease(repo, leased)
+	}
+	if ret.Msg != i18n.Model.NotFound {
+		return model.Victim{}, ret
+	}
 	victim, ret := repo.HasAliveVictim(team.ID, challengeID)
 	if !ret.OK {
 		return model.Victim{}, ret

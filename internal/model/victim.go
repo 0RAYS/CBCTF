@@ -48,7 +48,7 @@ type Victim struct {
 	ContestID        sql.Null[uint]  `gorm:"index" json:"contest_id"`
 	TeamID           sql.Null[uint]  `gorm:"index" json:"team_id"`
 	ChallengeID      uint            `gorm:"index" json:"challenge_id"`
-	UserID           uint            `gorm:"index" json:"user_id"`
+	UserID           sql.Null[uint]  `gorm:"index" json:"user_id"`
 	Duration         time.Duration   `json:"duration"`
 	BaseModel
 }

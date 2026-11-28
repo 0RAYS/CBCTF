@@ -33,7 +33,7 @@ func HandleLoadTrafficTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	victim := payload.Victim
-	log.Logger.Infof("Loading victim traffic: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
+	log.Logger.Infof("Loading victim traffic: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID.V, victim.TeamID.V, victim.ChallengeID)
 	return db.WithWorkloadLock(ctx, db.WorkloadLockDB, "traffic", victim.ID, func() error {
 		ret := LoadTraffic(ctx, db.TaskDB, victim)
 		if !ret.OK {

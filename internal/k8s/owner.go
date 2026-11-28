@@ -88,8 +88,11 @@ func ListVictimRoots(ctx context.Context) ([]model.Victim, error) {
 			continue
 		}
 		victim := model.Victim{
-			ID:          ids["victim_id"],
-			UserID:      ids["user_id"],
+			ID: ids["victim_id"],
+			UserID: sql.Null[uint]{
+				V:     ids["user_id"],
+				Valid: ids["user_id"] > 0,
+			},
 			TeamID: sql.Null[uint]{
 				V:     ids["team_id"],
 				Valid: ids["team_id"] > 0,

@@ -23,7 +23,7 @@ func GetVictimResp(victim model.Victim) gin.H {
 		"contest_id":             victim.ContestID.V,
 		"challenge_id":           victim.ChallengeID,
 		"challenge_name":         victim.Challenge.Name,
-		"user_id":                victim.UserID,
+		"user_id":                victim.UserID.V,
 		"start":                  victim.Start,
 		"duration":               int64(victim.Duration.Seconds()),
 		"status":                 victim.Status,

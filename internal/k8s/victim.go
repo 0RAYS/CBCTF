@@ -26,7 +26,7 @@ func VictimLabels(victim model.Victim, tags ...map[string]string) map[string]str
 	labels := map[string]string{
 		"cbctf.io/namespace":   globalNamespace,
 		"victim_id":            strconv.Itoa(int(victim.ID)),
-		"user_id":              strconv.Itoa(int(victim.UserID)),
+		"user_id":              strconv.Itoa(int(victim.UserID.V)),
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
 		"challenge_id": strconv.Itoa(int(victim.ChallengeID)),
