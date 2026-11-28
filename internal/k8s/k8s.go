@@ -21,6 +21,7 @@ const (
 	VictimPodTag    = "victim"
 	GeneratorPodTag = "generator"
 	FrpcPodTag      = "frpc"
+	JumperPodTag    = "jumper"
 
 	CaptureContainerName = "capture"
 	NginxContainerName   = "nginx"

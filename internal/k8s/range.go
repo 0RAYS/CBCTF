@@ -12,9 +12,6 @@ import (
 	"CBCTF/internal/model"
 )
 
-// rangeGatewayLabel 区分玩家跳板与拓扑节点,Service 只选中跳板。
-const rangeGatewayLabel = "range_gateway"
-
 // StartRangeGateway 创建玩家跳板。
 // 跳板是租约级资源:SSH 配置、Pod 与 Service 都挂在实例的资源树上,实例销毁时一并回收。
 // 跳板是平台固定容器,只提供 SSH 登录,题目相关的环境变量、flag 与文件都不进这个容器。
@@ -27,7 +24,8 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	if !ret.OK {
 		return victim, ret
 	}
-	labels := VictimLabels(victim, map[string]string{RoleLabel: VictimPodTag, rangeGatewayLabel: "true"})
+	// 跳板有自己的角色标签,拓扑节点的网络策略选不到它,策略由跳板自己那份决定。
+	labels := VictimLabels(victim, map[string]string{RoleLabel: JumperPodTag})
 	podName := victimResourceName("rgt", victim.ID, "gateway")
 
 	containers := []corev1.Container{jumpContainer(access)}
@@ -77,9 +75,9 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 	if ret = createRangeGatewayPolicy(ctx, victim, gateway, frpSidecar.Endpoints); !ret.OK {
 		return victim, ret
 	}
-
+	svcName := victimResourceName("rsvc", victim.ID, "gateway")
 	service, ret := CreateService(ctx, CreateServiceOptions{
-		Name:     victimResourceName("rsvc", victim.ID, "gateway"),
+		Name:     svcName,
 		Labels:   labels,
 		Ports:    model.Exposes{{Port: jumpSSHPort, Protocol: "tcp", Published: jumpSSHPortName}},
 		Selector: labels,
@@ -88,7 +86,7 @@ func StartRangeGateway(ctx context.Context, victim model.Victim, gateway model.R
 		return victim, ret
 	}
 	if service == nil {
-		return victim, model.FailRetVal(i18n.K8S.CreateError, "Service", service.Name, errMissingServiceObject)
+		return victim, model.FailRetVal(i18n.K8S.CreateError, "Service", svcName, errMissingServiceObject)
 	}
 	hostIP, ret := waitPodHostIP(ctx, podName, 30*time.Second)
 	if !ret.OK {
@@ -154,10 +152,10 @@ func rangeSubnet(victim model.Victim, name string) *model.Subnet {
 // 拓扑节点的策略按 service 选择器绑定,跳板在拓扑之外,
 // 没有策略的 Pod 出站不受限制,跳板因此要自己带上放行范围。
 func createRangeGatewayPolicy(ctx context.Context, victim model.Victim, gateway model.RangeGateway, frpEndpoints model.Endpoints) model.RetVal {
-	labels := VictimLabels(victim, map[string]string{rangeGatewayLabel: "true"})
+	labels := VictimLabels(victim, map[string]string{RoleLabel: JumperPodTag})
 	selector := map[string]string{
-		"victim_id":       labels["victim_id"],
-		rangeGatewayLabel: "true",
+		"victim_id": labels["victim_id"],
+		RoleLabel:   JumperPodTag,
 	}
 	routedCIDRs := make([]string, 0)
 	for _, link := range victim.Spec.Routes {
