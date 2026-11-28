@@ -7,6 +7,7 @@ import (
 
 	"github.com/hibiken/asynq"
 
+	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
@@ -96,7 +97,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 				return nil
 			}
 			victim = currentVictim
-			victim.Resources.ReadyDeadline = time.Now().Add(4 * time.Minute)
+			victim.Resources.ReadyDeadline = time.Now().Add(victimReadyTimeout(victim))
 			if ret = victimRepo.UpdateIfStatus(victim.ID, model.WaitingVictimStatus, db.UpdateVictimOptions{
 				Status:    new(model.PendingVictimStatus),
 				Resources: &victim.Resources,
@@ -162,6 +163,15 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 
 type StopVictimPayload struct {
 	Victim model.Victim
+}
+
+// victimReadyTimeout 返回实例的就绪时限。
+// 靶场实例节点多、还可能带虚拟机,给更长的等待时间。
+func victimReadyTimeout(victim model.Victim) time.Duration {
+	if victim.IsRange() && config.Env.K8S.Range.ReadyTimeout > 0 {
+		return time.Duration(config.Env.K8S.Range.ReadyTimeout) * time.Second
+	}
+	return 4 * time.Minute
 }
 
 func EnqueueStopVictimTask(victim model.Victim) error {

@@ -4,6 +4,8 @@ import (
 	"math"
 	"regexp"
 	"time"
+
+	"CBCTF/internal/utils"
 )
 
 var (
@@ -11,6 +13,20 @@ var (
 	UUIDFlagTmpl    = regexp.MustCompile(`uuid\{(.*?)}`)
 	DynamicFlagTmpl = regexp.MustCompile(`leet\{(.*?)}`)
 )
+
+// RenderFlagValue 渲染 flag 模板:static 取字面量,leet 做字符替换,uuid 每次生成新值。
+func RenderFlagValue(value string) string {
+	if result := StaticFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
+		return result[0][1]
+	}
+	if result := DynamicFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
+		return utils.Leet(result[0][1])
+	}
+	if result := UUIDFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
+		return utils.UUID()
+	}
+	return value
+}
 
 type ScoreType uint
 

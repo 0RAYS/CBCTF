@@ -65,7 +65,7 @@ func RerenderTeamFlagValues(tx *gorm.DB, contest model.Contest, challengeFlagID 
 		if teamFlag.Solved {
 			continue
 		}
-		value := renderChallengeFlagValue(template)
+		value := model.RenderFlagValue(template)
 		if prefix := contest.Prefix; prefix != "" {
 			value = fmt.Sprintf("%s{%s}", prefix, value)
 		}

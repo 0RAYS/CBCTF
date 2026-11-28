@@ -10,7 +10,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
-	"CBCTF/internal/utils"
 	"CBCTF/internal/view"
 )
 
@@ -92,19 +91,6 @@ func applyTeamChallenge(
 	})
 }
 
-func renderChallengeFlagValue(value string) string {
-	if result := model.StaticFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
-		return result[0][1]
-	}
-	if result := model.DynamicFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
-		return utils.Leet(result[0][1])
-	}
-	if result := model.UUIDFlagTmpl.FindAllStringSubmatch(value, 1); len(result) > 0 {
-		return utils.UUID()
-	}
-	return value
-}
-
 // CreateTeamFlag 需要 challenge 预加载 ChallengeFlags
 func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, challenge model.Challenge) ([]model.TeamFlag, model.RetVal) {
 	teamFlagRepo := db.InitTeamFlagRepo(tx)
@@ -124,7 +110,7 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, challen
 			TeamID:          team.ID,
 			ChallengeFlagID: flag.ID,
 			Solved:          false,
-			Value:           renderChallengeFlagValue(flag.Value),
+			Value:           model.RenderFlagValue(flag.Value),
 		}
 		if prefix := contest.Prefix; prefix != "" {
 			options.Value = fmt.Sprintf("%s{%s}", contest.Prefix, options.Value)

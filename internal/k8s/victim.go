@@ -115,8 +115,11 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Interface:    network.Attachment.Name,
 					IPv4:         network.Attachment.IP,
 					MAC:          network.Attachment.MAC,
+					CIDR:         network.Definition.CIDR,
+					Gateway:      network.Definition.Gateway,
 					Subnet:       subnetMap[network.Definition.Name].Name,
 					NetAttachDef: netAttachDefMap[network.Definition.Name].Name,
+					Routes:       rangeRoutes(victim, network.Definition.Name),
 				})
 			}
 
@@ -234,7 +237,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			victim.Resources.UIDs[pod.Name] = string(p.UID)
 			endpointsMutex.Unlock()
 
-			if len(pod.Spec.ServicePorts) > 0 {
+			// 靶场实例的拓扑节点不对外暴露,选手只通过玩家网关接入。
+			if len(pod.Spec.ServicePorts) > 0 && !victim.IsRange() {
 				serviceName := victimResourceName("svc", victim.ID, pod.Spec.Key)
 				service, ret := CreateService(ctx, CreateServiceOptions{
 					ClusterIP: victim.Spec.FrpEnabled,

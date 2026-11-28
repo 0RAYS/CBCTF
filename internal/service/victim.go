@@ -220,7 +220,7 @@ func buildVictimContainerSpec(template model.ChallengeContainerTemplate, flags [
 		if flag.HasTeam {
 			value = flag.TeamValue
 		} else if testMode {
-			value = fmt.Sprintf("flag{%s}", renderChallengeFlagValue(flag.Value))
+			value = fmt.Sprintf("flag{%s}", model.RenderFlagValue(flag.Value))
 		}
 		switch flag.Binding.Type {
 		case model.EnvFlagBindingType:

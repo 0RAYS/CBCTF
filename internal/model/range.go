@@ -41,6 +41,52 @@ type GatewayPayload struct {
 	Env         map[string]string `json:"env"`
 }
 
+// RangeGateway 玩家网关的声明,来自出题人的 compose。
+// 网关不属于实例拓扑,平台在租约时单独创建它,选手只拿到它的地址。
+type RangeGateway struct {
+	Name        string
+	Image       string
+	Command     []string
+	WorkingDir  string
+	Environment map[string]string
+	Resources   ResourceSpec
+	Ports       Exposes
+	Network     NetworkAttachment
+	Subnet      NetworkDefinition
+	UserData    CloudInitConfig
+}
+
+// GatewayOf 返回靶场题的玩家网关声明。
+func GatewayOf(template ChallengeTemplate, accessNetwork string) (RangeGateway, bool) {
+	for _, pod := range template.Pods {
+		if pod.Role != RangeGatewayRole {
+			continue
+		}
+		gateway := RangeGateway{
+			Name:   pod.Name,
+			Ports:  pod.ServicePorts,
+			Subnet: NetworkDefinition{Name: accessNetwork},
+		}
+		for _, container := range pod.Containers {
+			gateway.Image = container.Image
+			gateway.Command = container.Command
+			gateway.WorkingDir = container.WorkingDir
+			gateway.Environment = container.Environment
+			gateway.Resources = ResourceSpec{CPUMillis: int64(container.CPU * 1000), MemoryBytes: container.Memory}
+			gateway.UserData = container.UserData
+			break
+		}
+		for _, network := range pod.Networks {
+			if network.Definition.Name == accessNetwork {
+				gateway.Network = network.Attachment
+				gateway.Subnet = network.Definition
+			}
+		}
+		return gateway, true
+	}
+	return RangeGateway{}, false
+}
+
 // XRange 转换回 compose 声明,保证题目 YAML 往返不丢字段。
 func (c RangeConfig) XRange() XRange {
 	xRange := XRange{

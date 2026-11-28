@@ -84,7 +84,11 @@ type Config struct {
 		WorkerImage       string `mapstructure:"worker_image" json:"worker_image"`
 		GeneratorPoolSize int    `mapstructure:"generator_pool_size" json:"generator_pool_size"`
 		ServiceAccount    string `mapstructure:"service_account" json:"service_account"`
-		Frp               struct {
+		Range             struct {
+			NodeConcurrency int `mapstructure:"node_concurrency" json:"node_concurrency"`
+			ReadyTimeout    int `mapstructure:"ready_timeout" json:"ready_timeout"`
+		} `mapstructure:"range" json:"range"`
+		Frp struct {
 			On         bool         `mapstructure:"on" json:"on"`
 			FrpcImage  string       `mapstructure:"frpc" json:"frpc"`
 			NginxImage string       `mapstructure:"nginx" json:"nginx"`
@@ -111,6 +115,7 @@ type Config struct {
 			Email      int `mapstructure:"email" json:"email"`
 			Webhook    int `mapstructure:"webhook" json:"webhook"`
 			Image      int `mapstructure:"image" json:"image"`
+			Range      int `mapstructure:"range" json:"range"`
 		} `mapstructure:"queues" json:"queues"`
 	} `mapstructure:"asynq" json:"asynq"`
 	Registration struct {

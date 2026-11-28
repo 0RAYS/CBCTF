@@ -45,6 +45,13 @@ var errMissingServiceObject = errors.New("service creation returned no object")
 // returning the created VPC.
 var errMissingVPCObject = errors.New("vpc creation returned no object")
 
+// errMissingSubnet marks a range gateway whose access subnet is not part of
+// the leased instance topology.
+var errMissingSubnet = errors.New("subnet is not part of the instance topology")
+
+// errPodHostIPTimeout marks a Pod that was never scheduled onto a node.
+var errPodHostIPTimeout = errors.New("pod was not scheduled onto a node")
+
 // getFailed reports a failed resource lookup: a missing resource is reported
 // as not found, every other failure as a lookup error.
 func getFailed(kind, target string, err error) model.RetVal {

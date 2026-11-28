@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -23,6 +24,10 @@ type UpdateVictimOptions struct {
 	Endpoints        *model.Endpoints
 	ExposedEndpoints *model.Endpoints
 	Status           *string
+	Kind             *string
+	TemplateKey      *string
+	TeamID           *sql.Null[uint]
+	LeaseExpireAt    *time.Time
 }
 
 func (u UpdateVictimOptions) Convert2Map() map[string]any {
@@ -47,6 +52,18 @@ func (u UpdateVictimOptions) Convert2Map() map[string]any {
 	}
 	if u.Status != nil {
 		options["status"] = *u.Status
+	}
+	if u.Kind != nil {
+		options["kind"] = *u.Kind
+	}
+	if u.TemplateKey != nil {
+		options["template_key"] = *u.TemplateKey
+	}
+	if u.TeamID != nil {
+		options["team_id"] = *u.TeamID
+	}
+	if u.LeaseExpireAt != nil {
+		options["lease_expire_at"] = *u.LeaseExpireAt
 	}
 	return options
 }
@@ -89,11 +106,48 @@ func (v *VictimRepo) UpdateIfStatus(id uint, expectedStatus string, options Upda
 }
 
 func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, model.RetVal) {
-	options := GetOptions{Conditions: map[string]any{"team_id": nil, "challenge_id": challengeID}}
+	options := GetOptions{Conditions: map[string]any{
+		"kind":         model.VictimKindTarget,
+		"team_id":      nil,
+		"challenge_id": challengeID,
+	}}
 	if teamID > 0 {
 		options.Conditions["team_id"] = teamID
 	}
 	return v.Get(options)
+}
+
+// ListRanges 列出靶场实例,状态为空时列出全部。
+func (v *VictimRepo) ListRanges(challengeID uint, statuses []string) ([]model.Victim, model.RetVal) {
+	conditions := map[string]any{"kind": model.VictimKindRange}
+	if challengeID > 0 {
+		conditions["challenge_id"] = challengeID
+	}
+	if len(statuses) > 0 {
+		conditions["status"] = statuses
+	}
+	victims, _, ret := v.List(-1, -1, GetOptions{Conditions: conditions, Sort: []string{"id ASC"}})
+	return victims, ret
+}
+
+// LeaseRange 把池中的实例租给队伍。
+// 只有仍未租出的实例能被领取,条件更新保证一个实例同时只属于一个队伍。
+func (v *VictimRepo) LeaseRange(id uint, teamID uint, expireAt time.Time) model.RetVal {
+	res := v.DB.Model(&model.Victim{}).
+		Where("id = ? AND kind = ? AND team_id IS NULL AND status = ?", id, model.VictimKindRange, model.RunningVictimStatus).
+		Updates(map[string]any{
+			"team_id":         teamID,
+			"lease_expire_at": expireAt,
+		})
+	target := fmt.Sprintf("id=%d,team_id=%d", id, teamID)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to lease range victim: %s (target=%s)", res.Error, target)
+		return model.FailRetVal(i18n.Model.UpdateError, model.Name(model.Victim{}), target, res.Error)
+	}
+	if res.RowsAffected == 0 {
+		return model.FailRetVal(i18n.Model.Victim.NotStartable, model.Name(model.Victim{}), target, nil)
+	}
+	return model.SuccessRetVal()
 }
 
 func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
