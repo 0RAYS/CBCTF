@@ -20,9 +20,10 @@ type Formatter struct {
 	theme theme
 }
 
-// NewFormatter builds a formatter whose output carries ANSI colors when colorize is set.
-func NewFormatter(colorize bool) Formatter {
-	return Formatter{theme: newTheme(colorize)}
+// NewFormatter builds a formatter that always emits ANSI colors: the admin log
+// page and the container output both render them.
+func NewFormatter() Formatter {
+	return Formatter{theme: newTheme()}
 }
 
 type theme struct {
@@ -35,14 +36,10 @@ type theme struct {
 	methods map[string]func(a ...any) string
 }
 
-func newTheme(colorize bool) theme {
+func newTheme() theme {
 	paint := func(attrs ...color.Attribute) func(a ...any) string {
 		c := color.New(attrs...)
-		if colorize {
-			c.EnableColor()
-		} else {
-			c.DisableColor()
-		}
+		c.EnableColor()
 		return c.SprintFunc()
 	}
 	return theme{

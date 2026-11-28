@@ -41,7 +41,7 @@ func TestLogHookWritesToLevelBucket(t *testing.T) {
 	entry.Level = logrus.ErrorLevel
 	entry.Message = "boom"
 	entry.Time = time.Now()
-	if err := NewLogHook(100, log.NewFormatter(true)).Fire(entry); err != nil {
+	if err := NewLogHook(100, log.NewFormatter()).Fire(entry); err != nil {
 		t.Fatal(err)
 	}
 
@@ -82,8 +82,8 @@ func TestInstallLogHookKeepsSingleMirrorAcrossRestarts(t *testing.T) {
 	})
 
 	// A system restart re-runs Init against the same logger.
-	installLogHook(100, log.NewFormatter(true))
-	installLogHook(100, log.NewFormatter(true))
+	installLogHook(100, log.NewFormatter())
+	installLogHook(100, log.NewFormatter())
 
 	log.Logger.Info("boom")
 	if len(writer.commands) != 2 {
