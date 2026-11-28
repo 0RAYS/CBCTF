@@ -38,6 +38,7 @@ export const createGuideService = () => ({
   kubeVirt: false,
   bootloader: '',
   secureBoot: false,
+  role: '',
   userData: createGuideCloudConfig(),
   ports: [],
   environment: [],
@@ -46,8 +47,21 @@ export const createGuideService = () => ({
 });
 
 export const createGuideNetwork = () => ({ name: '', subnet: '', gateway: '' });
-export const createGuideConfig = () => ({ services: [], networks: [] });
+
+// 靶场调度配置，只有声明 x-range 的题目才有。
+export const createGuideRange = () => ({
+  poolSize: 0,
+  maxLeased: 0,
+  leaseDuration: 7200,
+  gateway: '',
+  accessNetwork: '',
+  routes: [],
+});
+
+export const createGuideConfig = () => ({ services: [], networks: [], range: null });
 export const emptyComposeYaml = 'services:';
+
+export const RANGE_ROLES = ['node', 'router', 'gateway'];
 
 export const hasVpcNetworks = (config) => (config.networks || []).some((network) => network.name.trim());
 

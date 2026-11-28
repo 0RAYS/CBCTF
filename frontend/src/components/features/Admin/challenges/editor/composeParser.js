@@ -1,5 +1,6 @@
 import {
   createGuideGroup,
+  createGuideRange,
   createGuideService,
   createGuideUser,
   createGuideWriteFile,
@@ -17,6 +18,22 @@ const parseKeyValueLine = (line) => {
   const index = line.indexOf(':');
   if (index === -1) return null;
   return { key: line.slice(0, index).trim(), value: stripYamlValue(line.slice(index + 1)) };
+};
+
+const parseIntegerValue = (value) => {
+  const trimmed = String(value || '').trim();
+  if (!/^-?\d+$/.test(trimmed)) return null;
+  return Number.parseInt(trimmed, 10);
+};
+
+// 流式写法 {from: a, to: b} 与块式写法等价，出题人两种都可能写。
+const parseFlowMapping = (text) => {
+  const body = text.replace(/^\{/, '').replace(/\}$/, '');
+  return body.split(',').reduce((result, part) => {
+    const pair = parseKeyValueLine(part.trim());
+    if (pair) result[pair.key] = pair.value;
+    return result;
+  }, {});
 };
 
 const appendCloudConfigLineValue = (target, field, value) => {
@@ -83,6 +100,9 @@ export const parseComposeYamlToGuideConfig = (
   let cloudConfigList = '';
   let cloudConfigNestedList = '';
   let blockScalar = null;
+  let range = null;
+  let rangeList = '';
+  let currentRoute = null;
 
   for (const line of lines) {
     if (/\t/.test(line.raw))
@@ -112,7 +132,11 @@ export const parseComposeYamlToGuideConfig = (
       cloudConfigList = '';
       cloudConfigNestedList = '';
       blockScalar = null;
-      if (!['services', 'networks'].includes(section)) {
+      rangeList = '';
+      currentRoute = null;
+      if (section === 'x-range') {
+        range = createGuideRange();
+      } else if (!['services', 'networks'].includes(section)) {
         errors.push(
           t('admin.challengeModal.composeGuide.validation.unsupportedTopLevel', { line: line.index, field: section })
         );
@@ -165,6 +189,7 @@ export const parseComposeYamlToGuideConfig = (
         else if (pair.key === 'mem_limit') service.memLimit = pair.value;
         else if (pair.key === 'working_dir') service.workingDir = pair.value;
         else if (pair.key === 'x-kubevirt') service.kubeVirt = pair.value === 'true';
+        else if (pair.key === 'x-role') service.role = pair.value;
         else
           errors.push(
             t('admin.challengeModal.composeGuide.validation.unsupportedServiceField', {
@@ -348,6 +373,65 @@ export const parseComposeYamlToGuideConfig = (
         continue;
       }
       errors.push(t('admin.challengeModal.composeGuide.validation.unparseableLine', { line: line.index }));
+    } else if (section === 'x-range') {
+      if (!range) range = createGuideRange();
+      if (indent === 2) {
+        const pair = parseKeyValueLine(text);
+        if (!pair) continue;
+        currentRoute = null;
+        if (pair.key === 'routes' && pair.value === '') {
+          rangeList = 'routes';
+          continue;
+        }
+        rangeList = '';
+        if (['pool_size', 'max_leased', 'lease_duration'].includes(pair.key)) {
+          const parsed = parseIntegerValue(pair.value);
+          if (parsed === null) {
+            errors.push(
+              t('admin.challengeModal.composeGuide.validation.rangeNumberInvalid', {
+                line: line.index,
+                field: pair.key,
+              })
+            );
+          } else if (pair.key === 'pool_size') range.poolSize = parsed;
+          else if (pair.key === 'max_leased') range.maxLeased = parsed;
+          else range.leaseDuration = parsed;
+        } else if (pair.key === 'gateway') range.gateway = pair.value;
+        else if (pair.key === 'access_network') range.accessNetwork = pair.value;
+        else {
+          errors.push(
+            t('admin.challengeModal.composeGuide.validation.unsupportedRangeField', {
+              line: line.index,
+              field: pair.key,
+            })
+          );
+        }
+        continue;
+      }
+      if (indent === 4 && rangeList === 'routes' && text.startsWith('- ')) {
+        const body = text.slice(2).trim();
+        const route = { from: '', to: '' };
+        range.routes.push(route);
+        if (body.startsWith('{')) {
+          const flow = parseFlowMapping(body);
+          route.from = flow.from || '';
+          route.to = flow.to || '';
+          currentRoute = null;
+        } else {
+          currentRoute = route;
+          const pair = parseKeyValueLine(body);
+          if (pair?.key === 'from') route.from = pair.value;
+          else if (pair?.key === 'to') route.to = pair.value;
+        }
+        continue;
+      }
+      if (indent === 6 && rangeList === 'routes' && currentRoute) {
+        const pair = parseKeyValueLine(text);
+        if (pair?.key === 'from') currentRoute.from = pair.value;
+        else if (pair?.key === 'to') currentRoute.to = pair.value;
+        continue;
+      }
+      errors.push(t('admin.challengeModal.composeGuide.validation.unparseableLine', { line: line.index }));
     } else if (section === 'networks') {
       if (indent === 2 && text.endsWith(':')) {
         network = { name: text.slice(0, -1), subnet: '', gateway: '' };
@@ -365,5 +449,5 @@ export const parseComposeYamlToGuideConfig = (
     }
   }
   if (services.length === 0) errors.push(t('admin.challengeModal.composeGuide.validation.servicesMissing'));
-  return { ok: errors.length === 0, errors, config: { services, networks } };
+  return { ok: errors.length === 0, errors, config: { services, networks, range } };
 };

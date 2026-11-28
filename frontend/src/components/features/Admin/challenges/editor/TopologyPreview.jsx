@@ -48,6 +48,11 @@ export default function TopologyPreview({ topology }) {
           <span className="inline-flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-red-400" /> {t(tt('deny'))}
           </span>
+          {topology.routes?.length > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <span className="w-3 border-t-2 border-dashed border-purple-400" /> {t(tt('route'))}
+            </span>
+          )}
         </div>
       </div>
       {topology.lanes.length > 0 && (
@@ -116,7 +121,7 @@ export default function TopologyPreview({ topology }) {
               {layout.edges.map((edge) => (
                 <g
                   key={edge.id}
-                  className={`topology-connection ${edge.allowed ? 'topology-connection-allow' : 'topology-connection-deny'}`}
+                  className={`topology-connection ${edge.routed ? 'topology-connection-route' : edge.allowed ? 'topology-connection-allow' : 'topology-connection-deny'}`}
                   fill="none"
                   pointerEvents="none"
                 >
@@ -125,12 +130,12 @@ export default function TopologyPreview({ topology }) {
                     <path
                       className="topology-connection-line"
                       d={edge.d}
-                      stroke={edge.allowed ? '#22c55e' : '#f87171'}
-                      strokeWidth={edge.allowed ? 1.6 : 0.9}
-                      strokeDasharray={edge.allowed ? 'none' : '4 4'}
-                      strokeOpacity={edge.allowed ? 0.8 : 0.32}
+                      stroke={edge.routed ? '#c084fc' : edge.allowed ? '#22c55e' : '#f87171'}
+                      strokeWidth={edge.routed ? 1.6 : edge.allowed ? 1.6 : 0.9}
+                      strokeDasharray={edge.routed ? '7 5' : edge.allowed ? 'none' : '4 4'}
+                      strokeOpacity={edge.routed ? 0.85 : edge.allowed ? 0.8 : 0.32}
                     />
-                    {edge.allowed && (
+                    {edge.allowed && !edge.routed && (
                       <path
                         className="topology-connection-flow"
                         d={edge.d}
@@ -140,11 +145,13 @@ export default function TopologyPreview({ topology }) {
                         strokeLinecap="round"
                       />
                     )}
-                    <path
-                      d={edge.d}
-                      markerMid={`url(#${markerId}-${edge.allowed ? 'allow' : 'deny'})`}
-                      markerStart={edge.bidirectional ? `url(#${markerId}-allow)` : undefined}
-                    />
+                    {!edge.routed && (
+                      <path
+                        d={edge.d}
+                        markerMid={`url(#${markerId}-${edge.allowed ? 'allow' : 'deny'})`}
+                        markerStart={edge.bidirectional ? `url(#${markerId}-allow)` : undefined}
+                      />
+                    )}
                   </g>
                 </g>
               ))}
@@ -174,8 +181,15 @@ export default function TopologyPreview({ topology }) {
                     width: position.width,
                   }}
                 >
-                  <div className="truncate text-sm font-mono text-neutral-50" title={node.label}>
-                    {node.label}
+                  <div className="flex items-center gap-1.5">
+                    <div className="truncate text-sm font-mono text-neutral-50" title={node.label}>
+                      {node.label}
+                    </div>
+                    {node.role && (
+                      <span className="shrink-0 rounded border border-geek-400/40 px-1 text-[10px] font-mono text-geek-300">
+                        {t(`admin.challengeModal.composeGuide.range.roles.${node.role}`)}
+                      </span>
+                    )}
                   </div>
                   {node.image && (
                     <div className="mt-0.5 truncate text-[10px] font-mono text-neutral-500" title={node.image}>
@@ -228,6 +242,19 @@ export default function TopologyPreview({ topology }) {
               {connection.ranges.length > 0 && <span className="text-neutral-500">{connection.ranges.join(', ')}</span>}
             </div>
             <div className="mt-1 text-neutral-400">{t(tt(`reasons.${connection.reasonKey}`))}</div>
+          </div>
+        ))}
+        {(topology.routes || []).map((route) => (
+          <div
+            key={route.id}
+            className="rounded border border-purple-400/25 bg-purple-400/10 px-2 py-1.5 font-mono text-xs text-purple-200"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-neutral-200">{route.from}</span>
+              <span>→</span>
+              <span className="text-neutral-200">{route.to}</span>
+              <span className="text-neutral-500">{t(tt('route'))}</span>
+            </div>
           </div>
         ))}
         {topology.connections.map((connection) => (

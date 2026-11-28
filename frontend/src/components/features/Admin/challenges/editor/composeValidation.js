@@ -1,4 +1,4 @@
-import { hasOpenPort } from '@/components/features/Admin/challenges/editor/guideModel.js';
+import { hasOpenPort, RANGE_ROLES } from '@/components/features/Admin/challenges/editor/guideModel.js';
 import { parseComposeYamlToGuideConfig } from '@/components/features/Admin/challenges/editor/composeParser.js';
 
 const ip4Segment = '(\\d|[1-9]\\d|1\\d\\d|2([0-4]\\d|5[0-5]))';
@@ -24,6 +24,138 @@ export const validateRawCompose = (yaml, t) => {
   return { ...validation, config: parsed.config };
 };
 
+const validationKey = (key) => `admin.challengeModal.composeGuide.validation.${key}`;
+
+// 靶场拓扑校验，规则与后端 parseRangeTopology 一致：网关、接入网段与互通声明都必须在题目里成立。
+const validateRangeTopology = (config, t, networkNames) => {
+  const errors = [];
+  const fields = {};
+  const addError = (path, message) => {
+    errors.push(message);
+    fields[path] = [...(fields[path] || []), message];
+  };
+  const services = config.services || [];
+  const range = config.range;
+
+  services.forEach((service, serviceIndex) => {
+    const role = (service.role || '').trim();
+    if (!role) return;
+    const label =
+      service.name.trim() || t('admin.challengeModal.composeGuide.serviceIndexed', { index: serviceIndex + 1 });
+    if (!range) {
+      addError(`service.${serviceIndex}.role`, t(validationKey('rangeRoleRequiresRange'), { label }));
+      return;
+    }
+    if (!RANGE_ROLES.includes(role)) {
+      addError(`service.${serviceIndex}.role`, t(validationKey('rangeRoleUnknown'), { label, role }));
+      return;
+    }
+    if (role === 'gateway' && service.name.trim() !== (range.gateway || '').trim()) {
+      addError(
+        `service.${serviceIndex}.role`,
+        t(validationKey('rangeRoleGatewayMismatch'), { label, gateway: (range.gateway || '').trim() })
+      );
+    }
+  });
+  if (!range) return { errors, fields };
+
+  if (!Number.isFinite(range.poolSize) || range.poolSize < 0) {
+    addError('range.poolSize', t(validationKey('rangePoolSizeInvalid')));
+  }
+  if (!Number.isFinite(range.maxLeased) || range.maxLeased < 0) {
+    addError('range.maxLeased', t(validationKey('rangeMaxLeasedInvalid')));
+  }
+  if (!Number.isFinite(range.leaseDuration) || range.leaseDuration <= 0) {
+    addError('range.leaseDuration', t(validationKey('rangeLeaseDurationInvalid')));
+  }
+
+  const gatewayName = (range.gateway || '').trim();
+  const gateway = services.find((service) => service.name.trim() === gatewayName);
+  if (!gatewayName) {
+    addError('range.gateway', t(validationKey('rangeGatewayRequired')));
+  } else if (!gateway) {
+    addError('range.gateway', t(validationKey('rangeGatewayUndefined'), { gateway: gatewayName }));
+  } else {
+    if (!(gateway.ports || []).some((port) => port.target.trim())) {
+      addError('range.gateway', t(validationKey('rangeGatewayPortRequired'), { gateway: gatewayName }));
+    }
+    if (gateway.kubeVirt) {
+      addError('range.gateway', t(validationKey('rangeGatewayVirtual'), { gateway: gatewayName }));
+    }
+  }
+
+  const accessNetwork = (range.accessNetwork || '').trim();
+  const gatewayNetworks = gateway ? (gateway.networks || []).map((network) => network.name.trim()) : [];
+  if (!accessNetwork) {
+    if (gatewayNetworks.length !== 1) {
+      addError('range.accessNetwork', t(validationKey('rangeAccessNetworkRequired')));
+    }
+  } else {
+    if (gateway && !gatewayNetworks.includes(accessNetwork)) {
+      addError(
+        'range.accessNetwork',
+        t(validationKey('rangeAccessNetworkNotAttached'), { gateway: gatewayName, network: accessNetwork })
+      );
+    }
+    if (!networkNames.has(accessNetwork)) {
+      addError('range.accessNetwork', t(validationKey('rangeAccessNetworkUndefined'), { network: accessNetwork }));
+    }
+  }
+
+  const seenRoutes = new Set();
+  (range.routes || []).forEach((route, routeIndex) => {
+    const ends = [
+      { field: 'from', name: (route.from || '').trim() },
+      { field: 'to', name: (route.to || '').trim() },
+    ];
+    ends.forEach((end) => {
+      if (!end.name) {
+        addError(
+          `range.routes.${routeIndex}.${end.field}`,
+          t(validationKey('rangeRouteNetworkRequired'), { index: routeIndex + 1 })
+        );
+        return;
+      }
+      if (!networkNames.has(end.name)) {
+        addError(
+          `range.routes.${routeIndex}.${end.field}`,
+          t(validationKey('rangeRouteNetworkUndefined'), { network: end.name })
+        );
+      }
+    });
+    const [from, to] = ends.map((end) => end.name);
+    if (from && to && from === to) {
+      addError(`range.routes.${routeIndex}.to`, t(validationKey('rangeRouteSelfLoop'), { from, to }));
+    }
+    if (from && to) {
+      const key = [from, to].sort().join('|');
+      if (seenRoutes.has(key)) {
+        addError(`range.routes.${routeIndex}.to`, t(validationKey('rangeRouteDuplicate'), { from, to }));
+      }
+      seenRoutes.add(key);
+    }
+  });
+
+  // 选手从接入网段进拓扑,接入网段不与任何网段互通时选手够不到别的网段上的节点。
+  const accessRouted = (range.routes || []).some((route) => {
+    const from = (route.from || '').trim();
+    const to = (route.to || '').trim();
+    return from === accessNetwork || to === accessNetwork;
+  });
+  if (accessNetwork && !accessRouted) {
+    const nodeOnOtherNetwork = (config.services || []).some(
+      (service) =>
+        service.name.trim() !== gatewayName &&
+        (service.networks || []).some((network) => network.name.trim() !== accessNetwork)
+    );
+    if (nodeOnOtherNetwork) {
+      addError('range.accessNetwork', t(validationKey('rangeAccessNetworkNotRouted'), { network: accessNetwork }));
+    }
+  }
+
+  return { errors, fields };
+};
+
 export const validateGuidedCompose = (config, t = (key) => key) => {
   const errors = [];
   const fields = {};
@@ -46,7 +178,8 @@ export const validateGuidedCompose = (config, t = (key) => key) => {
     networkAssignedIps.set(name, new Set([gateway]));
   });
   if (!config.services?.length) addError('services', t('admin.challengeModal.composeGuide.validation.serviceRequired'));
-  if (config.services?.some((service) => !service.kubeVirt) && !hasOpenPort(config)) {
+  // 靶场题的对外入口由玩家网关承担，节点不必暴露端口。
+  if (config.services?.some((service) => !service.kubeVirt) && !hasOpenPort(config) && !config.range) {
     addError('ports', t('admin.challengeModal.composeGuide.validation.portRequired'));
   }
   (config.services || []).forEach((service, serviceIndex) => {
@@ -292,6 +425,11 @@ export const validateGuidedCompose = (config, t = (key) => key) => {
         t('admin.challengeModal.composeGuide.validation.gatewayOutOfSubnet', { label })
       );
     }
+  });
+  const rangeValidation = validateRangeTopology(config, t, networkNames);
+  rangeValidation.errors.forEach((message) => errors.push(message));
+  Object.entries(rangeValidation.fields).forEach(([path, messages]) => {
+    fields[path] = [...(fields[path] || []), ...messages];
   });
   return { list: errors, fields };
 };

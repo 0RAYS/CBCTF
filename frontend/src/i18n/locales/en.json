@@ -1526,6 +1526,7 @@
         "noIp": "No IP configured",
         "crossNetwork": "Cross-network",
         "internet": "Internet",
+        "route": "Routed link",
         "reasons": {
           "allowed": "Traffic is allowed",
           "outboundBlocked": "Outbound policy does not allow the target IP",
@@ -1548,12 +1549,15 @@
           "networks": "Networks",
           "users": "Cloud-init Users",
           "groups": "Cloud-init Groups",
-          "writeFiles": "Cloud-init Write Files"
+          "writeFiles": "Cloud-init Write Files",
+          "range": "Range Topology",
+          "rangeRoutes": "Routed Networks"
         },
         "actions": {
           "add": "Add",
           "addService": "Add Service",
-          "addNetwork": "Add Network"
+          "addNetwork": "Add Network",
+          "addRoute": "Add Route"
         },
         "fields": {
           "serviceName": "service name *",
@@ -1599,7 +1603,15 @@
           "macAddress": "mac_address",
           "subnet": "subnet *",
           "gateway": "gateway *",
-          "external": "external"
+          "external": "external",
+          "poolSize": "pool_size",
+          "maxLeased": "max_leased",
+          "leaseDuration": "lease_duration *",
+          "gatewayService": "gateway *",
+          "accessNetwork": "access_network",
+          "role": "x-role",
+          "routeFrom": "from *",
+          "routeTo": "to *"
         },
         "placeholders": {
           "serviceName": "service name *",
@@ -1637,7 +1649,26 @@
           "ipv4Address": "ipv4_address *",
           "macAddress": "00:00:00:00:01:01",
           "subnet": "subnet *",
-          "gateway": "gateway *"
+          "gateway": "gateway *",
+          "poolSize": "e.g. 4",
+          "maxLeased": "e.g. 20",
+          "leaseDuration": "7200",
+          "gatewayService": "gateway service *",
+          "accessNetwork": "auto",
+          "routeFrom": "from network",
+          "routeTo": "to network"
+        },
+        "range": {
+          "enable": "Enable range topology (x-range)",
+          "hint": "A range challenge keeps a pool of identical instances; players enter through the gateway only.",
+          "playerEntry": "Player entry: {{ports}}",
+          "roleDefault": "node (default)",
+          "gatewayEntry": "Players enter through gateway {{gateway}} ({{ports}})",
+          "roles": {
+            "node": "node",
+            "router": "router",
+            "gateway": "gateway"
+          }
         },
         "serviceIndexed": "Service {{index}}",
         "networkIndexed": "Network {{index}}",
@@ -1651,6 +1682,8 @@
           "unparseableLine": "Line {{line}}: unable to parse this line",
           "portModeInvalid": "Line {{line}}: port mode should be ingress",
           "networkExternalInvalid": "Line {{line}}: network external should be true or false",
+          "rangeNumberInvalid": "Line {{line}}: {{field}} must be an integer",
+          "unsupportedRangeField": "Line {{line}}: unsupported x-range field {{field}}",
           "servicesMissing": "Missing services configuration",
           "serviceRequired": "At least one service is required",
           "serviceNameRequired": "{{label}}: service name is required",
@@ -1690,7 +1723,25 @@
           "gatewayRequired": "{{label}}: gateway is required",
           "gatewayInvalid": "{{label}}: gateway is not a valid IPv4 address",
           "gatewayUnique": "{{label}}: gateway must be unique",
-          "gatewayOutOfSubnet": "{{label}}: gateway is outside subnet range"
+          "gatewayOutOfSubnet": "{{label}}: gateway is outside subnet range",
+          "rangePoolSizeInvalid": "pool_size must be zero or a positive integer",
+          "rangeMaxLeasedInvalid": "max_leased must be zero or a positive integer",
+          "rangeLeaseDurationInvalid": "lease_duration must be greater than zero",
+          "rangeGatewayRequired": "x-range requires a gateway service",
+          "rangeGatewayUndefined": "gateway {{gateway}} is not a defined service",
+          "rangeGatewayPortRequired": "gateway {{gateway}} must expose at least one port",
+          "rangeGatewayVirtual": "gateway {{gateway}} must not run as a virtual machine",
+          "rangeAccessNetworkRequired": "access_network is required unless the gateway attaches exactly one network",
+          "rangeAccessNetworkNotAttached": "gateway {{gateway}} is not attached to network {{network}}",
+          "rangeAccessNetworkUndefined": "network {{network}} is not defined",
+          "rangeAccessNetworkNotRouted": "access network {{network}} must be connected by a route to reach the nodes",
+          "rangeRouteNetworkRequired": "route {{index}} must declare both networks",
+          "rangeRouteNetworkUndefined": "route network {{network}} is not defined",
+          "rangeRouteSelfLoop": "route {{from}} to {{to}} must connect two different networks",
+          "rangeRouteDuplicate": "route {{from}} to {{to}} is duplicated",
+          "rangeRoleRequiresRange": "{{label}}: x-role requires an x-range topology",
+          "rangeRoleUnknown": "{{label}}: unknown role {{role}}",
+          "rangeRoleGatewayMismatch": "{{label}}: the gateway role requires x-range gateway {{gateway}}"
         }
       }
     },

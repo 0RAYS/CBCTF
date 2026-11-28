@@ -316,6 +316,20 @@ const buildEdges = (topology, positions, internet) => {
       d: path,
     });
   });
+  (topology.routes || []).forEach((route) => {
+    const source = positions[route.source];
+    const target = positions[route.target];
+    if (!source || !target) return;
+    edges.push({
+      id: route.id,
+      source: route.source,
+      target: route.target,
+      allowed: true,
+      routed: true,
+      bidirectional: true,
+      d: edgePath(source, target, 0),
+    });
+  });
   const egress = topology.egress
     .map((connection) => {
       const source = positions[connection.source.id];

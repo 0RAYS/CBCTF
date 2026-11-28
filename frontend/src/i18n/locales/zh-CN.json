@@ -1526,6 +1526,7 @@
         "noIp": "未配置 IP",
         "crossNetwork": "跨网络",
         "internet": "公网",
+        "route": "互通链路",
         "reasons": {
           "allowed": "允许通过",
           "outboundBlocked": "出站未放行目标 IP",
@@ -1548,12 +1549,15 @@
           "networks": "Networks",
           "users": "Cloud-init Users",
           "groups": "Cloud-init Groups",
-          "writeFiles": "Cloud-init Write Files"
+          "writeFiles": "Cloud-init Write Files",
+          "range": "靶场拓扑",
+          "rangeRoutes": "网段互通"
         },
         "actions": {
           "add": "添加",
           "addService": "添加 Service",
-          "addNetwork": "添加 Network"
+          "addNetwork": "添加 Network",
+          "addRoute": "添加互通"
         },
         "fields": {
           "serviceName": "service name *",
@@ -1599,7 +1603,15 @@
           "macAddress": "mac_address",
           "subnet": "subnet *",
           "gateway": "gateway *",
-          "external": "external"
+          "external": "external",
+          "poolSize": "pool_size",
+          "maxLeased": "max_leased",
+          "leaseDuration": "lease_duration *",
+          "gatewayService": "gateway *",
+          "accessNetwork": "access_network",
+          "role": "x-role",
+          "routeFrom": "from *",
+          "routeTo": "to *"
         },
         "placeholders": {
           "serviceName": "service name *",
@@ -1637,7 +1649,26 @@
           "ipv4Address": "ipv4_address *",
           "macAddress": "00:00:00:00:01:01",
           "subnet": "subnet *",
-          "gateway": "gateway *"
+          "gateway": "gateway *",
+          "poolSize": "e.g. 4",
+          "maxLeased": "e.g. 20",
+          "leaseDuration": "7200",
+          "gatewayService": "网关 Service *",
+          "accessNetwork": "自动",
+          "routeFrom": "起始网段",
+          "routeTo": "目标网段"
+        },
+        "range": {
+          "enable": "启用靶场拓扑（x-range）",
+          "hint": "靶场题会维持一批内容相同的实例，选手只经玩家网关接入。",
+          "playerEntry": "选手入口：{{ports}}",
+          "roleDefault": "节点（默认）",
+          "gatewayEntry": "选手经网关 {{gateway}} 接入（{{ports}}）",
+          "roles": {
+            "node": "节点",
+            "router": "路由器",
+            "gateway": "网关"
+          }
         },
         "serviceIndexed": "Service {{index}}",
         "networkIndexed": "网络 {{index}}",
@@ -1651,6 +1682,8 @@
           "unparseableLine": "Line {{line}}: 无法解析该行",
           "portModeInvalid": "Line {{line}}: port mode 应为 ingress",
           "networkExternalInvalid": "Line {{line}}: network external 应为 true 或 false",
+          "rangeNumberInvalid": "第 {{line}} 行：{{field}} 必须是整数",
+          "unsupportedRangeField": "第 {{line}} 行：x-range 不支持字段 {{field}}",
           "servicesMissing": "缺少 services 配置",
           "serviceRequired": "至少需要一个 service",
           "serviceNameRequired": "{{label}}: service 名称必填",
@@ -1690,7 +1723,25 @@
           "gatewayRequired": "{{label}}: gateway 必填",
           "gatewayInvalid": "{{label}}: gateway 不是合法 IPv4",
           "gatewayUnique": "{{label}}: gateway 不能重复",
-          "gatewayOutOfSubnet": "{{label}}: gateway 不在 subnet 范围内"
+          "gatewayOutOfSubnet": "{{label}}: gateway 不在 subnet 范围内",
+          "rangePoolSizeInvalid": "pool_size 必须是零或正整数",
+          "rangeMaxLeasedInvalid": "max_leased 必须是零或正整数",
+          "rangeLeaseDurationInvalid": "lease_duration 必须大于零",
+          "rangeGatewayRequired": "x-range 必须指定玩家网关 Service",
+          "rangeGatewayUndefined": "网关 {{gateway}} 不是已定义的 Service",
+          "rangeGatewayPortRequired": "网关 {{gateway}} 必须至少暴露一个端口",
+          "rangeGatewayVirtual": "网关 {{gateway}} 不能以虚拟机方式运行",
+          "rangeAccessNetworkRequired": "网关只接入一个网段时才能省略 access_network",
+          "rangeAccessNetworkNotAttached": "网关 {{gateway}} 未接入网段 {{network}}",
+          "rangeAccessNetworkUndefined": "网段 {{network}} 未定义",
+          "rangeAccessNetworkNotRouted": "接入网段 {{network}} 必须由互通声明连接到节点所在的网段",
+          "rangeRouteNetworkRequired": "第 {{index}} 条互通必须写明两个网段",
+          "rangeRouteNetworkUndefined": "互通网段 {{network}} 未定义",
+          "rangeRouteSelfLoop": "互通 {{from}} 到 {{to}} 必须连接两个不同网段",
+          "rangeRouteDuplicate": "互通 {{from}} 到 {{to}} 重复",
+          "rangeRoleRequiresRange": "{{label}}：x-role 需要配合 x-range 拓扑",
+          "rangeRoleUnknown": "{{label}}：未知角色 {{role}}",
+          "rangeRoleGatewayMismatch": "{{label}}：gateway 角色只能标在 x-range 的 gateway {{gateway}} 上"
         }
       }
     },

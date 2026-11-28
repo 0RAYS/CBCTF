@@ -11,6 +11,7 @@ import { buildNetworkTopology } from '@/components/features/Admin/challenges/edi
 import { GuideListHeader } from '@/components/features/Admin/challenges/editor/GuideFields.jsx';
 import ServiceEditor from '@/components/features/Admin/challenges/editor/ServiceEditor.jsx';
 import NetworkDefinitionsEditor from '@/components/features/Admin/challenges/editor/NetworkDefinitionsEditor.jsx';
+import RangeConfigEditor from '@/components/features/Admin/challenges/editor/RangeConfigEditor.jsx';
 import NetworkPolicyEditor from '@/components/features/Admin/challenges/editor/NetworkPolicyEditor.jsx';
 import TopologyPreview from '@/components/features/Admin/challenges/editor/TopologyPreview.jsx';
 
@@ -21,6 +22,13 @@ export default function ComposeEditor({ challenge, onChange, compose }) {
   const ct = (key) => t(`admin.challengeModal.composeGuide.${key}`);
   const { guideConfig, guideValidation, rawValidation, syncGuideConfig, updateDockerCompose } = compose;
   const vpcMode = hasVpcNetworks(guideConfig);
+  const range = guideConfig.range;
+  const gatewayName = range ? range.gateway.trim() : '';
+  const gatewayService = guideConfig.services.find((service) => service.name.trim() === gatewayName);
+  const gatewayPorts = (gatewayService?.ports || [])
+    .filter((port) => port.target.trim())
+    .map((port) => (port.published.trim() ? `${port.target.trim()} (${port.published.trim()})` : port.target.trim()))
+    .join(', ');
   const yamlNoticeLines = [
     t('admin.challengeModal.yamlNotice.flagFormat', { format: '`static{}`, `leet{}`, `uuid{}`' }),
     ...[
@@ -59,6 +67,10 @@ export default function ComposeEditor({ challenge, onChange, compose }) {
                   serviceIndex={serviceIndex}
                   networks={guideConfig.networks}
                   vpcMode={vpcMode}
+                  rangeMode={Boolean(range)}
+                  isGateway={Boolean(range) && service.name.trim() === gatewayName}
+                  gatewayName={gatewayName}
+                  gatewayPorts={gatewayPorts}
                   errors={guideValidation.fields}
                   onChange={(next) =>
                     syncGuideConfig({
@@ -82,6 +94,7 @@ export default function ComposeEditor({ challenge, onChange, compose }) {
                 errors={guideValidation.fields}
                 onChange={syncGuideConfig}
               />
+              <RangeConfigEditor config={guideConfig} errors={guideValidation.fields} onChange={syncGuideConfig} />
             </div>
             <div className="border border-neutral-300/30 rounded-md overflow-hidden bg-black/30">
               <div className="px-3 py-2 border-b border-neutral-700 text-xs font-mono text-neutral-400">

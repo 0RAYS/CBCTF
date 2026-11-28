@@ -132,7 +132,26 @@ const appendGuideCloudConfig = (lines, cloudConfig) => {
 };
 
 export const buildGuidedComposeYaml = (config) => {
-  const lines = ['services:'];
+  const lines = [];
+  const range = config.range;
+  if (range) {
+    lines.push('x-range:');
+    lines.push(`  pool_size: ${Number(range.poolSize) || 0}`);
+    lines.push(`  max_leased: ${Number(range.maxLeased) || 0}`);
+    lines.push(`  lease_duration: ${Number(range.leaseDuration) || 0}`);
+    if ((range.gateway || '').trim()) lines.push(`  gateway: ${range.gateway.trim()}`);
+    if ((range.accessNetwork || '').trim()) lines.push(`  access_network: ${range.accessNetwork.trim()}`);
+    const routes = (range.routes || []).filter((route) => route.from?.trim() || route.to?.trim());
+    if (routes.length > 0) {
+      lines.push('  routes:');
+      routes.forEach((route) => {
+        lines.push(`    - from: ${(route.from || '').trim()}`);
+        lines.push(`      to: ${(route.to || '').trim()}`);
+      });
+    }
+    lines.push('');
+  }
+  lines.push('services:');
   const networks = (config.networks || []).filter((network) => network.name.trim());
   const vpcMode = networks.length > 0;
   (config.services || []).forEach((service, index) => {
@@ -193,6 +212,7 @@ export const buildGuidedComposeYaml = (config) => {
           if (network.macAddress?.trim()) lines.push(`        mac_address: ${yamlQuote(network.macAddress.trim())}`);
         });
     }
+    if (range && (service.role || '').trim()) lines.push(`    x-role: ${service.role.trim()}`);
   });
   if (networks.length > 0) {
     lines.push('', 'networks:');

@@ -13,6 +13,14 @@ const LANE_COLORS = ['#38bdf8', '#a78bfa', '#fbbf24', '#34d399', '#fb7185', '#22
 
 const nodeIps = (node) => node.networks.map((network) => network.ip).filter((ip) => ip && ip !== '-');
 
+// 靶场节点角色：网关由 x-range 决定，其余取显式 x-role，未声明视为节点。
+const rangeRole = (config, service) => {
+  const range = config.range;
+  if (!range) return '';
+  if (service.name.trim() === (range.gateway || '').trim()) return 'gateway';
+  return (service.role || '').trim() || 'node';
+};
+
 // buildNetworkTopology 根据容器网卡生成拓扑，并按网络策略标注可达性。
 export const buildNetworkTopology = (config, policies = []) => {
   const services = config.services || [];
@@ -28,6 +36,7 @@ export const buildNetworkTopology = (config, policies = []) => {
     id: targets[index].service,
     label: targets[index].label,
     image: service.image,
+    role: rangeRole(config, service),
     networks: (service.networks || [])
       .filter((network) => network.name || network.ipv4Address)
       .map((network) => ({ name: network.name || 'default', ip: network.ipv4Address || '-' })),
@@ -104,5 +113,25 @@ export const buildNetworkTopology = (config, policies = []) => {
     };
   });
 
-  return { nodes, lanes, internet: { id: INTERNET_ID, label: 'internet' }, connections, egress, sharedNetwork };
+  // 靶场声明的网段互通是显式的，按网段各取一个代表节点连成虚线。
+  const routes = ((config.range || {}).routes || [])
+    .map((route) => {
+      const from = (route.from || '').trim();
+      const to = (route.to || '').trim();
+      const source = lanes.find((lane) => lane.id === from)?.members[0];
+      const target = lanes.find((lane) => lane.id === to)?.members[0];
+      if (!source || !target || source === target) return null;
+      return { id: `${from}->${to}`, from, to, source, target };
+    })
+    .filter(Boolean);
+
+  return {
+    nodes,
+    lanes,
+    internet: { id: INTERNET_ID, label: 'internet' },
+    connections,
+    egress,
+    routes,
+    sharedNetwork,
+  };
 };

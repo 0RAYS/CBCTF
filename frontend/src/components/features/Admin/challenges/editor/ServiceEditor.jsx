@@ -8,9 +8,22 @@ import {
   IconButton,
 } from '@/components/features/Admin/challenges/editor/GuideFields.jsx';
 import { selectClass } from '@/components/features/Admin/challenges/editor/editorStyles.js';
+import { RANGE_ROLES } from '@/components/features/Admin/challenges/editor/guideModel.js';
 import CloudInitEditor from '@/components/features/Admin/challenges/editor/CloudInitEditor.jsx';
 
-export default function ServiceEditor({ service, serviceIndex, networks, vpcMode, errors, onChange, onRemove }) {
+export default function ServiceEditor({
+  service,
+  serviceIndex,
+  networks,
+  vpcMode,
+  rangeMode = false,
+  isGateway = false,
+  gatewayName = '',
+  gatewayPorts = '',
+  errors,
+  onChange,
+  onRemove,
+}) {
   const { t } = useTranslation();
   const ct = (key, options) => t(`admin.challengeModal.composeGuide.${key}`, options);
   const update = (field, value) => onChange({ ...service, [field]: value });
@@ -72,6 +85,19 @@ export default function ServiceEditor({ service, serviceIndex, networks, vpcMode
             onChange={(value) => update('kubeVirt', value)}
           />
         )}
+        {rangeMode && (
+          <GuideField label={ct('fields.role')}>
+            <select className={selectClass} value={service.role} onChange={(e) => update('role', e.target.value)}>
+              <option value="">{ct('range.roleDefault')}</option>
+              {RANGE_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {ct(`range.roles.${role}`)}
+                </option>
+              ))}
+            </select>
+            <GuideErrors errors={fieldErrors('role')} />
+          </GuideField>
+        )}
         {service.kubeVirt && (
           <>
             <GuideField label={ct('fields.bootloader')}>
@@ -94,6 +120,14 @@ export default function ServiceEditor({ service, serviceIndex, networks, vpcMode
           </>
         )}
       </div>
+
+      {rangeMode && (
+        <p className="text-[11px] font-mono text-neutral-500">
+          {isGateway
+            ? ct('range.playerEntry', { ports: gatewayPorts || '-' })
+            : ct('range.gatewayEntry', { gateway: gatewayName || '-', ports: gatewayPorts || '-' })}
+        </p>
+      )}
 
       {service.kubeVirt ? (
         <CloudInitEditor value={service.userData} onChange={(value) => update('userData', value)} />

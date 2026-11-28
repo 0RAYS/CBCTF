@@ -45,7 +45,7 @@ test('guide factories do not share nested state; mode normalization only disable
   const first = createGuideService();
   first.userData.users.push(createGuideUser());
   assert.deepEqual(createGuideService().userData.users, []);
-  assert.deepEqual(createGuideConfig(), { services: [], networks: [] });
+  assert.deepEqual(createGuideConfig(), { services: [], networks: [], range: null });
   const config = { services: [service({ kubeVirt: true, bootloader: 'efi' })], networks: [] };
   const normalized = normalizeGuideConfigForMode(config);
   assert.equal(normalized.services[0].kubeVirt, false);
@@ -628,4 +628,154 @@ test('serializer preserves existing quote and backslash escaping for list values
   assert.ok(yaml.includes('      - "VALUE=a\\"b\\\\c"'));
   // The legacy parser strips surrounding quotes, but does not decode YAML escapes.
   assert.equal(parseComposeYamlToGuideConfig(yaml).config.services[0].environment[0].value, 'a\\"b\\\\c');
+});
+
+const rangeYaml = [
+  'x-range:',
+  '  pool_size: 4',
+  '  max_leased: 20',
+  '  lease_duration: 7200',
+  '  gateway: jump',
+  '  access_network: mgmt',
+  '  routes:',
+  '    - from: mgmt',
+  '      to: internal',
+  '    - from: internal',
+  '      to: dmz',
+  '',
+  'services:',
+  '  jump:',
+  '    image: alpine',
+  '    ports:',
+  '      - mode: ingress',
+  '        target: 22',
+  '        published: ssh',
+  '        protocol: tcp',
+  '    networks:',
+  '      mgmt:',
+  '        ipv4_address: 192.168.99.254',
+  '  web:',
+  '    image: nginx',
+  '    networks:',
+  '      internal:',
+  '        ipv4_address: 10.10.0.2',
+  'networks:',
+  '  mgmt:',
+  '    ipam:',
+  '      config:',
+  '        - subnet: 192.168.99.0/24',
+  '          gateway: 192.168.99.1',
+  '  internal:',
+  '    ipam:',
+  '      config:',
+  '        - subnet: 10.10.0.0/24',
+  '          gateway: 10.10.0.1',
+  '  dmz:',
+  '    ipam:',
+  '      config:',
+  '        - subnet: 10.20.0.0/24',
+  '          gateway: 10.20.0.1',
+].join('\n');
+
+test('range topology parses x-range and x-role without unsupported field errors', () => {
+  const parsed = parseComposeYamlToGuideConfig(rangeYaml);
+  assert.equal(parsed.ok, true);
+  assert.deepEqual(parsed.config.range, {
+    poolSize: 4,
+    maxLeased: 20,
+    leaseDuration: 7200,
+    gateway: 'jump',
+    accessNetwork: 'mgmt',
+    routes: [
+      { from: 'mgmt', to: 'internal' },
+      { from: 'internal', to: 'dmz' },
+    ],
+  });
+  assert.equal(parsed.config.services[0].role, '');
+  assert.deepEqual(validateRawCompose(rangeYaml).list, []);
+});
+
+test('range topology survives a serializer round trip', () => {
+  const parsed = parseComposeYamlToGuideConfig(rangeYaml);
+  parsed.config.services[0].role = 'gateway';
+  parsed.config.services[1].role = 'node';
+  const yaml = buildGuidedComposeYaml(parsed.config);
+  assert.ok(yaml.startsWith('x-range:\n'));
+  assert.ok(yaml.includes('  gateway: jump'));
+  assert.ok(yaml.includes('    - from: internal'));
+  assert.ok(yaml.includes('    x-role: gateway'));
+  const reparsed = parseComposeYamlToGuideConfig(yaml);
+  assert.equal(reparsed.ok, true);
+  assert.deepEqual(reparsed.config.range, parsed.config.range);
+  assert.deepEqual(
+    reparsed.config.services.map((entry) => entry.role),
+    ['gateway', 'node']
+  );
+});
+
+test('range routes accept the flow mapping notation', () => {
+  const parsed = parseComposeYamlToGuideConfig('x-range:\n  routes:\n    - {from: internal, to: dmz}\nservices:\n  web:\n    image: nginx\n');
+  assert.equal(parsed.ok, true);
+  assert.deepEqual(parsed.config.range.routes, [{ from: 'internal', to: 'dmz' }]);
+});
+
+test('range validation mirrors the backend topology constraints', () => {
+  const config = {
+    services: [
+      service({ name: 'jump', ports: [], networks: [{ name: 'mgmt', ipv4Address: '192.168.99.254' }] }),
+      service({ name: 'web', role: 'gateway', networks: [{ name: 'internal', ipv4Address: '10.10.0.2' }] }),
+    ],
+    networks: [
+      { name: 'mgmt', subnet: '192.168.99.0/24', gateway: '192.168.99.1' },
+      { name: 'internal', subnet: '10.10.0.0/24', gateway: '10.10.0.1' },
+    ],
+    range: {
+      poolSize: -1,
+      maxLeased: 0,
+      leaseDuration: 0,
+      gateway: 'missing',
+      accessNetwork: 'nowhere',
+      routes: [{ from: 'internal', to: 'internal' }],
+    },
+  };
+  const fields = validateGuidedCompose(config).fields;
+  assert.deepEqual(fields['range.poolSize'], [errorKey('rangePoolSizeInvalid')]);
+  assert.deepEqual(fields['range.leaseDuration'], [errorKey('rangeLeaseDurationInvalid')]);
+  assert.deepEqual(fields['range.gateway'], [errorKey('rangeGatewayUndefined')]);
+  assert.deepEqual(fields['range.accessNetwork'], [
+    errorKey('rangeAccessNetworkUndefined'),
+    errorKey('rangeAccessNetworkNotRouted'),
+  ]);
+  assert.deepEqual(fields['range.routes.0.to'], [errorKey('rangeRouteSelfLoop')]);
+  assert.deepEqual(fields['service.1.role'], [errorKey('rangeRoleGatewayMismatch')]);
+  config.range.gateway = 'jump';
+  config.range.accessNetwork = 'nowhere';
+  const attached = validateGuidedCompose(config).fields;
+  assert.deepEqual(attached['range.gateway'], [errorKey('rangeGatewayPortRequired')]);
+  assert.deepEqual(attached['range.accessNetwork'], [
+    errorKey('rangeAccessNetworkNotAttached'),
+    errorKey('rangeAccessNetworkUndefined'),
+    errorKey('rangeAccessNetworkNotRouted'),
+  ]);
+});
+
+test('range challenges may hide their ports and need x-range for roles', () => {
+  const config = {
+    services: [service({ ports: [] })],
+    networks: [],
+    range: {
+      poolSize: 0,
+      maxLeased: 0,
+      leaseDuration: 7200,
+      gateway: 'web',
+      accessNetwork: '',
+      routes: [],
+    },
+  };
+  assert.equal(validateGuidedCompose(config).fields.ports, undefined);
+  const withoutRange = { ...config, range: null };
+  withoutRange.services[0].role = 'node';
+  assert.deepEqual(validateGuidedCompose(withoutRange).fields['service.0.role'], [
+    errorKey('rangeRoleRequiresRange'),
+  ]);
 });
